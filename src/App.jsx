@@ -8,6 +8,7 @@ import FeatureSection from './components/FeatureSection';
 import Blog from './components/Blog';
 import Pricing from './components/Pricing';
 import Product from './routes/dashboard/Product';
+import Login from './routes/auth/Login';
 
 export function HomeContent() {
   return (
@@ -34,7 +35,8 @@ const router = createBrowserRouter([
       { path: "dashboard/verified-customers", element: <h1 className="title">Verified Customers</h1> },
       { path: "dashboard/products", element: <h1 className="title">Products</h1> },
       { path: "dashboard/inventory", element: <h1 className="title">Inventory</h1> },
-      { path: "dashboard/settings", element: <h1 className="title">Settings</h1> }
+      { path: "dashboard/settings", element: <h1 className="title">Settings</h1> },
+      { path: "login", element: <Login/> }
     ],
   }
 ]);
