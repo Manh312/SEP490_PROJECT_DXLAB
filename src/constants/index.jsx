@@ -19,10 +19,9 @@ import ProductImage from "../assets/product-image.jpg";
 
 
 export const navItems = [
-  { label: "Features", href: "#" },
-  { label: "Blog", href: "#" },
-  { label: "Dashboard", href: "#" },
-  { label: "DXLAB", href: "#" },
+  { label: "Home", href: "/" },
+  { label: "Blog", href: "/blog" },
+  { label: "About Us", href: "/aboutus" },
 ];
 
 export const testimonials = [
