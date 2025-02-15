@@ -5,7 +5,6 @@ const Login = () => {
   return (
     <div className="border border-neutral-700">
       <div className="flex flex-col md:flex-row items-center justify-center min-h-screen bg-black text-white p-6">
-        {/* Logo + Mô tả */}
         <div className="flex flex-col items-center w-full md:w-3/5 mb-6 md:mb-0">
           <img src={logo} alt="DXLAB Logo" className="w-70" />
           <img src={logo2} alt="DXLAB Logo" className="w-32" />
@@ -14,7 +13,6 @@ const Login = () => {
           </p>
         </div>
         
-        {/* Form Đăng nhập */}
         <div className="w-full md:w-1/3 bg-neutral-900 p-6 rounded-lg shadow-lg border border-neutral-700">
           <h2 className="text-center text-xl font-semibold mb-4">Đăng nhập</h2>
           <button className="w-full bg-orange-600 text-white font-medium py-2 rounded-lg mb-3">
