@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { services } from "../constants";
-import { useTheme } from "../hooks/use-theme";
+import { services } from "../../constants";
+import { useTheme } from "../../hooks/use-theme";
 
 const Services = () => {
   const theme = useTheme();

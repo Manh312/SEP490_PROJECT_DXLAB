@@ -120,33 +120,33 @@ export const checklistItems = [
 
 export const pricingOptions = [
   {
-    title: "Free",
-    price: "$0",
-    features: [
-      "Private board sharing",
-      "5 Gb Storage",
-      "Web Analytics",
-      "Private Mode",
-    ],
-  },
-  {
-    title: "Pro",
+    title: "Slot",
     price: "$10",
     features: [
-      "Private board sharing",
-      "10 Gb Storage",
-      "Web Analytics (Advance)",
-      "Private Mode",
+      "Thời gian linh hoạt",
+      "Chỗ ngồi linh hoạt",
+      "Internet tốc độ cao",
+      "Không gian sạch sẽ",
     ],
   },
   {
-    title: "Enterprise",
+    title: "Month",
+    price: "$50",
+    features: [
+      "Giá cả hợp lý",
+      "Internet tốc độ cao",
+      "Không gian sạch sẽ",
+      "Cơ sở vật chất hiện đại",
+    ],
+  },
+  {
+    title: "Semester",
     price: "$200",
     features: [
-      "Private board sharing",
-      "Unlimited Storage",
-      "High Performance Network",
-      "Private Mode",
+      "Tiện lợi",
+      "Internet tốc độ cao",
+      "Không gian sạch sẽ",
+      "Giảm giá khi đăng ký gói",
     ],
   },
 ];

@@ -1,21 +1,25 @@
+import { useDispatch, useSelector } from "react-redux";
 import logo from "../../assets/logo.png";
 import logo2 from "../../assets/logo2.png";
 import { useTheme } from "../../hooks/use-theme";
+import { loginWithGoogle } from "../../redux/slices/Authentication";
 
 const Login = () => {
+  // const dispatch = useDispatch();
+  // const { isLoading } = useSelector((state) => state.auth);
   const theme = useTheme();
+
+  // const handleGoogleLogin = () => {
+  //   dispatch(loginWithGoogle());
+  // };
 
   return (
     <div className={`flex flex-col md:flex-row items-center justify-center min-h-screen -mt-20 ${theme === "dark" ? "bg-black text-white" : ""}`}>
-      
-      {/* Phần Logo */}
+
       <div className="flex flex-col items-center w-full md:w-3/5 mb-6 md:mb-0 relative">
         <div className="relative flex items-center justify-center">
-          {/* Logo chính */}
           <img src={logo} alt="DXLAB Logo" className="w-80 md:w-96" />
-          
-          {/* Logo phụ (đặt chồng lên logo chính) */}
-          <img src={logo2} alt="DXLAB Logo" className="w-40 md:w-48 absolute xl:bottom-2 lg:bottom-2 md:bottom-4 bottom-0"/>
+          <img src={logo2} alt="DXLAB Logo" className="w-40 md:w-48 absolute xl:bottom-2 lg:bottom-2 md:bottom-4 bottom-0" />
         </div>
 
         <p className="text-center text-2xl max-w-md mt-6">
@@ -23,7 +27,6 @@ const Login = () => {
         </p>
       </div>
 
-      {/* Phần Đăng nhập */}
       <div className="w-full md:w-1/3 p-6 rounded-lg shadow-lg border border-neutral-700">
         <h2 className="text-center text-xl mb-4">Đăng nhập</h2>
         <button className="w-full bg-orange-600 text-white font-medium py-2 rounded-lg mb-3">
@@ -33,7 +36,6 @@ const Login = () => {
           <span className="text-lg">G+</span> Đăng nhập
         </button>
       </div>
-
     </div>
   );
 };

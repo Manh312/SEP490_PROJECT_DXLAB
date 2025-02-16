@@ -3,14 +3,14 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import './styles.css';
 import Layout from "./routes/layout";
 import DashboardPage from "./routes/dashboard/page";
-import HeroSection from './components/HeroSection';
-import FeatureSection from './components/FeatureSection';
-import Blog from './components/Blog';
-import Pricing from './components/Pricing';
+import HeroSection from './layouts/home/HeroSection';
+import FeatureSection from './layouts/home/FeatureSection';
+import Blog from './layouts/home/Blog';
+import Pricing from './layouts/home/Pricing';
 import Product from './routes/dashboard/Product';
 import Login from './routes/auth/Login';
-import About from './components/About';
-import Services from './components/Services';
+import About from './layouts/home/About';
+import Services from './layouts/home/Services';
 
 export function HomeContent() {
   return (

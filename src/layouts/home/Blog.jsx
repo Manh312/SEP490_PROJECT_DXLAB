@@ -1,7 +1,7 @@
 import { CheckCircle2 } from 'lucide-react';
-import images1 from '../assets/images1.png';
-import { checklistItems } from '../constants';
-import { useTheme } from '../hooks/use-theme';
+import images1 from '../../assets/images1.png';
+import { checklistItems } from '../../constants';
+import { useTheme } from '../../hooks/use-theme';
 
 const Blog = () => {
   const theme = useTheme();

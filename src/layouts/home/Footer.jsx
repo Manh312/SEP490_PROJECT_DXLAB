@@ -1,6 +1,6 @@
-import logo2 from "../assets/logo2.png";
+import logo2 from "../../assets/logo2.png";
 import { Phone, MapPin, Mail } from "lucide-react";
-import { useTheme } from "../hooks/use-theme";
+import { useTheme } from "../../hooks/use-theme";
 import { Link } from "react-router-dom";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 

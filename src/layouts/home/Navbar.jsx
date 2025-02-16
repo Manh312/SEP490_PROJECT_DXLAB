@@ -1,9 +1,9 @@
 import { Menu, Moon, Sun, X } from "lucide-react";
 import { useState } from "react";
-import logo from "../assets/logo.png";
-import logo2 from "../assets/logo2.png";
-import { navItems } from "../constants";
-import { useTheme } from "../hooks/use-theme";
+import logo from "../../assets/logo.png";
+import logo2 from "../../assets/logo2.png";
+import { navItems } from "../../constants";
+import { useTheme } from "../../hooks/use-theme";
 import { Link, useLocation } from "react-router-dom";
 
 const Navbar = () => {
