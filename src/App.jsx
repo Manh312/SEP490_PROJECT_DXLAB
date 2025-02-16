@@ -9,13 +9,15 @@ import Blog from './components/Blog';
 import Pricing from './components/Pricing';
 import Product from './routes/dashboard/Product';
 import Login from './routes/auth/Login';
+import About from './components/About';
+import Services from './components/Services';
 
 export function HomeContent() {
   return (
     <>
       <HeroSection />
+      <Services/>
       <FeatureSection />
-      <Blog />
       <Pricing />
     </>
   );
@@ -27,6 +29,9 @@ const router = createBrowserRouter([
     element: <Layout />, // Layout chứa tất cả các trang
     children: [
       { index: true, element: <HomeContent /> }, // Trang chủ "/"
+      { path: "login", element: <Login/> },
+      { path: "blog", element: <Blog/> },
+      { path: "about", element: <About/> },
       { path: "dashboard", element: <DashboardPage /> }, // Trang dashboard chính
       { path: "dashboard/products", element: <Product/> },
       { path: "dashboard/reports", element: <h1 className="title">Reports</h1> },
@@ -36,7 +41,6 @@ const router = createBrowserRouter([
       { path: "dashboard/products", element: <h1 className="title">Products</h1> },
       { path: "dashboard/inventory", element: <h1 className="title">Inventory</h1> },
       { path: "dashboard/settings", element: <h1 className="title">Settings</h1> },
-      { path: "login", element: <Login/> }
     ],
   }
 ]);
