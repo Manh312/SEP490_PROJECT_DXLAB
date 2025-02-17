@@ -23,6 +23,7 @@ const Navbar = () => {
         <div className="flex items-center flex-shrink-0">
           <img className="h-30 w-30" src={logo} alt="logo" />
           <img className="h-10" src={logo2} alt="logo2" />
+          <h1>ABC</h1>
         </div>
 
         {/* Desktop Navigation */}
@@ -59,7 +60,7 @@ const Navbar = () => {
 
       {/* Mobile Navigation Drawer */}
       {mobileDrawerOpen && (
-        <div className={`fixed right-0 z-20 w-full p-12 flex flex-col justify-center items-center lg:hidden ${theme === "dark" ? "bg-neutral-800 text-white" : "bg-neutral-100 text-black"} transition-colors`}>
+        <div className={`fixed right-0 z-20 w-full p-12 flex flex-col justify-center items-center lg:hidden ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} transition-colors`}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-md text-center">
             <ul className={`${theme === "dark" ? "text-white" : "text-black"} text-lg space-y-4`}>
               {navItems.map((item, index) => (
