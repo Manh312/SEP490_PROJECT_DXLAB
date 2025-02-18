@@ -19,6 +19,7 @@ const Product = () => {
                     <th className="table-head">Rating</th>
                     <th className="table-head">Action</th>
                   </tr>
+                  <p></p>
                 </thead>
                 <tbody className="table-body">
                   {topProducts.map((product) => (

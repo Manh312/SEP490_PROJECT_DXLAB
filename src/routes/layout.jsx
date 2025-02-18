@@ -1,7 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
-import Footer from "../components/Footer";
-import Navbar from "../components/Navbar";
-import { Sidebar } from "../layouts/sidebar";
+import Footer from "../layouts/home/Footer";
+import Navbar from "../layouts/home/Navbar";
+import { Sidebar } from "./dashboard/sidebar";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { useClickOutside } from "../hooks/use-click-outside";
 import { useEffect, useRef, useState } from "react";
