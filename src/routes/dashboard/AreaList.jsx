@@ -1,14 +1,16 @@
 import { PencilLine, Star, Trash } from "lucide-react";
 import { topProducts } from "../../constants";
+import { useTheme } from "../../hooks/use-theme";
 
-const Product = () => {
+const AreaList = () => {
+  const theme = useTheme();
   return (
-    <div className={'card col-span-1 md:col-span-2 lg:col-span-3 ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}'}>
+    <div className={`card col-span-1 md:col-span-2 lg:col-span-3 mt-5 mb-10 ${theme === "dark" ? "bg-black text-white" : ""}`}>
         <div className="card-header">
           <p className="card-title">Top Orders</p>
         </div>
         <div className="card-body p-0">
-          <div className="relative h-[500px] w-full flex-shrink-0 overflow-auto rounded-none">
+          <div className="relative h-[500px] max-xl:w-2xl max-lg:w-100 max-md:w-50 max-sm:w-30 flex-shrink-0 overflow-auto rounded-none">
             <table className="table min-w-full">
                 <thead className="table-header">
                   <tr className="table-row">
@@ -62,4 +64,4 @@ const Product = () => {
   );
 }
 
-export default Product;
+export default AreaList;
