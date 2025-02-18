@@ -1,6 +1,5 @@
 // import { useDispatch, useSelector } from "react-redux";
-import logo from "../../assets/logo.png";
-import logo2 from "../../assets/logo2.png";
+import logo from "../../assets/logo_images.png";
 import { useTheme } from "../../hooks/use-theme";
 // import { loginWithGoogle } from "../../redux/slices/Authentication";
 
@@ -14,12 +13,11 @@ const Login = () => {
   // };
 
   return (
-    <div className={`flex flex-col md:flex-row items-center justify-center min-h-screen -mt-20 ${theme === "dark" ? "bg-black text-white" : ""}`}>
+    <div className={`flex flex-col md:flex-row items-center justify-center min-h-screen ${theme === "dark" ? "bg-black text-white" : ""}`}>
 
       <div className="flex flex-col items-center w-full md:w-3/5 mb-6 md:mb-0 relative">
         <div className="relative flex items-center justify-center">
           <img src={logo} alt="DXLAB Logo" className="w-80 md:w-96" />
-          <img src={logo2} alt="DXLAB Logo" className="w-40 md:w-48 absolute xl:bottom-2 lg:bottom-2 md:bottom-4 bottom-0" />
         </div>
 
         <p className="text-center text-2xl max-w-md mt-6">
