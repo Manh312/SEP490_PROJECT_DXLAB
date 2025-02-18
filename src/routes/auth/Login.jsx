@@ -1,8 +1,8 @@
-import { useDispatch, useSelector } from "react-redux";
+// import { useDispatch, useSelector } from "react-redux";
 import logo from "../../assets/logo.png";
 import logo2 from "../../assets/logo2.png";
 import { useTheme } from "../../hooks/use-theme";
-import { loginWithGoogle } from "../../redux/slices/Authentication";
+// import { loginWithGoogle } from "../../redux/slices/Authentication";
 
 const Login = () => {
   // const dispatch = useDispatch();
