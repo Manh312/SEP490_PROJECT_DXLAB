@@ -1,9 +1,4 @@
-import { BotMessageSquare } from "lucide-react";
-import { BatteryCharging } from "lucide-react";
-import { Fingerprint } from "lucide-react";
-import { ShieldHalf } from "lucide-react";
-import { PlugZap } from "lucide-react";
-import { GlobeLock } from "lucide-react";
+
 
 import user1 from "../assets/profile-pictures/user1.jpg";
 import user2 from "../assets/profile-pictures/user2.jpg";
@@ -16,13 +11,13 @@ import { ChartColumn, Home, NotepadText, Package, PackagePlus, Settings, Shoppin
 
 import ProfileImage from "../assets/profile-image.jpg";
 import ProductImage from "../assets/product-image.jpg";
+import { FaHome, FaMoneyBillWave, FaShieldAlt, FaWifi } from "react-icons/fa";
 
 
 export const navItems = [
-  { label: "Features", href: "#" },
-  { label: "Blog", href: "#" },
-  { label: "Dashboard", href: "#" },
-  { label: "DXLAB", href: "#" },
+  { label: "Trang chủ", href: "/" },
+  { label: "DXLAB Blog", href: "/blog" },
+  { label: "Về DXLAB", href: "/about" },
 ];
 
 export const testimonials = [
@@ -64,42 +59,39 @@ export const testimonials = [
   },
 ];
 
+export const services = [
+  {
+    text: 'CHỖ NGỒI CÁ NHÂN CỐ ĐỊNH',
+    description: "Dành cho cá nhân",
+    click: "Khám phá ngay"
+  },
+  {
+    text: 'CHỖ NGỒI THEO NHÓM CỐ ĐỊNH',
+    description: "Dành cho đội nhóm",
+    click: "Khám phá ngay"
+  }
+];
+
 export const features = [
   {
-    icon: <BotMessageSquare />,
-    text: "Drag-and-Drop Interface",
-    description:
-      "Easily design and arrange your VR environments with a user-friendly drag-and-drop interface.",
+    icon: <FaMoneyBillWave className="text-orange-500 text-3xl" />,
+    text: "THANH TOÁN THEO GÓI LINH ĐỘNG",
+    description: "Lựa chọn thanh toán theo slot, 1 tháng hoặc kỳ học tùy theo kế hoạch của bạn."
   },
   {
-    icon: <Fingerprint />,
-    text: "Multi-Platform Compatibility",
-    description:
-      "Build VR applications that run seamlessly across multiple platforms, including mobile, desktop, and VR headsets.",
+    icon: <FaHome className="text-orange-500 text-3xl" />,
+    text: "KHÔNG GIAN THOẢI MÁI, YÊN TĨNH",
+    description: "Không gian sạch sẽ, rộng rãi, yên tĩnh giúp bạn có những khoảng thời gian làm việc tập trung và hiệu quả."
   },
   {
-    icon: <ShieldHalf />,
-    text: "Built-in Templates",
-    description:
-      "Jumpstart your VR projects with a variety of built-in templates for different types of applications and environments.",
+    icon: <FaShieldAlt className="text-orange-500 text-3xl" />,
+    text: "ĐẢM BẢO AN TOÀN, AN NINH",
+    description: "Đội ngũ chúng tôi luôn luôn đặt an toàn của khách hàng lên hàng đầu, đảm bảo không có sự cố xảy ra."
   },
   {
-    icon: <BatteryCharging />,
-    text: "Real-Time Preview",
-    description:
-      "Preview your VR application in real-time as you make changes, allowing for quick iterations and adjustments.",
-  },
-  {
-    icon: <PlugZap />,
-    text: "Collaboration Tools",
-    description:
-      "Work together with your team in real-time on VR projects, enabling seamless collaboration and idea sharing.",
-  },
-  {
-    icon: <GlobeLock />,
-    text: "Analytics Dashboard",
-    description:
-      "Gain valuable insights into user interactions and behavior within your VR applications with an integrated analytics dashboard.",
+    icon: <FaWifi className="text-orange-500 text-3xl" />,
+    text: "HỆ THỐNG MẠNG TỐC ĐỘ CAO",
+    description: "Với hệ thống wifi tân tiến nhất hiện nay, ổn định đảm bảo chất lượng làm việc của bạn."
   },
 ];
 
@@ -128,33 +120,33 @@ export const checklistItems = [
 
 export const pricingOptions = [
   {
-    title: "Free",
-    price: "$0",
-    features: [
-      "Private board sharing",
-      "5 Gb Storage",
-      "Web Analytics",
-      "Private Mode",
-    ],
-  },
-  {
-    title: "Pro",
+    title: "Slot",
     price: "$10",
     features: [
-      "Private board sharing",
-      "10 Gb Storage",
-      "Web Analytics (Advance)",
-      "Private Mode",
+      "Thời gian linh hoạt",
+      "Chỗ ngồi linh hoạt",
+      "Internet tốc độ cao",
+      "Không gian sạch sẽ",
     ],
   },
   {
-    title: "Enterprise",
+    title: "Month",
+    price: "$50",
+    features: [
+      "Giá cả hợp lý",
+      "Internet tốc độ cao",
+      "Không gian sạch sẽ",
+      "Cơ sở vật chất hiện đại",
+    ],
+  },
+  {
+    title: "Semester",
     price: "$200",
     features: [
-      "Private board sharing",
-      "Unlimited Storage",
-      "High Performance Network",
-      "Private Mode",
+      "Tiện lợi",
+      "Internet tốc độ cao",
+      "Không gian sạch sẽ",
+      "Giảm giá khi đăng ký gói",
     ],
   },
 ];

@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -13,12 +14,9 @@ const HeroSection = () => {
         Hệ thống Booking DXLab là một nền tảng trực tuyến giúp người dùng dễ dàng đặt phòng làm việc chung (co-working space) tại FPT University.
       </p>
       <div className="flex justify-center my-10">
-        <a href="#" className="bg-gradient-to-r from-orange-500 to-orange-800 py-3 px-4 mx-3 rounded-md">
+        <Link to="/login" className="bg-gradient-to-r from-orange-500 to-orange-800 py-3 px-4 mx-3 rounded-md text-white">
           Trải nghiệm dịch vụ ngay
-        </a>
-        <a href="#" className="py-3 px-4 mx-3 rounded-md border">
-          DXLAB
-        </a>
+        </Link>
       </div>
     </div>
   );
