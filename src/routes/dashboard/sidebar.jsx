@@ -18,7 +18,7 @@ export const Sidebar = forwardRef(({ collapsed }, ref) => {
         "transition-colors duration-300"
       )}
     >
-      <div className="flex w-full flex-col gap-y-4 overflow-y-auto overflow-x-hidden p-3 [scrollbar-width:_thin]">
+      <div className="flex w-full flex-col gap-y-10 overflow-y-auto overflow-x-hidden p-3 [scrollbar-width:_thin]">
         {navbarLinks.map((navbarLink) => (
           <nav key={navbarLink.title} className={cn("sidebar-group", collapsed && "md:items-center")}>
             <p 
@@ -29,9 +29,9 @@ export const Sidebar = forwardRef(({ collapsed }, ref) => {
                 )}
             >
               {navbarLink.title}
-              {navbarLink.links.map((link) => (
+              {navbarLink.children.map((link) => (
                 <NavLink 
-                  key={link.title} 
+                  key={link.label} 
                   to={link.path} 
                   className={cn(
                     "sidebar-item", 

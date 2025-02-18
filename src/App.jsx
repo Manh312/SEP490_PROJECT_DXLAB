@@ -7,13 +7,13 @@ import HeroSection from './layouts/home/HeroSection';
 import FeatureSection from './layouts/home/FeatureSection';
 import Blog from './layouts/blog/Blog';
 import Pricing from './layouts/home/Pricing';
-import Product from './routes/dashboard/Product';
 import Login from './routes/auth/Login';
 import About from './layouts/home/About';
 import Services from './layouts/home/Services';
 import BlogDetail from './layouts/blog/BlogDetail';
 import ViewProfile from './layouts/profile/ViewProfile';
 import ChangeProfile from './layouts/profile/ChangeProfile';
+import AreaList from './routes/dashboard/AreaList';
 
 export function HomeContent() {
   return (
@@ -39,7 +39,7 @@ const router = createBrowserRouter([
       { path: "profile", element: <ViewProfile/> },
       { path: "change-profile", element: <ChangeProfile/> },
       { path: "dashboard", element: <DashboardPage /> }, // Trang dashboard chính
-      { path: "dashboard/products", element: <Product/> },
+      { path: "dashboard/area-list", element: <AreaList/> },
       { path: "dashboard/reports", element: <h1 className="title">Reports</h1> },
       { path: "dashboard/customers", element: <h1 className="title">Customers</h1> },
       { path: "dashboard/new-customer", element: <h1 className="title">New Customer</h1> },

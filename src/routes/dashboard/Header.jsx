@@ -7,7 +7,7 @@ const Header = ({ collapsed, setCollapsed }) => {
     <header className="relative z-10 flex h-[60px] items-center justify-between px-4">
       <div className="flex items-center gap-x-3">
         <button
-          className="btn-ghost size-10"
+          className={`btn-ghost size-10 ${theme === "dark" ? "hover:bg-neutral-700" : "hover:bg-neutral-300"} `}
           onClick={() => setCollapsed(!collapsed)}>
           <ChevronsLeft className={`${collapsed ? "rotate-180" : ""} ${theme === "dark" ? "text-white" : "text-black"}`} size={24}/>
         </button>
