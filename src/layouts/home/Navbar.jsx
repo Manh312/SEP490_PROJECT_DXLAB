@@ -23,7 +23,6 @@ const Navbar = () => {
         <div className="flex items-center flex-shrink-0">
           <img className="h-30 w-30" src={logo} alt="logo" />
           <img className="h-10" src={logo2} alt="logo2" />
-          <h1>ABC</h1>
         </div>
 
         {/* Desktop Navigation */}
