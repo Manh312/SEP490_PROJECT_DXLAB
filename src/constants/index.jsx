@@ -193,12 +193,12 @@ export const navbarLinks = [
       {
         label: "Danh sách khu vực",
         icon: ChartColumn,
-        path: "/dashboard/area-list",
+        path: "/dashboard/area",
       },
       {
         label: "Danh sách thiết bị",
         icon: NotepadText,
-        path: "/dashboard/facilities-list",
+        path: "/dashboard/facilities",
       },
     ]
   },
@@ -208,17 +208,17 @@ export const navbarLinks = [
       {
         label: "Danh sách tài khoản",
         icon: Users,
-        path: "/dashboard/account-list",
+        path: "/dashboard/account",
       },
       {
         label: "Danh sách quyền",
         icon: UserPlus,
-        path: "/dashboard/role-list",
+        path: "/dashboard/role",
       },
       {
         label: "Danh sách vé phạt",
         icon: UserCheck,
-        path: "/dashboard/banned-list",
+        path: "/dashboard/banned",
       },
     ],
   },
@@ -228,7 +228,7 @@ export const navbarLinks = [
       {
         label: "Danh sách blog",
         icon: Package,
-        path: "/dashboard/blog-list",
+        path: "/dashboard/blog",
       },
     ],
   },
