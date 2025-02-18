@@ -4,7 +4,7 @@ import { overviewData, recentSalesData } from "../../constants";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const Page = () => {
-  const { theme } = useTheme(); // ✅ Lấy trạng thái theme
+  const { theme } = useTheme(); 
 
   return (
     <div className="flex flex-col gap-y-4">
