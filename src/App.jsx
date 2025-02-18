@@ -36,7 +36,7 @@ const router = createBrowserRouter([
       { path: "blog", element: <Blog/> },
       { path: "blog/:id", element: <BlogDetail/> },
       { path: "about", element: <About/> },
-      { path: "profile/", element: <ViewProfile/> },
+      { path: "profile", element: <ViewProfile/> },
       { path: "change-profile", element: <ChangeProfile/> },
       { path: "dashboard", element: <DashboardPage /> }, // Trang dashboard chính
       { path: "dashboard/products", element: <Product/> },
