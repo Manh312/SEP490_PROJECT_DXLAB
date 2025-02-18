@@ -1,7 +1,6 @@
 import { Menu, Moon, Sun, X } from "lucide-react";
 import { useState } from "react";
-import logo from "../../assets/logo.png";
-import logo2 from "../../assets/logo2.png";
+import logo from "../../assets/logo_images.png";
 import { navItems } from "../../constants";
 import { useTheme } from "../../hooks/use-theme";
 import { Link, useLocation } from "react-router-dom";
@@ -21,8 +20,7 @@ const Navbar = () => {
       <div className="container px-4 mx-auto relative text-sm flex justify-between items-center">
         {/* Logo */}
         <div className="flex items-center flex-shrink-0">
-          <img className="h-30 w-30" src={logo} alt="logo" />
-          <img className="h-10" src={logo2} alt="logo2" />
+          <img className="h-30 w-35" src={logo} alt="logo" />
         </div>
 
         {/* Desktop Navigation */}
