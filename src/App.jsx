@@ -5,12 +5,15 @@ import Layout from "./routes/layout";
 import DashboardPage from "./routes/dashboard/page";
 import HeroSection from './layouts/home/HeroSection';
 import FeatureSection from './layouts/home/FeatureSection';
-import Blog from './layouts/home/Blog';
+import Blog from './layouts/blog/Blog';
 import Pricing from './layouts/home/Pricing';
 import Product from './routes/dashboard/Product';
 import Login from './routes/auth/Login';
 import About from './layouts/home/About';
 import Services from './layouts/home/Services';
+import BlogDetail from './layouts/blog/BlogDetail';
+import ViewProfile from './layouts/profile/ViewProfile';
+import ChangeProfile from './layouts/profile/ChangeProfile';
 
 export function HomeContent() {
   return (
@@ -31,7 +34,10 @@ const router = createBrowserRouter([
       { index: true, element: <HomeContent /> }, // Trang chủ "/"
       { path: "login", element: <Login/> },
       { path: "blog", element: <Blog/> },
+      { path: "blog/:id", element: <BlogDetail/> },
       { path: "about", element: <About/> },
+      { path: "profile", element: <ViewProfile/> },
+      { path: "change-profile", element: <ChangeProfile/> },
       { path: "dashboard", element: <DashboardPage /> }, // Trang dashboard chính
       { path: "dashboard/products", element: <Product/> },
       { path: "dashboard/reports", element: <h1 className="title">Reports</h1> },

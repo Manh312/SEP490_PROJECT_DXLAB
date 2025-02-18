@@ -1,10 +1,10 @@
 import { forwardRef } from "react";
-import { navbarLinks } from "../constants";
+import { navbarLinks } from "../../constants";
 
-import { cn } from "../utils/cn";
+import { cn } from "../../utils/cn";
 import PropTypes from "prop-types";
 import { NavLink } from "react-router-dom";
-import { useTheme } from "../hooks/use-theme";
+import { useTheme } from "../../hooks/use-theme";
 
 export const Sidebar = forwardRef(({ collapsed }, ref) => {
   const { theme } = useTheme(); 
