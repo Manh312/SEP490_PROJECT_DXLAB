@@ -16,7 +16,6 @@ import ChangeProfile from './layouts/profile/ChangeProfile';
 import AreaList from './routes/areas/AreaList';
 import FacilitiesList from './routes/facilities/FacilitiesList';
 import AccountList from './routes/account/AccountList';
-import RoleList from './routes/role/RoleList';
 import BannedList from './routes/dashboard/BannedList';
 import BlogList from './routes/blog-manage/BlogList';
 import CreateFacilities from './routes/facilities/CreateFacilities';
@@ -30,6 +29,10 @@ import DeleteAccount from './routes/account/DeleteAccount';
 import CreateBlog from './routes/blog-manage/CreateBlog';
 import UpdateBlog from './routes/blog-manage/UpdateBlog';
 import DeleteBlog from './routes/blog-manage/DeleteBlog';
+import NotFound from './layouts/home/NotFound';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
+
 
 export function HomeContent() {
   return (
@@ -52,6 +55,7 @@ const router = createBrowserRouter([
       { path: "blog", element: <Blog/> },
       { path: "blog/:id", element: <BlogDetail/> },
       { path: "about", element: <About/> },
+      { path: "not-found", element: <NotFound/> },
       { path: "profile", element: <ViewProfile/> },
       { path: "change-profile", element: <ChangeProfile/> },
 
@@ -72,13 +76,6 @@ const router = createBrowserRouter([
       { path: "dashboard/account", element: <UpdateAccount/> },
       { path: "dashboard/account", element: <DeleteAccount/> },
 
-      //Role Manage
-      { path: "dashboard/role", element: <RoleList/> },
-      { path: "dashboard/role/detail", element: <RoleList/> },
-      { path: "dashboard/role/create", element: <RoleList/> },
-      { path: "dashboard/role/update", element: <RoleList/> },
-      { path: "dashboard/role/delete", element: <RoleList/> },
-
 
       { path: "dashboard/banned", element: <BannedList/> },
 
@@ -96,6 +93,7 @@ const router = createBrowserRouter([
 function App() {
   return (
     <ThemeProvider storageKey="theme">
+      <ToastContainer />
       <RouterProvider router={router} />
     </ThemeProvider>
   );
