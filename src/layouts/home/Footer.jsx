@@ -13,11 +13,11 @@ const Footer = () => {
         <div>
           <div>
             <h2 className="text-xl font-extrabold bg-gradient-to-r from-orange-500 to-yellow-400 text-transparent bg-clip-text">
-              DIGITAL TRANSFORMATION <span className="block text-xl ml-18">LABORATORY</span>
+              DIGITAL TRANSFORMATION LABORATORY
             </h2>
           </div>
 
-          <div className="flex space-x-6 mt-4 ml-10">
+          <div className="flex space-x-6 mt-4 ml-0">
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
               <FaFacebook className=" hover:text-blue-500 text-2xl" />
             </a>
