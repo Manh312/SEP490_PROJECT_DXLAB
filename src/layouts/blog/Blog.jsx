@@ -4,6 +4,8 @@ import { useTheme } from '../../hooks/use-theme';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import images4 from '../../assets/dxlab_images4.png';
+
 
 const Blog = () => {
   const theme = useTheme();
@@ -35,7 +37,7 @@ const Blog = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {currentPosts.map((post) => (
                 <div key={post.id} className="border rounded-lg shadow-lg hover:shadow-xl transition">
-                  <img src={images1} alt="Blog Thumbnail" className="rounded-lg mb-4" />
+                  <img src={images4} alt="Blog Thumbnail" className="rounded-lg mb-4" />
                   <h1 className="text-sm text-orange-500 mb-2 ml-5">DXLAB Blog</h1>
                   <h2 className="text-xl font-semibold mb-2 ml-5">{post.title}</h2>
                   <p className="text-sm text-gray-400 ml-5">Ngày đăng: 20/02/2025</p>
