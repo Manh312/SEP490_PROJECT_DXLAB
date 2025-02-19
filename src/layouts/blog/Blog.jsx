@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import images1 from '../../assets/images1.png';
 import { useTheme } from '../../hooks/use-theme';
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';

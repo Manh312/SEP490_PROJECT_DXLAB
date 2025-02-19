@@ -26,6 +26,13 @@ const Layout = () => {
     };
   });
 
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "//code.tidio.co/wtfngompszg7hi3r0qqdtv5okvlqkzki.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
+
   return (
     <div>
       <Navbar className={isDashboard ? "w-[200px]" : "w-full"} />
