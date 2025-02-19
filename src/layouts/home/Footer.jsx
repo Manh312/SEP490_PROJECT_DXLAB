@@ -1,4 +1,3 @@
-import logo2 from "../../assets/logo2.png";
 import { Phone, MapPin, Mail } from "lucide-react";
 import { useTheme } from "../../hooks/use-theme";
 import { Link } from "react-router-dom";
@@ -12,8 +11,13 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Cột 1: Giới thiệu */}
         <div>
-        <img className="h-16 w-auto mb-4" src={logo2} alt="DXLAB Logo" />
-        <div className="flex space-x-6 mt-4 ml-4">
+          <div>
+            <h2 className="text-xl font-extrabold bg-gradient-to-r from-orange-500 to-yellow-400 text-transparent bg-clip-text">
+              DIGITAL TRANSFORMATION LABORATORY
+            </h2>
+          </div>
+
+          <div className="flex space-x-6 mt-4 ml-0">
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
               <FaFacebook className=" hover:text-blue-500 text-2xl" />
             </a>

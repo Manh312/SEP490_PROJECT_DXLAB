@@ -10,54 +10,53 @@ const AreaList = () => {
           <p className="card-title">Top Orders</p>
         </div>
         <div className="card-body p-0">
-          <div className="relative h-[500px] max-xl:w-2xl max-lg:w-100 max-md:w-50 max-sm:w-30 flex-shrink-0 overflow-auto rounded-none">
+          <div className="relative max-h-[500px] overflow-auto rounded-none">
             <table className="table min-w-full">
-                <thead className="table-header">
-                  <tr className="table-row">
-                    <th className="table-head">#</th>
-                    <th className="table-head">Product</th>
-                    <th className="table-head">Price</th>
-                    <th className="table-head">Status</th>
-                    <th className="table-head">Rating</th>
-                    <th className="table-head">Action</th>
+              <thead className="table-header">
+                <tr className="table-row">
+                  <th className="table-head sticky top-0 bg-gray-200">#</th>
+                  <th className="table-head sticky top-0 bg-gray-200">Product</th>
+                  <th className="table-head sticky top-0 bg-gray-200">Price</th>
+                  <th className="table-head sticky top-0 bg-gray-200">Status</th>
+                  <th className="table-head sticky top-0 bg-gray-200">Rating</th>
+                  <th className="table-head sticky top-0 bg-gray-200">Action</th>
+                </tr>
+              </thead>
+              <tbody className="table-body">
+                {topProducts.map((product) => (
+                  <tr key={product.number} className="table-row">
+                    <td className="table-cell">{product.number}</td>
+                    <td className="table-cell">
+                      <div className="flex w-max gap-4">
+                        <img src={product.image} alt={product.name} className="size-14 rounded-lg object-cover" />
+                        <div className="flex flex-col">
+                          <p>{product.name}</p>
+                          <p className="font-normal">{product.description}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="table-cell">{product.price}</td>
+                    <td className="table-cell">{product.status}</td>
+                    <td className="table-cell">
+                      <div className="flex items-center gap-x-2">
+                        <Star size={18} className="fill-yellow-600 stroke-yellow-600"/>
+                        {product.rating}
+                      </div>
+                    </td>
+                    <td className="table-cell">
+                      <div className="flex items-center gap-x-4">
+                        <button className="text-blue-500 dark:text-blue-600">
+                          <PencilLine size={20}/>
+                        </button>
+                        <button className="text-red-500">
+                          <Trash size={20}/>
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                  <p></p>
-                </thead>
-                <tbody className="table-body">
-                  {topProducts.map((product) => (
-                    <tr key={product.number} className="table-row">
-                      <td className="table-cell">{product.number}</td>
-                      <td className="table-cell">
-                        <div className="flex w-max gap-4">
-                          <img src={product.image} alt={product.name} className="size-14 rounded-lg object-cover" />
-                          <div className="flex flex-col">
-                            <p>{product.name}</p>
-                            <p className="font-normal ">{product.description}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="table-cell">{product.price}</td>
-                      <td className="table-cell">{product.status}</td>
-                      <td className="table-cell">
-                        <div className="flex items-center gap-x-2">
-                          <Star size={18} className="fill-yellow-600 stroke-yellow-600"/>
-                          {product.rating}
-                        </div>
-                      </td>
-                      <td className="table-cell">
-                        <div className="flex items-center gap-x-4">
-                          <button className="text-blue-500 dark:text-blue-600">
-                            <PencilLine size={20}/>
-                          </button>
-                          <button className="text-red-500">
-                            <Trash size={20}/>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
