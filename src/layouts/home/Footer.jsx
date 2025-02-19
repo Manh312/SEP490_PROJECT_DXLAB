@@ -1,4 +1,3 @@
-import logo from "../../assets/logo_images.png";
 import { Phone, MapPin, Mail } from "lucide-react";
 import { useTheme } from "../../hooks/use-theme";
 import { Link } from "react-router-dom";
