@@ -382,3 +382,21 @@ export const topProducts = [
     rating: 4.5,
   },
 ];
+export const users = [
+  { id: 1, fullName: "Nguyễn Văn A", email: "a@gmail.com", status: "Active" },
+  { id: 2, fullName: "Trần Thị B", email: "b@gmail.com", status: "Inactive" },
+];
+export const products = [
+  { id: 1, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
+  { id: 2, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+  { id: 3, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
+  { id: 4, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+  { id: 5, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
+  { id: 6, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+  { id: 1, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
+  { id: 2, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+  { id: 3, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
+  { id: 4, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+  { id: 5, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
+  { id: 6, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" }
+];
