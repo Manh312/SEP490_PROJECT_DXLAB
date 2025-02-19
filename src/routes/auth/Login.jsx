@@ -1,16 +1,23 @@
-// import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import logo from "../../assets/logo_images.png";
 import { useTheme } from "../../hooks/use-theme";
-// import { loginWithGoogle } from "../../redux/slices/Authentication";
+import { loginWithGoogle } from "../../redux/slices/Authentication";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  // const dispatch = useDispatch();
-  // const { isLoading } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const { isLoading, error } = useSelector((state) => state.auth);
   const theme = useTheme();
+  const navigate = useNavigate();
 
-  // const handleGoogleLogin = () => {
-  //   dispatch(loginWithGoogle());
-  // };
+  const handleGoogleLogin = async () => {
+    try {
+      await dispatch(loginWithGoogle()).unwrap();  // Dùng `.unwrap()` để bắt lỗi từ async thunk
+      navigate("/");
+    } catch (error) {
+      console.error("Google login failed:", error);
+    }
+  };
 
   return (
     <div className={`flex flex-col md:flex-row items-center justify-center min-h-screen ${theme === "dark" ? "bg-black text-white" : ""}`}>
@@ -27,12 +34,24 @@ const Login = () => {
 
       <div className="w-full md:w-1/3 p-6 rounded-lg shadow-lg border border-neutral-700">
         <h2 className="text-center text-xl mb-4">Đăng nhập</h2>
+        
         <button className="w-full bg-orange-600 text-white font-medium py-2 rounded-lg mb-3">
           Cán bộ, giảng viên, sinh viên Đh-FPT
         </button>
-        <button className="w-full flex items-center justify-center gap-2 bg-orange-600 text-white font-medium py-2 rounded-lg">
-          <span className="text-lg">G+</span> Đăng nhập
+
+        <button
+          className="w-full flex items-center justify-center gap-2 bg-orange-600 text-white font-medium py-2 rounded-lg disabled:opacity-50"
+          onClick={handleGoogleLogin}
+          disabled={isLoading} // Ngăn chặn spam khi đang xử lý
+        >
+          {isLoading ? "Đang đăng nhập..." : (
+            <>
+              <span className="text-lg">G+</span> Đăng nhập
+            </>
+          )}
         </button>
+
+        {error && <p className="text-red-500 text-center mt-2">{error}</p>}
       </div>
     </div>
   );

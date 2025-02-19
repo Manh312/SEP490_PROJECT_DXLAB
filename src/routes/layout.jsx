@@ -27,10 +27,20 @@ const Layout = () => {
   });
 
   useEffect(() => {
+    const scriptUrl = import.meta.env.VITE_TIDIO_SCRIPT_URL;
+    if (!scriptUrl) {
+      console.error("TIDIO script URL is missing from environment variables.");
+      return;
+    }
+
     const script = document.createElement("script");
-    script.src = "//code.tidio.co/wtfngompszg7hi3r0qqdtv5okvlqkzki.js";
+    script.src = scriptUrl;
     script.async = true;
     document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
   }, []);
 
   return (
