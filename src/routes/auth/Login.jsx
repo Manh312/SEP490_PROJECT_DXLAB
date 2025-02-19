@@ -3,6 +3,8 @@ import logo from "../../assets/logo_images.png";
 import { useTheme } from "../../hooks/use-theme";
 import { loginWithGoogle } from "../../redux/slices/Authentication";
 import { useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify';
+
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -13,15 +15,16 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     try {
       await dispatch(loginWithGoogle()).unwrap();  // Dùng `.unwrap()` để bắt lỗi từ async thunk
+      toast.success("Đăng nhập thành công")
       navigate("/");
     } catch (error) {
       console.error("Google login failed:", error);
+      toast.error("Đăng nhập thất bại");
     }
   };
 
   return (
     <div className={`flex flex-col md:flex-row items-center justify-center min-h-screen ${theme === "dark" ? "bg-black text-white" : ""}`}>
-
       <div className="flex flex-col items-center w-full md:w-3/5 mb-6 md:mb-0 relative">
         <div className="relative flex items-center justify-center">
           <img src={logo} alt="DXLAB Logo" className="w-80 md:w-96" />
