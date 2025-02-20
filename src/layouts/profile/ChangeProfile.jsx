@@ -17,7 +17,7 @@ const ChangeProfile = () => {
   };
 
   return (
-    <div className="max-w-2xl border mx-auto p-6 shadow-lg rounded-lg mt-20 mb-20 dark:border-white">
+    <div className="max-w-2xl border mx-auto p-6 shadow-lg rounded-lg mt-20 mb-20">
       
       <h2 className="text-2xl font-bold text-center text-orange-600 mb-6">
         Chỉnh Sửa Hồ Sơ

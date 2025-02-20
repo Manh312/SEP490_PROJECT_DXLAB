@@ -7,8 +7,8 @@ const ViewProfile = () => {
   const theme = useTheme();
 
   return (
-    <div className={`min-h-screen p-6 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"}`}>
-      <div className="max-w-4xl mx-auto rounded-lg shadow-lg p-6 bg-white dark:bg-gray-800">
+    <div className={`min-h-screen p-6 ${theme === "dark" ? "bg-black text-white" : ""}`}>
+      <div className="max-w-4xl mx-auto border rounded-lg shadow-lg p-6">
         <div className="flex flex-col items-center">
           <img src={profileimages} alt="Profile" className="w-32 h-32 rounded-full shadow-lg mb-4 border-4 border-orange-500" />
           <h1 className="text-3xl font-bold">Nguyễn Văn A</h1>

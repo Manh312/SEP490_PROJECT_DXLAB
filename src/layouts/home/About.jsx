@@ -1,7 +1,7 @@
 import { CheckCircle2 } from "lucide-react";
 import { useTheme } from "../../hooks/use-theme";
-import images1 from '../../assets/images1.png';
-import images3 from '../../assets/images3.jpg';
+import images1 from '../../assets/dxlab_images1.jpg';
+import images3 from '../../assets/dxlab_images2.jpg';
 
 const About = () => {
   const theme = useTheme();
