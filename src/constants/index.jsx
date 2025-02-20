@@ -1,4 +1,4 @@
-import { ChartColumn, Home, NotepadText, Package, UserCheck, UserPlus, Users } from "lucide-react";
+import { ChartColumn, Home, NotepadText, Package, UserCheck, Users } from "lucide-react";
 
 import ProfileImage from "../assets/profile-image.jpg";
 import ProductImage from "../assets/product-image.jpg";
@@ -163,20 +163,10 @@ export const navbarLinks = [
         path: "/dashboard/account",
       },
       {
-        label: "Danh sách quyền",
-        icon: UserPlus,
-        path: "/dashboard/role",
-      },
-      {
         label: "Danh sách vé phạt",
         icon: UserCheck,
         path: "/dashboard/banned",
       },
-    ],
-  },
-  {
-    title: "Quản lý blog",
-    children: [
       {
         label: "Danh sách blog",
         icon: Package,

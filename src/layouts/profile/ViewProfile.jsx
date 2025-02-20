@@ -1,18 +1,22 @@
 import { useTheme } from "../../hooks/use-theme";
-import profileimages from "../../assets/profile-image.jpg";
 import { Link } from "react-router-dom";
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
+import { FaEnvelope,  FaPhoneAlt,  FaAddressBook } from "react-icons/fa";
+import { getAuth } from "firebase/auth";
 
 const ViewProfile = () => {
   const theme = useTheme();
+
+  const auth = getAuth();
+  const user = auth.currentUser;
+  console.log(user);
+  
 
   return (
     <div className={`min-h-screen p-6 ${theme === "dark" ? "bg-black text-white" : ""}`}>
       <div className="max-w-4xl mx-auto border rounded-lg shadow-lg p-6">
         <div className="flex flex-col items-center">
-          <img src={profileimages} alt="Profile" className="w-32 h-32 rounded-full shadow-lg mb-4 border-4 border-orange-500" />
-          <h1 className="text-3xl font-bold">Nguyễn Văn A</h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400">Full-Stack Developer</p>
+          <img src={user.photoURL} alt="Profile" className="w-32 h-32 rounded-full shadow-lg mb-4 border-4 border-orange-500" />
+          <h1 className="text-3xl font-bold">{user.displayName}</h1>
         </div>
 
         <div className="mt-6 border-t pt-6">
@@ -20,19 +24,15 @@ const ViewProfile = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <p className="flex items-center">
               <FaEnvelope className="mr-2 text-orange-500" />
-              <span className="font-semibold">Email:</span> nguyenvana@email.com
+              <span><span className="font-semibold">Email:</span> {user.email}</span>
             </p>
             <p className="flex items-center">
-              <FaPhone className="mr-2 text-orange-500" />
-              <span className="font-semibold">Số điện thoại:</span> 0123-456-789
+              <FaPhoneAlt className="mr-2 text-orange-500" />
+              <span className="font-normal">Số điện thoại: {user.phoneNumber}</span>
             </p>
             <p className="flex items-center">
-              <FaMapMarkerAlt className="mr-2 text-orange-500" />
-              <span className="font-semibold">Địa chỉ:</span> Hà Nội, Việt Nam
-            </p>
-            <p className="flex items-center">
-              <FaCalendarAlt className="mr-2 text-orange-500" />
-              <span className="font-semibold">Ngày tham gia:</span> 01/01/2024
+              <FaAddressBook className="mr-2 text-orange-500" />
+              <span className="font-normal">Địa chỉ: </span>
             </p>
           </div>
         </div>
