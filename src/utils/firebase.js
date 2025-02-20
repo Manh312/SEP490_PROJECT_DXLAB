@@ -15,6 +15,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
+
 export const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
@@ -24,7 +25,7 @@ export const signInWithGoogle = async () => {
       token: await user.getIdToken(),
       email: user.email,
       name: user.displayName,
-      photoURL: user.photoURL
+      photoURL: user.photoURL,
     };
   } catch (error) {
     console.error("Google Sign-In Error:", error);
