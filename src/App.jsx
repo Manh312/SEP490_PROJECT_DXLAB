@@ -59,11 +59,12 @@ const router = createBrowserRouter([
       { path: "dashboard/area", element: <AreaList/> },
 
       //Facilities Manage
-      { path: "/dashboard/facilities", element: <FacilitiesList/> },
-      { path: "/dashboard/facilities/detail", element: <FacilitiesDetail/> },
-      { path: "/dashboard/facilities/create", element: <CreateFacilities/> },
-      { path: "/dashboard/facilities/update", element: <UpdateFacilities/> },
-      { path: "/dashboard/facilities/delete", element: <DeleteFacilities/> },
+      { path: "dashboard/facilities", element: <FacilitiesList/> },
+      { path: "dashboard/facilities/:id", element: <FacilitiesDetail/> }, // Fix đường dẫn
+      { path: "dashboard/facilities/create", element: <CreateFacilities/> },
+      { path: "dashboard/facilities/update/:id", element: <UpdateFacilities/> }, // Fix đường dẫn
+      { path: "dashboard/facilities/delete/:id", element: <DeleteFacilities/> }, // Fix đường dẫn
+
 
       //Account Manage
       { path: "dashboard/account", element: <AccountList/> },

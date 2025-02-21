@@ -1,50 +1,82 @@
-import { PencilLine, Trash } from "lucide-react";
+import { PencilLine, Trash, Eye, PlusCircle } from "lucide-react";
 import { products } from "../../constants";
 import { useTheme } from "../../hooks/use-theme";
+import { useNavigate } from "react-router-dom";
 
 const Facilities = () => {
   const theme = useTheme();
+  const navigate = useNavigate();
+
+  const handleDelete = (id) => {
+    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?");
+    if (confirmDelete) {
+      console.log(`Xóa sản phẩm có ID: ${id}`);
+      // Thêm logic xóa sản phẩm ở đây
+    }
+  };
+
   return (
-    <div className={`card col-span-1 md:col-span-2 lg:col-span-3 mt-5 mb-10 ${theme === "dark" ? "bg-black text-white" : ""}`}>
-        <div className="card-header">
-          <p className="card-title">Product List</p>
-        </div>
-        <div className="card-body p-0">
-          <div className="relative max-h-[500px] overflow-auto rounded-none">
-            <table className="table min-w-full">
-              <thead className="table-header">
-                <tr className="table-row">
-                  <th className="table-head sticky top-0 bg-gray-200">#</th>
-                  <th className="table-head sticky top-0 bg-gray-200">Tên Sản Phẩm</th>
-                  <th className="table-head sticky top-0 bg-gray-200">Số Lượng</th>
-                  <th className="table-head sticky top-0 bg-gray-200">Tình Trạng</th>
-                  <th className="table-head sticky top-0 bg-gray-200">Action</th>
-                </tr>
-              </thead>
-              <tbody className="table-body">
-                {products.map((product) => (
-                  <tr key={product.id} className="table-row">
-                    <td className="table-cell">{product.id}</td>
-                    <td className="table-cell">{product.name}</td>
-                    <td className="table-cell">{product.quantity}</td>
-                    <td className="table-cell">{product.status}</td>
-                    <td className="table-cell">
-                      <div className="flex items-center gap-x-4">
-                        <button className="text-blue-500 dark:text-blue-600">
-                          <PencilLine size={20}/>
-                        </button>
-                        <button className="text-red-500">
-                          <Trash size={20}/>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+    <div className={`p-6 shadow-xl rounded-lg ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white"} transition-all`}>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold">📦 Danh Sách Sản Phẩm</h2>
+        <button 
+          className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-green-600 transition"
+          onClick={() => navigate("/dashboard/facilities/create")}
+        >
+          <PlusCircle size={20}/> Thêm Sản Phẩm
+        </button>
       </div>
+      <div className="overflow-x-auto rounded-lg shadow-lg">
+        <table className="w-full border-collapse">
+          <thead className="bg-blue-500 text-white">
+            <tr>
+              <th className="p-3 text-left">#</th>
+              <th className="p-3 text-left">Tên Sản Phẩm</th>
+              <th className="p-3 text-center">Số Lượng</th>
+              <th className="p-3 text-center">Tình Trạng</th>
+              <th className="p-3 text-center">Hành Động</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-300">
+            {products.map((product, index) => (
+              <tr key={product.id} className="hover:bg-gray-100 transition">
+                <td className="p-3">{index + 1}</td>
+                <td className="p-3">{product.name}</td>
+                <td className="p-3 text-center">{product.quantity}</td>
+                <td className="p-3 text-center">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    product.status === "Còn hàng" ? "bg-green-200 text-green-700" 
+                    : "bg-red-200 text-red-700"
+                  }`}>
+                    {product.status}
+                  </span>
+                </td>
+                <td className="p-3 flex justify-center gap-x-3">
+                  <button 
+                    className="text-blue-500 hover:text-blue-700 transition"
+                    onClick={() => navigate(`/dashboard/facilities/${product.id}`)}
+                  >
+                    <Eye size={22} />
+                  </button>
+                  <button 
+                    className="text-yellow-500 hover:text-yellow-700 transition"
+                    onClick={() => navigate(`/dashboard/facilities/update/${product.id}`)}
+                  >
+                    <PencilLine size={22}/>
+                  </button>
+                  <button 
+                    className="text-red-500 hover:text-red-700 transition"
+                    onClick={() => handleDelete(product.id)}
+                  >
+                    <Trash size={22}/>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 
