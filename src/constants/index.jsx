@@ -1,4 +1,4 @@
-import { ChartColumn, Home, NotepadText, Package, UserCheck, UserPlus, Users } from "lucide-react";
+import { ChartColumn, Home, NotepadText, Package, UserCheck, Users } from "lucide-react";
 
 import ProfileImage from "../assets/profile-image.jpg";
 import ProductImage from "../assets/product-image.jpg";
@@ -163,20 +163,10 @@ export const navbarLinks = [
         path: "/dashboard/account",
       },
       {
-        label: "Danh sách quyền",
-        icon: UserPlus,
-        path: "/dashboard/role",
-      },
-      {
         label: "Danh sách vé phạt",
         icon: UserCheck,
         path: "/dashboard/banned",
       },
-    ],
-  },
-  {
-    title: "Quản lý blog",
-    children: [
       {
         label: "Danh sách blog",
         icon: Package,
@@ -381,4 +371,17 @@ export const topProducts = [
     status: "Out of Stock",
     rating: 4.5,
   },
+];
+export const users = [
+  { id: 1, fullName: "Nguyễn Văn A", email: "a@gmail.com", status: "Active" },
+  { id: 2, fullName: "Trần Thị B", email: "b@gmail.com", status: "Inactive" },
+];
+export const products = [
+  { id: 1, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
+  { id: 2, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+  { id: 3, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
+  { id: 4, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+  { id: 5, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
+  { id: 6, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+  
 ];

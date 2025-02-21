@@ -25,6 +25,7 @@ const authSlice = createSlice({
   name: 'Authentication',
   initialState,
   reducers: {
+
     logout: (state) => {
       state.isLoggedIn = false;
       state.token = '';
@@ -48,6 +49,10 @@ const authSlice = createSlice({
         state.photoURL = action.payload.photoURL;
       })
       .addCase(loginWithGoogle.rejected, (state, action) => {
+        if (action.payload === "Firebase: Error (auth/popup-closed-by-user).") {
+          state.isLoading = false;
+          return; 
+        }
         state.isLoading = false;
         state.error = action.payload;
       });
