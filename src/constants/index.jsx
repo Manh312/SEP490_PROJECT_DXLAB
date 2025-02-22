@@ -4,6 +4,9 @@ import ProfileImage from "../assets/profile-image.jpg";
 import ProductImage from "../assets/product-image.jpg";
 import { FaHome, FaMoneyBillWave, FaShieldAlt, FaWifi } from "react-icons/fa";
 
+import images1 from '../assets/dxlab_images1.jpg';
+import images3 from '../assets/dxlab_images3.png';
+
 
 export const navItems = [
   { label: "Trang chủ", href: "/" },
@@ -23,6 +26,34 @@ export const services = [
     click: "Khám phá ngay"
   }
 ];
+
+export const slots = [
+  { id: 1, name: "Slot 1" },
+  { id: 2, name: "Slot 2" },
+  { id: 3, name: "Slot 3" },
+  { id: 4, name: "Slot 4" }
+];
+
+
+export const areas = [
+  {
+    "id": 1,
+    "type": "personal",  // Thêm type cho khu vực cá nhân
+    "name": "Khu vực cá nhân",
+    "description": "Không gian yên tĩnh, lý tưởng cho cá nhân làm việc tập trung.",
+    "image": images1,
+    "features": ["Chỗ ngồi làm việc riêng", "Internet tốc độ cao", "Không gian yên tĩnh"]
+  },
+  {
+    "id": 2,
+    "type": "group",  // Thêm type cho khu vực nhóm
+    "name": "Khu vực nhóm",
+    "description": "Không gian linh hoạt, phù hợp cho nhóm làm việc chung.",
+    "image": images3,
+    "features": ["Bàn làm việc nhóm", "Khu vực riêng", "Không gian yên tĩnh"]
+  }
+];
+
 
 export const features = [
   {

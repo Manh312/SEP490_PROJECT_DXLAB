@@ -1,6 +1,8 @@
 import { combineReducers } from "redux";
 import storage from "redux-persist/lib/storage";
 import authReducer from "./slices/Authentication";
+import bookingReducer from "./slices/Booking";
+
 
 
 // slices
@@ -14,6 +16,7 @@ const rootPersistConfig = {
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  booking: bookingReducer
 });
 
 export { rootPersistConfig, rootReducer }; 

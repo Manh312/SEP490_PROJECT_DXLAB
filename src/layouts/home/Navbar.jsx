@@ -33,7 +33,7 @@ const Navbar = () => {
     if (window.ethereum) {
       try {
         await window.ethereum.request({ method: "eth_requestAccounts" });
-        const provider = new ethers.BrowserProvider(window.ethereum)
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
         console.log("Connected address:", address); 
