@@ -32,6 +32,9 @@ import DeleteBlog from './routes/blog-manage/DeleteBlog';
 import NotFound from './layouts/home/NotFound';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
+import ViewAreas from './routes/students/ViewAreas';
+import Payment from './routes/students/Payment';
+import ViewBookedSeats from './routes/students/ViewBookedSeats';
 
 
 export function HomeContent() {
@@ -59,8 +62,14 @@ const router = createBrowserRouter([
       { path: "profile", element: <ViewProfile/> },
       { path: "change-profile", element: <ChangeProfile/> },
 
+      { path: "areas", element: <ViewAreas/> },
+      { path: "payment", element: <Payment/> },
+
+
       { path: "dashboard", element: <DashboardPage /> }, // Trang dashboard chính
       { path: "dashboard/area", element: <AreaList/> },
+      { path: "booked-seats", element: <ViewBookedSeats/> },
+
 
       //Facilities Manage
       { path: "/dashboard/facilities", element: <FacilitiesList/> },
