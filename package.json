@@ -15,6 +15,7 @@
     "@tailwindcss/vite": "^4.0.5",
     "@uidotdev/usehooks": "^2.4.1",
     "clsx": "^2.1.1",
+    "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
     "ethers": "^5.7.2",
     "firebase": "^11.3.1",

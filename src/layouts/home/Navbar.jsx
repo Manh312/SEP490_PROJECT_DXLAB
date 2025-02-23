@@ -36,7 +36,7 @@ const Navbar = () => {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
-        console.log("Connected address:", address); 
+        console.log("Connected address:", address);
         setWalletAddress(address);
       } catch (error) {
         console.error("Connect wallet error:", error);
@@ -71,6 +71,11 @@ const Navbar = () => {
               <Link to={item.href}>{item.label}</Link>
             </li>
           ))}
+          {isLoggedIn && (
+            <li>
+              <Link to="/areas">Dịch vụ</Link>
+            </li>
+          )}
         </ul>
 
         {/* Desktop Buttons */}
@@ -102,7 +107,7 @@ const Navbar = () => {
                   <img
                     src={user?.photoURL}
                     alt="Avatar"
-                    className="w-10 h-10 mt-1.5 rounded-full border border-gray-500 cursor-pointer"
+                    className="w-10 h-10 mt-1.5 rounded-full cursor-pointer"
                   />
                 </button>
                 {/* Dropdown Menu */}
@@ -167,6 +172,11 @@ const Navbar = () => {
                   <Link to={item.href} onClick={handleMobileDrawer}>{item.label}</Link>
                 </li>
               ))}
+              {isLoggedIn && (
+                <li>
+                  <Link to="/areas">Dịch vụ</Link>
+                </li>
+              )}
             </ul>
             <div className="flex flex-col items-center space-y-4">
               {isLoggedIn ? (

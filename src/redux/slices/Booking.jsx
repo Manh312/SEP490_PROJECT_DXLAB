@@ -1,4 +1,3 @@
-// Trong redux/bookingSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
@@ -6,9 +5,7 @@ const initialState = {
   selectedArea: null,
   selectedTime: "",
   peopleCount: 1,
-  selectedSlot: 1, 
-  monthRange: { start: '', end: '' }, 
-
+  selectedSlots: [],
 };
 
 const bookingSlice = createSlice({
@@ -24,7 +21,7 @@ const bookingSlice = createSlice({
       state.selectedArea = null;
       state.selectedTime = "";
       state.peopleCount = 1;
-      state.selectedSlot = 1;
+      state.selectedSlots = [];
     },
     setSelectedTime: (state, action) => {
       state.selectedTime = action.payload;
@@ -32,26 +29,27 @@ const bookingSlice = createSlice({
     setPeopleCount: (state, action) => {
       state.peopleCount = action.payload;
     },
-    setSelectedSlot: (state, action) => {
-      state.selectedSlot = action.payload; 
+    setSelectedSlots: (state, action) => {
+      state.selectedSlots = Array.isArray(action.payload) ? action.payload : [];
     },
     setMonthRange: (state, action) => {
-      state.monthRange = action.payload; 
+      state.monthRange = action.payload;
     },
     confirmBooking: (state, action) => {
-      const { startMonth, endMonth } = action.payload;
-      state.monthRange = { start: startMonth, end: endMonth };
+      const selectedTime = action.payload;
+      state.selectedTime = selectedTime;
       state.isModalOpen = false;
     },
+
   },
 });
 
-export const { 
-  openModal, 
-  closeModal, 
-  setSelectedTime, 
-  setPeopleCount, 
-  setSelectedSlot, 
+export const {
+  openModal,
+  closeModal,
+  setSelectedTime,
+  setPeopleCount,
+  setSelectedSlots,
   setMonthRange,
   confirmBooking
 } = bookingSlice.actions;

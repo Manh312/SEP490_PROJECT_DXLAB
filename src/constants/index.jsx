@@ -5,6 +5,7 @@ import ProductImage from "../assets/product-image.jpg";
 import { FaHome, FaMoneyBillWave, FaShieldAlt, FaWifi } from "react-icons/fa";
 
 import images1 from '../assets/dxlab_images1.jpg';
+import images2 from '../assets/dxlab_images2.jpg';
 import images3 from '../assets/dxlab_images3.png';
 
 
@@ -12,6 +13,12 @@ export const navItems = [
   { label: "Trang chủ", href: "/" },
   { label: "DXLAB Blog", href: "/blog" },
   { label: "Về DXLAB", href: "/about" },
+];
+
+export const banners = [
+  { "image": images1 },
+  { "image": images2 },
+  { "image": images3 },
 ];
 
 export const services = [
@@ -28,11 +35,12 @@ export const services = [
 ];
 
 export const slots = [
-  { id: 1, name: "Slot 1" },
-  { id: 2, name: "Slot 2" },
-  { id: 3, name: "Slot 3" },
-  { id: 4, name: "Slot 4" }
+  { id: 1, name: "Slot 1", time: "08:00 - 10:00", isAvailable: true, remainingSeats: 4 },
+  { id: 2, name: "Slot 2", time: "10:00 - 12:00", isAvailable: false, remainingSeats: 0 },
+  { id: 3, name: "Slot 3", time: "13:00 - 15:00", isAvailable: true, remainingSeats: 6 },
+  { id: 4, name: "Slot 4", time: "15:00 - 17:00", isAvailable: true, remainingSeats: 2 }
 ];
+
 
 
 export const areas = [
