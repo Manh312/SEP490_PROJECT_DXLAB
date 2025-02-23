@@ -1,59 +1,59 @@
 import { forwardRef } from "react";
 import { navbarLinks } from "../../constants";
+
 import { cn } from "../../utils/cn";
 import PropTypes from "prop-types";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useTheme } from "../../hooks/use-theme";
 
-export const Sidebar = forwardRef(({ collapsed, setCollapsed }, ref) => {
-  const location = useLocation();
-  const theme = useTheme();
-
+export const Sidebar = forwardRef(({ collapsed }, ref) => {
+  const { theme } = useTheme(); 
   return (
-    <div
-      ref={ref}
-      className={cn(
-        "fixed inset-0 z-50 transition-transform duration-150 bg-black/50", // Giảm duration để sidebar mở nhanh hơn
-        collapsed ? "-translate-x-full" : "translate-x-0"
+    <aside 
+      ref={ref} 
+      className={cn( 
+        collapsed ? "md:w-[70px] md:items-center" : "md:w-[240px]", 
+        collapsed ? "max-md:-left-full" : "max-md:left-0", 
+        theme === "light" ? "bg-white text-black" : "bg-dark text-white",  
+        "transition-colors duration-300"
       )}
-      onClick={() => setCollapsed(true)} // Nhấn ra ngoài để đóng sidebar
     >
-      <aside
-        className={cn(
-          "w-[240px] h-full bg-gray-400 shadow-lg p-3 transition-transform duration-150", // Giảm duration để sidebar mở nhanh hơn
-          collapsed ? "-translate-x-full" : "translate-x-0"
-        )}
-        onClick={(e) => e.stopPropagation()} // Ngăn chặn đóng khi click vào sidebar
-      >
-        
-        <div className="flex w-full flex-col gap-y-10 overflow-y-auto p-3">
-          {navbarLinks.map((navbarLink) => (
-            <nav key={navbarLink.title} className="sidebar-group">
-              <p className="sidebar-group-title">{navbarLink.title}</p>
+      <div className="flex w-full flex-col gap-y-10 overflow-y-auto overflow-x-hidden p-3 [scrollbar-width:_thin]">
+        {navbarLinks.map((navbarLink) => (
+          <nav key={navbarLink.title} className={cn("sidebar-group", collapsed && "md:items-center")}>
+            <p 
+              className={cn(
+                "sidebar-group-title", 
+                collapsed && "md:w-[45px]",
+                theme === "light" ? "text-black" : "text-white"
+                )}
+            >
+              {navbarLink.title}
               {navbarLink.children.map((link) => (
-                <NavLink
-                  key={link.label}
-                  to={link.path}
-                  className={() =>
-                    cn(
-                      "sidebar-item flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                      theme === "dark" ? "text-white" : "text-black",
-                      location.pathname === link.path
-                        ? "bg-gray-500 text-white"
-                        : "hover:bg-gray-300"
-                    )
-                  }
-                  onClick={() => setCollapsed(true)}
+                <NavLink 
+                  key={link.label} 
+                  to={link.path} 
+                  className={cn(
+                    "sidebar-item", 
+                    collapsed && "md:w-[45px]",
+                    theme === "light" ? "text-black" : "text-white"
+                  )}
                 >
-                  <link.icon size={22} />
-                  <p className="text-sm font-medium">{link.label}</p>
+                  <link.icon 
+                    size={22} 
+                    className={cn(
+                      "flex-shrink-0",
+                      theme === "light" ? "text-black" : "text-white"
+                    )}
+                  />
+                  {!collapsed && <p className="whitespace-nowrap">{link.label}</p>}
                 </NavLink>
               ))}
-            </nav>
-          ))}
-        </div>
-      </aside>
-    </div>
+            </p>
+          </nav>
+        ))}
+      </div>
+    </aside>
   );
 });
 
@@ -61,5 +61,4 @@ Sidebar.displayName = "Sidebar";
 
 Sidebar.propTypes = {
   collapsed: PropTypes.bool,
-  setCollapsed: PropTypes.func,
 };
