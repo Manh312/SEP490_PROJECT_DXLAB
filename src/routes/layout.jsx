@@ -14,6 +14,9 @@ const Layout = () => {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith("/dashboard");
 
+  const isDesktopDevice = useMediaQuery("(min-width: 768px)");
+  const [collapsed, setCollapsed] = useState(!isDesktopDevice);
+  const sidebarRef = useRef(null);
 
   useEffect(() => {
     setCollapsed(!isDesktopDevice);
