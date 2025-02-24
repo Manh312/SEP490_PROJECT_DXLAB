@@ -35,13 +35,18 @@ import { ToastContainer } from 'react-toastify';
 import ViewAreas from './routes/students/ViewAreas';
 import Payment from './routes/students/Payment';
 import ViewBookedSeats from './routes/students/ViewBookedSeats';
+<<<<<<< HEAD
 import RoomList from './routes/room/RoomList';
 import SlotList from './routes/slot/SlotList';
+=======
+import Banner from './layouts/home/Banner';
+>>>>>>> devevlop
 
 
 export function HomeContent() {
   return (
     <>
+      <Banner/>
       <HeroSection />
       <Services/>
       <FeatureSection />
@@ -65,7 +70,8 @@ const router = createBrowserRouter([
       { path: "change-profile", element: <ChangeProfile/> },
 
       { path: "areas", element: <ViewAreas/> },
-      { path: "payment", element: <Payment/> },
+      { path: "confirm-payment", element: <Payment/> },
+
 
 
       { path: "dashboard", element: <DashboardPage /> }, // Trang dashboard chính

@@ -6,6 +6,7 @@ const initialState = {
   isLoggedIn: false,
   token: '',
   email: '',
+  userId: '',
   name: '',
   photoURL: '',
   error: null,
@@ -28,6 +29,7 @@ const authSlice = createSlice({
 
     logout: (state) => {
       state.isLoggedIn = false;
+      state.isLoading = false;
       state.token = '';
       state.email = '';
       state.name = '';
@@ -45,6 +47,7 @@ const authSlice = createSlice({
         state.isLoggedIn = true;
         state.token = action.payload.token;
         state.email = action.payload.email;
+        state.userId = action.payload.id;
         state.name = action.payload.name;
         state.photoURL = action.payload.photoURL;
       })

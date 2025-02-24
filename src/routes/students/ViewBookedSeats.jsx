@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { ArmchairIcon } from 'lucide-react';
 import table_images from '../../assets/table.png';
 
-const individualSeats = [
-  ['A1', 'A2', 'A3', 'A4', 'A5'],
-  ['B1', 'B2', 'B3', 'B4', 'B5'],
-];
+const individualSeats = {
+  table1: ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'], // Bàn 6 ghế
+  table2: ['B1', 'B2', 'B3', 'B4']
+};
 
 const groupSeats = {
   "4-seats": [['G1', 'G2', 'G3', 'G4']],
@@ -29,31 +29,73 @@ const ViewBookedSeats = () => {
 
   return (
     <div className="p-6 min-h-screen flex flex-col items-center">
-      <h1 className="text-3xl font-bold text-center mb-6">Chọn Chỗ Ngồi</h1>
+      <h1 className="text-3xl font-bold text-center mb-6">Bảng hiển thị vị trí ghế ngồi tại DXLAB</h1>
 
       {/* Sử dụng flexbox với 2 hàng */}
-      <div className="w-full max-w-5xl space-y-6">
+      <div className="w-full max-w-5xl space-y-6 border rounded-lg p-6">
         {/* Hàng đầu: Cá nhân */}
-        <div className="bg-gray-200 p-4 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-center mb-4">Khu vực Cá Nhân</h2>
-          <div className="border-4 border-gray-600 p-4 rounded-md flex flex-wrap justify-center gap-2">
-            {individualSeats.flat().map((seat, index) => (
+        <h2 className="text-2xl font-bold text-center mb-4">Chỗ ngồi cá nhân</h2>
+        <div className="flex flex-wrap justify-center gap-12">
+        {/* Bàn 6 ghế */}
+        <div className="relative flex justify-center items-center border-4 border-gray-600 p-6 rounded-lg shadow-md" style={{ width: '300px', height: '280px' }}>
+          <img 
+            src={table_images} 
+            alt="Table"
+            className="absolute w-32 h-32 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" 
+          />
+          {individualSeats.table1.map((seat, index) => {
+            const angle = (360 / individualSeats.table1.length) * index;
+            const radius = 120;
+            const x = Math.cos(angle * (Math.PI / 180)) * radius;
+            const y = Math.sin(angle * (Math.PI / 180)) * radius;
+            return (
               <span
-                key={index}
-                className={`inline-flex w-10 h-10 items-center justify-center m-1 p-2 rounded cursor-pointer 
+                key={seat}
+                onClick={() => toggleSeat(seat)}
+                className={`absolute w-10 h-10 flex items-center justify-center p-1 rounded cursor-pointer 
                   ${bookedSeats.includes(seat) ? 'bg-red-500 cursor-not-allowed text-white'
                     : selectedSeats.includes(seat) ? 'bg-green-500 text-white'
                       : 'bg-gray-500 hover:bg-gray-400 text-white'}`}
-                onClick={() => toggleSeat(seat)}
+                style={{ transform: `translate(${x}px, ${y}px)` }}
               >
                 <ArmchairIcon className="w-5 h-5" />
               </span>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
+        {/* Bàn 4 ghế */}
+        <div className="relative flex justify-center items-center border-4 border-gray-600 p-6 rounded-lg shadow-md" style={{ width: '300px', height: '290px' }}>
+          <img 
+            src={table_images} 
+            alt="Table"
+            className="absolute w-28 h-28 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" 
+          />
+          {individualSeats.table2.map((seat, index) => {
+            const angle = (360 / individualSeats.table2.length) * index;
+            const radius = 100;
+            const x = Math.cos(angle * (Math.PI / 180)) * radius;
+            const y = Math.sin(angle * (Math.PI / 180)) * radius;
+            return (
+              <span
+                key={seat}
+                onClick={() => toggleSeat(seat)}
+                className={`absolute w-10 h-10 flex items-center justify-center p-1 rounded cursor-pointer 
+                  ${bookedSeats.includes(seat) ? 'bg-red-500 cursor-not-allowed text-white'
+                    : selectedSeats.includes(seat) ? 'bg-green-500 text-white'
+                      : 'bg-gray-500 hover:bg-gray-400 text-white'}`}
+                style={{ transform: `translate(${x}px, ${y}px)` }}
+              >
+                <ArmchairIcon className="w-5 h-5" />
+              </span>
+            );
+          })}
+        </div>
+      </div>
+
+
         {/* Hàng thứ 2: Nhóm */}
-        <div className="bg-gray-200 p-4 rounded-lg shadow-md">
+        <div className=" p-4 rounded-lg shadow-md">
           <h2 className="text-2xl font-bold text-center mb-4">Khu vực Nhóm</h2>
           <div className="flex flex-wrap justify-center gap-4">
             {Object.entries(groupSeats).map(([groupType, seats]) => (
@@ -99,14 +141,6 @@ const ViewBookedSeats = () => {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Ghế đã chọn */}
-      <div className="mt-6">
-        <h2 className="text-xl font-semibold">Ghế đã chọn:</h2>
-        <div className="mt-2 text-lg">
-          {selectedSeats.length > 0 ? selectedSeats.join(', ') : 'Chưa chọn'}
         </div>
       </div>
     </div>
