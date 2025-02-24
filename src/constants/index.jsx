@@ -1,4 +1,4 @@
-import { ChartColumn, Home, NotepadText, Package, UserCheck, Users } from "lucide-react";
+import { ChartColumn, Home, NotepadText, Package, UserCheck, Users , Grid} from "lucide-react";
 
 import ProfileImage from "../assets/profile-image.jpg";
 import ProductImage from "../assets/product-image.jpg";
@@ -174,14 +174,24 @@ export const navbarLinks = [
         path: "/dashboard",
       },
       {
-        label: "Danh sách khu vực",
+        label: "Quản lý khu vực",
         icon: ChartColumn,
         path: "/dashboard/area",
       },
       {
-        label: "Danh sách thiết bị",
+        label: "Quản lý thiết bị",
         icon: NotepadText,
         path: "/dashboard/facilities",
+      },
+      {
+        label: "Quản lý phòng ",
+        icon: Home,
+        path: "/dashboard/room",
+      },
+      {
+        label: "Quản lý slot",
+        icon: Grid,
+        path: "/dashboard/slot",
       },
     ]
   },
@@ -189,17 +199,13 @@ export const navbarLinks = [
     title: "Quản lý",
     children: [
       {
-        label: "Danh sách tài khoản",
+        label: "Quản lý tài khoản",
         icon: Users,
         path: "/dashboard/account",
       },
+      
       {
-        label: "Danh sách vé phạt",
-        icon: UserCheck,
-        path: "/dashboard/banned",
-      },
-      {
-        label: "Danh sách blog",
+        label: "Quản lý blog",
         icon: Package,
         path: "/dashboard/blog",
       },
