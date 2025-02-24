@@ -36,6 +36,8 @@ import ViewAreas from './routes/students/ViewAreas';
 import Payment from './routes/students/Payment';
 import ViewBookedSeats from './routes/students/ViewBookedSeats';
 import Banner from './layouts/home/Banner';
+import ViewBookingHistory from './routes/students/ViewBookHistoried';
+import BookHistoriedDetail from './routes/students/BookHistoriedDetail';
 
 
 export function HomeContent() {
@@ -66,12 +68,13 @@ const router = createBrowserRouter([
 
       { path: "areas", element: <ViewAreas/> },
       { path: "confirm-payment", element: <Payment/> },
-
+      { path: "booked-seats", element: <ViewBookedSeats/> },
+      { path: "booked-history", element: <ViewBookingHistory/> },
+      { path: "booked-history/:id", element: <BookHistoriedDetail/> },
 
 
       { path: "dashboard", element: <DashboardPage /> }, // Trang dashboard chính
       { path: "dashboard/area", element: <AreaList/> },
-      { path: "booked-seats", element: <ViewBookedSeats/> },
 
 
       //Facilities Manage

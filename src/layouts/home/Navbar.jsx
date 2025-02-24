@@ -1,4 +1,4 @@
-import { LogOut, Menu, Moon, Sun, User, X } from "lucide-react";
+import { Banknote, History, LogOut, LogOutIcon, Menu, Moon, Sun, User, Wallet, X } from "lucide-react";
 import { useState } from "react";
 import logo from "../../assets/logo_images.png";
 import { navItems } from "../../constants";
@@ -28,7 +28,7 @@ const Navbar = () => {
     setMobileDrawerOpen(!mobileDrawerOpen);
   };
 
-  // Hàm kết nối ví dùng ethers.js
+  // Kết nối ví
   const connectWallet = async () => {
     if (window.ethereum) {
       try {
@@ -46,12 +46,10 @@ const Navbar = () => {
     }
   };
 
-  // Hàm disconnect ví chỉ cần reset state walletAddress
   const disconnectWallet = () => {
     setWalletAddress(null);
   };
 
-  // Hàm rút gọn địa chỉ ví, hiển thị 6 ký tự đầu và 4 ký tự cuối
   const shortenAddress = (address) => {
     return address ? `${address.slice(0, 6)}...${address.slice(-4)}` : "";
   };
@@ -82,26 +80,6 @@ const Navbar = () => {
         <div className="hidden lg:flex justify-center space-x-6 items-center">
           {isLoggedIn ? (
             <>
-              {walletAddress ? (
-                // Nếu ví đã được kết nối, hiển thị địa chỉ và nút Disconnect
-                <div className={`flex items-center gap-3 px-4 py-2 rounded-lg ${theme === "dark" ? "bg-neutral-800" : "bg-slate-200"}`}>
-                  <span className="text-sm">{shortenAddress(walletAddress)}</span>
-                  <button
-                    onClick={disconnectWallet}
-                    className="bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 transition"
-                  >
-                    Disconnect
-                  </button>
-                </div>
-              ) : (
-                // Nếu chưa kết nối ví, hiển thị nút Connect Wallet
-                <button
-                  onClick={connectWallet}
-                  className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition"
-                >
-                  Connect Wallet
-                </button>
-              )}
               <div className="relative">
                 <button onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                   <img
@@ -110,23 +88,102 @@ const Navbar = () => {
                     className="w-10 h-10 mt-1.5 rounded-full cursor-pointer"
                   />
                 </button>
-                {/* Dropdown Menu */}
                 {isDropdownOpen && (
-                  <div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg ${theme === "dark" ? "bg-neutral-900" : "bg-slate-100"}`}>
+                  <div
+                    className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg ${theme === "dark" ? "bg-neutral-900" : "bg-slate-100"
+                      }`}
+                  >
                     <ul className="py-2">
-                      <li className={`px-4 py-2 flex items-center gap-2 cursor-pointer ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-slate-300"} w-full`}>
-                        <Link to="/profile" className="flex items-center gap-2 w-full">
+                      <li
+                        className={`px-4 py-2 flex items-center gap-2 cursor-pointer ${theme === "dark"
+                          ? "hover:bg-gray-700"
+                          : "hover:bg-slate-300"
+                          } w-full`}
+                      >
+                        <Link
+                          to="/profile"
+                          className="flex items-center gap-2 w-full"
+                        >
                           <User size={16} /> Hồ sơ
                         </Link>
                       </li>
                       <li
-                        className={`px-4 py-2 ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-slate-300"} flex items-center gap-2 cursor-pointer w-full`}
+                        className={`px-4 py-2 ${theme === "dark"
+                          ? "hover:bg-gray-700"
+                          : "hover:bg-slate-300"
+                          } flex items-center gap-2 cursor-pointer w-full border-t border-t-gray-400`}
+                      >
+                        <Link
+                          to={"/booked-history"}
+                          className="flex items-center gap-2 w-full"
+                        >
+                          <History size={16} /> Lịch sử
+                        </Link>
+                      </li>
+                      {walletAddress ? (
+                        <>
+                          <li className=" border-t border-t-gray-400">
+                            <Link
+                              onClick={() => {
+                                disconnectWallet();
+                                setMobileDrawerOpen(false);
+                              }}
+                              className={`block px-4 py-3 ${theme === "dark"
+                                ? "hover:bg-gray-700"
+                                : "hover:bg-slate-300"
+                                }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Banknote size={18} />  Ví: {shortenAddress(walletAddress)}
+                              </div>
+                            </Link>
+                          </li>
+                          <li className="border-t border-t-gray-400">
+                            <Link
+                              onClick={() => {
+                                disconnectWallet();
+                                setMobileDrawerOpen(false);
+                              }}
+                              className={`block px-4 py-3 ${theme === "dark"
+                                ? "hover:bg-gray-700"
+                                : "hover:bg-slate-300"
+                                }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Wallet size={18} /> Ngắt kết nối ví
+                              </div>
+                            </Link>
+                          </li>
+                        </>
+                      ) : (
+                        <li className=" border-t border-t-gray-400">
+                          <Link
+                            onClick={() => {
+                              connectWallet();
+                              setMobileDrawerOpen(false);
+                            }}
+                            className="block px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Wallet size={18} />Kết nối ví
+                            </div>
+                          </Link>
+                        </li>
+                      )}
+                      <li
+                        className={`px-4 py-2 ${theme === "dark"
+                          ? "hover:bg-gray-700"
+                          : "hover:bg-slate-300"
+                          } flex items-center gap-2 cursor-pointer w-full border-t border-t-gray-400`}
                         onClick={() => {
                           dispatch(logout());
                           setIsDropdownOpen(false);
                         }}
                       >
-                        <Link onClick={() => dispatch(logout())} className="flex items-center gap-2 w-full">
+                        <Link
+                          onClick={() => dispatch(logout())}
+                          className="flex items-center gap-2 w-full"
+                        >
                           <LogOut size={16} />
                           Đăng xuất
                         </Link>
@@ -163,99 +220,200 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Navigation Drawer */}
-      {mobileDrawerOpen && (
-        <div className={`fixed right-0 z-20 w-full p-12 flex flex-col justify-center items-center lg:hidden ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} transition-colors`}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-md text-center">
-            <ul className={`${theme === "dark" ? "text-white" : "text-black"} text-lg space-y-4`}>
-              {navItems.map((item, index) => (
-                <li key={index}>
-                  <Link to={item.href} onClick={handleMobileDrawer}>{item.label}</Link>
-                </li>
-              ))}
-              {isLoggedIn && (
-                <li>
-                  <Link to="/areas">Dịch vụ</Link>
-                </li>
-              )}
-            </ul>
-            <div className="flex flex-col items-center space-y-4">
-              {isLoggedIn ? (
-                <>
-                  <div className="flex flex-row gap-4">
-                    <Link to={"/profile"}>
-                      {user && user.photoURL && (
-                        <img src={user.photoURL} alt="Avatar" className="w-12 h-12 rounded-full" />
-                      )}
-                    </Link>
-                    <button
-                      className={`p-2 border rounded-md ${theme === "dark" ? "text-white" : "text-black"}`}
-                      onClick={() => {
-                        setTheme(theme === "light" ? "dark" : "light");
-                        handleMobileDrawer();
-                      }}
-                    >
-                      {theme === "dark" ? <Moon size={24} /> : <Sun size={24} />}
-                    </button>
-                  </div>
-                  {walletAddress ? (
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm">
-                        {shortenAddress(walletAddress)}
-                      </span>
-                      <button
+      <div
+        className={`fixed top-0 left-0 h-screen z-20 
+          ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} 
+          transition-transform duration-300 
+          w-4/5 max-w-sm
+          flex flex-col
+          ${mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
+      >
+        {/* Header của menu (Avatar, user info) */}
+        <div className="flex items-center p-4 border-b">
+          {isLoggedIn && user?.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt="Avatar"
+              className="w-12 h-12 rounded-full mr-3"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-gray-300 mr-3" />
+          )}
+          <div className="flex flex-col">
+            {isLoggedIn ? (
+              <>
+                <span className="font-semibold">
+                  {user?.displayName || "User"}
+                </span>
+                <span className="text-sm text-gray-500">{user?.email}</span>
+              </>
+            ) : (
+              <span className="font-semibold">Khách</span>
+            )}
+          </div>
+          {/* <button
+            onClick={handleMobileDrawer}
+            className="ml-auto p-2 border rounded-md"
+          >
+            <X />
+          </button> */}
+        </div>
+
+        {/* Danh sách item menu */}
+        <div className="flex-1 overflow-y-auto">
+          <ul className="flex flex-col py-2">
+            {navItems.map((item, index) => (
+              <li key={index}>
+                <Link
+                  to={item.href}
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="block px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800"
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+
+            {/* Nếu đã đăng nhập, thêm item "Dịch vụ" */}
+            {isLoggedIn && (
+              <li>
+                <Link
+                  to="/areas"
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="block px-4 py-3 hover:bg-gray-200"
+                >
+                  Dịch vụ
+                </Link>
+              </li>
+            )}
+
+            {/* Kết nối ví */}
+            {isLoggedIn && (
+              <>
+                {walletAddress ? (
+                  <>
+                    <li className=" border-t">
+                      <Link
                         onClick={() => {
                           disconnectWallet();
-                          handleMobileDrawer();
+                          setMobileDrawerOpen(false);
                         }}
-                        className="bg-red-500 text-white py-2 px-4 rounded-md"
+                        className="block px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800"
                       >
-                        Disconnect
-                      </button>
-                    </div>
-                  ) : (
-                    <button
+                        <div className="flex items-center gap-2">
+                          <Banknote size={18} />  Ví: {shortenAddress(walletAddress)}
+                        </div>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        onClick={() => {
+                          disconnectWallet();
+                          setMobileDrawerOpen(false);
+                        }}
+                        className="block px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Wallet size={18} /> Ngắt kết nối ví
+                        </div>
+                      </Link>
+                    </li>
+                  </>
+                ) : (
+                  <li className=" border-t">
+                    <Link
                       onClick={() => {
                         connectWallet();
-                        handleMobileDrawer();
+                        setMobileDrawerOpen(false);
                       }}
-                      className="bg-green-500 text-white py-2 px-4 rounded-md"
+                      className="block px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800"
                     >
-                      Connect Wallet
-                    </button>
-                  )}
+                      <div className="flex items-center gap-2">
+                        <Wallet size={18} />Kết nối ví
+                      </div>
+                    </Link>
+                  </li>
+                )}
+              </>
+            )}
+
+            {/* Lịch sử, Hồ sơ (nếu cần) */}
+            {isLoggedIn && (
+              <>
+                <li>
                   <Link
-                    onClick={() => {
-                      dispatch(logout());
-                      handleMobileDrawer();
-                    }}
-                    className="bg-orange-500 py-2 px-4 rounded-md"
+                    to="/profile"
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className="block px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800"
                   >
-                    Đăng xuất
+                    <div className="flex items-center gap-2">
+                      <User size={16} />
+                      Hồ sơ
+                    </div>
                   </Link>
-                </>
+                </li>
+                <li>
+                  <Link
+                    to="/booked-history"
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className="block px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800"
+                  >
+                    <div className="flex items-center gap-2">
+                      <History size={16} />
+                      Lịch sử
+                    </div>
+                  </Link>
+                </li>
+              </>
+            )}
+            {/* Đăng xuất / Đăng nhập */}
+            <li className="border-t">
+              {isLoggedIn ? (
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    setMobileDrawerOpen(false);
+                  }}
+                  className="block w-full text-left px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800"
+                >
+                  <div className="flex items-center gap-2">
+                    <LogOutIcon size={16} />Đăng xuất
+                  </div>
+                </button>
               ) : (
                 !isLoginPage && (
-                  <>
-                    <Link
-                      to="/login"
-                      className="bg-orange-600 text-white py-2 px-4 rounded-md w-full"
-                      onClick={handleMobileDrawer}
-                    >
-                      Đăng nhập
-                    </Link>
-                    <button
-                      className="p-2 border rounded-md transition-colors"
-                      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                    >
-                      {theme === "dark" ? <Moon size={20} /> : <Sun size={20} />}
-                    </button>
-                  </>
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className="block px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800"
+                  >
+                    Đăng nhập
+                  </Link>
                 )
               )}
-            </div>
-          </div>
+            </li>
+            {/* Chuyển theme */}
+            <li className=" flex items-center gap-3 px-4 py-3">
+              <span>Màu nền:</span>
+              <button
+                onClick={() => {
+                  setTheme(theme === "light" ? "dark" : "light");
+                }}
+                className="p-2 border rounded-md transition-colors"
+              >
+                {theme === "dark" ? <Moon size={20} /> : <Sun size={20} />}
+              </button>
+            </li>
+          </ul>
         </div>
-      )}
+
+        {/* Footer của menu */}
+        <div className="border-t p-4 text-xs text-gray-500 dark:text-gray-400 dark:border-gray-700">
+          <p>© 2025 DXLAB</p>
+          <p>All rights reserved.</p>
+        </div>
+      </div>
     </nav>
   );
 };

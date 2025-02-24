@@ -103,3 +103,16 @@ body {
 .recharts-tooltip-item {
   @apply text-base font-medium !text-blue-500 dark:!text-blue-600
 }
+
+/* Tạo lớp .mobile-only để chỉ hiển thị dưới 500px */
+@media (min-width: 501px) {
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+@media (max-width: 500px) {
+  .desktop-only {
+    display: none !important;
+  }
+}

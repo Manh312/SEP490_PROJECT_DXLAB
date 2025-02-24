@@ -34,6 +34,58 @@ export const services = [
   }
 ];
 
+export const mockTransactions = [
+  {
+    id: "TX12345",
+    room: "A101",
+    date: "2025-02-25T10:00:00",
+    amount: 500000,
+    status: "Thành công"
+  },
+  {
+    id: "TX67890",
+    room: "B202",
+    date: "2025-02-20T15:30:00",
+    amount: 300000,
+    status: "Thất bại"
+  },
+  {
+    id: "TX11111",
+    room: "A101",
+    date: "2025-02-18T09:00:00",
+    amount: 400000,
+    status: "Thành công"
+  },
+  {
+    id: "TX22222",
+    room: "C303",
+    date: "2025-02-15T14:00:00",
+    amount: 200000,
+    status: "Thành công"
+  },
+  {
+    id: "TX33333",
+    room: "B202",
+    date: "2025-02-08T08:00:00",
+    amount: 350000,
+    status: "Thất bại"
+  },
+  {
+    id: "TX62890",
+    room: "B202",
+    date: "2025-02-02T15:30:00",
+    amount: 300000,
+    status: "Thất bại"
+  },
+  {
+    id: "TX69890",
+    room: "B202",
+    date: "2025-03-20T15:30:00",
+    amount: 300000,
+    status: "Thất bại"
+  },
+];
+
 export const slots = [
   { id: 1, name: "Slot 1", time: "08:00 - 10:00", isAvailable: true, remainingSeats: 4 },
   { id: 2, name: "Slot 2", time: "10:00 - 12:00", isAvailable: false, remainingSeats: 0 },

@@ -22,9 +22,11 @@ const ViewProfile = () => {
   if (!user) {
     // Loading state hoặc thông báo chưa đăng nhập
     return (
+      <>
       <div className={`min-h-screen p-6 ${theme === "dark" ? "bg-black text-white" : ""}`}>
         <p className="text-center text-lg font-semibold">Đang tải thông tin...</p>
       </div>
+      </>
     );
   }
 
