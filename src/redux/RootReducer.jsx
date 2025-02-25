@@ -4,7 +4,6 @@ import authReducer from "./slices/Authentication";
 import bookingReducer from "./slices/Booking";
 
 
-
 // slices
 
 const rootPersistConfig = {
@@ -16,7 +15,7 @@ const rootPersistConfig = {
 
 const rootReducer = combineReducers({
   auth: authReducer,
-  booking: bookingReducer
+  booking: bookingReducer,
 });
 
 export { rootPersistConfig, rootReducer }; 

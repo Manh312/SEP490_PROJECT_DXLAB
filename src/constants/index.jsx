@@ -1,12 +1,20 @@
-import { Calendar, ChartColumn, FileText, Home, NotepadText, Package, Settings, UserCheck, Users } from "lucide-react";
+import {
+  ChartColumn,
+  Home,
+  NotepadText,
+  Package,
+  UserCheck,
+  Users,
+  Grid,
+} from "lucide-react";
 
 import ProfileImage from "../assets/profile-image.jpg";
 import ProductImage from "../assets/product-image.jpg";
 import { FaHome, FaMoneyBillWave, FaShieldAlt, FaWifi } from "react-icons/fa";
 
-import images1 from '../assets/dxlab_images1.jpg';
-import images3 from '../assets/dxlab_images3.png';
-
+import images1 from "../assets/dxlab_images1.jpg";
+import images2 from "../assets/dxlab_images2.jpg";
+import images3 from "../assets/dxlab_images3.png";
 
 export const navItems = [
   { label: "Trang chủ", href: "/" },
@@ -14,67 +22,156 @@ export const navItems = [
   { label: "Về DXLAB", href: "/about" },
 ];
 
+export const banners = [
+  { image: images1 },
+  { image: images2 },
+  { image: images3 },
+];
+
 export const services = [
   {
-    text: 'CHỖ NGỒI CÁ NHÂN CỐ ĐỊNH',
+    text: "CHỖ NGỒI CÁ NHÂN CỐ ĐỊNH",
     description: "Dành cho cá nhân",
-    click: "Khám phá ngay"
+    click: "Khám phá ngay",
   },
   {
-    text: 'CHỖ NGỒI THEO NHÓM CỐ ĐỊNH',
+    text: "CHỖ NGỒI THEO NHÓM CỐ ĐỊNH",
     description: "Dành cho đội nhóm",
-    click: "Khám phá ngay"
-  }
+    click: "Khám phá ngay",
+  },
+];
+
+export const mockTransactions = [
+  {
+    id: "TX12345",
+    room: "A101",
+    date: "2025-02-25T10:00:00",
+    amount: 500000,
+    status: "Thành công",
+  },
+  {
+    id: "TX67890",
+    room: "B202",
+    date: "2025-02-20T15:30:00",
+    amount: 300000,
+    status: "Thất bại",
+  },
+  {
+    id: "TX11111",
+    room: "A101",
+    date: "2025-02-18T09:00:00",
+    amount: 400000,
+    status: "Thành công",
+  },
+  {
+    id: "TX22222",
+    room: "C303",
+    date: "2025-02-15T14:00:00",
+    amount: 200000,
+    status: "Thành công",
+  },
+  {
+    id: "TX33333",
+    room: "B202",
+    date: "2025-02-08T08:00:00",
+    amount: 350000,
+    status: "Thất bại",
+  },
+  {
+    id: "TX62890",
+    room: "B202",
+    date: "2025-02-02T15:30:00",
+    amount: 300000,
+    status: "Thất bại",
+  },
+  {
+    id: "TX69890",
+    room: "B202",
+    date: "2025-03-20T15:30:00",
+    amount: 300000,
+    status: "Thất bại",
+  },
 ];
 
 export const slots = [
-  { id: 1, name: "Slot 1" },
-  { id: 2, name: "Slot 2" },
-  { id: 3, name: "Slot 3" },
-  { id: 4, name: "Slot 4" }
+  {
+    id: 1,
+    name: "Slot 1",
+    time: "08:00 - 10:00",
+    isAvailable: true,
+    remainingSeats: 4,
+  },
+  {
+    id: 2,
+    name: "Slot 2",
+    time: "10:00 - 12:00",
+    isAvailable: false,
+    remainingSeats: 0,
+  },
+  {
+    id: 3,
+    name: "Slot 3",
+    time: "13:00 - 15:00",
+    isAvailable: true,
+    remainingSeats: 6,
+  },
+  {
+    id: 4,
+    name: "Slot 4",
+    time: "15:00 - 17:00",
+    isAvailable: true,
+    remainingSeats: 2,
+  },
 ];
-
 
 export const areas = [
   {
-    "id": 1,
-    "type": "personal",  // Thêm type cho khu vực cá nhân
-    "name": "Khu vực cá nhân",
-    "description": "Không gian yên tĩnh, lý tưởng cho cá nhân làm việc tập trung.",
-    "image": images1,
-    "features": ["Chỗ ngồi làm việc riêng", "Internet tốc độ cao", "Không gian yên tĩnh"]
+    id: 1,
+    type: "personal", // Thêm type cho khu vực cá nhân
+    name: "Khu vực cá nhân",
+    description:
+      "Không gian yên tĩnh, lý tưởng cho cá nhân làm việc tập trung.",
+    image: images1,
+    features: [
+      "Chỗ ngồi làm việc riêng",
+      "Internet tốc độ cao",
+      "Không gian yên tĩnh",
+    ],
   },
   {
-    "id": 2,
-    "type": "group",  // Thêm type cho khu vực nhóm
-    "name": "Khu vực nhóm",
-    "description": "Không gian linh hoạt, phù hợp cho nhóm làm việc chung.",
-    "image": images3,
-    "features": ["Bàn làm việc nhóm", "Khu vực riêng", "Không gian yên tĩnh"]
-  }
+    id: 2,
+    type: "group", // Thêm type cho khu vực nhóm
+    name: "Khu vực nhóm",
+    description: "Không gian linh hoạt, phù hợp cho nhóm làm việc chung.",
+    image: images3,
+    features: ["Bàn làm việc nhóm", "Khu vực riêng", "Không gian yên tĩnh"],
+  },
 ];
-
 
 export const features = [
   {
     icon: <FaMoneyBillWave className="text-orange-500 text-3xl" />,
     text: "THANH TOÁN THEO GÓI LINH ĐỘNG",
-    description: "Lựa chọn thanh toán theo slot, 1 tháng hoặc kỳ học tùy theo kế hoạch của bạn."
+    description:
+      "Lựa chọn thanh toán theo slot, 1 tháng hoặc kỳ học tùy theo kế hoạch của bạn.",
   },
   {
     icon: <FaHome className="text-orange-500 text-3xl" />,
     text: "KHÔNG GIAN THOẢI MÁI, YÊN TĨNH",
-    description: "Không gian sạch sẽ, rộng rãi, yên tĩnh giúp bạn có những khoảng thời gian làm việc tập trung và hiệu quả."
+    description:
+      "Không gian sạch sẽ, rộng rãi, yên tĩnh giúp bạn có những khoảng thời gian làm việc tập trung và hiệu quả.",
   },
   {
     icon: <FaShieldAlt className="text-orange-500 text-3xl" />,
     text: "ĐẢM BẢO AN TOÀN, AN NINH",
-    description: "Đội ngũ chúng tôi luôn luôn đặt an toàn của khách hàng lên hàng đầu, đảm bảo không có sự cố xảy ra."
+    description:
+      "Đội ngũ chúng tôi luôn luôn đặt an toàn của khách hàng lên hàng đầu, đảm bảo không có sự cố xảy ra.",
   },
   {
     icon: <FaWifi className="text-orange-500 text-3xl" />,
     text: "HỆ THỐNG MẠNG TỐC ĐỘ CAO",
-    description: "Với hệ thống wifi tân tiến nhất hiện nay, ổn định đảm bảo chất lượng làm việc của bạn."
+    description:
+      "Với hệ thống wifi tân tiến nhất hiện nay, ổn định đảm bảo chất lượng làm việc của bạn.",
   },
 ];
 
@@ -158,11 +255,7 @@ export const communityLinks = [
   { href: "#", text: "Jobs" },
 ];
 
-
-
-
 //DAHSBOARD
-
 
 export const navbarLinks = [
   {
@@ -174,57 +267,40 @@ export const navbarLinks = [
         path: "/dashboard",
       },
       {
-        label: "Danh sách khu vực",
+        label: "Quản lý khu vực",
         icon: ChartColumn,
         path: "/dashboard/area",
       },
       {
-        label: "Danh sách thiết bị",
+        label: "Quản lý thiết bị",
         icon: NotepadText,
         path: "/dashboard/facilities",
       },
-    ]
+      {
+        label: "Quản lý phòng ",
+        icon: Home,
+        path: "/dashboard/room",
+      },
+      {
+        label: "Quản lý slot",
+        icon: Grid,
+        path: "/dashboard/slot",
+      },
+    ],
   },
   {
     title: "Quản lý",
     children: [
       {
-        label: "Danh sách tài khoản",
+        label: "Quản lý tài khoản",
         icon: Users,
         path: "/dashboard/account",
       },
-      {
-        label: "Danh sách vé phạt",
-        icon: UserCheck,
-        path: "/dashboard/banned",
-      },
-      {
-        label: "Danh sách blog",
-        icon: Package,
-        path: "/dashboard/blog",
-      },
-    ],
-  },
-];
 
-export const staffLinks = [
-  {
-    title: "Quản lý Staff",
-    children: [
-      {
-        label: "Lịch sử đặt chỗ",
-        icon: Calendar,
-        path: "/manage",
-      },
       {
         label: "Quản lý blog",
-        icon: FileText,
-        path: "/manage/blog",
-      },
-      {
-        label: "Cấu hình hệ thống",
-        icon: Settings,
-        path: "/manage/settings",
+        icon: Package,
+        path: "/dashboard/blog",
       },
     ],
   },
@@ -436,139 +512,4 @@ export const products = [
   { id: 4, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
   { id: 5, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
   { id: 6, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
-  
-];
-
-export const bookingData = [
-  {
-    id: 1,
-    userId: "user_001",
-    slotId: 1, // Liên kết với slots
-    bookingId: "booking_123",
-    bookingCreatedDate: "2024-02-20",
-    price: 50,
-    status: "Confirmed",
-  },
-  {
-    id: 2,
-    userId: "user_002",
-    slotId: 2,
-    bookingId: "booking_456",
-    bookingCreatedDate: "2024-02-22",
-    price: 75,
-    status: "Pending",
-  },
-  {
-    id: 3,
-    userId: "user_003",
-    slotId: 3,
-    bookingId: "booking_789",
-    bookingCreatedDate: "2024-02-24",
-    price: 30,
-    status: "Canceled",
-  },
-];
-
-// Cập nhật bookingData để gán `slotName` dựa vào `slotId`
-bookingData.forEach((booking) => {
-  const slot = slots.find((s) => s.id === booking.slotId);
-  booking.slotName = slot ? slot.name : "Unknown Slot";
-});
-
-
-export const bookingDetailData = [
-  {
-    bookingDetailId: "bd_001",
-    bookingId: "booking_123",
-    userId: "user_001",
-    fullName: "Nguyễn Văn A",
-    avatar: ProfileImage,
-    phoneNumber: "0987-654-321",
-    slotId: 1, // Liên kết với slots
-    positionId: "pos_201",
-    positionName: "VIP Seat",
-    areaId: 1, // Liên kết với areas
-    roomId: "room_401",
-    roomName: "Library Room 2",
-    checkinTime: "2024-02-20 09:00",
-    checkoutTime: "2024-02-20 12:00",
-    status: "Confirmed",
-    price: 50,
-  },
-  {
-    bookingDetailId: "bd_002",
-    bookingId: "booking_456",
-    userId: "user_002",
-    fullName: "Trần Thị B",
-    avatar: ProfileImage,
-    phoneNumber: "0912-345-678",
-    slotId: 2,
-    positionId: "pos_202",
-    positionName: "Regular Seat",
-    areaId: 2,
-    roomId: "room_402",
-    roomName: "Library Room 3",
-    checkinTime: "2024-02-22 14:00",
-    checkoutTime: "2024-02-22 17:00",
-    status: "Pending",
-    price: 75,
-  },
-  {
-    bookingDetailId: "bd_003",
-    bookingId: "booking_789",
-    userId: "user_003",
-    fullName: "Lê Văn C",
-    avatar: ProfileImage,
-    phoneNumber: "0903-123-456",
-    slotId: 3,
-    positionId: "pos_203",
-    positionName: "Window Seat",
-    areaId: 1,
-    roomId: "room_403",
-    roomName: "Library Room 1",
-    checkinTime: "2024-02-24 10:30",
-    checkoutTime: "2024-02-24 13:30",
-    status: "Canceled",
-    price: 30,
-  },
-];
-
-// Cập nhật bookingDetailData để gán `slotName` và `areaName` dựa vào `slotId` và `areaId`
-bookingDetailData.forEach((detail) => {
-  const slot = slots.find((s) => s.id === detail.slotId);
-  detail.slotName = slot ? slot.name : "Unknown Slot";
-
-  const area = areas.find((a) => a.id === detail.areaId);
-  detail.areaName = area ? area.name : "Unknown Area";
-});
-
-
-export const blogData = [
-  {
-    id: "blog_001",
-    title: "Cách làm việc hiệu quả trong không gian yên tĩnh",
-    content: "Không gian yên tĩnh giúp tăng hiệu suất làm việc lên đến 40%.",
-    image: ProfileImage,
-    author: "Nguyễn Văn A",
-    createdDate: "2024-02-10",
-    status: "Published",
-  },
-  {
-    id: "blog_002",
-    title: "Lợi ích của việc đọc sách mỗi ngày",
-    content: "Đọc sách giúp cải thiện tư duy, nâng cao vốn từ vựng và giảm stress.",
-    image: ProfileImage,
-    author: "Trần Thị B",
-    createdDate: "2024-02-12",
-    status: "Draft",
-  },
-  {
-    id: "blog_003",
-    title: "Tại sao nên đặt chỗ trước khi đến thư viện?",
-    content: "Đặt chỗ trước giúp bạn có không gian học tập và tránh tình trạng hết chỗ.",
-    image: ProfileImage,
-    author: "Lê Văn C",
-    createdDate: "2024-02-15",
-    status: "Published",
-  },
 ];

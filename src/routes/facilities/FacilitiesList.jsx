@@ -1,10 +1,8 @@
 import { PencilLine, Trash, Eye, PlusCircle } from "lucide-react";
 import { products } from "../../constants";
-import { useTheme } from "../../hooks/use-theme";
 import { useNavigate } from "react-router-dom";
 
 const Facilities = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
 
   const handleDelete = (id) => {
@@ -16,7 +14,7 @@ const Facilities = () => {
   };
 
   return (
-    <div className={`p-6 shadow-xl rounded-lg ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white"} transition-all`}>
+    <div className={`p-6 shadow-xl rounded-lg  transition-all`}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">📦 Danh Sách Sản Phẩm</h2>
         <button 
@@ -39,7 +37,7 @@ const Facilities = () => {
           </thead>
           <tbody className="divide-y divide-gray-300">
             {products.map((product, index) => (
-              <tr key={product.id} className="hover:bg-gray-100 transition">
+              <tr key={product.id} className="hover:bg-gray-500 transition">
                 <td className="p-3">{index + 1}</td>
                 <td className="p-3">{product.name}</td>
                 <td className="p-3 text-center">{product.quantity}</td>
