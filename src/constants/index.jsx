@@ -1,17 +1,12 @@
-
-
-import user1 from "../assets/profile-pictures/user1.jpg";
-import user2 from "../assets/profile-pictures/user2.jpg";
-import user3 from "../assets/profile-pictures/user3.jpg";
-import user4 from "../assets/profile-pictures/user4.jpg";
-import user5 from "../assets/profile-pictures/user5.jpg";
-import user6 from "../assets/profile-pictures/user6.jpg";
-
-import { ChartColumn, Home, NotepadText, Package, PackagePlus, Settings, ShoppingBag, UserCheck, UserPlus, Users } from "lucide-react";
+import { ChartColumn, Home, NotepadText, Package, UserCheck, Users } from "lucide-react";
 
 import ProfileImage from "../assets/profile-image.jpg";
 import ProductImage from "../assets/product-image.jpg";
 import { FaHome, FaMoneyBillWave, FaShieldAlt, FaWifi } from "react-icons/fa";
+
+import images1 from '../assets/dxlab_images1.jpg';
+import images2 from '../assets/dxlab_images2.jpg';
+import images3 from '../assets/dxlab_images3.png';
 
 
 export const navItems = [
@@ -20,43 +15,10 @@ export const navItems = [
   { label: "Về DXLAB", href: "/about" },
 ];
 
-export const testimonials = [
-  {
-    user: "John Doe",
-    company: "Stellar Solutions",
-    image: user1,
-    text: "I am extremely satisfied with the services provided. The team was responsive, professional, and delivered results beyond my expectations.",
-  },
-  {
-    user: "Jane Smith",
-    company: "Blue Horizon Technologies",
-    image: user2,
-    text: "I couldn't be happier with the outcome of our project. The team's creativity and problem-solving skills were instrumental in bringing our vision to life",
-  },
-  {
-    user: "David Johnson",
-    company: "Quantum Innovations",
-    image: user3,
-    text: "Working with this company was a pleasure. Their attention to detail and commitment to excellence are commendable. I would highly recommend them to anyone looking for top-notch service.",
-  },
-  {
-    user: "Ronee Brown",
-    company: "Fusion Dynamics",
-    image: user4,
-    text: "Working with the team at XYZ Company was a game-changer for our project. Their attention to detail and innovative solutions helped us achieve our goals faster than we thought possible. We are grateful for their expertise and professionalism!",
-  },
-  {
-    user: "Michael Wilson",
-    company: "Visionary Creations",
-    image: user5,
-    text: "I am amazed by the level of professionalism and dedication shown by the team. They were able to exceed our expectations and deliver outstanding results.",
-  },
-  {
-    user: "Emily Davis",
-    company: "Synergy Systems",
-    image: user6,
-    text: "The team went above and beyond to ensure our project was a success. Their expertise and dedication are unmatched. I look forward to working with them again in the future.",
-  },
+export const banners = [
+  { "image": images1 },
+  { "image": images2 },
+  { "image": images3 },
 ];
 
 export const services = [
@@ -71,6 +33,87 @@ export const services = [
     click: "Khám phá ngay"
   }
 ];
+
+export const mockTransactions = [
+  {
+    id: "TX12345",
+    room: "A101",
+    date: "2025-02-25T10:00:00",
+    amount: 500000,
+    status: "Thành công"
+  },
+  {
+    id: "TX67890",
+    room: "B202",
+    date: "2025-02-20T15:30:00",
+    amount: 300000,
+    status: "Thất bại"
+  },
+  {
+    id: "TX11111",
+    room: "A101",
+    date: "2025-02-18T09:00:00",
+    amount: 400000,
+    status: "Thành công"
+  },
+  {
+    id: "TX22222",
+    room: "C303",
+    date: "2025-02-15T14:00:00",
+    amount: 200000,
+    status: "Thành công"
+  },
+  {
+    id: "TX33333",
+    room: "B202",
+    date: "2025-02-08T08:00:00",
+    amount: 350000,
+    status: "Thất bại"
+  },
+  {
+    id: "TX62890",
+    room: "B202",
+    date: "2025-02-02T15:30:00",
+    amount: 300000,
+    status: "Thất bại"
+  },
+  {
+    id: "TX69890",
+    room: "B202",
+    date: "2025-03-20T15:30:00",
+    amount: 300000,
+    status: "Thất bại"
+  },
+];
+
+export const slots = [
+  { id: 1, name: "Slot 1", time: "08:00 - 10:00", isAvailable: true, remainingSeats: 4 },
+  { id: 2, name: "Slot 2", time: "10:00 - 12:00", isAvailable: false, remainingSeats: 0 },
+  { id: 3, name: "Slot 3", time: "13:00 - 15:00", isAvailable: true, remainingSeats: 6 },
+  { id: 4, name: "Slot 4", time: "15:00 - 17:00", isAvailable: true, remainingSeats: 2 }
+];
+
+
+
+export const areas = [
+  {
+    "id": 1,
+    "type": "personal",  // Thêm type cho khu vực cá nhân
+    "name": "Khu vực cá nhân",
+    "description": "Không gian yên tĩnh, lý tưởng cho cá nhân làm việc tập trung.",
+    "image": images1,
+    "features": ["Chỗ ngồi làm việc riêng", "Internet tốc độ cao", "Không gian yên tĩnh"]
+  },
+  {
+    "id": 2,
+    "type": "group",  // Thêm type cho khu vực nhóm
+    "name": "Khu vực nhóm",
+    "description": "Không gian linh hoạt, phù hợp cho nhóm làm việc chung.",
+    "image": images3,
+    "features": ["Bàn làm việc nhóm", "Khu vực riêng", "Không gian yên tĩnh"]
+  }
+];
+
 
 export const features = [
   {
@@ -180,271 +223,256 @@ export const communityLinks = [
 
 //DAHSBOARD
 
+
 export const navbarLinks = [
   {
-      title: "Dashboard",
-      links: [
-          {
-              label: "Dashboard",
-              icon: Home,
-              path: "/dashboard",
-          },
-          {
-              label: "Analytics",
-              icon: ChartColumn,
-              path: "/dashboard/products",
-          },
-          {
-              label: "Reports",
-              icon: NotepadText,
-              path: "/reports",
-          },
-      ],
+    title: "Thống kê",
+    children: [
+      {
+        label: "Thống kê",
+        icon: Home,
+        path: "/dashboard",
+      },
+      {
+        label: "Danh sách khu vực",
+        icon: ChartColumn,
+        path: "/dashboard/area",
+      },
+      {
+        label: "Danh sách thiết bị",
+        icon: NotepadText,
+        path: "/dashboard/facilities",
+      },
+    ]
   },
   {
-      title: "Customers",
-      links: [
-          {
-              label: "Customers",
-              icon: Users,
-              path: "/customers",
-          },
-          {
-              label: "New customer",
-              icon: UserPlus,
-              path: "/new-customer",
-          },
-          {
-              label: "Verified customers",
-              icon: UserCheck,
-              path: "/verified-customers",
-          },
-      ],
-  },
-  {
-      title: "Products",
-      links: [
-          {
-              label: "Products",
-              icon: Package,
-              path: "/products",
-          },
-          {
-              label: "New product",
-              icon: PackagePlus,
-              path: "/new-product",
-          },
-          {
-              label: "Inventory",
-              icon: ShoppingBag,
-              path: "/inventory",
-          },
-      ],
-  },
-  {
-      title: "Settings",
-      links: [
-          {
-              label: "Settings",
-              icon: Settings,
-              path: "/settings",
-          },
-      ],
+    title: "Quản lý",
+    children: [
+      {
+        label: "Danh sách tài khoản",
+        icon: Users,
+        path: "/dashboard/account",
+      },
+      {
+        label: "Danh sách vé phạt",
+        icon: UserCheck,
+        path: "/dashboard/banned",
+      },
+      {
+        label: "Danh sách blog",
+        icon: Package,
+        path: "/dashboard/blog",
+      },
+    ],
   },
 ];
 
+
 export const overviewData = [
   {
-      name: "Jan",
-      total: 1500,
+    name: "Jan",
+    total: 1500,
   },
   {
-      name: "Feb",
-      total: 2000,
+    name: "Feb",
+    total: 2000,
   },
   {
-      name: "Mar",
-      total: 1000,
+    name: "Mar",
+    total: 1000,
   },
   {
-      name: "Apr",
-      total: 5000,
+    name: "Apr",
+    total: 5000,
   },
   {
-      name: "May",
-      total: 2000,
+    name: "May",
+    total: 2000,
   },
   {
-      name: "Jun",
-      total: 5900,
+    name: "Jun",
+    total: 5900,
   },
   {
-      name: "Jul",
-      total: 2000,
+    name: "Jul",
+    total: 2000,
   },
   {
-      name: "Aug",
-      total: 5500,
+    name: "Aug",
+    total: 5500,
   },
   {
-      name: "Sep",
-      total: 2000,
+    name: "Sep",
+    total: 2000,
   },
   {
-      name: "Oct",
-      total: 4000,
+    name: "Oct",
+    total: 4000,
   },
   {
-      name: "Nov",
-      total: 1500,
+    name: "Nov",
+    total: 1500,
   },
   {
-      name: "Dec",
-      total: 2500,
+    name: "Dec",
+    total: 2500,
   },
 ];
 
 export const recentSalesData = [
   {
-      id: 1,
-      name: "Olivia Martin",
-      email: "olivia.martin@email.com",
-      image: ProfileImage,
-      total: 1500,
+    id: 1,
+    name: "Olivia Martin",
+    email: "olivia.martin@email.com",
+    image: ProfileImage,
+    total: 1500,
   },
   {
-      id: 2,
-      name: "James Smith",
-      email: "james.smith@email.com",
-      image: ProfileImage,
-      total: 2000,
+    id: 2,
+    name: "James Smith",
+    email: "james.smith@email.com",
+    image: ProfileImage,
+    total: 2000,
   },
   {
-      id: 3,
-      name: "Sophia Brown",
-      email: "sophia.brown@email.com",
-      image: ProfileImage,
-      total: 4000,
+    id: 3,
+    name: "Sophia Brown",
+    email: "sophia.brown@email.com",
+    image: ProfileImage,
+    total: 4000,
   },
   {
-      id: 4,
-      name: "Noah Wilson",
-      email: "noah.wilson@email.com",
-      image: ProfileImage,
-      total: 3000,
+    id: 4,
+    name: "Noah Wilson",
+    email: "noah.wilson@email.com",
+    image: ProfileImage,
+    total: 3000,
   },
   {
-      id: 5,
-      name: "Emma Jones",
-      email: "emma.jones@email.com",
-      image: ProfileImage,
-      total: 2500,
+    id: 5,
+    name: "Emma Jones",
+    email: "emma.jones@email.com",
+    image: ProfileImage,
+    total: 2500,
   },
   {
-      id: 6,
-      name: "William Taylor",
-      email: "william.taylor@email.com",
-      image: ProfileImage,
-      total: 4500,
+    id: 6,
+    name: "William Taylor",
+    email: "william.taylor@email.com",
+    image: ProfileImage,
+    total: 4500,
   },
   {
-      id: 7,
-      name: "Isabella Johnson",
-      email: "isabella.johnson@email.com",
-      image: ProfileImage,
-      total: 5300,
+    id: 7,
+    name: "Isabella Johnson",
+    email: "isabella.johnson@email.com",
+    image: ProfileImage,
+    total: 5300,
   },
 ];
 
 export const topProducts = [
   {
-      number: 1,
-      name: "Wireless Headphones",
-      image: ProductImage,
-      description: "High-quality noise-canceling wireless headphones.",
-      price: 99.99,
-      status: "In Stock",
-      rating: 4.5,
+    number: 1,
+    name: "Wireless Headphones",
+    image: ProductImage,
+    description: "High-quality noise-canceling wireless headphones.",
+    price: 99.99,
+    status: "In Stock",
+    rating: 4.5,
   },
   {
-      number: 2,
-      name: "Smartphone",
-      image: ProductImage,
-      description: "Latest 5G smartphone with excellent camera features.",
-      price: 799.99,
-      status: "In Stock",
-      rating: 4.7,
+    number: 2,
+    name: "Smartphone",
+    image: ProductImage,
+    description: "Latest 5G smartphone with excellent camera features.",
+    price: 799.99,
+    status: "In Stock",
+    rating: 4.7,
   },
   {
-      number: 3,
-      name: "Gaming Laptop",
-      image: ProductImage,
-      description: "Powerful gaming laptop with high-end graphics.",
-      price: 1299.99,
-      status: "In Stock",
-      rating: 4.8,
+    number: 3,
+    name: "Gaming Laptop",
+    image: ProductImage,
+    description: "Powerful gaming laptop with high-end graphics.",
+    price: 1299.99,
+    status: "In Stock",
+    rating: 4.8,
   },
   {
-      number: 4,
-      name: "Smartwatch",
-      image: ProductImage,
-      description: "Stylish smartwatch with fitness tracking features.",
-      price: 199.99,
-      status: "Out of Stock",
-      rating: 4.4,
+    number: 4,
+    name: "Smartwatch",
+    image: ProductImage,
+    description: "Stylish smartwatch with fitness tracking features.",
+    price: 199.99,
+    status: "Out of Stock",
+    rating: 4.4,
   },
   {
-      number: 5,
-      name: "Bluetooth Speaker",
-      image: ProductImage,
-      description: "Portable Bluetooth speaker with deep bass sound.",
-      price: 59.99,
-      status: "In Stock",
-      rating: 4.3,
+    number: 5,
+    name: "Bluetooth Speaker",
+    image: ProductImage,
+    description: "Portable Bluetooth speaker with deep bass sound.",
+    price: 59.99,
+    status: "In Stock",
+    rating: 4.3,
   },
   {
-      number: 6,
-      name: "4K Monitor",
-      image: ProductImage,
-      description: "Ultra HD 4K monitor with stunning color accuracy.",
-      price: 399.99,
-      status: "In Stock",
-      rating: 4.6,
+    number: 6,
+    name: "4K Monitor",
+    image: ProductImage,
+    description: "Ultra HD 4K monitor with stunning color accuracy.",
+    price: 399.99,
+    status: "In Stock",
+    rating: 4.6,
   },
   {
-      number: 7,
-      name: "Mechanical Keyboard",
-      image: ProductImage,
-      description: "Mechanical keyboard with customizable RGB lighting.",
-      price: 89.99,
-      status: "In Stock",
-      rating: 4.7,
+    number: 7,
+    name: "Mechanical Keyboard",
+    image: ProductImage,
+    description: "Mechanical keyboard with customizable RGB lighting.",
+    price: 89.99,
+    status: "In Stock",
+    rating: 4.7,
   },
   {
-      number: 8,
-      name: "Wireless Mouse",
-      image: ProductImage,
-      description: "Ergonomic wireless mouse with precision tracking.",
-      price: 49.99,
-      status: "In Stock",
-      rating: 4.5,
+    number: 8,
+    name: "Wireless Mouse",
+    image: ProductImage,
+    description: "Ergonomic wireless mouse with precision tracking.",
+    price: 49.99,
+    status: "In Stock",
+    rating: 4.5,
   },
   {
-      number: 9,
-      name: "Action Camera",
-      image: ProductImage,
-      description: "Waterproof action camera with 4K video recording.",
-      price: 249.99,
-      status: "In Stock",
-      rating: 4.8,
+    number: 9,
+    name: "Action Camera",
+    image: ProductImage,
+    description: "Waterproof action camera with 4K video recording.",
+    price: 249.99,
+    status: "In Stock",
+    rating: 4.8,
   },
   {
-      number: 10,
-      name: "External Hard Drive",
-      image: ProductImage,
-      description: "Portable 2TB external hard drive for data storage.",
-      price: 79.99,
-      status: "Out of Stock",
-      rating: 4.5,
+    number: 10,
+    name: "External Hard Drive",
+    image: ProductImage,
+    description: "Portable 2TB external hard drive for data storage.",
+    price: 79.99,
+    status: "Out of Stock",
+    rating: 4.5,
   },
+];
+export const users = [
+  { id: 1, fullName: "Nguyễn Văn A", email: "a@gmail.com", status: "Active" },
+  { id: 2, fullName: "Trần Thị B", email: "b@gmail.com", status: "Inactive" },
+];
+export const products = [
+  { id: 1, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
+  { id: 2, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+  { id: 3, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
+  { id: 4, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+  { id: 5, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
+  { id: 6, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+  
 ];

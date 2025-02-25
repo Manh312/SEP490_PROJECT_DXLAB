@@ -6,8 +6,10 @@ const initialState = {
   isLoggedIn: false,
   token: '',
   email: '',
+  userId: '',
   name: '',
   photoURL: '',
+  walletAddress: null,
   error: null,
 };
 
@@ -25,13 +27,18 @@ const authSlice = createSlice({
   name: 'Authentication',
   initialState,
   reducers: {
+
     logout: (state) => {
       state.isLoggedIn = false;
+      state.isLoading = false;
       state.token = '';
       state.email = '';
       state.name = '';
       state.photoURL = '';
-    }
+    },
+    setWalletAddress: (state, action) => {
+      state.walletAddress = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -44,15 +51,20 @@ const authSlice = createSlice({
         state.isLoggedIn = true;
         state.token = action.payload.token;
         state.email = action.payload.email;
+        state.userId = action.payload.id;
         state.name = action.payload.name;
         state.photoURL = action.payload.photoURL;
       })
       .addCase(loginWithGoogle.rejected, (state, action) => {
+        if (action.payload === "Firebase: Error (auth/popup-closed-by-user).") {
+          state.isLoading = false;
+          return; 
+        }
         state.isLoading = false;
         state.error = action.payload;
       });
   }
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, setWalletAddress } = authSlice.actions;
 export default authSlice.reducer;
