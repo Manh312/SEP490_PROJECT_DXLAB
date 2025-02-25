@@ -9,6 +9,7 @@ const initialState = {
   userId: '',
   name: '',
   photoURL: '',
+  walletAddress: null,
   error: null,
 };
 
@@ -34,7 +35,10 @@ const authSlice = createSlice({
       state.email = '';
       state.name = '';
       state.photoURL = '';
-    }
+    },
+    setWalletAddress: (state, action) => {
+      state.walletAddress = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -62,5 +66,5 @@ const authSlice = createSlice({
   }
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, setWalletAddress } = authSlice.actions;
 export default authSlice.reducer;

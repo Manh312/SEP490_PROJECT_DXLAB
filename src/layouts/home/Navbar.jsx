@@ -6,8 +6,9 @@ import { useTheme } from "../../hooks/use-theme";
 import { Link, useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../../redux/slices/Authentication";
+import { logout, setWalletAddress } from "../../redux/slices/Authentication";
 import { ethers } from "ethers";
+import { toast } from "react-toastify";
 
 const Navbar = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -22,8 +23,7 @@ const Navbar = () => {
   const auth = getAuth();
   const user = auth.currentUser;
 
-  const [walletAddress, setWalletAddress] = useState(null);
-
+  const walletAddress = useSelector((state) => state.auth.walletAddress);
   const handleMobileDrawer = () => {
     setMobileDrawerOpen(!mobileDrawerOpen);
   };
@@ -37,17 +37,15 @@ const Navbar = () => {
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
         console.log("Connected address:", address);
-        setWalletAddress(address);
+        dispatch(setWalletAddress(address));
+        toast.success("Kết nối ví thành công");
       } catch (error) {
         console.error("Connect wallet error:", error);
+        toast.error("Kết nối ví thất bại");
       }
     } else {
       alert("Bạn cần cài đặt MetaMask để kết nối ví!");
     }
-  };
-
-  const disconnectWallet = () => {
-    setWalletAddress(null);
   };
 
   const shortenAddress = (address) => {
@@ -124,8 +122,8 @@ const Navbar = () => {
                         <>
                           <li className=" border-t border-t-gray-400">
                             <Link
+                              to={`/wallet`}
                               onClick={() => {
-                                disconnectWallet();
                                 setMobileDrawerOpen(false);
                               }}
                               className={`block px-4 py-3 ${theme === "dark"
@@ -138,22 +136,6 @@ const Navbar = () => {
                               </div>
                             </Link>
                           </li>
-                          <li className="border-t border-t-gray-400">
-                            <Link
-                              onClick={() => {
-                                disconnectWallet();
-                                setMobileDrawerOpen(false);
-                              }}
-                              className={`block px-4 py-3 ${theme === "dark"
-                                ? "hover:bg-gray-700"
-                                : "hover:bg-slate-300"
-                                }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                <Wallet size={18} /> Ngắt kết nối ví
-                              </div>
-                            </Link>
-                          </li>
                         </>
                       ) : (
                         <li className=" border-t border-t-gray-400">
@@ -162,7 +144,7 @@ const Navbar = () => {
                               connectWallet();
                               setMobileDrawerOpen(false);
                             }}
-                            className="block px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800"
+                            className="block px-4 py-3 hover:bg-gray-200"
                           >
                             <div className="flex items-center gap-2">
                               <Wallet size={18} />Kết nối ví
@@ -252,12 +234,6 @@ const Navbar = () => {
               <span className="font-semibold">Khách</span>
             )}
           </div>
-          {/* <button
-            onClick={handleMobileDrawer}
-            className="ml-auto p-2 border rounded-md"
-          >
-            <X />
-          </button> */}
         </div>
 
         {/* Danh sách item menu */}
@@ -296,26 +272,12 @@ const Navbar = () => {
                     <li className=" border-t">
                       <Link
                         onClick={() => {
-                          disconnectWallet();
                           setMobileDrawerOpen(false);
                         }}
                         className="block px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800"
                       >
                         <div className="flex items-center gap-2">
                           <Banknote size={18} />  Ví: {shortenAddress(walletAddress)}
-                        </div>
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        onClick={() => {
-                          disconnectWallet();
-                          setMobileDrawerOpen(false);
-                        }}
-                        className="block px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Wallet size={18} /> Ngắt kết nối ví
                         </div>
                       </Link>
                     </li>

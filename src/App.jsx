@@ -38,6 +38,7 @@ import ViewBookedSeats from './routes/students/ViewBookedSeats';
 import Banner from './layouts/home/Banner';
 import ViewBookingHistory from './routes/students/ViewBookHistoried';
 import BookHistoriedDetail from './routes/students/BookHistoriedDetail';
+import Wallet from './routes/students/Wallet';
 
 
 export function HomeContent() {
@@ -71,6 +72,7 @@ const router = createBrowserRouter([
       { path: "booked-seats", element: <ViewBookedSeats/> },
       { path: "booked-history", element: <ViewBookingHistory/> },
       { path: "booked-history/:id", element: <BookHistoriedDetail/> },
+      { path: "wallet", element: <Wallet/> },
 
 
       { path: "dashboard", element: <DashboardPage /> }, // Trang dashboard chính
