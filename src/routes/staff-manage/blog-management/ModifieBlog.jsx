@@ -1,26 +1,29 @@
+import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { blogData } from "../../../constants";
-import { useState } from "react";
 
 const ModifieBlog = () => {
-    // State để chỉnh sửa nội dung blog
-    const [editedBlog, setEditedBlog] = useState({
-      title: blog.title,
-      content: blog.content,
-      author: blog.author,
-      status: "Pending Approval", // Khi sửa đổi, luôn giữ trạng thái chờ duyệt
-    });
   const { id } = useParams();
   const navigate = useNavigate();
   
   // Tìm blog theo ID
   const blog = blogData.find((b) => b.id === id);
 
+  // Khai báo useState mặc định là null để tránh lỗi
+  const [editedBlog, setEditedBlog] = useState(() => {
+    if (!blog) return null; // Nếu không tìm thấy blog, trả về null
+    return {
+      title: blog.title,
+      content: blog.content,
+      author: blog.author,
+      status: "Pending Approval",
+    };
+  });
+
+  // Nếu không tìm thấy bài viết, hiển thị thông báo nhưng KHÔNG gọi Hook trong điều kiện
   if (!blog) {
     return <p className="text-red-500 text-center">Không tìm thấy bài viết!</p>;
   }
-
-
 
   // Hàm xử lý khi người dùng nhấn "Sửa đổi & Gửi yêu cầu duyệt"
   const handleUpdateBlog = () => {
@@ -28,11 +31,11 @@ const ModifieBlog = () => {
       alert("Vui lòng điền đầy đủ thông tin!");
       return;
     }
-    
+
     console.log("Blog đã được cập nhật:", editedBlog);
     alert("Bài viết đã được cập nhật và gửi yêu cầu duyệt!");
 
-    navigate("/manage/blog"); // Điều hướng về danh sách blog
+    navigate("/manage/blog");
   };
 
   return (
@@ -42,7 +45,7 @@ const ModifieBlog = () => {
       <label className="block text-sm font-medium text-gray-700">Tiêu đề</label>
       <input
         className="w-full p-2 border rounded mb-3"
-        value={editedBlog.title}
+        value={editedBlog?.title || ""}
         onChange={(e) => setEditedBlog({ ...editedBlog, title: e.target.value })}
       />
 
@@ -50,11 +53,11 @@ const ModifieBlog = () => {
       <textarea
         className="w-full p-2 border rounded mb-3"
         rows={5}
-        value={editedBlog.content}
+        value={editedBlog?.content || ""}
         onChange={(e) => setEditedBlog({ ...editedBlog, content: e.target.value })}
       />
 
-      <p className="text-sm text-gray-600 mb-4">Tác giả: {blog.author}</p>
+      <p className="text-sm text-gray-600 mb-4">Tác giả: {editedBlog?.author}</p>
 
       <span className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm inline-block mb-4">
         Chờ duyệt
