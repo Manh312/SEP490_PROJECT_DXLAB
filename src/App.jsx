@@ -35,10 +35,13 @@ import { ToastContainer } from 'react-toastify';
 import ViewAreas from './routes/students/ViewAreas';
 import Payment from './routes/students/Payment';
 import ViewBookedSeats from './routes/students/ViewBookedSeats';
+import RoomList from './routes/room/RoomList';
+import SlotList from './routes/slot/SlotList';
 import Banner from './layouts/home/Banner';
 import ViewBookingHistory from './routes/students/ViewBookHistoried';
 import BookHistoriedDetail from './routes/students/BookHistoriedDetail';
 import Wallet from './routes/students/Wallet';
+
 
 
 export function HomeContent() {
@@ -86,6 +89,9 @@ const router = createBrowserRouter([
       { path: "dashboard/facilities/update/:id", element: <UpdateFacilities/> }, // Fix đường dẫn
       { path: "dashboard/facilities/delete/:id", element: <DeleteFacilities/> }, // Fix đường dẫn
 
+      { path: "dashboard/room", element: <RoomList/> },
+
+      { path: "dashboard/slot", element: <SlotList/> },
 
       //Account Manage
       { path: "dashboard/account", element: <AccountList/> },
