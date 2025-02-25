@@ -17,7 +17,7 @@ import AreaList from './routes/areas/AreaList';
 import FacilitiesList from './routes/facilities/FacilitiesList';
 import AccountList from './routes/account/AccountList';
 import BannedList from './routes/dashboard/BannedList';
-import BlogList from './routes/blog-manage/BlogList';
+import BlogListOfStaff from './routes/blog-manage/BlogListOfStaff';
 import CreateFacilities from './routes/facilities/CreateFacilities';
 import FacilitiesDetail from './routes/facilities/FacilitiesDetail';
 import UpdateFacilities from './routes/facilities/UpdateFacilities';
@@ -26,9 +26,6 @@ import AccountDetail from './routes/account/AccountDetail';
 import CreateAccount from './routes/account/CreateAccount';
 import UpdateAccount from './routes/account/UpdateAccount';
 import DeleteAccount from './routes/account/DeleteAccount';
-import CreateBlog from './routes/blog-manage/CreateBlog';
-import UpdateBlog from './routes/blog-manage/UpdateBlog';
-import DeleteBlog from './routes/blog-manage/DeleteBlog';
 import NotFound from './layouts/home/NotFound';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
@@ -104,12 +101,8 @@ const router = createBrowserRouter([
       { path: "dashboard/banned", element: <BannedList/> },
 
       //Blog Manage
-      { path: "dashboard/blog", element: <BlogList/>},
-      { path: "dashboard/blog/detail", element: <BlogDetail/>},
-      { path: "dashboard/blog/create", element: <CreateBlog/>},
-      { path: "dashboard/blog/update", element: <UpdateBlog/>},
-      { path: "dashboard/blog/delete", element: <DeleteBlog/>},
-
+      { path: "dashboard/blog", element: <BlogListOfStaff/>},
+      
     ],
   }
 ]);

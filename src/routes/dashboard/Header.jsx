@@ -10,20 +10,20 @@ const Header = ({ setCollapsed }) => {
       <div className="flex items-center gap-x-3">
         <button
           className={`btn-ghost size-10 ${theme === "dark" ? "hover:bg-neutral-700" : "hover:bg-neutral-300"} `}
-          onClick={() => setCollapsed(false)} // Mở sidebar
+          onClick={() => setCollapsed(prev => !prev)} // Toggle mở / đóng sidebar
         >
-          <ChevronsLeft className={`${theme === "dark" ? "text-white" : "text-black"}`} size={24}/>
+          <ChevronsLeft className={`${theme === "dark" ? "text-white" : "text-black"}`} size={24} />
         </button>
-        <div className="input">
-          <Search size={20} className={` ${theme === "dark" ? "bg-dark text-white" : "bg-white text-black"}`} />
+        <div className="relative flex items-center border rounded-md px-2 py-1">
+          <Search size={20} className={`${theme === "dark" ? "text-white" : "text-black"}`} />
           <input
             type="text"
             placeholder="Search..."
             name="search"
             id="search"
-            className={`w-full bg-transparent outline-none transition-colors
-              ${theme === "dark" ? "placeholder:text-white" : "placeholder:text-black"}
-            `}          
+            className={`w-full bg-transparent outline-none pl-2 transition-colors
+              ${theme === "dark" ? "placeholder:text-gray-400" : "placeholder:text-gray-600"}
+            `}
           />
         </div>
       </div>
@@ -31,8 +31,8 @@ const Header = ({ setCollapsed }) => {
   );
 }
 
-export default Header;
-
 Header.propTypes = {
-  setCollapsed: PropTypes.func,
+  setCollapsed: PropTypes.func.isRequired, // Đảm bảo setCollapsed luôn được truyền vào
 };
+
+export default Header;
