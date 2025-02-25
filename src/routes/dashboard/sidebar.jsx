@@ -8,6 +8,7 @@ import { useTheme } from "../../hooks/use-theme";
 
 export const Sidebar = forwardRef(({ collapsed }, ref) => {
   const { theme } = useTheme(); 
+  
   return (
     <aside 
       ref={ref} 

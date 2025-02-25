@@ -6,6 +6,9 @@ import {
   UserCheck,
   Users,
   Grid,
+  Calendar,
+  FileText,
+  Settings,
 } from "lucide-react";
 
 import ProfileImage from "../assets/profile-image.jpg";
@@ -512,4 +515,160 @@ export const products = [
   { id: 4, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
   { id: 5, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
   { id: 6, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+];
+export const staffLinks = [
+  {
+    title: "Quản lý Staff",
+    children: [
+      {
+        label: "Lịch sử đặt chỗ",
+        icon: Calendar,
+        path: "/manage",
+      },
+      {
+        label: "Quản lý blog",
+        icon: FileText,
+        path: "/manage/blog",
+      },
+      {
+        label: "Cấu hình hệ thống",
+        icon: Settings,
+        path: "/manage/settings",
+      },
+    ],
+  },
+];
+
+export const bookingData = [
+  {
+    id: 1,
+    userId: "user_001",
+    slotId: 1, // Liên kết với slots
+    bookingId: "booking_123",
+    bookingCreatedDate: "2024-02-20",
+    price: 50,
+    status: "Confirmed",
+  },
+  {
+    id: 2,
+    userId: "user_002",
+    slotId: 2,
+    bookingId: "booking_456",
+    bookingCreatedDate: "2024-02-22",
+    price: 75,
+    status: "Pending",
+  },
+  {
+    id: 3,
+    userId: "user_003",
+    slotId: 3,
+    bookingId: "booking_789",
+    bookingCreatedDate: "2024-02-24",
+    price: 30,
+    status: "Canceled",
+  },
+];
+
+// Cập nhật bookingData để gán `slotName` dựa vào `slotId`
+bookingData.forEach((booking) => {
+  const slot = slots.find((s) => s.id === booking.slotId);
+  booking.slotName = slot ? slot.name : "Unknown Slot";
+});
+
+
+export const bookingDetailData = [
+  {
+    bookingDetailId: "bd_001",
+    bookingId: "booking_123",
+    userId: "user_001",
+    fullName: "Nguyễn Văn A",
+    avatar: ProfileImage,
+    phoneNumber: "0987-654-321",
+    slotId: 1, // Liên kết với slots
+    positionId: "pos_201",
+    positionName: "VIP Seat",
+    areaId: 1, // Liên kết với areas
+    roomId: "room_401",
+    roomName: "Library Room 2",
+    checkinTime: "2024-02-20 09:00",
+    checkoutTime: "2024-02-20 12:00",
+    status: "Confirmed",
+    price: 50,
+  },
+  {
+    bookingDetailId: "bd_002",
+    bookingId: "booking_456",
+    userId: "user_002",
+    fullName: "Trần Thị B",
+    avatar: ProfileImage,
+    phoneNumber: "0912-345-678",
+    slotId: 2,
+    positionId: "pos_202",
+    positionName: "Regular Seat",
+    areaId: 2,
+    roomId: "room_402",
+    roomName: "Library Room 3",
+    checkinTime: "2024-02-22 14:00",
+    checkoutTime: "2024-02-22 17:00",
+    status: "Pending",
+    price: 75,
+  },
+  {
+    bookingDetailId: "bd_003",
+    bookingId: "booking_789",
+    userId: "user_003",
+    fullName: "Lê Văn C",
+    avatar: ProfileImage,
+    phoneNumber: "0903-123-456",
+    slotId: 3,
+    positionId: "pos_203",
+    positionName: "Window Seat",
+    areaId: 1,
+    roomId: "room_403",
+    roomName: "Library Room 1",
+    checkinTime: "2024-02-24 10:30",
+    checkoutTime: "2024-02-24 13:30",
+    status: "Canceled",
+    price: 30,
+  },
+];
+
+// Cập nhật bookingDetailData để gán `slotName` và `areaName` dựa vào `slotId` và `areaId`
+bookingDetailData.forEach((detail) => {
+  const slot = slots.find((s) => s.id === detail.slotId);
+  detail.slotName = slot ? slot.name : "Unknown Slot";
+
+  const area = areas.find((a) => a.id === detail.areaId);
+  detail.areaName = area ? area.name : "Unknown Area";
+});
+
+
+export const blogData = [
+  {
+    id: "blog_001",
+    title: "Cách làm việc hiệu quả trong không gian yên tĩnh",
+    content: "Không gian yên tĩnh giúp tăng hiệu suất làm việc lên đến 40%.",
+    image: ProfileImage,
+    author: "Nguyễn Văn A",
+    createdDate: "2024-02-10",
+    status: "Published",
+  },
+  {
+    id: "blog_002",
+    title: "Lợi ích của việc đọc sách mỗi ngày",
+    content: "Đọc sách giúp cải thiện tư duy, nâng cao vốn từ vựng và giảm stress.",
+    image: ProfileImage,
+    author: "Trần Thị B",
+    createdDate: "2024-02-12",
+    status: "Draft",
+  },
+  {
+    id: "blog_003",
+    title: "Tại sao nên đặt chỗ trước khi đến thư viện?",
+    content: "Đặt chỗ trước giúp bạn có không gian học tập và tránh tình trạng hết chỗ.",
+    image: ProfileImage,
+    author: "Lê Văn C",
+    createdDate: "2024-02-15",
+    status: "Published",
+  },
 ];

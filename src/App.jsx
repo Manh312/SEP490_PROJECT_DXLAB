@@ -42,6 +42,7 @@ import Banner from "./layouts/home/Banner";
 import ViewBookingHistory from "./routes/students/ViewBookHistoried";
 import BookHistoriedDetail from "./routes/students/BookHistoriedDetail";
 import Wallet from "./routes/students/Wallet";
+import BlogListOfStaff from "./routes/blog-manage/BlogListOfStaff";
 
 export function HomeContent() {
   return (
@@ -78,6 +79,13 @@ const router = createBrowserRouter([
 
       { path: "dashboard", element: <DashboardPage /> }, // Trang dashboard chính
       { path: "dashboard/area", element: <AreaList /> },
+      
+      //Blog Manage
+      { path: "dashboard/blog", element: <BlogListOfStaff/>},
+      // { path: "dashboard/blog/detail", element: <BlogDetail/>},
+      // { path: "dashboard/blog/create", element: <CreateBlog/>},
+      // { path: "dashboard/blog/update", element: <UpdateBlog/>},
+      // { path: "dashboard/blog/delete", element: <DeleteBlog/>},
 
       //Facilities Manage
       { path: "dashboard/facilities", element: <FacilitiesList /> },

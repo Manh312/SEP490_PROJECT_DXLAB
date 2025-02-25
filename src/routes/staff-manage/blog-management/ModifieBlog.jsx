@@ -1,8 +1,15 @@
-import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { blogData } from "../../../constants";
+import { useState } from "react";
 
 const ModifieBlog = () => {
+    // State để chỉnh sửa nội dung blog
+    const [editedBlog, setEditedBlog] = useState({
+      title: blog.title,
+      content: blog.content,
+      author: blog.author,
+      status: "Pending Approval", // Khi sửa đổi, luôn giữ trạng thái chờ duyệt
+    });
   const { id } = useParams();
   const navigate = useNavigate();
   
@@ -13,13 +20,7 @@ const ModifieBlog = () => {
     return <p className="text-red-500 text-center">Không tìm thấy bài viết!</p>;
   }
 
-  // State để chỉnh sửa nội dung blog
-  const [editedBlog, setEditedBlog] = useState({
-    title: blog.title,
-    content: blog.content,
-    author: blog.author,
-    status: "Pending Approval", // Khi sửa đổi, luôn giữ trạng thái chờ duyệt
-  });
+
 
   // Hàm xử lý khi người dùng nhấn "Sửa đổi & Gửi yêu cầu duyệt"
   const handleUpdateBlog = () => {

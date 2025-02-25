@@ -5,7 +5,6 @@ import { Sidebar } from "./dashboard/sidebar";
 import { useMediaQuery } from "@uidotdev/usehooks";
 import { useClickOutside } from "../hooks/use-click-outside";
 import { useEffect, useRef, useState } from "react";
-import { cn } from "../utils/cn";
 import Header from "./dashboard/Header";
 
 const TIDIO_SCRIPT_URL = import.meta.env.VITE_TIDIO_SCRIPT_URL;
