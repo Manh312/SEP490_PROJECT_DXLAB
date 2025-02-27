@@ -21,8 +21,13 @@ export const signInWithGoogle = async () => {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
 
+    if (!user.email.endsWith("@fpt.edu.vn")) {
+      throw new Error("Bạn phải sử dụng email @fpt.edu.vn để đăng nhập!");
+    }
+
     return {
       token: await user.getIdToken(),
+      id: user.uid,
       email: user.email,
       name: user.displayName,
       photoURL: user.photoURL,

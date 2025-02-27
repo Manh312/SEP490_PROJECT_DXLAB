@@ -1,13 +1,20 @@
 import { forwardRef } from "react";
-import { navbarLinks } from "../../constants";
-
+import { navbarLinks, staffLinks } from "../../constants"; // Import danh sách liên kết
 import { cn } from "../../utils/cn";
 import PropTypes from "prop-types";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useTheme } from "../../hooks/use-theme";
 
 export const Sidebar = forwardRef(({ collapsed }, ref) => {
-  const { theme } = useTheme(); 
+  const { theme } = useTheme();
+  const location = useLocation();
+
+  // Kiểm tra nếu đường dẫn bắt đầu bằng "/manage"
+  const isManage = location.pathname.startsWith("/manage");
+
+  // Chọn danh sách liên kết phù hợp
+  const links = isManage ? staffLinks : navbarLinks;
+
   return (
     <aside 
       ref={ref} 
@@ -19,8 +26,8 @@ export const Sidebar = forwardRef(({ collapsed }, ref) => {
       )}
     >
       <div className="flex w-full flex-col gap-y-10 overflow-y-auto overflow-x-hidden p-3 [scrollbar-width:_thin]">
-        {navbarLinks.map((navbarLink) => (
-          <nav key={navbarLink.title} className={cn("sidebar-group", collapsed && "md:items-center")}>
+        {links.map((group) => (
+          <nav key={group.title} className={cn("sidebar-group", collapsed && "md:items-center")}>
             <p 
               className={cn(
                 "sidebar-group-title", 
@@ -28,8 +35,8 @@ export const Sidebar = forwardRef(({ collapsed }, ref) => {
                 theme === "light" ? "text-black" : "text-white"
                 )}
             >
-              {navbarLink.title}
-              {navbarLink.children.map((link) => (
+              {group.title}
+              {group.children.map((link) => (
                 <NavLink 
                   key={link.label} 
                   to={link.path} 

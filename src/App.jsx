@@ -1,6 +1,6 @@
-import { ThemeProvider } from './contexts/theme-context';
+import { ThemeProvider } from "./contexts/theme-context";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import './styles.css';
+import "./styles.css";
 import Layout from "./routes/layout";
 import DashboardPage from "./routes/dashboard/page";
 import HeroSection from './layouts/home/HeroSection';
@@ -17,7 +17,7 @@ import AreaList from './routes/areas/AreaList';
 import FacilitiesList from './routes/facilities/FacilitiesList';
 import AccountList from './routes/account/AccountList';
 import BannedList from './routes/dashboard/BannedList';
-import BlogList from './routes/blog-manage/BlogList';
+import BlogListOfStaff from './routes/blog-manage/BlogListOfStaff';
 import CreateFacilities from './routes/facilities/CreateFacilities';
 import FacilitiesDetail from './routes/facilities/FacilitiesDetail';
 import UpdateFacilities from './routes/facilities/UpdateFacilities';
@@ -26,69 +26,148 @@ import AccountDetail from './routes/account/AccountDetail';
 import CreateAccount from './routes/account/CreateAccount';
 import UpdateAccount from './routes/account/UpdateAccount';
 import DeleteAccount from './routes/account/DeleteAccount';
-import CreateBlog from './routes/blog-manage/CreateBlog';
-import UpdateBlog from './routes/blog-manage/UpdateBlog';
-import DeleteBlog from './routes/blog-manage/DeleteBlog';
 import NotFound from './layouts/home/NotFound';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
-
+import ViewAreas from './routes/students/ViewAreas';
+import Payment from './routes/students/Payment';
+import ViewBookedSeats from './routes/students/ViewBookedSeats';
+import RoomList from './routes/room/RoomList';
+import SlotList from './routes/slot/SlotList';
+import Banner from './layouts/home/Banner';
+import ViewBookingHistory from './routes/students/ViewBookHistoried';
+import BookHistoriedDetail from './routes/students/BookHistoriedDetail';
+import Wallet from './routes/students/Wallet';
+import BookingList from "./routes/staff-manage/booking_history/BookingList";
+import BookingDetail from "./routes/staff-manage/booking_history/BookingDetail";
+import BlogList from "./routes/staff-manage/blog-management/BlogList";
+import ModifieBlog from "./routes/staff-manage/blog-management/ModifieBlog";
+import ViewRoom from "./routes/students/ViewRoom";
+import ProtectedRoute from "./routes/auth/ProtectedRouter";
+import NotAuthenticate from "./layouts/home/NotAuthenticate";
 
 export function HomeContent() {
   return (
     <>
+      <Banner />
       <HeroSection />
-      <Services/>
+      <Services />
       <FeatureSection />
       <Pricing />
     </>
   );
-};
+}
+
 
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <Layout />, // Layout chứa tất cả các trang
+    path: "/",
+    element: <Layout />,
     children: [
-      { index: true, element: <HomeContent /> }, // Trang chủ "/"
-      { path: "login", element: <Login/> },
-      { path: "blog", element: <Blog/> },
-      { path: "blog/:id", element: <BlogDetail/> },
-      { path: "about", element: <About/> },
-      { path: "not-found", element: <NotFound/> },
-      { path: "profile", element: <ViewProfile/> },
-      { path: "change-profile", element: <ChangeProfile/> },
+      { index: true, element: <HomeContent /> },
+      { path: "login", element: <Login /> },
+      { path: "blog", element: <Blog /> },
+      { path: "blog/:id", element: <BlogDetail /> },
+      { path: "about", element: <About /> },
+      { path: "not-found", element: <NotFound /> },
+      { path: "not-authenticate", element: <NotAuthenticate /> },
 
-      { path: "dashboard", element: <DashboardPage /> }, // Trang dashboard chính
-      { path: "dashboard/area", element: <AreaList/> },
+      { path: "profile", element: <ProtectedRoute><ViewProfile /></ProtectedRoute> },
+      { path: "change-profile", element: <ProtectedRoute><ChangeProfile /></ProtectedRoute> },
 
-      //Facilities Manage
-      { path: "dashboard/facilities", element: <FacilitiesList/> },
-      { path: "dashboard/facilities/:id", element: <FacilitiesDetail/> }, // Fix đường dẫn
-      { path: "dashboard/facilities/create", element: <CreateFacilities/> },
-      { path: "dashboard/facilities/update/:id", element: <UpdateFacilities/> }, // Fix đường dẫn
-      { path: "dashboard/facilities/delete/:id", element: <DeleteFacilities/> }, // Fix đường dẫn
+      { path: "rooms", element: <ViewRoom /> },
+      { path: "areas", element: <ViewAreas /> },
+      { path: "confirm-payment", element: <ProtectedRoute><Payment /></ProtectedRoute> },
+      { path: "booked-seats", element: <ProtectedRoute><ViewBookedSeats /></ProtectedRoute> },
+      { path: "booked-history", element: <ProtectedRoute><ViewBookingHistory /></ProtectedRoute> },
+      { path: "booked-history/:id", element: <ProtectedRoute><BookHistoriedDetail /></ProtectedRoute> },
+      { path: "wallet", element: <ProtectedRoute><Wallet /></ProtectedRoute> },
 
+      {
+        path: "dashboard",
+        element: <ProtectedRoute><DashboardPage /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/area",
+        element: <ProtectedRoute><AreaList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/blog",
+        element: <ProtectedRoute><BlogListOfStaff /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities",
+        element: <ProtectedRoute><FacilitiesList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities/:id",
+        element: <ProtectedRoute><FacilitiesDetail /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities/create",
+        element: <ProtectedRoute><CreateFacilities /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities/update/:id",
+        element: <ProtectedRoute><UpdateFacilities /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities/delete/:id",
+        element: <ProtectedRoute><DeleteFacilities /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/room",
+        element: <ProtectedRoute><RoomList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/slot",
+        element: <ProtectedRoute><SlotList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account",
+        element: <ProtectedRoute><AccountList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account/detail",
+        element: <ProtectedRoute><AccountDetail /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account/create",
+        element: <ProtectedRoute><CreateAccount /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account/update/:id",
+        element: <ProtectedRoute><UpdateAccount /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account/delete/:id",
+        element: <ProtectedRoute><DeleteAccount /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/banned",
+        element: <ProtectedRoute><BannedList /></ProtectedRoute>,
+      },
 
-      //Account Manage
-      { path: "dashboard/account", element: <AccountList/> },
-      { path: "dashboard/account/detail", element: <AccountDetail/> },
-      { path: "dashboard/account", element: <CreateAccount/> },
-      { path: "dashboard/account", element: <UpdateAccount/> },
-      { path: "dashboard/account", element: <DeleteAccount/> },
+      {
+        path: "manage",
+        element: <ProtectedRoute><BookingList /></ProtectedRoute>,
+      },
+      {
+        path: "manage/booking-history/:id",
+        element: <ProtectedRoute><BookingDetail /></ProtectedRoute>,
+      },
+      {
+        path: "manage/blog",
+        element: <ProtectedRoute><BlogList /></ProtectedRoute>,
+      },
+      {
+        path: "manage/blog/:id",
+        element: <ProtectedRoute><ModifieBlog /></ProtectedRoute>,
+      },
 
-
-      { path: "dashboard/banned", element: <BannedList/> },
-
-      //Blog Manage
-      { path: "dashboard/blog", element: <BlogList/>},
-      { path: "dashboard/blog/detail", element: <BlogDetail/>},
-      { path: "dashboard/blog/create", element: <CreateBlog/>},
-      { path: "dashboard/blog/update", element: <UpdateBlog/>},
-      { path: "dashboard/blog/delete", element: <DeleteBlog/>},
-
+      { path: "*", element: <NotFound /> },
     ],
-  }
+  },
 ]);
 
 function App() {
