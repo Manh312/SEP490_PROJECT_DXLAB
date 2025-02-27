@@ -34,7 +34,7 @@ const Payment = () => {
         </div>
 
         <div className="flex flex-col gap-4 mt-6">
-          <Link to={'/booked-seats'} className="w-full px-6 py-3 text-center bg-green-500 text-white rounded-lg hover:bg-green-600 transition" onClick={() => toast.success('Thanh toán thành công')}>
+          <Link to={'/booked-seats'} className="w-full px-6 py-3 text-center bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition" onClick={() => toast.success('Thanh toán thành công')}>
             Xác nhận Thanh Toán
           </Link>
           <Link

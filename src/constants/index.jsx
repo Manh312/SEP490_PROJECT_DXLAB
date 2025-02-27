@@ -43,6 +43,19 @@ export const services = [
   },
 ];
 
+export const about = [
+  {
+    title: "CHỖ NGỒI CÁ NHÂN CỐ ĐỊNH",
+    image: images1,
+    description: "Dịch vụ chỗ ngồi cá nhân cố định tại DXLAB cung cấp không gian làm việc riêng biệt với bàn làm việc hiện đại, ghế ergonomic giúp giảm đau lưng, cùng hệ thống internet tốc độ cao. Không gian này lý tưởng cho những ai cần một nơi làm việc yên tĩnh, tập trung mà vẫn được kết nối với cộng đồng sáng tạo. Ngoài ra, bạn còn có thể sử dụng các tiện ích chung như phòng họp, khu vực thư giãn và quầy bar mini."
+  },
+  {
+    title: "CHỖ NGỒI THEO NHÓM",
+    image: images2,
+    description: "Dịch vụ chỗ ngồi theo nhóm tại DXLAB mang đến môi trường hợp tác lý tưởng cho các nhóm làm việc, sinh viên, startup. Không gian được trang bị bàn làm việc rộng rãi, bảng trắng, thiết bị trình chiếu, giúp các nhóm có thể trao đổi ý tưởng một cách hiệu quả. Ngoài ra, khu vực này còn có không gian chung để kết nối với các nhóm khác, tạo cơ hội học hỏi và phát triển dự án một cách linh hoạt và chuyên nghiệp."
+  },
+];
+
 export const rooms = [
   {
     name: "Phòng 318",
@@ -195,28 +208,6 @@ export const features = [
   },
 ];
 
-export const checklistItems = [
-  {
-    title: "Code merge made easy",
-    description:
-      "Track the performance of your VR apps and gain insights into user behavior.",
-  },
-  {
-    title: "Review code without worry",
-    description:
-      "Track the performance of your VR apps and gain insights into user behavior.",
-  },
-  {
-    title: "AI Assistance to reduce time",
-    description:
-      "Track the performance of your VR apps and gain insights into user behavior.",
-  },
-  {
-    title: "Share work in minutes",
-    description:
-      "Track the performance of your VR apps and gain insights into user behavior.",
-  },
-];
 
 export const pricingOptions = [
   {
@@ -251,29 +242,6 @@ export const pricingOptions = [
   },
 ];
 
-export const resourcesLinks = [
-  { href: "#", text: "Getting Started" },
-  { href: "#", text: "Documentation" },
-  { href: "#", text: "Tutorials" },
-  { href: "#", text: "API Reference" },
-  { href: "#", text: "Community Forums" },
-];
-
-export const platformLinks = [
-  { href: "#", text: "Features" },
-  { href: "#", text: "Supported Devices" },
-  { href: "#", text: "System Requirements" },
-  { href: "#", text: "Downloads" },
-  { href: "#", text: "Release Notes" },
-];
-
-export const communityLinks = [
-  { href: "#", text: "Events" },
-  { href: "#", text: "Meetups" },
-  { href: "#", text: "Conferences" },
-  { href: "#", text: "Hackathons" },
-  { href: "#", text: "Jobs" },
-];
 
 //DAHSBOARD
 
@@ -328,104 +296,52 @@ export const navbarLinks = [
 
 export const overviewData = [
   {
-    name: "Jan",
+    name: "Tháng 1",
     total: 1500,
   },
   {
-    name: "Feb",
+    name: "Tháng 2",
     total: 2000,
   },
   {
-    name: "Mar",
+    name: "Tháng 3",
     total: 1000,
   },
   {
-    name: "Apr",
+    name: "Tháng 4",
     total: 5000,
   },
   {
-    name: "May",
+    name: "Tháng 5",
     total: 2000,
   },
   {
-    name: "Jun",
+    name: "Tháng 6",
     total: 5900,
   },
   {
-    name: "Jul",
+    name: "Tháng 7",
     total: 2000,
   },
   {
-    name: "Aug",
+    name: "Tháng 8",
     total: 5500,
   },
   {
-    name: "Sep",
+    name: "Tháng 9",
     total: 2000,
   },
   {
-    name: "Oct",
+    name: "Tháng 10",
     total: 4000,
   },
   {
-    name: "Nov",
+    name: "Tháng 11",
     total: 1500,
   },
   {
-    name: "Dec",
+    name: "Tháng 12",
     total: 2500,
-  },
-];
-
-export const recentSalesData = [
-  {
-    id: 1,
-    name: "Olivia Martin",
-    email: "olivia.martin@email.com",
-    image: ProfileImage,
-    total: 1500,
-  },
-  {
-    id: 2,
-    name: "James Smith",
-    email: "james.smith@email.com",
-    image: ProfileImage,
-    total: 2000,
-  },
-  {
-    id: 3,
-    name: "Sophia Brown",
-    email: "sophia.brown@email.com",
-    image: ProfileImage,
-    total: 4000,
-  },
-  {
-    id: 4,
-    name: "Noah Wilson",
-    email: "noah.wilson@email.com",
-    image: ProfileImage,
-    total: 3000,
-  },
-  {
-    id: 5,
-    name: "Emma Jones",
-    email: "emma.jones@email.com",
-    image: ProfileImage,
-    total: 2500,
-  },
-  {
-    id: 6,
-    name: "William Taylor",
-    email: "william.taylor@email.com",
-    image: ProfileImage,
-    total: 4500,
-  },
-  {
-    id: 7,
-    name: "Isabella Johnson",
-    email: "isabella.johnson@email.com",
-    image: ProfileImage,
-    total: 5300,
   },
 ];
 

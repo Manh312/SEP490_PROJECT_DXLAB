@@ -157,11 +157,11 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><BookingDetail /></ProtectedRoute>,
       },
       {
-        path: "manage/blog-list",
+        path: "manage/blog",
         element: <ProtectedRoute><BlogList /></ProtectedRoute>,
       },
       {
-        path: "manage/update-blog/:id",
+        path: "manage/blog/:id",
         element: <ProtectedRoute><ModifieBlog /></ProtectedRoute>,
       },
 
