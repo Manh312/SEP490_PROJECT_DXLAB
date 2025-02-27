@@ -1,6 +1,6 @@
 import { CreditCard, DollarSign, Package, TrendingUp, Users } from "lucide-react";
 import { useTheme } from "../../hooks/use-theme";
-import { overviewData, recentSalesData } from "../../constants";
+import { overviewData } from "../../constants";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const Page = () => {
@@ -79,8 +79,7 @@ const Page = () => {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <div className={`card col-span-1 md:col-span-2 lg:col-span-4 ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>
+        <div className={`card mr-5 col-span-1 md:col-span-2 lg:col-span-4 ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>
           <div className="card-header">
             <p className={` card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Overview</p>
           </div>
@@ -126,31 +125,7 @@ const Page = () => {
             </ResponsiveContainer>
           </div>
         </div>
-        <div className={`card col-span-1 md:col-span-2 lg:col-span-3 ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>
-          <div className="card-header">
-            <p className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Recent Sales</p>
-          </div>
-          <div className="card-body h-[300] overflow-auto p-0">
-            {recentSalesData.map((sale) => (
-              <div key={sale.id} className="flex items-center justify-between gap-x-4 py-2 pr-2">
-                <div className="flex items-center gap-x-4">
-                  <img src={sale.image} alt={sale.name} className="size-10 flex-shrink-0 rounded-full object-cover" />
-                  <div className={`flex flex-col gap-y-2 ${theme === "dark" ? " text-white" : " text-black"}`}>
-                    <p className="font-medium">
-                      {sale.name}
-                    </p>
-                    <p className="font-sm">
-                      {sale.email}
-                    </p>
-                  </div>
-                </div>
-                <p className="font-medium">${sale.total}</p>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
-    </div>
   );
 }
 
