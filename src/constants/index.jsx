@@ -690,6 +690,7 @@ export const blogData = [
   },
 ];
 export const room = [
-  { id: 1, name: "Phòng DE318", status: "active" },
+  { id: 1, name: "Phòng DE318", status: "inactive" },
+  { id: 2, name: "Phòng DE318", status: "active" }
   
 ];

@@ -45,6 +45,9 @@ import ModifieBlog from "./routes/staff-manage/blog-management/ModifieBlog";
 import ViewRoom from "./routes/students/ViewRoom";
 import ProtectedRoute from "./routes/auth/ProtectedRouter";
 import NotAuthenticate from "./layouts/home/NotAuthenticate";
+import RoomDetail from "./routes/room/RoomDetail";
+import UpdateRoom from "./routes/room/UpdateRoom";
+import CreateRoom from "./routes/room/CreateRoom";
 
 export function HomeContent() {
   return (
@@ -120,6 +123,20 @@ const router = createBrowserRouter([
         path: "dashboard/room",
         element: <ProtectedRoute><RoomList /></ProtectedRoute>,
       },
+      {
+        path: "dashboard/room/:id",
+        element: <ProtectedRoute><RoomDetail /></ProtectedRoute>,
+      },
+      {
+        path: "/dashboard/room/update/:id" ,
+        element: <ProtectedRoute><UpdateRoom /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/room/create",
+        element: <ProtectedRoute><CreateRoom /></ProtectedRoute>,
+      },
+
+      
       {
         path: "dashboard/slot",
         element: <ProtectedRoute><SlotList /></ProtectedRoute>,
