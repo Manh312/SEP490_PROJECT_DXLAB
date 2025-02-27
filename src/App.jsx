@@ -100,8 +100,9 @@ const router = createBrowserRouter([
         path: "dashboard/facilities/delete/:id",
         element: <DeleteFacilities />,
       }, // Fix đường dẫn
-
+      //Room Manage
       { path: "dashboard/room", element: <RoomList /> },
+      
 
       { path: "dashboard/slot", element: <SlotList /> },
 

@@ -672,3 +672,7 @@ export const blogData = [
     status: "Published",
   },
 ];
+export const rooms = [
+  { id: 1, name: "Phòng DE318", status: "active" },
+  
+];
