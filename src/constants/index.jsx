@@ -3,7 +3,6 @@ import {
   Home,
   NotepadText,
   Package,
-  UserCheck,
   Users,
   Grid,
   Calendar,
@@ -41,6 +40,24 @@ export const services = [
     text: "CHỖ NGỒI THEO NHÓM CỐ ĐỊNH",
     description: "Dành cho đội nhóm",
     click: "Khám phá ngay",
+  },
+];
+
+export const rooms = [
+  {
+    name: "Phòng 318",
+    description: "Phòng DXLAB thuộc dãy toàn Delta tại trường đại học FPT.",
+    images: images1,
+  },
+  {
+    name: "Phòng 319",
+    description: "Phòng DXLAB thuộc dãy toàn Delta tại trường đại học FPT.",
+    images: images1,
+  },
+  {
+    name: "Phòng 320",
+    description: "Phòng DXLAB thuộc dãy toàn Delta tại trường đại học FPT.",
+    images: images1,
   },
 ];
 

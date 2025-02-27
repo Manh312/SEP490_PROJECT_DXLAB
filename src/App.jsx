@@ -42,8 +42,9 @@ import BookingList from "./routes/staff-manage/booking_history/BookingList";
 import BookingDetail from "./routes/staff-manage/booking_history/BookingDetail";
 import BlogList from "./routes/staff-manage/blog-management/BlogList";
 import ModifieBlog from "./routes/staff-manage/blog-management/ModifieBlog";
-
-
+import ViewRoom from "./routes/students/ViewRoom";
+import ProtectedRoute from "./routes/auth/ProtectedRouter";
+import NotAuthenticate from "./layouts/home/NotAuthenticate";
 
 export function HomeContent() {
   return (
@@ -57,77 +58,116 @@ export function HomeContent() {
   );
 }
 
+
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Layout />, // Layout chứa tất cả các trang
+    element: <Layout />,
     children: [
-      { index: true, element: <HomeContent /> }, // Trang chủ "/"
+      { index: true, element: <HomeContent /> },
       { path: "login", element: <Login /> },
       { path: "blog", element: <Blog /> },
       { path: "blog/:id", element: <BlogDetail /> },
       { path: "about", element: <About /> },
       { path: "not-found", element: <NotFound /> },
-      { path: "profile", element: <ViewProfile /> },
-      { path: "change-profile", element: <ChangeProfile /> },
+      { path: "not-authenticate", element: <NotAuthenticate /> },
 
+      { path: "profile", element: <ProtectedRoute><ViewProfile /></ProtectedRoute> },
+      { path: "change-profile", element: <ProtectedRoute><ChangeProfile /></ProtectedRoute> },
+
+      { path: "rooms", element: <ViewRoom /> },
       { path: "areas", element: <ViewAreas /> },
-      { path: "confirm-payment", element: <Payment /> },
-      { path: "booked-seats", element: <ViewBookedSeats /> },
-      { path: "booked-history", element: <ViewBookingHistory /> },
-      { path: "booked-history/:id", element: <BookHistoriedDetail /> },
-      { path: "wallet", element: <Wallet /> },
+      { path: "confirm-payment", element: <ProtectedRoute><Payment /></ProtectedRoute> },
+      { path: "booked-seats", element: <ProtectedRoute><ViewBookedSeats /></ProtectedRoute> },
+      { path: "booked-history", element: <ProtectedRoute><ViewBookingHistory /></ProtectedRoute> },
+      { path: "booked-history/:id", element: <ProtectedRoute><BookHistoriedDetail /></ProtectedRoute> },
+      { path: "wallet", element: <ProtectedRoute><Wallet /></ProtectedRoute> },
 
-      { path: "dashboard", element: <DashboardPage /> }, // Trang dashboard chính
-      { path: "dashboard/area", element: <AreaList /> },
-      
-      //Blog Manage
-      { path: "dashboard/blog", element: <BlogListOfStaff/>},
-      // { path: "dashboard/blog/detail", element: <BlogDetail/>},
-      // { path: "dashboard/blog/create", element: <CreateBlog/>},
-      // { path: "dashboard/blog/update", element: <UpdateBlog/>},
-      // { path: "dashboard/blog/delete", element: <DeleteBlog/>},
-
-      //Facilities Manage
-      { path: "dashboard/facilities", element: <FacilitiesList /> },
-      { path: "dashboard/facilities/:id", element: <FacilitiesDetail /> }, // Fix đường dẫn
-      { path: "dashboard/facilities/create", element: <CreateFacilities /> },
+      {
+        path: "dashboard",
+        element: <ProtectedRoute><DashboardPage /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/area",
+        element: <ProtectedRoute><AreaList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/blog",
+        element: <ProtectedRoute><BlogListOfStaff /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities",
+        element: <ProtectedRoute><FacilitiesList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities/:id",
+        element: <ProtectedRoute><FacilitiesDetail /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities/create",
+        element: <ProtectedRoute><CreateFacilities /></ProtectedRoute>,
+      },
       {
         path: "dashboard/facilities/update/:id",
-        element: <UpdateFacilities />,
-      }, // Fix đường dẫn
+        element: <ProtectedRoute><UpdateFacilities /></ProtectedRoute>,
+      },
       {
         path: "dashboard/facilities/delete/:id",
-        element: <DeleteFacilities />,
-      }, // Fix đường dẫn
-      //Room Manage
-      { path: "dashboard/room", element: <RoomList /> },
-      
 
-      { path: "dashboard/slot", element: <SlotList /> },
+        element: <ProtectedRoute><DeleteFacilities /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/room",
+        element: <ProtectedRoute><RoomList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/slot",
+        element: <ProtectedRoute><SlotList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account",
+        element: <ProtectedRoute><AccountList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account/detail",
+        element: <ProtectedRoute><AccountDetail /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account/create",
+        element: <ProtectedRoute><CreateAccount /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account/update/:id",
+        element: <ProtectedRoute><UpdateAccount /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account/delete/:id",
+        element: <ProtectedRoute><DeleteAccount /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/banned",
+        element: <ProtectedRoute><BannedList /></ProtectedRoute>,
+      },
 
-      //Account Manage
-      { path: "dashboard/account", element: <AccountList /> },
-      { path: "dashboard/account/detail", element: <AccountDetail /> },
-      { path: "dashboard/account", element: <CreateAccount /> },
-      { path: "dashboard/account", element: <UpdateAccount /> },
-      { path: "dashboard/account", element: <DeleteAccount /> },
+      {
+        path: "manage",
+        element: <ProtectedRoute><BookingList /></ProtectedRoute>,
+      },
+      {
+        path: "manage/booking-history/:id",
+        element: <ProtectedRoute><BookingDetail /></ProtectedRoute>,
+      },
+      {
+        path: "manage/blog-list",
+        element: <ProtectedRoute><BlogList /></ProtectedRoute>,
+      },
+      {
+        path: "manage/update-blog/:id",
+        element: <ProtectedRoute><ModifieBlog /></ProtectedRoute>,
+      },
 
-      { path: "dashboard/banned", element: <BannedList /> },
 
-      { path: "dashboard/banned", element: <BannedList/> },
-
-      //Blog Manage
-      { path: "dashboard/blog", element: <BlogListOfStaff/>},
-
-      //Staff Manage
-      { path: "manage", element: <BookingList/>},
-      { path: "manage/booking-history/:id", element: <BookingDetail/>},
-      { path: "manage/blog", element: <BlogList/>},
-      // { path: "manage/blog/create", element: <CreateBolg/>},
-      { path: "manage/blog/:id", element: <ModifieBlog/>},
-
-      
+      { path: "*", element: <NotFound /> },
     ],
   },
 ]);

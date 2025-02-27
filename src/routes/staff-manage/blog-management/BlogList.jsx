@@ -7,7 +7,7 @@ const BlogList = () => {
   const theme = useTheme();
 
   return (
-    <div>
+    <div className="mr-3">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Danh sách Blog</h2>
         <Link

@@ -18,7 +18,7 @@ const HeroSection = () => {
       </p>
       <div className="flex justify-center my-10">
         {isLoggedIn ? (
-          <Link to="/areas" className="bg-gradient-to-r from-orange-500 to-orange-800 py-3 px-4 mx-3 rounded-md text-white">
+          <Link to="/rooms" className="bg-gradient-to-r from-orange-500 to-orange-800 py-3 px-4 mx-3 rounded-md text-white">
             Trải nghiệm dịch vụ ngay
           </Link>
         ) : (

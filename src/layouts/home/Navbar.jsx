@@ -69,7 +69,7 @@ const Navbar = () => {
           ))}
           {isLoggedIn && (
             <li>
-              <Link to="/areas">Dịch vụ</Link>
+              <Link to="/rooms">Dịch vụ</Link>
             </li>
           )}
         </ul>
@@ -144,7 +144,10 @@ const Navbar = () => {
                               connectWallet();
                               setMobileDrawerOpen(false);
                             }}
-                            className="block px-4 py-3 hover:bg-gray-200"
+                            className={`block px-4 py-3 ${theme === "dark"
+                          ? "hover:bg-gray-700"
+                          : "hover:bg-slate-300"
+                          }`}
                           >
                             <div className="flex items-center gap-2">
                               <Wallet size={18} />Kết nối ví
@@ -255,7 +258,7 @@ const Navbar = () => {
             {isLoggedIn && (
               <li>
                 <Link
-                  to="/areas"
+                  to="/rooms"
                   onClick={() => setMobileDrawerOpen(false)}
                   className="block px-4 py-3 hover:bg-gray-200"
                 >

@@ -8,13 +8,17 @@ import { toast } from 'react-toastify';
 
 const Login = () => {
   const dispatch = useDispatch();
-  const { isLoading, error } = useSelector((state) => state.auth);
+  const { isLoading } = useSelector((state) => state.auth);
   const theme = useTheme();
   const navigate = useNavigate();
 
   const handleGoogleLogin = async () => {
     try {
-      await dispatch(loginWithGoogle()).unwrap();  // Dùng `.unwrap()` để bắt lỗi từ async thunk
+      const user = await dispatch(loginWithGoogle()).unwrap();  // Dùng `.unwrap()` để bắt lỗi từ async thunk
+      if (!user?.email?.endsWith("@fpt.edu.vn")) {
+        toast.error("Bạn phải sử dụng email @fpt.edu.vn để đăng nhập!");
+        return;
+      };
       toast.success("Đăng nhập thành công")
       navigate("/");
     } catch (error) {
@@ -53,8 +57,6 @@ const Login = () => {
             </>
           )}
         </button>
-
-        {error && <p className="text-red-500 text-center mt-2">{error}</p>}
       </div>
     </div>
   );
