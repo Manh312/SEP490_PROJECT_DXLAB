@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 
 const Login = () => {
   const dispatch = useDispatch();
-  const { isLoading, error } = useSelector((state) => state.auth);
+  const { isLoading } = useSelector((state) => state.auth);
   const theme = useTheme();
   const navigate = useNavigate();
 

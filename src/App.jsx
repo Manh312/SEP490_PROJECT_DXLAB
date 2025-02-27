@@ -84,31 +84,85 @@ const router = createBrowserRouter([
       { path: "wallet", element: <ProtectedRoute><Wallet /></ProtectedRoute> },
 
       {
-        path: "dashboard", element: <ProtectedRoute><DashboardPage /></ProtectedRoute>, children: [
-          { path: "area", element: <AreaList /> },
-          { path: "blog", element: <BlogListOfStaff /> },
-          { path: "facilities", element: <FacilitiesList /> },
-          { path: "facilities/:id", element: <FacilitiesDetail /> },
-          { path: "facilities/create", element: <CreateFacilities /> },
-          { path: "facilities/update/:id", element: <UpdateFacilities /> },
-          { path: "facilities/delete/:id", element: <DeleteFacilities /> },
-          { path: "room", element: <RoomList /> },
-          { path: "slot", element: <SlotList /> },
-          { path: "account", element: <AccountList /> },
-          { path: "account/detail", element: <AccountDetail /> },
-          { path: "account/create", element: <CreateAccount /> },
-          { path: "account/update/:id", element: <UpdateAccount /> },
-          { path: "account/delete/:id", element: <DeleteAccount /> },
-          { path: "banned", element: <BannedList /> },
-        ]
+        path: "dashboard",
+        element: <ProtectedRoute><DashboardPage /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/area",
+        element: <ProtectedRoute><AreaList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/blog",
+        element: <ProtectedRoute><BlogListOfStaff /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities",
+        element: <ProtectedRoute><FacilitiesList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities/:id",
+        element: <ProtectedRoute><FacilitiesDetail /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities/create",
+        element: <ProtectedRoute><CreateFacilities /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities/update/:id",
+        element: <ProtectedRoute><UpdateFacilities /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/facilities/delete/:id",
+        element: <ProtectedRoute><DeleteFacilities /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/room",
+        element: <ProtectedRoute><RoomList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/slot",
+        element: <ProtectedRoute><SlotList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account",
+        element: <ProtectedRoute><AccountList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account/detail",
+        element: <ProtectedRoute><AccountDetail /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account/create",
+        element: <ProtectedRoute><CreateAccount /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account/update/:id",
+        element: <ProtectedRoute><UpdateAccount /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/account/delete/:id",
+        element: <ProtectedRoute><DeleteAccount /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/banned",
+        element: <ProtectedRoute><BannedList /></ProtectedRoute>,
       },
 
       {
-        path: "manage", element: <ProtectedRoute element={<BookingList />} />, children: [
-          { path: "booking-history/:id", element: <BookingDetail /> },
-          { path: "blog-list", element: <BlogList /> },
-          { path: "update-blog/:id", element: <ModifieBlog /> },
-        ]
+        path: "manage",
+        element: <ProtectedRoute><BookingList /></ProtectedRoute>,
+      },
+      {
+        path: "manage/booking-history/:id",
+        element: <ProtectedRoute><BookingDetail /></ProtectedRoute>,
+      },
+      {
+        path: "manage/blog-list",
+        element: <ProtectedRoute><BlogList /></ProtectedRoute>,
+      },
+      {
+        path: "manage/update-blog/:id",
+        element: <ProtectedRoute><ModifieBlog /></ProtectedRoute>,
       },
 
       { path: "*", element: <NotFound /> },
