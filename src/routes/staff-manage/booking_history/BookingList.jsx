@@ -8,7 +8,7 @@ const BookingList = () => {
   const theme = useTheme();
 
   return (
-    <div>
+    <div className="mr-3">
       <h2 className="text-2xl font-bold mb-4">Danh sách đặt chỗ</h2>
       <div
         className={`card col-span-1 md:col-span-2 lg:col-span-3 mt-5 mb-10 ${
