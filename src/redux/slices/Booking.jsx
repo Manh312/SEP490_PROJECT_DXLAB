@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   isModalOpen: false,
-  selectedArea: null,
+  selectedArea: "",
   selectedTime: "",
   peopleCount: 1,
   selectedSlots: [],
@@ -35,6 +35,9 @@ const bookingSlice = createSlice({
     setMonthRange: (state, action) => {
       state.monthRange = action.payload;
     },
+    setSelectedArea: (state, action) => {
+      state.selectedArea = action.payload;
+    },
     confirmBooking: (state, action) => {
       const selectedTime = action.payload;
       state.selectedTime = selectedTime;
@@ -50,6 +53,7 @@ export const {
   setSelectedTime,
   setPeopleCount,
   setSelectedSlots,
+  setSelectedArea,
   setMonthRange,
   confirmBooking
 } = bookingSlice.actions;

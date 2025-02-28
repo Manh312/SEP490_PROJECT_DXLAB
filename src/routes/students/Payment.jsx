@@ -38,7 +38,7 @@ const Payment = () => {
             Xác nhận Thanh Toán
           </Link>
           <Link
-            to="/areas"
+            to={`/rooms/`}
             className="w-full px-6 py-3 text-center bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
           >
             Quay lại Khu Vực chọn

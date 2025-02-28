@@ -45,6 +45,7 @@ import ModifieBlog from "./routes/staff-manage/blog-management/ModifieBlog";
 import ViewRoom from "./routes/students/ViewRoom";
 import ProtectedRoute from "./routes/auth/ProtectedRouter";
 import NotAuthenticate from "./layouts/home/NotAuthenticate";
+import AreaDetail from "./routes/students/AreaDetail";
 
 export function HomeContent() {
   return (
@@ -75,8 +76,9 @@ const router = createBrowserRouter([
       { path: "profile", element: <ProtectedRoute><ViewProfile /></ProtectedRoute> },
       { path: "change-profile", element: <ProtectedRoute><ChangeProfile /></ProtectedRoute> },
 
-      { path: "rooms", element: <ViewRoom /> },
-      { path: "areas", element: <ViewAreas /> },
+      { path: "rooms", element: <ProtectedRoute><ViewRoom /></ProtectedRoute> },
+      { path: "room/:id", element: <ProtectedRoute><ViewAreas /></ProtectedRoute> },
+      { path: "area/:typeName", element: <ProtectedRoute><AreaDetail /></ProtectedRoute> },
       { path: "confirm-payment", element: <ProtectedRoute><Payment /></ProtectedRoute> },
       { path: "booked-seats", element: <ProtectedRoute><ViewBookedSeats /></ProtectedRoute> },
       { path: "booked-history", element: <ProtectedRoute><ViewBookingHistory /></ProtectedRoute> },

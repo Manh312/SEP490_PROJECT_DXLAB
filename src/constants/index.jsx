@@ -43,6 +43,79 @@ export const services = [
   },
 ];
 
+export const blogPosts = [
+  {
+    id: "1",
+    title: "Không gian làm việc hiện đại tại DXLAB",
+    date: "20/02/2025",
+    image: images1,
+    content: `DXLAB mang đến không gian làm việc linh hoạt, sáng tạo, phù hợp cho cá nhân và nhóm. 
+    Hãy khám phá sự tiện nghi mà chúng tôi cung cấp.
+
+    Với thiết kế hiện đại, DXLAB tạo ra môi trường làm việc chuyên nghiệp, giúp bạn tối ưu năng suất và 
+    sáng tạo. Chúng tôi cung cấp đầy đủ tiện nghi như Wi-Fi tốc độ cao, khu vực tiếp khách, phòng họp, và 
+    không gian thư giãn. Không chỉ là nơi làm việc, DXLAB còn là cộng đồng dành cho những người đam mê 
+    khởi nghiệp, nơi bạn có thể kết nối và học hỏi từ những chuyên gia trong ngành.
+
+    Ngoài ra, DXLAB còn tổ chức nhiều sự kiện, hội thảo và workshop giúp bạn mở rộng kiến thức, kết nối 
+    với các nhà đầu tư, doanh nhân và chuyên gia hàng đầu. Đừng bỏ lỡ cơ hội trải nghiệm không gian làm việc 
+    tuyệt vời này tại DXLAB!`
+  },
+  {
+    id: "2",
+    title: "Lợi ích của co-working space đối với freelancer",
+    date: "18/02/2025",
+    image: images2,
+    content: `Freelancer có thể tận hưởng môi trường làm việc chuyên nghiệp, kết nối với cộng đồng và 
+    tăng năng suất khi làm việc tại DXLAB.
+
+    Co-working space không chỉ đơn thuần là một nơi để làm việc mà còn mang lại nhiều lợi ích đáng kể 
+    cho freelancer. Một trong những ưu điểm lớn nhất là bạn có thể làm việc trong một môi trường chuyên nghiệp 
+    với đầy đủ tiện nghi, giúp giảm thiểu sự xao nhãng so với làm việc tại nhà. 
+
+    Bên cạnh đó, co-working space giúp freelancer có cơ hội gặp gỡ và mở rộng mối quan hệ với những người 
+    có cùng chí hướng. Việc kết nối với cộng đồng không chỉ tạo ra cơ hội hợp tác mà còn giúp bạn học hỏi từ 
+    những chuyên gia trong lĩnh vực của mình.
+
+    Ngoài ra, không gian làm việc chung như DXLAB còn tổ chức nhiều sự kiện, hội thảo và chương trình đào tạo, 
+    giúp bạn nâng cao kỹ năng và cập nhật xu hướng mới nhất trong ngành. Nếu bạn đang tìm kiếm một nơi làm việc 
+    chuyên nghiệp, linh hoạt và sáng tạo, co-working space chính là lựa chọn hoàn hảo cho bạn!`,
+    images: images3,
+    contents: `Freelancer có thể tận hưởng môi trường làm việc chuyên nghiệp, kết nối với cộng đồng và 
+    tăng năng suất khi làm việc tại DXLAB.
+
+    Co-working space không chỉ đơn thuần là một nơi để làm việc mà còn mang lại nhiều lợi ích đáng kể 
+    cho freelancer. Một trong những ưu điểm lớn nhất là bạn có thể làm việc trong một môi trường chuyên nghiệp 
+    với đầy đủ tiện nghi, giúp giảm thiểu sự xao nhãng so với làm việc tại nhà. 
+
+    Bên cạnh đó, co-working space giúp freelancer có cơ hội gặp gỡ và mở rộng mối quan hệ với những người 
+    có cùng chí hướng. Việc kết nối với cộng đồng không chỉ tạo ra cơ hội hợp tác mà còn giúp bạn học hỏi từ 
+    những chuyên gia trong lĩnh vực của mình.
+
+    Ngoài ra, không gian làm việc chung như DXLAB còn tổ chức nhiều sự kiện, hội thảo và chương trình đào tạo, 
+    giúp bạn nâng cao kỹ năng và cập nhật xu hướng mới nhất trong ngành. Nếu bạn đang tìm kiếm một nơi làm việc 
+    chuyên nghiệp, linh hoạt và sáng tạo, co-working space chính là lựa chọn hoàn hảo cho bạn!`,
+  },
+  {
+    id: "3",
+    title: "Không gian làm việc hiện đại tại DXLAB",
+    date: "20/02/2025",
+    image: images1,
+    content: `DXLAB mang đến không gian làm việc linh hoạt, sáng tạo, phù hợp cho cá nhân và nhóm. 
+    Hãy khám phá sự tiện nghi mà chúng tôi cung cấp.
+
+    Với thiết kế hiện đại, DXLAB tạo ra môi trường làm việc chuyên nghiệp, giúp bạn tối ưu năng suất và 
+    sáng tạo. Chúng tôi cung cấp đầy đủ tiện nghi như Wi-Fi tốc độ cao, khu vực tiếp khách, phòng họp, và 
+    không gian thư giãn. Không chỉ là nơi làm việc, DXLAB còn là cộng đồng dành cho những người đam mê 
+    khởi nghiệp, nơi bạn có thể kết nối và học hỏi từ những chuyên gia trong ngành.
+
+    Ngoài ra, DXLAB còn tổ chức nhiều sự kiện, hội thảo và workshop giúp bạn mở rộng kiến thức, kết nối 
+    với các nhà đầu tư, doanh nhân và chuyên gia hàng đầu. Đừng bỏ lỡ cơ hội trải nghiệm không gian làm việc 
+    tuyệt vời này tại DXLAB!`
+  },
+];
+
+
 export const about = [
   {
     title: "CHỖ NGỒI CÁ NHÂN CỐ ĐỊNH",
@@ -58,16 +131,19 @@ export const about = [
 
 export const rooms = [
   {
+    id: 1,
     name: "Phòng 318",
     description: "Phòng DXLAB thuộc dãy toàn Delta tại trường đại học FPT.",
     images: images1,
   },
   {
+    id: 2,
     name: "Phòng 319",
     description: "Phòng DXLAB thuộc dãy toàn Delta tại trường đại học FPT.",
     images: images1,
   },
   {
+    id: 3,
     name: "Phòng 320",
     description: "Phòng DXLAB thuộc dãy toàn Delta tại trường đại học FPT.",
     images: images1,
@@ -160,26 +236,36 @@ export const slots = [
 export const areas = [
   {
     id: 1,
-    type: "personal", // Thêm type cho khu vực cá nhân
+    type: "personal", 
     name: "Khu vực cá nhân",
     description:
-      "Không gian yên tĩnh, lý tưởng cho cá nhân làm việc tập trung.",
+      "Không gian yên tĩnh, lý tưởng cho cá nhân làm việc tập trung. Được thiết kế dành riêng cho những người cần sự riêng tư và tập trung cao độ. Bạn có thể tận hưởng không gian thoáng đãng, ánh sáng tự nhiên và trang bị đầy đủ tiện ích để làm việc hiệu quả.",
     image: images1,
     features: [
-      "Chỗ ngồi làm việc riêng",
-      "Internet tốc độ cao",
-      "Không gian yên tĩnh",
+      "Chỗ ngồi làm việc riêng với bàn và ghế tiện nghi",
+      "Internet tốc độ cao, hỗ trợ làm việc trực tuyến mượt mà",
+      "Không gian yên tĩnh, giảm thiểu tiếng ồn tối đa",
+      "Ổ cắm điện thuận tiện, hỗ trợ sạc thiết bị cá nhân",
+      "Khu vực thư giãn đi kèm, giúp tái tạo năng lượng sau giờ làm việc",
     ],
   },
   {
     id: 2,
-    type: "group", // Thêm type cho khu vực nhóm
+    type: "group", 
     name: "Khu vực nhóm",
-    description: "Không gian linh hoạt, phù hợp cho nhóm làm việc chung.",
+    description: 
+      "Không gian linh hoạt, phù hợp cho nhóm làm việc chung. Được thiết kế nhằm đáp ứng nhu cầu trao đổi, làm việc nhóm một cách hiệu quả. Bạn có thể tổ chức các cuộc họp, thảo luận nhóm hoặc làm việc cùng đồng đội mà không bị giới hạn về không gian.",
     image: images3,
-    features: ["Bàn làm việc nhóm", "Khu vực riêng", "Không gian yên tĩnh"],
+    features: [
+      "Bàn làm việc nhóm rộng rãi, hỗ trợ nhiều người cùng làm việc",
+      "Khu vực riêng biệt, đảm bảo sự thoải mái và linh hoạt",
+      "Trang bị bảng trắng hoặc màn hình trình chiếu phục vụ thảo luận",
+      "Hệ thống âm thanh chất lượng, phục vụ các buổi họp nhóm",
+      "Không gian mở với thiết kế hiện đại, giúp tăng cường sáng tạo",
+    ],
   },
 ];
+
 
 export const features = [
   {
