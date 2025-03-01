@@ -1,7 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import { setWalletAddress } from "../../redux/slices/Authentication";
 import { toast } from "react-toastify";
 import { FaAddressCard, FaMoneyBill } from "react-icons/fa";
 import { Network } from "lucide-react";
