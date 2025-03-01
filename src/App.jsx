@@ -45,11 +45,9 @@ import ModifieBlog from "./routes/staff-manage/blog-management/ModifieBlog";
 import ViewRoom from "./routes/students/ViewRoom";
 import ProtectedRoute from "./routes/auth/ProtectedRouter";
 import NotAuthenticate from "./layouts/home/NotAuthenticate";
-// <<<<<<< HEAD
-// import RoomDetail from "./routes/room/RoomDetail";
-// import UpdateRoom from "./routes/room/UpdateRoom";
-// import CreateRoom from "./routes/room/CreateRoom";
-// =======
+import RoomDetail from "./routes/room/RoomDetail";
+import UpdateRoom from "./routes/room/UpdateRoom";
+import CreateRoom from "./routes/room/CreateRoom";
 import AreaDetail from "./routes/students/AreaDetail";
 
 
