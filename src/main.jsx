@@ -21,7 +21,8 @@ createRoot(document.getElementById("root")).render(
         trustWallet(),           
         embeddedWallet({ 
           auth: {
-            loginMethods: ["google", "facebook", "email", "sms"], 
+            loginMethods: ["google", "facebook", "email"], 
+            disableEmailLogin: true,
           },
         }),
       ]}
