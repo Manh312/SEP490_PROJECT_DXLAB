@@ -34,7 +34,6 @@ import SlotList from './routes/slot/SlotList';
 import Banner from './layouts/home/Banner';
 import ViewBookingHistory from './routes/students/ViewBookHistoried';
 import BookHistoriedDetail from './routes/students/BookHistoriedDetail';
-import Wallet from './routes/students/Wallet';
 import BookingList from "./routes/staff-manage/booking_history/BookingList";
 import BookingDetail from "./routes/staff-manage/booking_history/BookingDetail";
 import BlogList from "./routes/staff-manage/blog-management/BlogList";
@@ -76,7 +75,6 @@ const router = createBrowserRouter([
       { path: "booked-seats", element: <ProtectedRoute><ViewBookedSeats /></ProtectedRoute> },
       { path: "booked-history", element: <ProtectedRoute><ViewBookingHistory /></ProtectedRoute> },
       { path: "booked-history/:id", element: <ProtectedRoute><BookHistoriedDetail /></ProtectedRoute> },
-      { path: "wallet", element: <ProtectedRoute><Wallet /></ProtectedRoute> },
 
       {
         path: "dashboard",

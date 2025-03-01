@@ -20,7 +20,7 @@ const HeroSection = () => {
           Trải nghiệm dịch vụ ngay
         </Link>
         ) : (
-          <Link to="/login" className="bg-gradient-to-r from-orange-500 to-orange-800 py-3 px-4 mx-3 rounded-md text-white">
+          <Link to="/not-authenticate" className="bg-gradient-to-r from-orange-500 to-orange-800 py-3 px-4 mx-3 rounded-md text-white">
             Trải nghiệm dịch vụ ngay
           </Link>
         )}

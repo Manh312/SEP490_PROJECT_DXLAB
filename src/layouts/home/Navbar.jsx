@@ -1,4 +1,4 @@
-import { History, Menu, Moon, Sun, User, X,  } from "lucide-react";
+import { Menu, Moon, Sun, X, } from "lucide-react";
 import { useState } from "react";
 import logo from "../../assets/logo_images.png";
 import { navItems } from "../../constants";
@@ -8,7 +8,6 @@ import { ConnectWallet, useAddress } from "@thirdweb-dev/react";
 
 const Navbar = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  // const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { theme, setTheme } = useTheme();
 
   const address = useAddress();
@@ -38,31 +37,7 @@ const Navbar = () => {
         </ul>
 
         <div className="hidden lg:flex justify-center space-x-6 items-center">
-          {address ? (
-            <div className="relative">
-              {/* <button onClick={() => setIsDropdownOpen(!isDropdownOpen)}> */}
-                <ConnectWallet size={16} />
-              {/* </button> */}
-              {/* {isDropdownOpen && (
-                <div className={`absolute right-0 mt-2 w-48 rounded-lg shadow-lg ${theme === "dark" ? "bg-neutral-900" : "bg-slate-100"}`}>
-                  <ul className="py-2">
-                    <li className="px-4 py-2 flex items-center gap-2 cursor-pointer hover:bg-gray-700">
-                      <Link to="/profile" className="flex items-center gap-2 w-full">
-                        <User size={16} /> Hồ sơ
-                      </Link>
-                    </li>
-                    <li className="px-4 py-2 flex items-center gap-2 cursor-pointer hover:bg-gray-700 border-t">
-                      <Link to="/booked-history" className="flex items-center gap-2 w-full">
-                        <History size={16} /> Lịch sử
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              )} */}
-            </div>
-          ) : (
-            <ConnectWallet />
-          )}
+          <ConnectWallet btnTitle="Login" modalSize="wide" />
 
           <button
             className="p-2 ml-5 border rounded-md transition-colors"
