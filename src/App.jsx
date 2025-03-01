@@ -7,12 +7,9 @@ import HeroSection from './layouts/home/HeroSection';
 import FeatureSection from './layouts/home/FeatureSection';
 import Blog from './layouts/blog/Blog';
 import Pricing from './layouts/home/Pricing';
-import Login from './routes/auth/Login';
 import About from './layouts/home/About';
 import Services from './layouts/home/Services';
 import BlogDetail from './layouts/blog/BlogDetail';
-import ViewProfile from './layouts/profile/ViewProfile';
-import ChangeProfile from './layouts/profile/ChangeProfile';
 import AreaList from './routes/areas/AreaList';
 import FacilitiesList from './routes/facilities/FacilitiesList';
 import AccountList from './routes/account/AccountList';
@@ -37,7 +34,6 @@ import SlotList from './routes/slot/SlotList';
 import Banner from './layouts/home/Banner';
 import ViewBookingHistory from './routes/students/ViewBookHistoried';
 import BookHistoriedDetail from './routes/students/BookHistoriedDetail';
-import Wallet from './routes/students/Wallet';
 import BookingList from "./routes/staff-manage/booking_history/BookingList";
 import BookingDetail from "./routes/staff-manage/booking_history/BookingDetail";
 import BlogList from "./routes/staff-manage/blog-management/BlogList";
@@ -70,15 +66,11 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <HomeContent /> },
-      { path: "login", element: <Login /> },
       { path: "blog", element: <Blog /> },
       { path: "blog/:id", element: <BlogDetail /> },
       { path: "about", element: <About /> },
       { path: "not-found", element: <NotFound /> },
       { path: "not-authenticate", element: <NotAuthenticate /> },
-
-      { path: "profile", element: <ProtectedRoute><ViewProfile /></ProtectedRoute> },
-      { path: "change-profile", element: <ProtectedRoute><ChangeProfile /></ProtectedRoute> },
 
       { path: "rooms", element: <ProtectedRoute><ViewRoom /></ProtectedRoute> },
       { path: "room/:id", element: <ProtectedRoute><ViewAreas /></ProtectedRoute> },
@@ -87,7 +79,6 @@ const router = createBrowserRouter([
       { path: "booked-seats", element: <ProtectedRoute><ViewBookedSeats /></ProtectedRoute> },
       { path: "booked-history", element: <ProtectedRoute><ViewBookingHistory /></ProtectedRoute> },
       { path: "booked-history/:id", element: <ProtectedRoute><BookHistoriedDetail /></ProtectedRoute> },
-      { path: "wallet", element: <ProtectedRoute><Wallet /></ProtectedRoute> },
 
       {
         path: "dashboard",

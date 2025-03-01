@@ -13,6 +13,9 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.5.1",
     "@tailwindcss/vite": "^4.0.5",
+    "@thirdweb-dev/auth": "^4.1.97",
+    "@thirdweb-dev/react": "^4.9.4",
+    "@thirdweb-dev/wallets": "^2.5.39",
     "@uidotdev/usehooks": "^2.4.1",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
@@ -33,7 +36,8 @@
     "redux-persist": "^6.0.0",
     "swiper": "^11.2.4",
     "tailwind-merge": "^3.0.1",
-    "tailwindcss": "^4.0.5"
+    "tailwindcss": "^4.0.5",
+    "viem": "^2.23.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
