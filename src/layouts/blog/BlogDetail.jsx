@@ -1,26 +1,8 @@
 import { useParams } from 'react-router-dom';
-import images1 from '../../assets/images1.png';
+import { blogPosts } from '../../constants';
 
 const BlogDetail = () => {
   const { id } = useParams();
-
-  // Giả định danh sách bài viết
-  const blogPosts = [
-    {
-      id: "1",
-      title: "Không gian làm việc hiện đại tại DXLAB",
-      date: "20/02/2025",
-      image: images1,
-      content: "DXLAB mang đến không gian làm việc linh hoạt, sáng tạo, phù hợp cho cá nhân và nhóm. Hãy khám phá sự tiện nghi mà chúng tôi cung cấp."
-    },
-    {
-      id: "2",
-      title: "Lợi ích của co-working space đối với freelancer",
-      date: "18/02/2025",
-      image: images1,
-      content: "Freelancer có thể tận hưởng môi trường làm việc chuyên nghiệp, kết nối với cộng đồng và tăng năng suất khi làm việc tại DXLAB."
-    }
-  ];
 
   const post = blogPosts.find(blog => blog.id === id);
 
@@ -36,6 +18,8 @@ const BlogDetail = () => {
         <p className="text-gray-500 mb-6">Ngày đăng: {post.date}</p>
         <img src={post.image} alt={post.title} className="w-full rounded-lg shadow-lg mb-6 object-cover" />
         <p className="text-lg text-justify">{post.content}</p>
+        <img src={post.images} alt={''} className="w-full rounded-lg shadow-lg mb-6 object-cover" />
+        <p className="text-lg text-justify">{post.contents}</p>
       </div>
     </div>
   );
