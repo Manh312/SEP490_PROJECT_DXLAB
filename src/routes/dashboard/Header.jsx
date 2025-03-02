@@ -14,7 +14,7 @@ const Header = ({ setCollapsed }) => {
         >
           <ChevronsLeft className={`${theme === "dark" ? "text-white" : "text-black"}`} size={24} />
         </button>
-        <div className="relative flex items-center border rounded-md px-2 py-1">
+        {/* <div className="relative flex items-center border rounded-md px-2 py-1">
           <Search size={20} className={`${theme === "dark" ? "text-white" : "text-black"}`} />
           <input
             type="text"
@@ -25,7 +25,7 @@ const Header = ({ setCollapsed }) => {
               ${theme === "dark" ? "placeholder:text-gray-400" : "placeholder:text-gray-600"}
             `}
           />
-        </div>
+        </div> */}
       </div>
     </header>
   );

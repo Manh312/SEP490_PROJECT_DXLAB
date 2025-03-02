@@ -691,3 +691,8 @@ export const blogData = [
     status: "Published",
   },
 ];
+export const room = [
+  { id: 1, name: "Phòng DE318", status: "inactive" },
+  { id: 2, name: "Phòng DE318", status: "active" }
+  
+];
