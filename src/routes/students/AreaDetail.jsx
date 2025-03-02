@@ -84,13 +84,13 @@ const AreaDetail = () => {
 
   return (
     <div className="p-6 min-h-screen flex flex-col md:flex-row gap-6 mt-15">
-      <div className="md:w-1/2">
+      <div className="md:w-1/2 mr-10">
         <h1 className="text-3xl font-bold text-center mb-6">{area.name}</h1>
         <img src={area.image} alt={area.name} className="w-full h-64 object-cover rounded-md mb-6" />
         <p className="text-center mb-4">{area.description}</p>
       </div>
 
-      <div className="md:w-1/2 bg-gray-100 p-6 rounded-lg shadow-md">
+      <div className="md:w-1/2 p-6 rounded-lg border shadow-md mt-15 mb-60 ml-10">
         <div className='flex justify-between'>
           <h2 className="text-xl font-bold mb-4">Đăng ký đặt chỗ</h2>
           <CalendarDaysIcon className="h-6 w-6 text-gray-600 cursor-pointer hover:text-orange-500" onClick={() => setIsScheduleOpen(true)} />

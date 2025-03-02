@@ -13,7 +13,7 @@ const ProtectedRoute = ({ children }) => {
 
     const timeout = setTimeout(() => {
       setIsLoading(false);
-    }, 800); // Đảm bảo thời gian chờ đủ lâu để tránh nhấp nháy
+    }, 300); // Đảm bảo thời gian chờ đủ lâu để tránh nhấp nháy
 
     return () => clearTimeout(timeout); // Xóa timeout khi component unmount
   }, [status, address]);
