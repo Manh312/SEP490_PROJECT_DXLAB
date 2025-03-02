@@ -11,7 +11,7 @@ const NotAuthenticate = () => {
           Bạn chưa đăng nhập! Vui lòng ấn nút đăng nhập dưới đây <br />
           hoặc nhấn nút đăng nhập ở góc bên phải trên cùng để tiếp tục.
         </p>
-        <ConnectWallet btnTitle="Đăng nhập ngay" style={{ marginTop: "1rem", backgroundColor: "var(--color-orange-500)", color: "white" }}/>
+        <ConnectWallet btnTitle="Đăng nhập ngay" style={{ marginTop: "1rem", backgroundColor: "tan", color: "black" }}/>
       </div>
     </div>
   );
