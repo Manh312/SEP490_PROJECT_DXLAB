@@ -20,10 +20,10 @@ createRoot(document.getElementById("root")).render(
         trustWallet(),           
         embeddedWallet({ 
           auth: {
-            loginMethods: ["google", "facebook"], 
+            options: ["google"]
           },
           onAuthSuccess: () => {
-            toast.success("Login and wallet connected successfully!");
+            toast.success("Đăng nhập thành công!");
           },
         }),
       ]}
