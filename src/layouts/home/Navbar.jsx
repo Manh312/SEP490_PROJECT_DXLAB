@@ -12,6 +12,7 @@ const Navbar = () => {
 
   const address = useAddress();
 
+
   const handleMobileDrawer = () => {
     setMobileDrawerOpen(!mobileDrawerOpen);
   };
@@ -37,7 +38,7 @@ const Navbar = () => {
         </ul>
 
         <div className="hidden lg:flex justify-center space-x-6 items-center">
-          <ConnectWallet btnTitle="Login" modalSize="wide" />
+          <ConnectWallet btnTitle={"Đăng nhập"} modalSize="wide" style={{ backgroundColor: "tan", color: "dark" }}/>
 
           <button
             className="p-2 ml-5 border rounded-md transition-colors"
@@ -56,7 +57,7 @@ const Navbar = () => {
 
       <div className={`fixed top-0 left-0 h-screen z-20 transition-transform duration-300 w-4/5 max-w-sm flex flex-col ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} ${mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <div className="flex items-center justify-between p-4 border-b">
-          <ConnectWallet theme="dark" className="w-full bg-orange-500 text-white py-2 px-3 rounded-md" />
+          <ConnectWallet btnTitle="Đăng nhập" modalSize="wide" style={{ backgroundColor: "tan", color: "dark" }} />
           <button onClick={handleMobileDrawer} className="p-2">
             <X size={24} />
           </button>
