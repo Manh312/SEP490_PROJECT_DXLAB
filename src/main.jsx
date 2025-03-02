@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
@@ -6,11 +5,11 @@ import { ThirdwebProvider, metamaskWallet, walletConnect, coinbaseWallet, trustW
 import App from "./App.jsx";
 import { store, persistor } from "./redux/Store.jsx";
 import "./styles.css";
+import { toast } from "react-toastify";
 
 const activeChain = "sepolia"; 
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
     <ThirdwebProvider
       activeChain={activeChain}
       clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID} 
@@ -21,8 +20,10 @@ createRoot(document.getElementById("root")).render(
         trustWallet(),           
         embeddedWallet({ 
           auth: {
-            loginMethods: ["google", "facebook", "email"], 
-            disableEmailLogin: true,
+            options: ["google"]
+          },
+          onAuthSuccess: () => {
+            toast.success("Đăng nhập thành công!");
           },
         }),
       ]}
@@ -33,5 +34,4 @@ createRoot(document.getElementById("root")).render(
         </PersistGate>
       </Provider>
     </ThirdwebProvider>
-  </StrictMode>
 );

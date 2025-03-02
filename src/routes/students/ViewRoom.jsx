@@ -4,8 +4,8 @@ import { rooms } from "../../constants";
 const ViewRoom = () => {
   return (
     <div className="p-8 flex flex-col items-center text-center mt-16 mb-20">
-      <h2 className="text-4xl font-bold mb-10 text-gray-900">
-        Danh sách phòng tại <span className="text-orange-500">DXLAB Co-Working Space</span>
+      <h2 className="text-4xl mb-10 tracking-wide">
+        Danh sách phòng tại <span className="bg-gradient-to-r from-orange-500 to-orange-800 text-transparent bg-clip-text">DXLAB Co-Working Space</span>
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl">
