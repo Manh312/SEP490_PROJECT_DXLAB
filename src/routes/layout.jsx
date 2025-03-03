@@ -6,7 +6,7 @@ import { useMediaQuery } from "@uidotdev/usehooks";
 import { useClickOutside } from "../hooks/use-click-outside";
 import { useEffect, useRef, useState } from "react";
 import Header from "./dashboard/Header";
-import { useAddress } from "@thirdweb-dev/react"; // 🔥 Dùng hook này đúng cách
+import { useAddress } from "@thirdweb-dev/react"; 
 
 const TIDIO_SCRIPT_URL = import.meta.env.VITE_TIDIO_SCRIPT_URL;
 
@@ -19,7 +19,6 @@ const Layout = () => {
   const [collapsed, setCollapsed] = useState(!isDesktopDevice);
   const sidebarRef = useRef(null);
 
-  // ✅ Gọi `useAddress()` để lấy địa chỉ ví
   const address = useAddress();
 
   useEffect(() => {

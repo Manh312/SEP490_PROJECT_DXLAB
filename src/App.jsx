@@ -45,6 +45,7 @@ import RoomDetail from "./routes/room/RoomDetail";
 import UpdateRoom from "./routes/room/UpdateRoom";
 import CreateRoom from "./routes/room/CreateRoom";
 import AreaDetail from "./routes/students/AreaDetail";
+import Test from "./routes/students/Test";
 
 
 export function HomeContent() {
@@ -79,6 +80,7 @@ const router = createBrowserRouter([
       { path: "booked-seats", element: <ProtectedRoute><ViewBookedSeats /></ProtectedRoute> },
       { path: "booked-history", element: <ProtectedRoute><ViewBookingHistory /></ProtectedRoute> },
       { path: "booked-history/:id", element: <ProtectedRoute><BookHistoriedDetail /></ProtectedRoute> },
+      { path: "test", element: <Test /> },
 
       {
         path: "dashboard",
