@@ -11,9 +11,10 @@ const BookingList = () => {
   const [users, setUsers] = useState([]);
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(""); // Thêm state cho tìm kiếm
+  const [searchTerm, setSearchTerm] = useState(""); 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  // Fetch data từ JSON Server
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -42,27 +43,22 @@ const BookingList = () => {
     fetchData();
   }, []);
 
-  // Cập nhật trạng thái booking và hiển thị toast thông báo
   const updateBookingStatus = async (id, newStatus) => {
     try {
       const response = await fetch(`http://localhost:5000/bookings/${id}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) throw new Error("Cập nhật trạng thái thất bại!");
 
-      // Cập nhật trạng thái trong state
       setBookings((prevBookings) =>
         prevBookings.map((booking) =>
           booking.id === id ? { ...booking, status: newStatus } : booking
         )
       );
 
-      // Hiển thị thông báo toast
       toast.success("Cập nhật trạng thái thành công");
     } catch (error) {
       console.error("Lỗi khi cập nhật trạng thái:", error);
@@ -70,25 +66,30 @@ const BookingList = () => {
     }
   };
 
-  // Lọc danh sách theo từ khóa tìm kiếm
   const filteredBookings = bookings.filter((booking) => {
     const user = users.find((u) => u.id === booking.userId);
     const slot = slots.find((s) => s.id === booking.slotId);
-    
+
     return (
-      booking.id.toLowerCase().includes(searchTerm.toLowerCase()) || // Tìm theo Booking ID
-      user?.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || // Tìm theo tên người đặt
-      slot?.name.toLowerCase().includes(searchTerm.toLowerCase()) || // Tìm theo ca
-      booking.status.toLowerCase().includes(searchTerm.toLowerCase()) // Tìm theo trạng thái
+      booking.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user?.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      slot?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      booking.status.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
+
+  const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
+  const currentBookings = filteredBookings.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   if (loading) return <p className="text-center text-lg font-bold">Đang tải dữ liệu...</p>;
 
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Danh sách đặt chỗ</h2>
-      {/* Thanh tìm kiếm */}
+
       <div className="mb-4 flex items-center border p-2 rounded-md shadow-sm">
         <Search className="text-gray-500 mr-2" />
         <input
@@ -99,6 +100,7 @@ const BookingList = () => {
           className="w-full p-2 outline-none"
         />
       </div>
+
       <div className={`card col-span-1 md:col-span-2 lg:col-span-3 mt-5 mb-10 ${theme === "dark" ? "bg-black text-white" : ""}`}>
         <div className="card-body p-0">
           <div className="relative max-h-[500px] overflow-auto rounded">
@@ -116,13 +118,13 @@ const BookingList = () => {
                 </tr>
               </thead>
               <tbody className="table-body">
-                {filteredBookings.map((booking, index) => {
+                {currentBookings.map((booking, index) => {
                   const user = users.find((u) => u.id === booking.userId);
                   const slot = slots.find((s) => s.id === booking.slotId);
 
                   return (
                     <tr key={booking.id} className="table-row">
-                      <td className="table-cell">{index + 1}</td>
+                      <td className="table-cell">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                       <td className="table-cell">{booking.id}</td>
                       <td className="table-cell">
                         <div className="flex items-center gap-2">
@@ -148,12 +150,10 @@ const BookingList = () => {
                       </td>
                       <td className="table-cell">
                         <div className="flex items-center gap-x-2">
-                          {/* Nút "Xem chi tiết" */}
                           <NavLink to={`booking-history/${booking.id}`} className="text-blue-500">
                             <Eye size={20} />
                           </NavLink>
 
-                          {/* Nếu là "Pending" -> Hiện nút Xác nhận và Hủy */}
                           {booking.status === "Pending" && (
                             <>
                               <button
@@ -180,7 +180,34 @@ const BookingList = () => {
           </div>
         </div>
       </div>
-      {/* Hiển thị Toast */}
+
+      {/* Pagination */}
+      <div className="flex justify-center space-x-2 mt-4">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
+          disabled={currentPage === 1}
+        >
+          «
+        </button>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrentPage(i + 1)}
+            className={`px-3 py-1 rounded ${currentPage === i + 1 ? "bg-blue-500 text-white" : "bg-gray-300"}`}
+          >
+            {i + 1}
+          </button>
+        ))}
+        <button
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
+          disabled={currentPage === totalPages}
+        >
+          »
+        </button>
+      </div>
+
       <ToastContainer />
     </div>
   );
