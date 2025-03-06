@@ -46,6 +46,8 @@ import UpdateRoom from "./routes/room/UpdateRoom";
 import CreateRoom from "./routes/room/CreateRoom";
 import AreaDetail from "./routes/students/AreaDetail";
 import Test from "./routes/students/Test";
+import ReportList from "./routes/staff-manage/report-management/ReportList";
+import ReportDetail from "./routes/staff-manage/Report-management/ReportDetail";
 
 
 export function HomeContent() {
@@ -169,6 +171,14 @@ const router = createBrowserRouter([
       {
         path: "manage/booking-history/:id",
         element: <ProtectedRoute><BookingDetail /></ProtectedRoute>,
+      },
+      {
+        path: "manage/reports",
+        element: <ProtectedRoute><ReportList /></ProtectedRoute>,
+      },
+      {
+        path: "manage/reports/:id",
+        element: <ProtectedRoute><ReportDetail /></ProtectedRoute>,
       },
       {
         path: "manage/blog",

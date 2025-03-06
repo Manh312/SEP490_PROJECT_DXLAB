@@ -28,13 +28,13 @@
       "avatar": "https://i.pravatar.cc/150?img=3"
     },
     {
-        "id": 4,
-        "fullName": "Tran huy hoang",
-        "email": "levanc@example.com",
-        "phoneNumber": "0903123321321",
-        "walletAddress": "0x789sdasda",
-        "status": "Active",
-        "avatar": "https://i.pravatar.cc/150?img=3"
+      "id": 4,
+      "fullName": "Tran huy hoang",
+      "email": "levanc@example.com",
+      "phoneNumber": "0903123321321",
+      "walletAddress": "0x789sdasda",
+      "status": "Active",
+      "avatar": "https://i.pravatar.cc/150?img=3"
     }
   ],
   "slots": [
@@ -107,8 +107,8 @@
       "positionId": 102,
       "areaId": 202,
       "roomId": 302,
-      "checkinTime": null,
-      "checkoutTime": null
+      "checkinTime": "2025-03-05T18:31:58.718Z",
+      "checkoutTime": "2025-03-05T18:32:00.696Z"
     },
     {
       "id": 3,
@@ -191,7 +191,56 @@
       "description": "Phòng đọc có cửa sổ lớn, thoáng mát."
     }
   ],
-  "blog": [
-    
-  ]
+  "reports": [
+    {
+      "id": 401,
+      "userId": 1,
+      "bookingId": "booking-1",
+      "reportDescription": "Daily booking summary for User 1",
+      "createdDate": "2022-03-05"
+    },
+    {
+      "id": 402,
+      "userId": 2,
+      "bookingId": "booking-3",
+      "reportDescription": "Monthly revenue report for User 2",
+      "createdDate": "2024-02-29"
+    },
+    {
+      "bookingId": "booking-2",
+      "userId": 2,
+      "reportDescription": "hỏng rồi",
+      "createdDate": "2025-03-05T15:31:27.213Z",
+      "id": 403
+    },
+    {
+      "bookingId": "booking-2",
+      "userId": 2,
+      "reportDescription": "làm hỏng bàn không chịu đền",
+      "createdDate": "2025-03-05T15:32:09.016Z",
+      "id": 404
+    },
+    {
+      "bookingId": "booking-1",
+      "userId": 1,
+      "reportDescription": "làm hỏng bàn",
+      "createdDate": "2025-03-05T15:37:48.212Z",
+      "id": 405
+    },
+    {
+      "bookingId": "booking-1",
+      "userId": 1,
+      "reportDescription": "lô",
+      "createdDate": "2025-03-05T15:52:57.727Z",
+      "id": 406
+    },
+    {
+      "userId": 2,
+      "bookingId": "booking-2",
+      "reportDescription": "chán",
+      "createdDate": "2025-03-05T18:32:28.858Z",
+      "id": 407
+    }
+  ],
+  "blog": []
 }

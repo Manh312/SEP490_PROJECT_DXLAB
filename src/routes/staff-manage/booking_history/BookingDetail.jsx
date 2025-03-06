@@ -8,6 +8,8 @@ const BookingDetail = () => {
   const theme = useTheme();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportDescription, setReportDescription] = useState("");
 
   useEffect(() => {
     const fetchBookingDetail = async () => {
@@ -154,6 +156,34 @@ const BookingDetail = () => {
     } catch (error) {
       console.error("Lỗi khi check-out:", error);
       toast.error("Không thể check-out!");
+    }
+  };
+
+  // Xử lý tạo báo cáo
+  const handleCreateReport = async () => {
+    if (!reportDescription.trim()) {
+      toast.error("Vui lòng nhập mô tả báo cáo!");
+      return;
+    }
+
+    try {
+      await fetch(`http://localhost:5000/reports`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: booking.userId,
+          bookingId: booking.id,
+          reportDescription,
+          createdDate: new Date().toISOString(),
+        }),
+      });
+
+      toast.success("Báo cáo đã được gửi!");
+      setShowReportForm(false);
+      setReportDescription("");
+    } catch (error) {
+      console.error("Lỗi khi tạo báo cáo:", error);
+      toast.error("Không thể gửi báo cáo!");
     }
   };
 
@@ -305,6 +335,38 @@ const BookingDetail = () => {
             )}
           </div>
         </div>
+
+        {/* Hiển thị nút "Tạo Báo Cáo" nếu đã check-out */}
+        {booking.checkoutTime && !showReportForm && (
+          <div className="mt-6 flex justify-center">
+            <button onClick={() => setShowReportForm(true)} className="bg-yellow-500 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg">
+              Tạo Báo Cáo
+            </button>
+          </div>
+        )}
+
+        {/* Hiển thị form tạo báo cáo nếu nhân viên muốn nhập */}
+        {showReportForm && (
+          <div className="mt-6 border p-4 rounded-lg bg-gray-100 dark:bg-gray-800">
+            <h3 className="text-lg font-bold">Nhập báo cáo</h3>
+            <textarea
+              className="w-full p-2 border rounded mt-2 text-black"
+              rows="4"
+              placeholder="Nhập mô tả về cơ sở vật chất hư hỏng..."
+              value={reportDescription}
+              onChange={(e) => setReportDescription(e.target.value)}
+            />
+            <div className="flex gap-4 mt-3">
+              <button onClick={handleCreateReport} className="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                Gửi Báo Cáo
+              </button>
+              <button onClick={() => setShowReportForm(false)} className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
+                Hủy
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );

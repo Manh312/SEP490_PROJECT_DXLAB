@@ -545,14 +545,14 @@ export const staffLinks = [
         path: "/manage",
       },
       {
+        label: "Danh sách báo cáo",
+        icon: Settings,
+        path: "/manage/reports",
+      },
+      {
         label: "Quản lý blog",
         icon: FileText,
         path: "/manage/blog",
-      },
-      {
-        label: "Cấu hình hệ thống",
-        icon: Settings,
-        path: "/manage/settings",
       },
     ],
   },
