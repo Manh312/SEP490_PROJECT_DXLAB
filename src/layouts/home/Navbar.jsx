@@ -1,65 +1,16 @@
 import { Menu, Moon, Sun, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import logo from "../../assets/logo_images.png";
 import { navItems } from "../../constants";
 import { useTheme } from "../../hooks/use-theme";
 import { Link } from "react-router-dom";
-import { ConnectWallet, useAddress, useUser, useAuth } from "@thirdweb-dev/react";
-import { useDispatch } from "react-redux";
-import { setUser } from "../../redux/slices/User";
+import { ConnectWallet, useAddress } from "@thirdweb-dev/react";
 
 const Navbar = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const address = useAddress();
-  // const { user, isLoggedIn, isLoading } = useUser();
-  // const auth = useAuth(); // Dùng để lấy token
-  // const dispatch = useDispatch();
 
-  // console.log("User:", user);
-  // console.log("isLoggedIn:", isLoggedIn);
-  // console.log("isLoading:", isLoading);
-
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     if (!isLoading && isLoggedIn && user) {
-  //       try {
-  //         // Lấy token từ Thirdweb
-  //         const token = await auth?.login();
-  //         console.log("Thirdweb Token:", token);
-
-  //         // Chuẩn bị dữ liệu user
-  //         const userData = {
-  //           id: user?.id || "",
-  //           email: user?.email || "N/A",
-  //           name: user?.name || "Unknown",
-  //           profileImage: user?.profileImage || "",
-  //           walletAddress: address || "",
-  //           provider: user?.provider || "Unknown",
-  //           token: token, // Gửi token lên backend để xác thực
-  //         };
-
-  //         // Lưu vào Redux
-  //         dispatch(setUser(userData));
-
-  //         // Gửi dữ liệu lên backend
-  //         const response = await fetch("http://localhost:9999/api/User", {
-  //           method: "POST",
-  //           credentials: "include",
-  //           headers: { "Content-Type": "application/json" },
-  //           body: JSON.stringify(userData),
-  //         });
-
-  //         const data = await response.json();
-  //         console.log("Server Response:", data);
-  //       } catch (error) {
-  //         console.error("Error fetching user data:", error);
-  //       }
-  //     }
-  //   };
-
-  //   fetchUserData();
-  // }, [user, isLoggedIn, isLoading, address, auth, dispatch]);
 
   const handleMobileDrawer = () => {
     setMobileDrawerOpen(!mobileDrawerOpen);
@@ -86,14 +37,7 @@ const Navbar = () => {
         </ul>
 
         <div className="hidden lg:flex justify-center space-x-6 items-center">
-          {/* {isLoggedIn ? (
-            <div className="flex items-center space-x-3">
-              <img src={user?.profileImage || ""} alt="Avatar" className="w-8 h-8 rounded-full" />
-              <span className="text-white">{user?.name || "User"}</span>
-            </div>
-          ) : ( */}
-            <ConnectWallet btnTitle={"Đăng nhập"} auth={{ loginOptional: false }} modalSize="wide" />
-          {/* )} */}
+          <ConnectWallet btnTitle={"Đăng nhập"} auth={{ loginOptional: false }} modalSize="wide" />
 
           <button
             className="p-2 ml-5 border rounded-md transition-colors"

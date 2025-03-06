@@ -36,13 +36,16 @@ const Layout = () => {
       const script = document.createElement("script");
       script.src = TIDIO_SCRIPT_URL;
       script.async = true;
+      script.onload = () => console.log("Tidio script loaded successfully");
+      script.onerror = () => console.error("Failed to load Tidio script");
       document.body.appendChild(script);
-
+  
       return () => {
         document.body.removeChild(script);
       };
     }
   }, []);
+  
 
   return (
     <div>
@@ -50,12 +53,10 @@ const Layout = () => {
       <div className={`w-full ${isDashboard || isManage ? "" : "max-w-7xl"} mx-auto`}>
 
         <div className="flex w-full">
-          {/* 🔥 Chỉ hiển thị Sidebar nếu có địa chỉ ví */}
           {(isDashboard || isManage) && address && (
             <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
           )}
           <div className="flex flex-col flex-1">
-            {/* 🔥 Chỉ hiển thị Header nếu có địa chỉ ví */}
             {(isDashboard || isManage) && address && (
               <Header collapsed={collapsed} setCollapsed={setCollapsed} />
             )}
