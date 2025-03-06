@@ -15,27 +15,27 @@ const ViewAreas = () => {
 
   const handleSlotChange = (slotId) => {
     const slot = slots.find(s => s.id === slotId);
-  
+
     if (!slot) return;
-  
+
     // Nếu slot hết chỗ, không cho phép chọn và hiển thị thông báo lỗi
     if ((!slot.isAvailable && selectedArea.type !== "group") || (selectedArea.type === "group" && slot.remainingSeats <= 0)) {
       toast.error("Slot này đã hết chỗ, vui lòng chọn slot khác!");
       return;
     }
-  
+
     if (!Array.isArray(selectedSlots)) {
       dispatch(setSelectedSlots([]));
       return;
     }
-  
+
     const updatedSlots = selectedSlots.includes(slotId)
       ? selectedSlots.filter(id => id !== slotId)
       : [...selectedSlots, slotId];
-  
+
     dispatch(setSelectedSlots(updatedSlots));
   };
-  
+
 
   const getSlotStatus = (slot) => {
     if (selectedArea.type === "group") {
@@ -81,22 +81,23 @@ const ViewAreas = () => {
           <div key={area.id} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
             <img src={area.image} alt={area.name} className="w-full h-48 object-cover rounded-md mb-4" />
             <h2 className="text-2xl font-semibold mb-2">{area.name}</h2>
-            <p>{area.description}</p>
-            <ul className="list-disc list-inside mt-2">
-              {area.features.map((feature, index) => (
-                <li key={index}>{feature}</li>
-              ))}
-            </ul>
-            <button
-              className="mt-4 w-full px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-              onClick={() => {
-                dispatch(openModal(area));
-                setTempPeopleCount(1);
-                setStep('selectPeople');
-              }}
-            >
-              Chọn
-            </button>
+            <p>{area.description.slice(0, 100)}...</p>
+            <div>
+              <button
+                className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+                onClick={() => {
+                  dispatch(openModal(area));
+                  setTempPeopleCount(1);
+                  setStep('selectPeople');
+                }}
+              >
+                Chọn
+              </button>
+              {" "}
+              <Link to={`/area/${area.type}`} className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition">
+                Chi tiết
+              </Link>
+            </div>
           </div>
         ))}
       </div>

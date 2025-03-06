@@ -1,21 +1,17 @@
-import { Link } from "react-router-dom";
 import { FaLock } from "react-icons/fa";
+import { ConnectWallet } from "@thirdweb-dev/react";
 
 const NotAuthenticate = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen -mt-20 -mb-20">
-      <div className="border p-10 rounded-2xl shadow-xl flex flex-col items-center text-center">
+    <div className="flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 -mt-30 -mb-30">
+      <div className="border p-6 sm:p-8 md:p-10 rounded-2xl shadow-xl flex flex-col items-center text-center w-full max-w-md sm:max-w-lg">
         <FaLock className="text-orange-500 text-6xl mb-4 animate-pulse" />
-        <h1 className="text-5xl font-extrabold">403</h1>
-        <p className="text-lg mt-2">
-          Bạn chưa đăng nhập! Vui lòng đăng nhập để tiếp tục.
+        <h1 className="text-4xl sm:text-5xl font-extrabold">403</h1>
+        <p className="text-base sm:text-lg mt-2 leading-relaxed">
+          Bạn chưa đăng nhập! Vui lòng ấn nút đăng nhập dưới đây <br />
+          hoặc nhấn nút đăng nhập ở góc bên phải trên cùng để tiếp tục.
         </p>
-        <Link 
-          to="/login"
-          className="mt-6 px-6 py-3 bg-orange-500 text-white font-semibold text-lg rounded-lg shadow-lg hover:bg-orange-600 transition-all duration-300"
-        >
-          Đăng nhập ngay
-        </Link>
+        <ConnectWallet btnTitle="Đăng nhập ngay" style={{ marginTop: "1rem", backgroundColor: "tan", color: "black" }}/>
       </div>
     </div>
   );

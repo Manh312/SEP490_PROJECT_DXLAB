@@ -1,0 +1,247 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "fullName": "Nguyễn Văn A",
+      "email": "nguyenvana@example.com",
+      "phoneNumber": "0987654321",
+      "walletAddress": "0x123abc",
+      "status": "Active",
+      "avatar": "https://i.pravatar.cc/150?img=1"
+    },
+    {
+      "id": 2,
+      "fullName": "Trần Thị B",
+      "email": "tranthib@example.com",
+      "phoneNumber": "0912345678",
+      "walletAddress": "0x456def",
+      "status": "Inactive",
+      "avatar": "https://i.pravatar.cc/150?img=2"
+    },
+    {
+      "id": 3,
+      "fullName": "Nguyên Van Huy",
+      "email": "levanc@example.com",
+      "phoneNumber": "0903123456",
+      "walletAddress": "0x789ghi",
+      "status": "Active",
+      "avatar": "https://i.pravatar.cc/150?img=3"
+    },
+    {
+
+      "id": 4,
+      "fullName": "Tran huy hoang",
+      "email": "levanc@example.com",
+      "phoneNumber": "0903123321321",
+      "walletAddress": "0x789sdasda",
+      "status": "Active",
+      "avatar": "https://i.pravatar.cc/150?img=3"
+    }
+  ],
+  "slots": [
+    {
+      "id": "1",
+      "name": "Morning Shift",
+      "startTime": "08:00",
+      "endTime": "12:00"
+    },
+    {
+      "id": "2",
+      "name": "Afternoon Shift",
+      "startTime": "13:00",
+      "endTime": "17:00"
+    },
+    {
+      "id": "3",
+      "name": "Evening Shift",
+      "startTime": "18:00",
+      "endTime": "22:00"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "booking-1",
+      "slotId": 1,
+      "userId": 1,
+      "createdDate": "2024-02-20",
+      "price": 50,
+      "status": "Confirmed"
+    },
+    {
+      "id": "booking-2",
+      "slotId": 2,
+      "userId": 2,
+      "createdDate": "2024-02-22",
+      "price": 75,
+      "status": "Confirmed"
+    },
+    {
+      "id": "booking-3",
+      "slotId": 3,
+      "userId": 3,
+      "createdDate": "2024-02-24",
+      "price": 30,
+      "status": "Canceled"
+    },
+    {
+      "id": "booking-44",
+      "slotId": 3,
+      "userId": 4,
+      "createdDate": "2024-02-24",
+      "price": 30,
+      "status": "Canceled"
+    }
+  ],
+  "bookingdetails": [
+    {
+      "id": "1",
+      "bookingId": "booking-1",
+      "positionId": 101,
+      "areaId": 201,
+      "roomId": 301,
+      "checkinTime": "2025-02-27T17:14:11.181Z",
+      "checkoutTime": "2025-02-27T17:14:12.511Z"
+    },
+    {
+      "id": "2",
+      "bookingId": "booking-2",
+      "positionId": 102,
+      "areaId": 202,
+      "roomId": 302,
+      "checkinTime": "2025-03-05T18:31:58.718Z",
+      "checkoutTime": "2025-03-05T18:32:00.696Z"
+    },
+    {
+      "id": "3",
+      "bookingId": "booking-3",
+      "positionId": 103,
+      "areaId": 203,
+      "roomId": 303,
+      "checkinTime": null,
+      "checkoutTime": null
+    }
+  ],
+  "positions": [
+    {
+      "id": "101",
+      "name": "VIP Seat"
+    },
+    {
+      "id": "102",
+      "name": "Regular Seat"
+    },
+    {
+      "id": "103",
+      "name": "Window Seat"
+    }
+  ],
+  "usingFacilities": [
+    {
+      "id": "1",
+      "facilityId": "F001",
+      "batchNumber": "B123",
+      "quantity": 5
+    },
+    {
+      "id": "2",
+      "facilityId": "F002",
+      "batchNumber": "B456",
+      "quantity": 3
+    },
+    {
+      "id": "3",
+      "facilityId": "F003",
+      "batchNumber": "B789",
+      "quantity": 2
+    }
+  ],
+  "areas": [
+    {
+      "id": "201",
+      "name": "Quiet Zone",
+      "type": "Personal",
+      "description": "Không gian yên tĩnh, lý tưởng cho cá nhân làm việc tập trung."
+    },
+    {
+      "id": "202",
+      "name": "Group Study Area",
+      "type": "Group",
+      "description": "Không gian linh hoạt, phù hợp cho nhóm làm việc chung."
+    },
+    {
+      "id": "203",
+      "name": "Discussion Room",
+      "type": "Group",
+      "description": "Phòng thảo luận với cách âm tốt và trang thiết bị hiện đại."
+    }
+  ],
+  "rooms": [
+    {
+      "id": "301",
+      "name": "Library Room 2",
+      "description": "Phòng đọc với không gian riêng tư và ánh sáng tốt."
+    },
+    {
+      "id": "302",
+      "name": "Library Room 3",
+      "description": "Phòng đọc nhóm với bàn lớn và bảng trắng."
+    },
+    {
+      "id": "303",
+      "name": "Library Room 1",
+      "description": "Phòng đọc có cửa sổ lớn, thoáng mát."
+    }
+  ],
+  "reports": [
+    {
+      "id": 401,
+      "userId": 1,
+      "bookingId": "booking-1",
+      "reportDescription": "Daily booking summary for User 1",
+      "createdDate": "2022-03-05"
+    },
+    {
+      "id": 402,
+      "userId": 2,
+      "bookingId": "booking-3",
+      "reportDescription": "Monthly revenue report for User 2",
+      "createdDate": "2024-02-29"
+    },
+    {
+      "bookingId": "booking-2",
+      "userId": 2,
+      "reportDescription": "hỏng rồi",
+      "createdDate": "2025-03-05T15:31:27.213Z",
+      "id": 403
+    },
+    {
+      "bookingId": "booking-2",
+      "userId": 2,
+      "reportDescription": "làm hỏng bàn không chịu đền",
+      "createdDate": "2025-03-05T15:32:09.016Z",
+      "id": 404
+    },
+    {
+      "bookingId": "booking-1",
+      "userId": 1,
+      "reportDescription": "làm hỏng bàn",
+      "createdDate": "2025-03-05T15:37:48.212Z",
+      "id": 405
+    },
+    {
+      "bookingId": "booking-1",
+      "userId": 1,
+      "reportDescription": "lô",
+      "createdDate": "2025-03-05T15:52:57.727Z",
+      "id": 406
+    },
+    {
+      "userId": 2,
+      "bookingId": "booking-2",
+      "reportDescription": "chán",
+      "createdDate": "2025-03-05T18:32:28.858Z",
+      "id": 407
+    }
+  ],
+  "blog": []
+}

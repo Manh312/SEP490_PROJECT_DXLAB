@@ -6,6 +6,7 @@ import { useMediaQuery } from "@uidotdev/usehooks";
 import { useClickOutside } from "../hooks/use-click-outside";
 import { useEffect, useRef, useState } from "react";
 import Header from "./dashboard/Header";
+import { useAddress } from "@thirdweb-dev/react"; 
 
 const TIDIO_SCRIPT_URL = import.meta.env.VITE_TIDIO_SCRIPT_URL;
 
@@ -18,6 +19,8 @@ const Layout = () => {
   const [collapsed, setCollapsed] = useState(!isDesktopDevice);
   const sidebarRef = useRef(null);
 
+  const address = useAddress();
+
   useEffect(() => {
     setCollapsed(!isDesktopDevice);
   }, [isDesktopDevice]);
@@ -25,38 +28,24 @@ const Layout = () => {
   useClickOutside([sidebarRef], () => {
     if (!isDesktopDevice && !collapsed) {
       setCollapsed(true);
-    };
-  });
-
-  useEffect(() => {
-    const scriptUrl = import.meta.env.VITE_TIDIO_SCRIPT_URL;
-    if (!scriptUrl) {
-      console.error("TIDIO script URL is missing from environment variables.");
-      return;
     }
-
-    const script = document.createElement("script");
-    script.src = scriptUrl;
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+  });
 
   useEffect(() => {
     if (TIDIO_SCRIPT_URL) {
       const script = document.createElement("script");
       script.src = TIDIO_SCRIPT_URL;
       script.async = true;
+      script.onload = () => console.log("Tidio script loaded successfully");
+      script.onerror = () => console.error("Failed to load Tidio script");
       document.body.appendChild(script);
-
+  
       return () => {
         document.body.removeChild(script);
       };
     }
   }, []);
+  
 
   return (
     <div>
@@ -64,14 +53,15 @@ const Layout = () => {
       <div className={`w-full ${isDashboard || isManage ? "" : "max-w-7xl"} mx-auto`}>
 
         <div className="flex w-full">
-          {(isDashboard || isManage) && (
+          {(isDashboard || isManage) && address && (
             <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
           )}
           <div className="flex flex-col flex-1">
-            {(isDashboard || isManage) && <Header collapsed={collapsed} setCollapsed={setCollapsed} />}
+            {(isDashboard || isManage) && address && (
+              <Header collapsed={collapsed} setCollapsed={setCollapsed} />
+            )}
             <div className="flex-1">
               <Outlet />
-
             </div>
           </div>
         </div>

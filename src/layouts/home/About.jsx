@@ -1,15 +1,28 @@
 import { about } from "../../constants";
 import images2 from "../../assets/dxlab_images2.jpg";
+import images1 from "../../assets/dxlab_images1.jpg"
 
 const About = () => {
   return (
     <div className="min-h-screen p-6 mb-20">
       {/* Hero Section */}
-      <div className="max-w-6xl mx-auto text-center py-16">
-        <h1 className="text-4xl md:text-5xl font-bold mb-6">Về Chúng Tôi</h1>
-        <p className="text-lg max-w-3xl mx-auto">
-          <span className="font-semibold">DXLAB</span> - Không gian làm việc chung sáng tạo dành cho sinh viên và giảng viên tại FPT University, mang đến môi trường hiện đại, tiện nghi và kết nối.
-        </p>
+      <div className="max-w-6xl mx-auto py-16 flex flex-col md:flex-row items-center">
+      <div className="md:w-1/2 px-4">
+          <img
+            src= {images1}
+            alt="Không gian DXLAB"
+            className="w-full rounded-lg shadow-lg"
+          />
+        </div>
+        <div className="md:w-1/2 px-4">
+          <h1 className="text-3xl md:text-3xl font-bold mb-6">
+            Hệ thống không gian Học Tập, Làm Việc - Khởi Nghiệp tại DXLAB
+          </h1>
+          <p className="text-lg">
+            <span className="font-semibold">DXLAB</span> - Không gian làm việc chung sáng tạo dành cho sinh viên
+            và giảng viên tại FPT University, mang đến môi trường hiện đại, tiện nghi và kết nối.
+          </p>
+        </div>
       </div>
 
       {/* Sứ Mệnh & Tầm Nhìn */}
