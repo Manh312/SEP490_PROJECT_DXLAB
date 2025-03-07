@@ -1,31 +1,37 @@
+import { useEffect } from "react"; // Thêm useEffect để gọi API khi component mount
 import { useDispatch, useSelector } from "react-redux";
 import { PencilLine, Trash, PlusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import { listSlots, deleteSlot } from "../../redux/slices/Slot"; 
+import { useTheme } from "../../hooks/use-theme";
 
 const SlotList = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
-  // Lấy danh sách slots từ Redux state
-  const { slots, loading, error } = useSelector((state) => state.slots);
 
-  // const handleDelete = (id) => {
-  //   if (window.confirm("Bạn có chắc chắn muốn xóa slot này?")) {
-  //     dispatch(deleteSlot(id));
-  //   }
-  // };
+  const { slots, loading, error } = useSelector((state) => state.slots);
+  const theme = useTheme();
+
+  useEffect(() => {
+    dispatch(listSlots());
+  }, [dispatch]);
+
+  const handleDelete = (id) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa slot này?")) {
+      dispatch(deleteSlot(id)); 
+    }
+  };
 
   const handleAddSlot = () => {
     navigate("/dashboard/slot/create"); // Điều hướng sang trang CreateSlot
   };
 
   return (
-    <div className="p-6 shadow-xl rounded-lg bg-white transition-all">
+    <div className="p-6 shadow-xl rounded-lg transition-all">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">⏳ Danh Sách Slot Trong Ngày</h2>
         <button
-          className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-green-600 transition"
+          className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-orange-600 transition"
           onClick={handleAddSlot}
         >
           <PlusCircle size={20} /> Thêm Slot
@@ -33,11 +39,15 @@ const SlotList = () => {
       </div>
 
       {loading && <p>Đang tải danh sách slot...</p>}
-      {error && <p className="text-red-500">Lỗi: {error}</p>}
+      {error && (
+        <p className="text-red-500">
+          Lỗi: {error.message || JSON.stringify(error)}
+        </p>
+      )}
 
       <div className="overflow-x-auto rounded-lg shadow-lg">
         <table className="w-full border-collapse">
-          <thead className="bg-blue-500 text-white">
+          <thead className="bg-gray-500 text-white">
             <tr>
               <th className="p-3 text-left">#</th>
               <th className="p-3 text-left">Tên Slot</th>
@@ -49,15 +59,17 @@ const SlotList = () => {
           <tbody className="divide-y divide-gray-300">
             {slots.length > 0 ? (
               slots.map((slot, index) => (
-                <tr key={slot.id} className="hover:bg-gray-200 transition">
+                <tr key={slot.id} className={`${theme === "dark" ? "hover:bg-gray-300" : ""}`}>
                   <td className="p-3">{index + 1}</td>
                   <td className="p-3">{slot.slot_name || `Slot ${index + 1}`}</td>
-                  <td className="p-3 text-center">{slot.start_time}</td>
-                  <td className="p-3 text-center">{slot.end_time}</td>
+                  <td className="p-3 text-center">{slot.startTime}</td>
+                  <td className="p-3 text-center">{slot.endTime}</td>
                   <td className="p-3 flex justify-center gap-x-3">
                     <button
                       className="text-yellow-500 hover:text-yellow-700 transition"
-                      onClick={() => alert(`Chỉnh sửa slot ${slot.slot_name || slot.id}`)}
+                      onClick={() =>
+                        navigate(`/dashboard/slot/edit/${slot.id}`) 
+                      }
                     >
                       <PencilLine size={22} />
                     </button>
