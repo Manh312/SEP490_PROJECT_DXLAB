@@ -1,9 +1,87 @@
-import React from 'react'
+import { useDispatch, useSelector } from "react-redux";
+import { PencilLine, Trash, PlusCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-function SlotList() {
+
+const SlotList = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  
+  // Lấy danh sách slots từ Redux state
+  const { slots, loading, error } = useSelector((state) => state.slots);
+
+  // const handleDelete = (id) => {
+  //   if (window.confirm("Bạn có chắc chắn muốn xóa slot này?")) {
+  //     dispatch(deleteSlot(id));
+  //   }
+  // };
+
+  const handleAddSlot = () => {
+    navigate("/dashboard/slot/create"); // Điều hướng sang trang CreateSlot
+  };
+
   return (
-    <div>SlotList</div>
-  )
-}
+    <div className="p-6 shadow-xl rounded-lg bg-white transition-all">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold">⏳ Danh Sách Slot Trong Ngày</h2>
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-green-600 transition"
+          onClick={handleAddSlot}
+        >
+          <PlusCircle size={20} /> Thêm Slot
+        </button>
+      </div>
 
-export default SlotList
+      {loading && <p>Đang tải danh sách slot...</p>}
+      {error && <p className="text-red-500">Lỗi: {error}</p>}
+
+      <div className="overflow-x-auto rounded-lg shadow-lg">
+        <table className="w-full border-collapse">
+          <thead className="bg-blue-500 text-white">
+            <tr>
+              <th className="p-3 text-left">#</th>
+              <th className="p-3 text-left">Tên Slot</th>
+              <th className="p-3 text-center">Giờ Bắt Đầu</th>
+              <th className="p-3 text-center">Giờ Kết Thúc</th>
+              <th className="p-3 text-center">Hành Động</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-300">
+            {slots.length > 0 ? (
+              slots.map((slot, index) => (
+                <tr key={slot.id} className="hover:bg-gray-200 transition">
+                  <td className="p-3">{index + 1}</td>
+                  <td className="p-3">{slot.slot_name || `Slot ${index + 1}`}</td>
+                  <td className="p-3 text-center">{slot.start_time}</td>
+                  <td className="p-3 text-center">{slot.end_time}</td>
+                  <td className="p-3 flex justify-center gap-x-3">
+                    <button
+                      className="text-yellow-500 hover:text-yellow-700 transition"
+                      onClick={() => alert(`Chỉnh sửa slot ${slot.slot_name || slot.id}`)}
+                    >
+                      <PencilLine size={22} />
+                    </button>
+                    <button
+                      className="text-red-500 hover:text-red-700 transition"
+                      onClick={() => handleDelete(slot.id)}
+                    >
+                      <Trash size={22} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center py-4 text-gray-500">
+                  Không có slot nào.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export default SlotList;

@@ -1,8 +1,7 @@
 import { combineReducers } from "redux";
 import storage from "redux-persist/lib/storage";
 import bookingReducer from "./slices/Booking";
-import userReducer from "./slices/User";
-
+import slotReducer from "./slices/Slot";
 
 // slices
 
@@ -15,7 +14,7 @@ const rootPersistConfig = {
 
 const rootReducer = combineReducers({
   booking: bookingReducer,
-  user: userReducer,
+  slots: slotReducer
 });
 
 export { rootPersistConfig, rootReducer }; 

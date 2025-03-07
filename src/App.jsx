@@ -45,9 +45,14 @@ import RoomDetail from "./routes/room/RoomDetail";
 import UpdateRoom from "./routes/room/UpdateRoom";
 import CreateRoom from "./routes/room/CreateRoom";
 import AreaDetail from "./routes/students/AreaDetail";
+
 import Test from "./routes/students/Test";
 import ReportList from "./routes/staff-manage/Report-management/ReportList";
 import ReportDetail from "./routes/staff-manage/Report-management/ReportDetail";
+
+import CreateSlot from "./routes/slot/CreateSlot";
+
+
 
 
 export function HomeContent() {
@@ -138,6 +143,10 @@ const router = createBrowserRouter([
       {
         path: "dashboard/slot",
         element: <ProtectedRoute><SlotList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/slot/create",
+        element: <ProtectedRoute>< CreateSlot/></ProtectedRoute>,
       },
       {
         path: "dashboard/account",
