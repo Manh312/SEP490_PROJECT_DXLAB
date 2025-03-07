@@ -202,7 +202,7 @@ export const mockTransactions = [
   },
 ];
 
-export const slots = [
+export const slot = [
   {
     id: 1,
     name: "Slot 1",
@@ -237,39 +237,32 @@ export const slots = [
   },
 ];
 
-export const areas = [
+export const slots_manage = [
   {
     id: 1,
-    type: "personal", 
-    name: "Khu vực cá nhân",
-    description:
-      "Không gian yên tĩnh, lý tưởng cho cá nhân làm việc tập trung. Được thiết kế dành riêng cho những người cần sự riêng tư và tập trung cao độ. Bạn có thể tận hưởng không gian thoáng đãng, ánh sáng tự nhiên và trang bị đầy đủ tiện ích để làm việc hiệu quả.",
-    image: images1,
-    features: [
-      "Chỗ ngồi làm việc riêng với bàn và ghế tiện nghi",
-      "Internet tốc độ cao, hỗ trợ làm việc trực tuyến mượt mà",
-      "Không gian yên tĩnh, giảm thiểu tiếng ồn tối đa",
-      "Ổ cắm điện thuận tiện, hỗ trợ sạc thiết bị cá nhân",
-      "Khu vực thư giãn đi kèm, giúp tái tạo năng lượng sau giờ làm việc",
-    ],
+    slot_name: "Slot 1",
+    start_time: "08:00",
+    end_time: "10:00",
   },
   {
     id: 2,
-    type: "group", 
-    name: "Khu vực nhóm",
-    description: 
-      "Không gian linh hoạt, phù hợp cho nhóm làm việc chung. Được thiết kế nhằm đáp ứng nhu cầu trao đổi, làm việc nhóm một cách hiệu quả. Bạn có thể tổ chức các cuộc họp, thảo luận nhóm hoặc làm việc cùng đồng đội mà không bị giới hạn về không gian.",
-    image: images3,
-    features: [
-      "Bàn làm việc nhóm rộng rãi, hỗ trợ nhiều người cùng làm việc",
-      "Khu vực riêng biệt, đảm bảo sự thoải mái và linh hoạt",
-      "Trang bị bảng trắng hoặc màn hình trình chiếu phục vụ thảo luận",
-      "Hệ thống âm thanh chất lượng, phục vụ các buổi họp nhóm",
-      "Không gian mở với thiết kế hiện đại, giúp tăng cường sáng tạo",
-    ],
+    slot_name: "Slot 2",
+    start_time: "10:00",
+    end_time: "12:00",
   },
-];
-
+  {
+    id: 3,
+    slot_name: "Slot 3",
+    start_time: "13:00",
+    end_time: "15:00",
+  },
+  {
+    id: 4,
+    slot_name: "Slot 4",
+    start_time: "15:00",
+    end_time: "17:00",
+  },
+]
 
 export const features = [
   {
@@ -383,6 +376,25 @@ export const navbarLinks = [
     ],
   },
 ];
+export const areas = [
+  { id: 1, name: "Khu Vực Cá Nhân",type: " Cá Nhân", Room: "DE318" },
+  { id: 2, name: "Khu Vực Nhóm",type: "Nhóm", Room: "DE318" },
+  { id: 1, name: "Khu Vực 1",type: " Cá Nhân", Room: "DE318" },
+  { id: 2, name: "Khu Vực 2",type: "Nhóm", Room: "DE318" },
+  { id: 1, name: "Khu Vực 1",type: " Cá Nhân", Room: "DE318" },
+  { id: 2, name: "Khu Vực 2",type: "Nhóm", Room: "DE318" },
+  
+];
+
+export const slots = [
+  {id: 1 ,slot_name: "Buổi Sáng", start_time: "08:00", end_time: "10:00" },
+    { id: 2, slot_name: "Buổi Trưa", start_time: "10:30", end_time: "12:30" },
+    { id: 3, slot_name: "Buổi Chiều", start_time: "14:00", end_time: "16:00" },
+    { id: 4, slot_name: "Buổi Tối", start_time: "16:30", end_time: "18:30" },
+  ];
+
+  
+
 
 export const overviewData = [
   {
@@ -532,12 +544,9 @@ export const users = [
   { id: 2, fullName: "Trần Thị B", email: "b@gmail.com", status: "Inactive" },
 ];
 export const products = [
-  { id: 1, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
-  { id: 2, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
-  { id: 3, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
-  { id: 4, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
-  { id: 5, name: "Sản phẩm A", quantity: 10, status: "Còn hàng" },
-  { id: 6, name: "Sản phẩm B", quantity: 5, status: "Hết hàng" },
+  { id: 1, name: "Ghế", quantity: 10, status: "Còn hàng" },
+  { id: 2, name: "Bàn", quantity: 5, status: "Hết hàng" },
+  
 ];
 export const staffLinks = [
   {
