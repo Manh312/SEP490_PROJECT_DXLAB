@@ -209,6 +209,7 @@ export const slots = [
     time: "08:00 - 10:00",
     isAvailable: true,
     remainingSeats: 4,
+    price: 20
   },
   {
     id: 2,
@@ -216,6 +217,7 @@ export const slots = [
     time: "10:00 - 12:00",
     isAvailable: false,
     remainingSeats: 0,
+    price: 80
   },
   {
     id: 3,
@@ -223,6 +225,7 @@ export const slots = [
     time: "13:00 - 15:00",
     isAvailable: true,
     remainingSeats: 6,
+    price: 220
   },
   {
     id: 4,
@@ -230,6 +233,7 @@ export const slots = [
     time: "15:00 - 17:00",
     isAvailable: true,
     remainingSeats: 2,
+    price: 300
   },
 ];
 
