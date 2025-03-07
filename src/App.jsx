@@ -46,7 +46,7 @@ import UpdateRoom from "./routes/room/UpdateRoom";
 import CreateRoom from "./routes/room/CreateRoom";
 import AreaDetail from "./routes/students/AreaDetail";
 import Test from "./routes/students/Test";
-import ReportList from "./routes/staff-manage/report-management/ReportList";
+import ReportList from "./routes/staff-manage/Report-management/ReportList";
 import ReportDetail from "./routes/staff-manage/Report-management/ReportDetail";
 
 
