@@ -31,7 +31,6 @@ const Facilities = () => {
               <th className="p-3 text-left">#</th>
               <th className="p-3 text-left">Tên Sản Phẩm</th>
               <th className="p-3 text-center">Số Lượng</th>
-              <th className="p-3 text-center">Tình Trạng</th>
               <th className="p-3 text-center">Hành Động</th>
             </tr>
           </thead>
@@ -41,14 +40,14 @@ const Facilities = () => {
                 <td className="p-3">{index + 1}</td>
                 <td className="p-3">{product.name}</td>
                 <td className="p-3 text-center">{product.quantity}</td>
-                <td className="p-3 text-center">
+                {/* <td className="p-3 text-center">
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                     product.status === "Còn hàng" ? "bg-green-200 text-green-700" 
                     : "bg-red-200 text-red-700"
                   }`}>
                     {product.status}
                   </span>
-                </td>
+                </td> */}
                 <td className="p-3 flex justify-center gap-x-3">
                   <button 
                     className="text-blue-500 hover:text-blue-700 transition"
