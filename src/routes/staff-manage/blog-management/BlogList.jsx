@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { PlusCircle, Eye } from "lucide-react";
 import { useTheme } from "../../../hooks/use-theme";
 
@@ -41,13 +41,13 @@ const BlogList = () => {
     <div className="mr-3">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Danh sách Blog</h2>
-        <Link
-          to="/manage/blog/create"
+        <NavLink
+          to="create"
           className="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
         >
           <PlusCircle size={18} />
           Tạo Blog
-        </Link>
+        </NavLink>
       </div>
 
       <div

@@ -51,6 +51,7 @@ import ReportList from "./routes/staff-manage/Report-management/ReportList";
 import ReportDetail from "./routes/staff-manage/Report-management/ReportDetail";
 
 import CreateSlot from "./routes/slot/CreateSlot";
+import CreateBlog from "./routes/staff-manage/blog-management/CreateBolg";
 
 
 
@@ -192,6 +193,10 @@ const router = createBrowserRouter([
       {
         path: "manage/blog",
         element: <ProtectedRoute><BlogList /></ProtectedRoute>,
+      },
+      {
+        path: "manage/blog/create",
+        element: <ProtectedRoute><CreateBlog /></ProtectedRoute>,
       },
       {
         path: "manage/blog/:id",
