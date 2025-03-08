@@ -1,9 +1,10 @@
-import React from 'react'
 
-function BlogListOfStaff() {
+const BlogListOfStaff = () => {
   return (
-    <div>BlogListOfStaff</div>
-  )
+    <div>
+      
+    </div>
+  );
 }
 
-export default BlogListOfStaff
+export default BlogListOfStaff;

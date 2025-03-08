@@ -9,32 +9,46 @@ const CreateSlot = () => {
   const { loading, error } = useSelector((state) => state.slots);
 
   const [slot, setSlot] = useState({
-    slot_name: "",
     start_time: "",
     end_time: "",
     break_time: "",
   });
 
   const handleChange = (e) => {
-    setSlot({ ...slot, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+  
+    // Nếu input là start_time hoặc end_time, thêm ":00" để có "HH:mm:ss"
+    const formattedValue = (name === "start_time" || name === "end_time") ? `${value}:00` : value;
+  
+    setSlot({ ...slot, [name]: formattedValue });
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
     if (!slot.start_time || !slot.end_time) {
       alert("Vui lòng nhập đầy đủ giờ bắt đầu và kết thúc.");
       return;
     }
-
+  
+    const formattedSlot = {
+      StartTime: slot.start_time,  // Đã có dạng "HH:mm:ss"
+      EndTime: slot.end_time,
+      BreakTime: parseInt(slot.break_time, 10) || 10,
+    };
+  
+    console.log("Dữ liệu gửi lên API:", formattedSlot); // Debug
+  
     try {
-      await dispatch(createSlot(slot)).unwrap();
+      await dispatch(createSlot(formattedSlot)).unwrap();
       alert("Slot đã được tạo thành công!");
       navigate("/dashboard/slot");
     } catch (err) {
-      alert("Lỗi khi tạo slot: " + err);
+      console.error("Lỗi khi tạo slot:", err);
+      alert("Lỗi khi tạo slot: " + JSON.stringify(err));
     }
   };
+  
 
   return (
     <div className="p-6 shadow-xl rounded-lg bg-white max-w-lg mx-auto">

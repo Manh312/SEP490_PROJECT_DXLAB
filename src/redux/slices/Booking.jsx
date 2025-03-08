@@ -3,9 +3,8 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
   isModalOpen: false,
   selectedArea: "",
-  selectedTime: "",
+  selectedTime: [],
   peopleCount: 1,
-  selectedSlots: [],
 };
 
 const bookingSlice = createSlice({
@@ -24,13 +23,10 @@ const bookingSlice = createSlice({
       state.selectedSlots = [];
     },
     setSelectedTime: (state, action) => {
-      state.selectedTime = action.payload;
-    },
+      state.selectedTime = [...action.payload];
+    },    
     setPeopleCount: (state, action) => {
       state.peopleCount = action.payload;
-    },
-    setSelectedSlots: (state, action) => {
-      state.selectedSlots = Array.isArray(action.payload) ? action.payload : [];
     },
     setMonthRange: (state, action) => {
       state.monthRange = action.payload;
@@ -39,10 +35,10 @@ const bookingSlice = createSlice({
       state.selectedArea = action.payload;
     },
     confirmBooking: (state, action) => {
-      const selectedTime = action.payload;
-      state.selectedTime = selectedTime;
+      state.selectedTime = [...action.payload];
       state.isModalOpen = false;
     },
+    
 
   },
 });

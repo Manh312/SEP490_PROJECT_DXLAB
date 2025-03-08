@@ -10,7 +10,7 @@ import { toast } from "react-toastify";
 const activeChain = "sepolia";
 
 const sendUserDataToBackend = async (user) => {
-  
+
   try {
     console.log("Thirdweb User Info:", user);
 
@@ -23,9 +23,9 @@ const sendUserDataToBackend = async (user) => {
       body: JSON.stringify({
         walletAddress: user.walletDetails.walletAddress,
         email: user.storedToken.authDetails.email,
-        walletId: user.storedToken.authDetails.userWalletId,
-        provider: user.storedToken.authProvider,
-        token: user.storedToken.jwtToken,
+        // walletId: user.storedToken.authDetails.userWalletId,
+        // provider: user.storedToken.authProvider,
+        // token: user.storedToken.jwtToken,
       }),
     });
 
@@ -36,6 +36,23 @@ const sendUserDataToBackend = async (user) => {
   }
 };
 
+
+// const sendUserDataToBackend = async (user) => {
+//   try {
+//     const res = await fetch("http://localhost:9999/api/authenticate", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ payload: user }),
+//     });
+
+//     const data = await res.json();
+//     if (!res.ok) throw new Error(data.message);
+    
+//     toast.success("Đăng nhập thành công!");
+//   } catch (error) {
+//     toast.error(error.message);
+//   }
+// };
 createRoot(document.getElementById("root")).render(
   <ThirdwebProvider
     activeChain={activeChain}
@@ -50,7 +67,12 @@ createRoot(document.getElementById("root")).render(
           options: ["google"],
         },
         onAuthSuccess: async (user) => {
-          await sendUserDataToBackend(user); 
+          const userEmail = user.email || user.storedToken?.authDetails?.email;
+          if (!userEmail || !userEmail.endsWith("@fpt.edu.vn")) {
+            toast.error("Bạn cần sử dụng email @fpt.edu.vn để đăng nhập.");
+            return;
+          }
+          await sendUserDataToBackend(user);
           toast.success("Đăng nhập thành công!");
         },
       }),

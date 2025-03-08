@@ -63,7 +63,7 @@ const Navbar = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          <ul className="flex flex-col py-2">
+          <ul className="flex flex-col py-2 border-t">
             {navItems.map((item, index) => (
               <li key={index}>
                 <Link to={item.href} onClick={() => setMobileDrawerOpen(false)} className="block px-4 py-3 hover:bg-gray-200 dark:hover:bg-gray-800">
@@ -80,11 +80,19 @@ const Navbar = () => {
               </li>
             )}
           </ul>
+          <div className="flex items-center ml-4">
+            <label>Màu nền: </label>
+            <button
+              className="p-2 ml-2 border rounded-md transition-colors"
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            >
+              {theme === "dark" ? <Moon size={20} /> : <Sun size={20} />}
+            </button>
+          </div>
         </div>
 
-        <div className="border-t p-4 text-xs text-gray-500 dark:text-gray-400 dark:border-gray-700">
-          <p>© 2025 DXLAB</p>
-          <p>All rights reserved.</p>
+        <div className="border-t p-4 text-xs">
+          <p>© 2025 DXLAB Co-Working Space</p>
         </div>
       </div>
     </nav>

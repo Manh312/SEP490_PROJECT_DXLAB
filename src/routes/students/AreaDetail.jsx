@@ -1,86 +1,135 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { setSelectedTime, setPeopleCount, setSelectedSlots, confirmBooking, setSelectedArea } from '../../redux/slices/Booking';
+import { setSelectedTime, setPeopleCount, confirmBooking, setSelectedArea } from '../../redux/slices/Booking';
 import { areas, slots } from '../../constants';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { CalendarDaysIcon, XIcon } from 'lucide-react';
+import { PlusCircleIcon, XIcon } from 'lucide-react';
 
 const AreaDetail = () => {
   const { typeName } = useParams();
   const dispatch = useDispatch();
-  const { selectedTime, selectedSlots, peopleCount, selectedArea: area } = useSelector(state => state.booking);
-  // const [area, setArea] = useState(null);
-  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+  const navigate = useNavigate();
+  const { selectedTime, peopleCount, selectedArea: area } = useSelector((state) => state.booking);
+  const [bookingDates, setBookingDates] = useState([{ date: '', slots: [] }]);
 
   useEffect(() => {
-    const foundArea = areas.find(area => area.type === typeName);
+    if (selectedTime && Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
+      const normalizedSelectedTime = selectedTime.map(booking => ({
+        ...booking,
+        slots: Array.isArray(booking.slots) ? booking.slots : [],
+      }));
+      setBookingDates(normalizedSelectedTime);
+    }
+  }, [selectedTime]);
+
+  useEffect(() => {
+    const foundArea = areas.find((area) => area.type === typeName);
     if (foundArea) {
       dispatch(setSelectedArea(foundArea));
-      if (foundArea.type === "group" && peopleCount < 1) {
+      if (foundArea.type === 'group' && peopleCount < 1) {
         dispatch(setPeopleCount(1));
       }
     } else {
-      toast.error("Khu vực không tồn tại!");
+      toast.error('Khu vực không tồn tại!');
     }
   }, [typeName, dispatch, peopleCount]);
 
-  if (!area) return <p className="text-center mt-10 text-red-500">Không tìm thấy khu vực.</p>;
+  const addBookingDate = () => {
+    const newBooking = { date: '', slots: [] };
+    const updatedDates = [...bookingDates, newBooking];
+    setBookingDates(updatedDates);
+    dispatch(setSelectedTime(updatedDates));
+  };
 
-  const handleSlotChange = (slotId) => {
+  const removeBookingDate = (index) => {
+    if (bookingDates.length === 1) {
+      toast.error('Phải có ít nhất một ngày đặt chỗ!');
+      return;
+    }
+    const updatedDates = bookingDates.filter((_, i) => i !== index);
+    setBookingDates(updatedDates);
+    dispatch(setSelectedTime(updatedDates));
+  };
+
+  const handleDateChange = (index, value) => {
+    const updatedDates = [...bookingDates];
+    updatedDates[index] = { ...updatedDates[index], date: value, slots: updatedDates[index].slots || [] };
+    setBookingDates(updatedDates);
+    dispatch(setSelectedTime(updatedDates));
+  };
+
+  const handleSlotChange = (index, slotId) => {
     const slot = slots.find(s => s.id === slotId);
-
     if (!slot) return;
 
-    // Nếu slot hết chỗ, không cho phép chọn và hiển thị thông báo lỗi
-    if ((!slot.isAvailable && area.type !== "group") || (area.type === "group" && slot.remainingSeats <= 0)) {
-      toast.error("Slot này đã hết chỗ, vui lòng chọn slot khác!");
-      return;
+    // Check if slot is full
+    if ((!slot.isAvailable && area.type !== "group") || 
+        (area.type === "group" && slot.remainingSeats <= 0)) {
+      return; // Do nothing if slot is full
     }
 
+    const updatedDates = [...bookingDates];
+    const currentBooking = updatedDates[index];
+    const currentSlots = Array.isArray(currentBooking.slots) ? currentBooking.slots : [];
 
-    if (!Array.isArray(selectedSlots)) {
-      dispatch(setSelectedSlots([]));
-      return;
+    let newSlots;
+    if (currentSlots.includes(slotId)) {
+      newSlots = currentSlots.filter((slot) => slot !== slotId);
+    } else {
+      newSlots = [...currentSlots, slotId];
     }
 
-    const updatedSlots = selectedSlots.includes(slotId)
-      ? selectedSlots.filter(id => id !== slotId)
-      : [...selectedSlots, slotId];
-
-    dispatch(setSelectedSlots(updatedSlots));
+    updatedDates[index] = { ...currentBooking, slots: newSlots };
+    setBookingDates(updatedDates);
+    dispatch(setSelectedTime(updatedDates));
   };
-
-  const getSlotStatus = (slot) => {
-    if (area.type === "group") {
-      return slot.remainingSeats > 0 ? `Còn seats cho ${slot.remainingSeats} ghế` : "Hết chỗ";
-    }
-    return slot.isAvailable ? "Còn chỗ" : "Hết chỗ";
-  };
-
 
   const handleConfirmBooking = (e) => {
+    e.preventDefault();
     const today = new Date().toISOString().split('T')[0];
-    if (!selectedTime && selectedSlots.length === 0) {
-      e.preventDefault();
-      toast.error("Vui lòng chọn ngày và slot trước khi xác nhận!");
-    } else if (!selectedTime) {
-      e.preventDefault();
-      toast.error("Vui lòng chọn ngày trước khi xác nhận!");
+
+    if (bookingDates.some((item) => !item.date)) {
+      toast.error('Vui lòng chọn ngày trước khi xác nhận!');
+      return;
     }
-    else if (selectedTime < today) {
-      e.preventDefault();
-      toast.error("Ngày đặt không hợp lệ! Vui lòng chọn lại ngày khác.");
-    } else if (selectedSlots.length === 0) {
-      e.preventDefault();
-      toast.error("Vui lòng chọn ít nhất một slot trước khi xác nhận!");
-    } else {
-      dispatch(confirmBooking(selectedTime));
+
+    if (bookingDates.some((item) => item.date < today)) {
+      toast.error('Ngày đặt không hợp lệ! Vui lòng chọn lại ngày khác.');
+      return;
     }
+
+    if (bookingDates.some((item) => !Array.isArray(item.slots) || item.slots.length === 0)) {
+      toast.error('Vui lòng chọn ít nhất một slot trước khi xác nhận!');
+      return;
+    }
+
+    dispatch(setSelectedTime(bookingDates));
+    dispatch(confirmBooking(bookingDates));
+    navigate('/confirm-payment');
   };
 
-  const isPastDate = selectedTime && selectedTime < new Date().toISOString().split('T')[0];
+  const calculateTotalPrice = () => {
+    let total = 0;
+    bookingDates.forEach((booking) => {
+      if (Array.isArray(booking.slots)) {
+        booking.slots.forEach((slotId) => {
+          const slot = slots.find((s) => s.id === slotId);
+          if (slot) {
+            total += slot.price * (area.type === 'group' ? peopleCount : 1);
+          }
+        });
+      }
+    });
+    return total;
+  };
 
+  const isSlotDisabled = (slot) => {
+    return (!slot.isAvailable && area.type !== "group") || 
+           (area.type === "group" && slot.remainingSeats <= 0);
+  };
+
+  if (!area) return <p className="text-center mt-10 text-red-500">Không tìm thấy khu vực.</p>;
 
   return (
     <div className="p-6 min-h-screen flex flex-col md:flex-row gap-6 mt-15">
@@ -91,72 +140,74 @@ const AreaDetail = () => {
       </div>
 
       <div className="md:w-1/2 p-6 rounded-lg border shadow-md mt-15 mb-60 ml-10">
-        <div className='flex justify-between'>
-          <h2 className="text-xl font-bold mb-4">Đăng ký đặt chỗ</h2>
-          <CalendarDaysIcon className="h-6 w-6 text-gray-600 cursor-pointer hover:text-orange-500" onClick={() => setIsScheduleOpen(true)} />
-        </div>
-        <div className='mb-4'>
+        <h2 className="text-xl font-bold mb-4">Đăng ký đặt chỗ</h2>
+        <div className="mb-4">
           <p className="break-words text-base">
             Bạn đã chọn khu vực: <strong>{area.name}</strong>
           </p>
         </div>
-        <div className='mb-4'>
-          {area.type === "group" && (
-            <>
-              <label className="block font-medium mb-2">Số lượng người</label>
-              <input type="number" className="w-full p-2 border rounded-md mb-4" min="1" value={peopleCount} onChange={(e) => dispatch(setPeopleCount(Number(e.target.value)))} />
-            </>
-          )}
-        </div>
-        <div className="mb-4">
-          <label className="block font-medium mb-2">Ngày đặt chỗ</label>
-          <input type="date" className="w-full p-2 border rounded-md" value={selectedTime || ""} onChange={(e) => dispatch(setSelectedTime(e.target.value))} />
-        </div>
-
-        {isScheduleOpen && (
-          <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center">
-            <div className="bg-gray-300 text-black p-6 rounded-lg shadow-lg w-[600px] h-100 relative">
-              <button className="absolute top-2 right-2" onClick={() => setIsScheduleOpen(false)}>
-                <XIcon className="h-6 w-6 text-black" />
-              </button>
-
-              <h2 className="text-2xl font-bold mb-4 text-center">
-                Lịch đặt ngày {selectedTime ? new Date(selectedTime).toLocaleDateString('vi-VN') : "Chưa chọn ngày"}
-              </h2>
-
-              {/* Nếu chưa chọn ngày hoặc ngày đã qua, hiển thị thông báo */}
-              {(!selectedTime || isPastDate) ? (
-                <p className="text-center text-gray-500 mt-4">Không có thông tin lịch trình trong ngày này!</p>
-              ) : (
-                // Nếu có thông tin, hiển thị danh sách slot
-                <ul className="list-disc pl-4">
-                  {slots.map((slot) => (
-                    <li key={slot.id} className={`p-2 ${selectedSlots.includes(slot.id) ? 'bg-orange-200' : ''}`}>
-                      {slot.name} ({getSlotStatus(slot)})
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+        {area.type === 'group' && (
+          <div className="mb-4">
+            <label className="block font-medium mb-2">Số lượng người</label>
+            <input
+              type="number"
+              className="w-full p-2 border rounded-md mb-4"
+              min="1"
+              value={peopleCount}
+              onChange={(e) => dispatch(setPeopleCount(Number(e.target.value)))}
+            />
           </div>
         )}
-
-
-        <div className="mb-4">
-          <label className="block font-medium mb-2">Chọn Slot</label>
-          <div className="grid grid-cols-2 gap-2">
-            {slots.map((slot) => (
-              <label key={slot.id} className="flex items-center gap-2">
-                <input type="checkbox" checked={selectedSlots.includes(slot.id)} onChange={() => handleSlotChange(slot.id)} />
-                {slot.name}
-              </label>
-            ))}
-          </div>
+        <div className='max-h-96 overflow-y-auto'>
+          {bookingDates.map((booking, index) => (
+            <div key={index} className="mb-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  className="flex-1 p-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                  value={booking.date}
+                  onChange={(e) => handleDateChange(index, e.target.value)}
+                />
+                <button
+                  onClick={() => removeBookingDate(index)}
+                  className="p-1 text-red-500 hover:text-red-700"
+                >
+                  <XIcon className="h-5 w-5" />
+                </button>
+              </div>
+              <label className="block font-medium mb-2 mt-2">Chọn Slot:</label>
+              <div className="grid grid-cols-2 gap-2">
+                {slots.map((slot) => (
+                  <label key={slot.id} className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      value={slot.id}
+                      checked={Array.isArray(booking.slots) && booking.slots.includes(slot.id)}
+                      onChange={() => handleSlotChange(index, slot.id)}
+                      disabled={isSlotDisabled(slot)}
+                      className={isSlotDisabled(slot) ? 'cursor-not-allowed opacity-50' : ''}
+                    />
+                    <span>{slot.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
-
-        <Link to={(selectedTime && selectedSlots.length > 0) ? '/confirm-payment' : '#'} className="bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600 transition" onClick={handleConfirmBooking}>
-          <button className='w-40'>Xác nhận đặt chỗ</button>
-        </Link>
+        <button className="flex items-center gap-2 text-orange-500 mt-2 mb-5" onClick={addBookingDate}>
+          <PlusCircleIcon className="h-5 w-5" /> Thêm ngày
+        </button>
+        <div className="mb-4">
+          <p className="text-lg">
+            Tổng chi phí: <span className="text-orange-500">{calculateTotalPrice()} DXLAB Coin</span>
+          </p>
+        </div>
+        <button
+          className="bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600 transition w-40"
+          onClick={handleConfirmBooking}
+        >
+          Xác nhận đặt chỗ
+        </button>
       </div>
     </div>
   );
