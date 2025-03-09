@@ -2,11 +2,11 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 // API endpoint (đổi thành API thật)
-const API_URL = "";
+const API_URL = "https://localhost:7101/api/Slot/Generate"; 
 
-// Async Thunk để tạo slot
+// Async Thunk để tạo slo
 export const createSlot = createAsyncThunk(
-  'slots/createSlot',
+  "slots/createSlot",
   async (slot, { rejectWithValue }) => {
     try {
       const response = await axios.post(API_URL, slot);
