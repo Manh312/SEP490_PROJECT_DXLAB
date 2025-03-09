@@ -9,7 +9,6 @@ const CreateSlot = () => {
   const { loading, error } = useSelector((state) => state.slots);
 
   const [slot, setSlot] = useState({
-    slot_name: "",
     start_time: "",
     end_time: "",
     break_time: "",
@@ -19,9 +18,8 @@ const CreateSlot = () => {
     const { name, value } = e.target;
   
     // Nếu input là start_time hoặc end_time, thêm ":00" để có "HH:mm:ss"
-    const formattedValue = (name === "start_time" || name === "end_time") 
-      ? `${value}:00` 
-      : value;
+    const formattedValue = (name === "start_time" || name === "end_time") ? `${value}:00` : value;
+
   
     setSlot({ ...slot, [name]: formattedValue });
   };

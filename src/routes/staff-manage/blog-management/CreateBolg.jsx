@@ -1,25 +1,58 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const CreateBlog = () => {
   const navigate = useNavigate();
+  const [userId, setUserId] = useState(null); // Lưu userId của người dùng
+
+  useEffect(() => {
+    // Giả sử userId được lưu trong localStorage khi đăng nhập
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) {
+      setUserId(parseInt(storedUserId, 10)); // Chuyển thành số nguyên
+    } else {
+      toast.error("Không tìm thấy thông tin người dùng!");
+    }
+  }, []);
+
   const [newBlog, setNewBlog] = useState({
     title: "",
     content: "",
-    author: "",
-    status: "Pending Approval", // Mặc định là "Chờ duyệt"
+    createdDate: new Date().toISOString(),
+    status: "Pending",
   });
 
-  // Hàm gửi yêu cầu duyệt
-  const handleSubmitApproval = () => {
-    if (!newBlog.title || !newBlog.content || !newBlog.author) {
+  const handleSubmitApproval = async () => {
+    if (!newBlog.title || !newBlog.content) {
       toast.error("Vui lòng điền đầy đủ thông tin!");
       return;
     }
-    toast.success("Yêu cầu duyệt blog đã được gửi. Vui lòng chờ Admin xác nhận!");
-    console.log("Blog đã gửi yêu cầu duyệt:", newBlog);
-    navigate("/manage/blog"); // Điều hướng về danh sách blog
+
+    if (!userId) {
+      toast.error("Không xác định được User ID!");
+      return;
+    }
+
+    const blogData = {
+      ...newBlog,
+      userId, // Thêm userId vào dữ liệu gửi lên backend
+    };
+
+    try {
+      const response = await fetch("http://localhost:5000/blogs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(blogData),
+      });
+
+      if (!response.ok) throw new Error("Lỗi khi tạo bài viết!");
+
+      toast.success("Bài viết đã được gửi!");
+      navigate("/manage/blog");
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   return (
@@ -38,12 +71,7 @@ const CreateBlog = () => {
         value={newBlog.content}
         onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
       />
-      <input
-        className="w-full p-2 border rounded mb-3"
-        placeholder="Tác giả"
-        value={newBlog.author}
-        onChange={(e) => setNewBlog({ ...newBlog, author: e.target.value })}
-      />
+      <p className="text-sm text-gray-600 mb-4">User ID: {userId ?? "Chưa đăng nhập"}</p>
       <div className="flex gap-4">
         <button
           onClick={handleSubmitApproval}

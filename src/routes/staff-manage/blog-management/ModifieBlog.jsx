@@ -1,42 +1,62 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { blogData } from "../../../constants";
 
 const ModifieBlog = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  // Tìm blog theo ID
-  const blog = blogData.find((b) => b.id === id);
+  const [editedBlog, setEditedBlog] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Khai báo useState mặc định là null để tránh lỗi
-  const [editedBlog, setEditedBlog] = useState(() => {
-    if (!blog) return null; // Nếu không tìm thấy blog, trả về null
-    return {
-      title: blog.title,
-      content: blog.content,
-      author: blog.author,
-      status: "Pending Approval",
+  // Fetch blog data from API
+  useEffect(() => {
+    const fetchBlog = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/blogs/${id}`);
+        if (!response.ok) throw new Error("Không tìm thấy bài viết!");
+        const data = await response.json();
+        setEditedBlog({
+          title: data.title,
+          content: data.content,
+          author: data.author,
+          status: "Pending Approval",
+        });
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
     };
-  });
 
-  // Nếu không tìm thấy bài viết, hiển thị thông báo nhưng KHÔNG gọi Hook trong điều kiện
-  if (!blog) {
-    return <p className="text-red-500 text-center">Không tìm thấy bài viết!</p>;
-  }
+    fetchBlog();
+  }, [id]);
 
-  // Hàm xử lý khi người dùng nhấn "Sửa đổi & Gửi yêu cầu duyệt"
-  const handleUpdateBlog = () => {
+  // Handle update blog
+  const handleUpdateBlog = async () => {
     if (!editedBlog.title || !editedBlog.content) {
       alert("Vui lòng điền đầy đủ thông tin!");
       return;
     }
 
-    console.log("Blog đã được cập nhật:", editedBlog);
-    alert("Bài viết đã được cập nhật và gửi yêu cầu duyệt!");
+    try {
+      const response = await fetch(`http://localhost:5000/blogs/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editedBlog),
+      });
 
-    navigate("/manage/blog");
+      if (!response.ok) throw new Error("Lỗi khi cập nhật bài viết!");
+      alert("Bài viết đã được cập nhật và gửi yêu cầu duyệt!");
+      navigate("/manage/blog");
+    } catch (err) {
+      alert(err.message);
+    }
   };
+
+  if (loading) return <p className="text-center">Đang tải...</p>;
+  if (error) return <p className="text-red-500 text-center">{error}</p>;
 
   return (
     <div className="max-w-3xl mx-auto p-6">
@@ -45,7 +65,7 @@ const ModifieBlog = () => {
       <label className="block text-sm font-medium text-gray-700">Tiêu đề</label>
       <input
         className="w-full p-2 border rounded mb-3"
-        value={editedBlog?.title || ""}
+        value={editedBlog.title}
         onChange={(e) => setEditedBlog({ ...editedBlog, title: e.target.value })}
       />
 
@@ -53,12 +73,11 @@ const ModifieBlog = () => {
       <textarea
         className="w-full p-2 border rounded mb-3"
         rows={5}
-        value={editedBlog?.content || ""}
+        value={editedBlog.content}
         onChange={(e) => setEditedBlog({ ...editedBlog, content: e.target.value })}
       />
 
-      <p className="text-sm text-gray-600 mb-4">Tác giả: {editedBlog?.author}</p>
-
+      <p className="text-sm text-gray-600 mb-4">Tác giả: {editedBlog.author}</p>
       <span className="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm inline-block mb-4">
         Chờ duyệt
       </span>

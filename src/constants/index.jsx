@@ -205,6 +205,41 @@ export const mockTransactions = [
 export const slot = [
   {
     id: 1,
+    name: "Slot 1",
+    time: "08:00 - 10:00",
+    isAvailable: true,
+    remainingSeats: 4,
+    price: 20
+  },
+  {
+    id: 2,
+    name: "Slot 2",
+    time: "10:00 - 12:00",
+    isAvailable: false,
+    remainingSeats: 0,
+    price: 80
+  },
+  {
+    id: 3,
+    name: "Slot 3",
+    time: "13:00 - 15:00",
+    isAvailable: true,
+    remainingSeats: 6,
+    price: 220
+  },
+  {
+    id: 4,
+    name: "Slot 4",
+    time: "15:00 - 17:00",
+    isAvailable: true,
+    remainingSeats: 2,
+    price: 300
+  },
+];
+
+export const slots_manage = [
+  {
+    id: 1,
     slot_name: "Slot 1",
     start_time: "08:00",
     end_time: "10:00",
@@ -227,7 +262,7 @@ export const slot = [
     start_time: "15:00",
     end_time: "17:00",
   },
-];
+]
 
 export const features = [
   {
@@ -357,7 +392,40 @@ export const slots = [
     { id: 3, slot_name: "Buổi Chiều", start_time: "14:00", end_time: "16:00" },
     { id: 4, slot_name: "Buổi Tối", start_time: "16:30", end_time: "18:30" },
   ];
-
+export const account = [
+    {
+      id: 1,
+      fullName: "Nguyễn Văn A",
+      email: "a@company.com",
+      roleId: "Staff",
+      avatar: "https://via.placeholder.com/40",
+      walletAddress: "0x1234...abcd",
+    },
+    {
+      id: 2,
+      fullName: "Trần Thị B",
+      email: "b@company.com",
+      roleId: "Staff",
+      avatar: "https://via.placeholder.com/40",
+      walletAddress: "0x5678...efgh",
+    },
+    {
+      id: 3,
+      fullName: "Lê Văn C",
+      email: "c@student.com",
+      roleId: "Student",
+      avatar: "https://via.placeholder.com/40",
+      walletAddress: "0x9abc...ijkl",
+    },
+    {
+      id: 4,
+      fullName: "Phạm Thị D",
+      email: "d@student.com",
+      roleId: "Student",
+      avatar: "https://via.placeholder.com/40",
+      walletAddress: "0xdef0...mnop",
+    },
+  ];
   
 
 

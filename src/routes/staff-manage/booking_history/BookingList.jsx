@@ -188,7 +188,7 @@ const BookingList = () => {
           className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
           disabled={currentPage === 1}
         >
-          «
+          <span aria-hidden="true">&laquo;</span>
         </button>
         {Array.from({ length: totalPages }, (_, i) => (
           <button
@@ -204,7 +204,7 @@ const BookingList = () => {
           className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
           disabled={currentPage === totalPages}
         >
-          »
+          <span aria-hidden="true">&raquo;</span>
         </button>
       </div>
 

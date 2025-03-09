@@ -1,15 +1,28 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// API endpoint (đổi thành API thật)
-const API_URL = "https://localhost:7101/api/Slot/Generate"; 
+// API endpoint (cập nhật URL thực tế)
+const API_URL = "http://localhost:9999/api/Slot";
 
-// Async Thunk để tạo slo
+
+// Lấy danh sách slots
+export const listSlots = createAsyncThunk(
+  'slots/list',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Không thể tải danh sách slots");
+    }
+  }
+);
+
 export const createSlot = createAsyncThunk(
   "slots/createSlot",
   async (slot, { rejectWithValue }) => {
     try {
-      const response = await axios.post(API_URL, slot);
+      const response = await axios.post(`${API_URL}/Generate`, slot);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Có lỗi xảy ra");
@@ -31,8 +44,23 @@ const slotSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(createSlot.pending, (state) => {
+      // Xử lý lấy danh sách slots
+      .addCase(listSlots.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(listSlots.fulfilled, (state, action) => {
+        state.slots = action.payload;
         state.loading = false;
+      })
+      .addCase(listSlots.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Xử lý tạo slot mới
+      .addCase(createSlot.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
       .addCase(createSlot.fulfilled, (state, action) => {

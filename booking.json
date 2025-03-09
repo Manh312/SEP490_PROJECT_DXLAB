@@ -243,5 +243,78 @@
       "id": 407
     }
   ],
-  "blog": []
+  "blogs": [
+    {
+      "id": "blog_1",
+      "userId": 2,
+      "title": "Top 10 AI Trends in 2025",
+      "content": "This is the content of blog post 1. It provides insights and information on top 10 ai trends in 2025.",
+      "createdDate": "2025-03-06T00:00:00Z",
+      "status": "Pending"
+    },
+    {
+      "id": "blog_2",
+      "userId": 4,
+      "title": "How to Improve Your Study Habits",
+      "content": "This is the content of blog post 2. It provides insights and information on how to improve your study habits.",
+      "createdDate": "2025-03-07T00:00:00Z",
+      "status": "Pending"
+    },
+    {
+      "id": "blog_3",
+      "userId": 3,
+      "title": "The Best Travel Destinations This Year",
+      "content": "This is the content of blog post 3. It provides insights and information on the best travel destinations this year.",
+      "createdDate": "2025-03-08T00:00:00Z",
+      "status": "Pending"
+    },
+    {
+      "id": "blog_4",
+      "userId": 2,
+      "title": "Healthy Eating Tips for a Busy Life",
+      "content": "This is the content of blog post 4. It provides insights and information on healthy eating tips for a busy life.",
+      "createdDate": "2025-03-09T00:00:00Z",
+      "status": "Published"
+    },
+    {
+      "id": "blog_5",
+      "userId": 1,
+      "title": "Startup Strategies for Entrepreneurs",
+      "content": "This is the content of blog post 5. It provides insights and information on startup strategies for entrepreneurs.",
+      "createdDate": "2025-03-10T00:00:00Z",
+      "status": "Canceled"
+    },
+    {
+      "id": "blog_6",
+      "userId": 1,
+      "title": "The Future of Remote Work",
+      "content": "This is the content of blog post 6. It provides insights and information on the future of remote work.",
+      "createdDate": "2025-03-11T00:00:00Z",
+      "status": "Canceled"
+    },
+    {
+      "id": "blog_7",
+      "userId": 2,
+      "title": "Mindfulness Techniques for Stress Relief",
+      "content": "This is the content of blog post 7. It provides insights and information on mindfulness techniques for stress relief.",
+      "createdDate": "2025-03-12T00:00:00Z",
+      "status": "Published"
+    },
+    {
+      "id": "blog_8",
+      "userId": 4,
+      "title": "Breaking Into the Tech Industry",
+      "content": "This is the content of blog post 8. It provides insights and information on breaking into the tech industry.",
+      "createdDate": "2025-03-13T00:00:00Z",
+      "status": "Canceled"
+    },
+    {
+      "id": "blog_9",
+      "userId": 4,
+      "title": "Investing Smartly in 2025",
+      "content": "This is the content of blog post 9. It provides insights and information on investing smartly in 2025.",
+      "createdDate": "2025-03-14T00:00:00Z",
+      "status": "Published"
+    }
+  ]
 }
