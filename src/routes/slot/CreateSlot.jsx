@@ -1,12 +1,14 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { createSlot } from "../../redux/slices/Slot";
+import { toast } from "react-toastify";
 
 const CreateSlot = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.slots);
+  const { loading } = useSelector((state) => state.slots);
 
   const [slot, setSlot] = useState({
     start_time: "",
@@ -16,50 +18,47 @@ const CreateSlot = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-  
-    // Nếu input là start_time hoặc end_time, thêm ":00" để có "HH:mm:ss"
-    const formattedValue = (name === "start_time" || name === "end_time") ? `${value}:00` : value;
 
-  
+    // Nếu input là start_time hoặc end_time, thêm ":00" để có "HH:mm:ss"
+    const formattedValue =
+      name === "start_time" || name === "end_time" ? `${value}:00` : value;
+
     setSlot({ ...slot, [name]: formattedValue });
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!slot.start_time || !slot.end_time) {
-      alert("Vui lòng nhập đầy đủ giờ bắt đầu và kết thúc.");
+      toast.error("Vui lòng nhập đầy đủ giờ bắt đầu và kết thúc.");
       return;
     }
-  
+
     const formattedSlot = {
-      StartTime: slot.start_time,  // Đã có dạng "HH:mm:ss"
+      StartTime: slot.start_time, // Đã có dạng "HH:mm:ss"
       EndTime: slot.end_time,
       BreakTime: parseInt(slot.break_time, 10) || 10,
     };
-  
+
     console.log("Dữ liệu gửi lên API:", formattedSlot); // Debug
-  
-    try {
-      const mess = await dispatch(createSlot(formattedSlot)).unwrap();
-      alert(mess.message);
-      navigate("/dashboard/slot");
-    } catch (err) {
-      console.error("Lỗi khi tạo slot:", err.message);
-      alert(err.message);
-    }
+
+    dispatch(createSlot(formattedSlot))
+      .unwrap()
+      .then((res) => {
+        toast.success(res.message);
+        navigate("/dashboard/slot");
+      })
+      .catch((err) => {
+        toast.error(err.message)
+      });
   };
-  
 
   return (
     <div className="p-6 shadow-xl rounded-lg bg-white max-w-lg mx-auto">
       <h2 className="text-2xl font-semibold mb-4">🕒 Tạo Slot Mới</h2>
       {loading && <p>Đang tạo slot...</p>}
-      {error && <p className="text-red-500">Lỗi: {error}</p>}
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        
 
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Start Time */}
         <div>
           <label className="block font-medium">Giờ Bắt Đầu</label>
