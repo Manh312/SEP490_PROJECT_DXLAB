@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import { ConnectWallet, useAddress, useDisconnect } from "@thirdweb-dev/react";
 import { useDispatch, useSelector } from "react-redux";
 import { clearAuthData } from "../../redux/slices/Authentication";
-import defaultProfileImage from "../../assets/profile-image.jpg";
+import { FaUserCircle } from "react-icons/fa";
 
 const Navbar = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -74,9 +74,7 @@ const Navbar = () => {
         <div className="hidden lg:flex justify-center space-x-6 items-center relative z-10">
           {address ? (
             <div ref={profileRef} className="relative">
-              <img
-                src={defaultProfileImage}
-                alt="Profile"
+              <FaUserCircle
                 className="h-10 w-10 rounded-full cursor-pointer"
                 onClick={handleProfileClick}
               />
@@ -158,9 +156,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             {address && (
               <div>
-                <img
-                  src={defaultProfileImage}
-                  alt="Profile"
+                <FaUserCircle
                   className="h-8 w-8 rounded-full cursor-pointer"
                 />
                 <span className="text-sm">{user?.storedToken?.authDetails?.email || "Guest"}</span>

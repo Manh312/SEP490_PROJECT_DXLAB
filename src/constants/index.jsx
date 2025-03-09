@@ -392,7 +392,40 @@ export const slots = [
     { id: 3, slot_name: "Buổi Chiều", start_time: "14:00", end_time: "16:00" },
     { id: 4, slot_name: "Buổi Tối", start_time: "16:30", end_time: "18:30" },
   ];
-
+export const account = [
+    {
+      id: 1,
+      fullName: "Nguyễn Văn A",
+      email: "a@company.com",
+      roleId: "Staff",
+      avatar: "https://via.placeholder.com/40",
+      walletAddress: "0x1234...abcd",
+    },
+    {
+      id: 2,
+      fullName: "Trần Thị B",
+      email: "b@company.com",
+      roleId: "Staff",
+      avatar: "https://via.placeholder.com/40",
+      walletAddress: "0x5678...efgh",
+    },
+    {
+      id: 3,
+      fullName: "Lê Văn C",
+      email: "c@student.com",
+      roleId: "Student",
+      avatar: "https://via.placeholder.com/40",
+      walletAddress: "0x9abc...ijkl",
+    },
+    {
+      id: 4,
+      fullName: "Phạm Thị D",
+      email: "d@student.com",
+      roleId: "Student",
+      avatar: "https://via.placeholder.com/40",
+      walletAddress: "0xdef0...mnop",
+    },
+  ];
   
 
 

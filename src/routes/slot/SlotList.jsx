@@ -27,7 +27,7 @@ const SlotList = () => {
   };
 
   return (
-    <div className="p-6 shadow-xl rounded-lg transition-all">
+    <div className="p-6 shadow-xl rounded-lg transition-all mt-10 mb-20">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">⏳ Danh Sách Slot Trong Ngày</h2>
         <button
