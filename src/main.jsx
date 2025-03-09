@@ -18,15 +18,15 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch) => {
     const userEmail = user?.storedToken?.authDetails?.email || user?.email || "unknown@example.com";
 
     const payload = {
-      userId: 1,
+      userId: 0,
       email: userEmail,
-      fullName: "Manh meo",
+      fullName: "manhmeo",
       walletAddress: walletAddress,
       status: true,
-      roleId: 0,
+      roleId: 1,
     };
 
-    const response = await fetch("https://localhost:7101/api/User", {
+    const response = await fetch("http://localhost:9999/api/User", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -61,10 +61,8 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch) => {
   }
 };
 
-// Component con để sử dụng useAddress
 const AppWithWallet = () => {
-  const walletAddress = useAddress(); // Lấy walletAddress bên trong ThirdwebProvider
-
+  const walletAddress = useAddress(); 
   return <App walletAddress={walletAddress} />;
 };
 
@@ -99,7 +97,7 @@ const RootApp = () => {
       ]}
       authConfig={{
         domain: "localhost:5173",
-        // authUrl: "https://localhost:7101/api",
+        // authUrl: "https://localhost:9999/api",
       }}
     >
       <PersistGate loading={null} persistor={persistor}>
