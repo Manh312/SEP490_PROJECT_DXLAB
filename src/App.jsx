@@ -47,10 +47,11 @@ import CreateRoom from "./routes/room/CreateRoom";
 import AreaDetail from "./routes/students/AreaDetail";
 
 import Test from "./routes/students/Test";
-import ReportList from "./routes/staff-manage/report-management/ReportList";
+import ReportList from "./routes/staff-manage/Report-management/ReportList";
 import ReportDetail from "./routes/staff-manage/Report-management/ReportDetail";
 
 import CreateSlot from "./routes/slot/CreateSlot";
+import CreateBlog from "./routes/staff-manage/blog-management/CreateBolg";
 
 
 
@@ -192,6 +193,10 @@ const router = createBrowserRouter([
       {
         path: "manage/blog",
         element: <ProtectedRoute><BlogList /></ProtectedRoute>,
+      },
+      {
+        path: "manage/blog/create",
+        element: <ProtectedRoute><CreateBlog /></ProtectedRoute>,
       },
       {
         path: "manage/blog/:id",
