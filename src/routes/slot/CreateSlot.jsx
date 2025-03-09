@@ -41,12 +41,12 @@ const CreateSlot = () => {
     console.log("Dữ liệu gửi lên API:", formattedSlot); // Debug
   
     try {
-      await dispatch(createSlot(formattedSlot)).unwrap();
-      alert("Slot đã được tạo thành công!");
+      const mess = await dispatch(createSlot(formattedSlot)).unwrap();
+      alert(mess.message);
       navigate("/dashboard/slot");
     } catch (err) {
-      console.error("Lỗi khi tạo slot:", err);
-      alert("Lỗi khi tạo slot: " + JSON.stringify(err));
+      console.error("Lỗi khi tạo slot:", err.message);
+      alert(err.message);
     }
   };
   
