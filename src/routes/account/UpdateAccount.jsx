@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { updateAccountRole } from "../../redux/slices/Account"; 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const UpdateAccount = () => {
   const { id } = useParams();
@@ -12,11 +12,40 @@ const UpdateAccount = () => {
   );
 
   const [roleId, setRoleId] = useState(account?.roleId || "Student");
+  const [loading, setLoading] = useState(false);
 
-  const handleUpdateRole = () => {
-    dispatch(updateAccountRole({ id: parseInt(id), roleId }));
+  // Cập nhật roleId khi account thay đổi (tránh lỗi state không đồng bộ)
+  useEffect(() => {
+    if (account) {
+      setRoleId(account.roleId);
+    }
+  }, [account]);
+
+  // Xử lý cập nhật vai trò
+  const handleUpdateRole = async () => {
+    if (!account) return;
+    
+    setLoading(true);
+    await dispatch(updateAccountRole({ id: parseInt(id), roleId }));
+    setLoading(false);
+
     navigate("/dashboard/account"); // Quay lại danh sách tài khoản
   };
+
+  // Nếu account không tồn tại, hiển thị thông báo lỗi
+  if (!account) {
+    return (
+      <div className="p-6 max-w-md mx-auto bg-white rounded-lg shadow-lg">
+        <h2 className="text-2xl font-semibold mb-4 text-red-500">Người dùng không tồn tại!</h2>
+        <button 
+          onClick={() => navigate("/dashboard/account")}
+          className="w-full bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700"
+        >
+          Quay lại danh sách
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-md mx-auto bg-white rounded-lg shadow-lg">
@@ -26,7 +55,7 @@ const UpdateAccount = () => {
       <label className="block font-medium mb-2">Họ và Tên</label>
       <input 
         type="text" 
-        value={account?.fullName || ""} 
+        value={account.fullName} 
         disabled 
         className="w-full px-3 py-2 border rounded-lg bg-gray-100"
       />
@@ -35,7 +64,7 @@ const UpdateAccount = () => {
       <label className="block font-medium mt-4 mb-2">Email</label>
       <input 
         type="email" 
-        value={account?.email || ""} 
+        value={account.email} 
         disabled 
         className="w-full px-3 py-2 border rounded-lg bg-gray-100"
       />
@@ -44,7 +73,7 @@ const UpdateAccount = () => {
       <label className="block font-medium mt-4 mb-2">Ví Ethereum</label>
       <input 
         type="text" 
-        value={account?.walletAddress || ""} 
+        value={account.walletAddress} 
         disabled 
         className="w-full px-3 py-2 border rounded-lg bg-gray-100"
       />
@@ -63,9 +92,12 @@ const UpdateAccount = () => {
       {/* Nút cập nhật */}
       <button 
         onClick={handleUpdateRole} 
-        className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+        disabled={loading}
+        className={`mt-4 w-full text-white py-2 rounded-lg transition ${
+          loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+        }`}
       >
-        Cập Nhật
+        {loading ? "Đang cập nhật..." : "Cập Nhật"}
       </button>
     </div>
   );

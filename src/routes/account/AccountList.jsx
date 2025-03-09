@@ -1,13 +1,24 @@
 import { useDispatch, useSelector } from "react-redux";
-import { setAccounts, setRoleFilter, addAccount, deleteAccount } from "../../redux/slices/Account";
-
+import { useEffect, useMemo } from "react";
+import { fetchAccounts, setRoleFilter, deleteAccount, addAccount } from "../../redux/slices/Account";
 import { Link } from "react-router-dom";
 import * as XLSX from "xlsx";
 
 const AccountList = () => {
   const dispatch = useDispatch();
-  const { accounts, roleFilter } = useSelector((state) => state.accounts);
+  const { accounts, roleFilter, loading, error } = useSelector((state) => state.accounts);
 
+  // Fetch danh sách tài khoản từ API khi component mount
+  useEffect(() => {
+    dispatch(fetchAccounts());
+  }, [dispatch]);
+
+  // Lọc danh sách người dùng theo role
+  const filteredAccounts = useMemo(() => {
+    return roleFilter === "All" ? accounts : accounts.filter((acc) => acc.roleId === roleFilter);
+  }, [accounts, roleFilter]);
+
+  // Xử lý nhập file Excel
   const handleImportExcel = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -37,9 +48,6 @@ const AccountList = () => {
     };
   };
 
-  const filteredAccounts =
-    roleFilter === "All" ? accounts : accounts.filter((acc) => acc.roleId === roleFilter);
-
   return (
     <div className="relative p-6 shadow-xl rounded-lg bg-white max-w-5xl mx-auto">
       {/* Nút Import Excel */}
@@ -53,18 +61,22 @@ const AccountList = () => {
       <h2 className="text-2xl font-semibold mb-4">📝 Danh Sách Người Dùng</h2>
 
       {/* Bộ lọc Role */}
-      <div className="mb-4">
+      <div className="mb-4 w-40">
         <label className="block font-medium">📌 Lọc theo Vai Trò</label>
         <select
           value={roleFilter}
           onChange={(e) => dispatch(setRoleFilter(e.target.value))}
-          className="w-40 px-3 py-2 border rounded-lg"
+          className="w-full px-3 py-2 border rounded-lg"
         >
           <option value="All">Tất Cả</option>
           <option value="Staff">Staff</option>
           <option value="Student">Student</option>
         </select>
       </div>
+
+      {/* Trạng thái loading và error */}
+      {loading && <p className="text-blue-500">Đang tải dữ liệu...</p>}
+      {error && <p className="text-red-500">Lỗi: {error}</p>}
 
       {/* Danh sách người dùng */}
       <div className="mt-4">
@@ -100,12 +112,12 @@ const AccountList = () => {
                     >
                       Xóa
                     </button>
-
-                    <Link to={`/dashboard/account/update/${user.id}`}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600">
+                    <Link
+                      to={`/dashboard/account/update/${user.id}`}
+                      className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"
+                    >
                       Cập Nhật
                     </Link>
-
                   </td>
                 </tr>
               ))}
