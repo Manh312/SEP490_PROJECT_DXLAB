@@ -377,56 +377,51 @@ export const navbarLinks = [
   },
 ];
 export const areas = [
-  { id: 1, name: "Khu Vực Cá Nhân",type: " Cá Nhân", Room: "DE318" },
-  { id: 2, name: "Khu Vực Nhóm",type: "Nhóm", Room: "DE318" },
-  { id: 1, name: "Khu Vực 1",type: " Cá Nhân", Room: "DE318" },
-  { id: 2, name: "Khu Vực 2",type: "Nhóm", Room: "DE318" },
-  { id: 1, name: "Khu Vực 1",type: " Cá Nhân", Room: "DE318" },
-  { id: 2, name: "Khu Vực 2",type: "Nhóm", Room: "DE318" },
-  
+  { id: 1, name: "Khu Vực Cá Nhân", type: "individual", image: images1, description: "Khu vực dành cho cá nhân cố định tại DXLAB cung cấp không gian làm việc riêng biệt với bàn làm việc hiện đại, ghế ergonomic giúp giảm đau lưng, cùng hệ thống internet tốc độ cao." },
+  { id: 2, name: "Khu Vực Nhóm", type: "group", image: images2, description: "Khu vực dành cho nhóm lý tăng cơ hội học hỏi và phát triển dự án một cách linh hoạt và chuyên nghiệp. Giá cả hợp lý, cơ sở vật chất hình đại, cung cấp không gian sạch sẽ, hệ thống internet tốc độ cao." },
 ];
 
 export const slots = [
-  {id: 1 ,slot_name: "Buổi Sáng", start_time: "08:00", end_time: "10:00" },
-    { id: 2, slot_name: "Buổi Trưa", start_time: "10:30", end_time: "12:30" },
-    { id: 3, slot_name: "Buổi Chiều", start_time: "14:00", end_time: "16:00" },
-    { id: 4, slot_name: "Buổi Tối", start_time: "16:30", end_time: "18:30" },
-  ];
+  { id: 1, slot_name: "Buổi Sáng", start_time: "08:00", end_time: "10:00" },
+  { id: 2, slot_name: "Buổi Trưa", start_time: "10:30", end_time: "12:30" },
+  { id: 3, slot_name: "Buổi Chiều", start_time: "14:00", end_time: "16:00" },
+  { id: 4, slot_name: "Buổi Tối", start_time: "16:30", end_time: "18:30" },
+];
 export const account = [
-    {
-      id: 1,
-      fullName: "Nguyễn Văn A",
-      email: "a@company.com",
-      roleId: "Staff",
-      avatar: "https://via.placeholder.com/40",
-      walletAddress: "0x1234...abcd",
-    },
-    {
-      id: 2,
-      fullName: "Trần Thị B",
-      email: "b@company.com",
-      roleId: "Staff",
-      avatar: "https://via.placeholder.com/40",
-      walletAddress: "0x5678...efgh",
-    },
-    {
-      id: 3,
-      fullName: "Lê Văn C",
-      email: "c@student.com",
-      roleId: "Student",
-      avatar: "https://via.placeholder.com/40",
-      walletAddress: "0x9abc...ijkl",
-    },
-    {
-      id: 4,
-      fullName: "Phạm Thị D",
-      email: "d@student.com",
-      roleId: "Student",
-      avatar: "https://via.placeholder.com/40",
-      walletAddress: "0xdef0...mnop",
-    },
-  ];
-  
+  {
+    id: 1,
+    fullName: "Nguyễn Văn A",
+    email: "a@company.com",
+    roleId: "Staff",
+    avatar: "https://via.placeholder.com/40",
+    walletAddress: "0x1234...abcd",
+  },
+  {
+    id: 2,
+    fullName: "Trần Thị B",
+    email: "b@company.com",
+    roleId: "Staff",
+    avatar: "https://via.placeholder.com/40",
+    walletAddress: "0x5678...efgh",
+  },
+  {
+    id: 3,
+    fullName: "Lê Văn C",
+    email: "c@student.com",
+    roleId: "Student",
+    avatar: "https://via.placeholder.com/40",
+    walletAddress: "0x9abc...ijkl",
+  },
+  {
+    id: 4,
+    fullName: "Phạm Thị D",
+    email: "d@student.com",
+    roleId: "Student",
+    avatar: "https://via.placeholder.com/40",
+    walletAddress: "0xdef0...mnop",
+  },
+];
+
 
 
 export const overviewData = [
@@ -579,7 +574,7 @@ export const users = [
 export const products = [
   { id: 1, name: "Ghế", quantity: 10, status: "Còn hàng" },
   { id: 2, name: "Bàn", quantity: 5, status: "Hết hàng" },
-  
+
 ];
 export const staffLinks = [
   {
@@ -740,5 +735,5 @@ export const blogData = [
 export const room = [
   { id: 1, name: "Phòng DE318", status: "inactive" },
   { id: 2, name: "Phòng DE318", status: "active" }
-  
+
 ];

@@ -1,21 +1,25 @@
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { slots } from '../../constants';
 
 const Payment = () => {
   const { selectedArea, selectedTime, peopleCount } = useSelector((state) => state.booking);
+  const { slots, loading, error } = useSelector((state) => state.slots);
 
-  console.log('Selected Time in Payment:', selectedTime); 
+  console.log('Selected Time in Payment:', selectedTime);
+  console.log('Slots in Payment:', slots);
 
   const calculateTotalPrice = () => {
     let total = 0;
+    if (!Array.isArray(selectedTime)) return total;
+
     selectedTime.forEach((booking) => {
       if (Array.isArray(booking.slots)) {
         booking.slots.forEach((slotId) => {
-          const slot = slots.find((s) => s.id === slotId);
+          const slot = slots.find((s) => s.slotId === slotId); // Sử dụng slotId thay vì id
           if (slot) {
-            total += slot.price * (selectedArea?.type === 'group' ? peopleCount : 1);
+            const price = slot.price || 10; // Giả định giá mặc định nếu không có price
+            total += price * (selectedArea?.type === 'group' ? peopleCount : 1);
           }
         });
       }
@@ -33,6 +37,25 @@ const Payment = () => {
     }); // Định dạng: DD/MM/YYYY
   };
 
+  // Hàm lấy tên slot từ slotId
+  const getSlotNames = (slotIds) => {
+    if (!Array.isArray(slotIds) || slotIds.length === 0) return 'Chưa chọn';
+    return slotIds
+      .map((slotId) => {
+        const slot = slots.find((s) => s.slotId === slotId); // Sử dụng slotId
+        return slot ? slot.name || `Slot ${slot.slotId}` : slotId;
+      })
+      .join(', ');
+  };
+
+  if (loading) {
+    return <div className="p-6 text-center">Đang tải dữ liệu slots...</div>;
+  }
+
+  if (error) {
+    return <div className="p-6 text-center text-red-500">Lỗi: {error}</div>;
+  }
+
   return (
     <div className="p-6 min-h-screen flex flex-col items-center mt-20 -mb-40">
       <h1 className="text-3xl font-bold text-center mb-6">Xác nhận Thanh Toán</h1>
@@ -47,7 +70,7 @@ const Payment = () => {
               <strong>Số người:</strong> {peopleCount}
             </p>
           )}
-          {selectedTime.length > 0 ? (
+          {Array.isArray(selectedTime) && selectedTime.length > 0 ? (
             <div>
               <p>
                 <strong>Thời gian & Slot:</strong>
@@ -55,15 +78,7 @@ const Payment = () => {
               <ul className="list-disc pl-5">
                 {selectedTime.map((item, index) => (
                   <li key={index}>
-                    {formatDate(item.date)} -{' '}
-                    {Array.isArray(item.slots) && item.slots.length > 0
-                      ? item.slots
-                          .map((slotId) => {
-                            const slot = slots.find((s) => s.id === slotId);
-                            return slot ? slot.name : slotId;
-                          })
-                          .join(', ')
-                      : 'Chưa chọn'}
+                    {formatDate(item.date)} - {getSlotNames(item.slots)}
                   </li>
                 ))}
               </ul>
@@ -87,7 +102,7 @@ const Payment = () => {
             Xác nhận Thanh Toán
           </Link>
           <Link
-            to={`/rooms/`}
+            to={'/rooms/'}
             className="w-full px-6 py-3 text-center bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
           >
             Quay lại Khu Vực chọn

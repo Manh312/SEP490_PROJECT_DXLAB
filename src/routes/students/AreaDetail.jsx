@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedTime, setPeopleCount, confirmBooking, setSelectedArea } from '../../redux/slices/Booking';
-import { areas, slots } from '../../constants';
+import { listSlots } from '../../redux/slices/Slot'; // Import listSlots từ slotSlice
+import { areas } from '../../constants';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { PlusCircleIcon, XIcon } from 'lucide-react';
@@ -10,19 +11,31 @@ const AreaDetail = () => {
   const { typeName } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  // Lấy dữ liệu từ Redux store
   const { selectedTime, peopleCount, selectedArea: area } = useSelector((state) => state.booking);
+  const { slots, loading, error } = useSelector((state) => state.slots); // Truy cập từ slotSlice
+
+  // State cục bộ
   const [bookingDates, setBookingDates] = useState([{ date: '', slots: [] }]);
 
+  // Lấy danh sách slots khi component mount
   useEffect(() => {
-    if (selectedTime && Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
-      const normalizedSelectedTime = selectedTime.map(booking => ({
+    dispatch(listSlots());
+  }, [dispatch]);
+
+  // Đồng bộ bookingDates với selectedTime
+  useEffect(() => {
+    if (Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
+      const normalizedSelectedTime = selectedTime.map((booking) => ({
         ...booking,
         slots: Array.isArray(booking.slots) ? booking.slots : [],
       }));
       setBookingDates(normalizedSelectedTime);
     }
-  }, [selectedTime]);
+  }, [selectedTime, bookingDates]);
 
+  // Cập nhật selectedArea dựa trên typeName
   useEffect(() => {
     const foundArea = areas.find((area) => area.type === typeName);
     if (foundArea) {
@@ -60,13 +73,14 @@ const AreaDetail = () => {
   };
 
   const handleSlotChange = (index, slotId) => {
-    const slot = slots.find(s => s.id === slotId);
+    const slot = slots.find((s) => s.slotId === slotId); // Sử dụng slotId thay vì id
     if (!slot) return;
 
-    // Check if slot is full
-    if ((!slot.isAvailable && area.type !== "group") || 
-        (area.type === "group" && slot.remainingSeats <= 0)) {
-      return; // Do nothing if slot is full
+    // Kiểm tra slot có khả dụng không (tùy thuộc vào dữ liệu từ API)
+    // Giả sử API trả về isAvailable và remainingSeats
+    if (slot.isAvailable === false || (area.type === 'group' && slot.remainingSeats <= peopleCount)) {
+      toast.error(`Slot ${slot.name || slot.slotId} không khả dụng!`);
+      return;
     }
 
     const updatedDates = [...bookingDates];
@@ -75,7 +89,7 @@ const AreaDetail = () => {
 
     let newSlots;
     if (currentSlots.includes(slotId)) {
-      newSlots = currentSlots.filter((slot) => slot !== slotId);
+      newSlots = currentSlots.filter((s) => s !== slotId);
     } else {
       newSlots = [...currentSlots, slotId];
     }
@@ -114,9 +128,10 @@ const AreaDetail = () => {
     bookingDates.forEach((booking) => {
       if (Array.isArray(booking.slots)) {
         booking.slots.forEach((slotId) => {
-          const slot = slots.find((s) => s.id === slotId);
+          const slot = slots.find((s) => s.slotId === slotId); // Sử dụng slotId
           if (slot) {
-            total += slot.price * (area.type === 'group' ? peopleCount : 1);
+            const price = slot.price || 10; // Giả định price nếu API không trả về
+            total += price * (area?.type === 'group' ? peopleCount : 1);
           }
         });
       }
@@ -125,8 +140,7 @@ const AreaDetail = () => {
   };
 
   const isSlotDisabled = (slot) => {
-    return (!slot.isAvailable && area.type !== "group") || 
-           (area.type === "group" && slot.remainingSeats <= 0);
+    return slot.isAvailable === false || (area?.type === 'group' && slot.remainingSeats <= peopleCount);
   };
 
   if (!area) return <p className="text-center mt-10 text-red-500">Không tìm thấy khu vực.</p>;
@@ -158,41 +172,51 @@ const AreaDetail = () => {
             />
           </div>
         )}
-        <div className='max-h-96 overflow-y-auto'>
-          {bookingDates.map((booking, index) => (
-            <div key={index} className="mb-4">
-              <div className="flex items-center gap-2">
-                <input
-                  type="date"
-                  className="flex-1 p-2 border rounded-md dark:bg-gray-700 dark:text-white"
-                  value={booking.date}
-                  onChange={(e) => handleDateChange(index, e.target.value)}
-                />
-                <button
-                  onClick={() => removeBookingDate(index)}
-                  className="p-1 text-red-500 hover:text-red-700"
-                >
-                  <XIcon className="h-5 w-5" />
-                </button>
+        <div className="max-h-96 overflow-y-auto">
+          {loading ? (
+            <p>Đang tải slots...</p>
+          ) : error ? (
+            <p className="text-red-500">Lỗi: {error}</p>
+          ) : (
+            bookingDates.map((booking, index) => (
+              <div key={index} className="mb-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    className="flex-1 p-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                    value={booking.date}
+                    onChange={(e) => handleDateChange(index, e.target.value)}
+                  />
+                  <button
+                    onClick={() => removeBookingDate(index)}
+                    className="p-1 text-red-500 hover:text-red-700"
+                  >
+                    <XIcon className="h-5 w-5" />
+                  </button>
+                </div>
+                <label className="block font-medium mb-2 mt-2">Chọn Slot:</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {Array.isArray(slots) && slots.length > 0 ? (
+                    slots.map((slot) => (
+                      <label key={slot.slotId} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          value={slot.slotId}
+                          checked={Array.isArray(booking.slots) && booking.slots.includes(slot.slotId)}
+                          onChange={() => handleSlotChange(index, slot.slotId)}
+                          disabled={isSlotDisabled(slot)}
+                          className={isSlotDisabled(slot) ? 'cursor-not-allowed opacity-50' : ''}
+                        />
+                        <span>{slot.name || `Slot ${slot.slotId}`}</span>
+                      </label>
+                    ))
+                  ) : (
+                    <p>Không có slot nào khả dụng</p>
+                  )}
+                </div>
               </div>
-              <label className="block font-medium mb-2 mt-2">Chọn Slot:</label>
-              <div className="grid grid-cols-2 gap-2">
-                {slots.map((slot) => (
-                  <label key={slot.id} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      value={slot.id}
-                      checked={Array.isArray(booking.slots) && booking.slots.includes(slot.id)}
-                      onChange={() => handleSlotChange(index, slot.id)}
-                      disabled={isSlotDisabled(slot)}
-                      className={isSlotDisabled(slot) ? 'cursor-not-allowed opacity-50' : ''}
-                    />
-                    <span>{slot.name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
         <button className="flex items-center gap-2 text-orange-500 mt-2 mb-5" onClick={addBookingDate}>
           <PlusCircleIcon className="h-5 w-5" /> Thêm ngày

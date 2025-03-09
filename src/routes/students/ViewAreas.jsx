@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { openModal, closeModal, setSelectedTime, setPeopleCount, confirmBooking } from '../../redux/slices/Booking';
-import { areas, slots } from "../../constants";
+import { listSlots } from '../../redux/slices/Slot'; 
+import { areas } from "../../constants";
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { XIcon, PlusCircleIcon } from 'lucide-react';
@@ -8,39 +9,40 @@ import { toast } from 'react-toastify';
 
 const ViewAreas = () => {
   const dispatch = useDispatch();
-  const { isModalOpen, selectedArea, selectedTime } = useSelector(state => state.booking);
+  const navigate = useNavigate();
+
+  const { isModalOpen, selectedArea, selectedTime } = useSelector((state) => state.booking);
+  const { slots, loading, error } = useSelector((state) => state.slots); 
+
   const [tempPeopleCount, setTempPeopleCount] = useState(1);
   const [step, setStep] = useState('selectPeople');
   const [bookingDates, setBookingDates] = useState([{ date: '', slots: [] }]);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    if (selectedTime && Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
+    dispatch(listSlots());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
       setBookingDates(selectedTime);
     }
-  }, [selectedTime]);
+  }, [selectedTime, bookingDates]);
 
-  const handleSlotChange = (index, slotId) => {
-    const slot = slots.find(s => s.id === slotId);
+  const handleSlotChange = (bookingIndex, slotId) => {
+    const slot = slots.find((s) => s.slotId === slotId);
     if (!slot) return;
 
-    // Check if slot is full
-    if ((!slot.isAvailable && selectedArea.type !== "group") || 
-        (selectedArea.type === "group" && slot.remainingSeats <= 0)) {
-      return; // Do nothing if slot is full
-    }
-
     const updatedDates = [...bookingDates];
-    const currentSlots = Array.isArray(updatedDates[index].slots) ? updatedDates[index].slots : [];
+    const currentSlots = Array.isArray(updatedDates[bookingIndex].slots) ? updatedDates[bookingIndex].slots : [];
 
     let newSlots;
     if (currentSlots.includes(slotId)) {
-      newSlots = currentSlots.filter((slot) => slot !== slotId);
+      newSlots = currentSlots.filter((s) => s !== slotId);
     } else {
       newSlots = [...currentSlots, slotId];
     }
 
-    updatedDates[index] = { ...updatedDates[index], slots: newSlots };
+    updatedDates[bookingIndex] = { ...updatedDates[bookingIndex], slots: newSlots };
     setBookingDates(updatedDates);
     dispatch(setSelectedTime(updatedDates));
   };
@@ -67,11 +69,6 @@ const ViewAreas = () => {
     const updatedDates = bookingDates.filter((_, i) => i !== index);
     setBookingDates(updatedDates);
     dispatch(setSelectedTime(updatedDates));
-  };
-
-  const isSlotDisabled = (slot) => {
-    return (!slot.isAvailable && selectedArea.type !== "group") || 
-           (selectedArea.type === "group" && slot.remainingSeats <= 0);
   };
 
   const handleConfirmBooking = (e) => {
@@ -103,9 +100,10 @@ const ViewAreas = () => {
     bookingDates.forEach((booking) => {
       if (Array.isArray(booking.slots)) {
         booking.slots.forEach((slotId) => {
-          const slot = slots.find((s) => s.id === slotId);
+          const slot = slots.find((s) => s.slotId === slotId);
           if (slot) {
-            total += slot.price * (selectedArea.type === 'group' ? tempPeopleCount : 1);
+            const price = slot.price || 10; 
+            total += price * (selectedArea?.type === 'group' ? tempPeopleCount : 1);
           }
         });
       }
@@ -122,7 +120,7 @@ const ViewAreas = () => {
           <div key={area.id} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
             <img src={area.image} alt={area.name} className="w-full h-48 object-cover rounded-md mb-4" />
             <h2 className="text-2xl font-semibold mb-2">{area.name}</h2>
-            <p>{area.description.slice(0, 100)}...</p>
+            <p>{area.description?.slice(0, 100) || 'No description available'}...</p>
             <div>
               <button
                 className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
@@ -130,12 +128,11 @@ const ViewAreas = () => {
                   dispatch(openModal(area));
                   setTempPeopleCount(1);
                   setStep('selectPeople');
-                  setBookingDates([{ date: '', slots: [] }]); 
+                  setBookingDates([{ date: '', slots: [] }]);
                 }}
               >
                 Chọn
-              </button>
-              {" "}
+              </button>{" "}
               <Link to={`/area/${area.type}`} className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition">
                 Chi tiết
               </Link>
@@ -150,7 +147,7 @@ const ViewAreas = () => {
             <button className="absolute top-2 right-2" onClick={() => dispatch(closeModal())}>
               <XIcon className="h-6 w-6 text-black" />
             </button>
-            {selectedArea.type === "group" && step === 'selectPeople' ? (
+            {selectedArea?.type === "group" && step === 'selectPeople' ? (
               <>
                 <h2 className="text-xl font-bold mb-4">Nhập số lượng người</h2>
                 <input
@@ -182,43 +179,51 @@ const ViewAreas = () => {
                 <h2 className="text-2xl font-bold mb-4 text-center">Đặt Lịch Tới DXLAB</h2>
                 <div className="flex justify-between">
                   <p className="break-words text-base">
-                    Bạn đã chọn khu vực: <strong>{selectedArea.name}</strong>
+                    Bạn đã chọn khu vực: <strong>{selectedArea?.name}</strong>
                   </p>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
-                  {bookingDates.map((booking, index) => (
-                    <div key={index} className="mb-4">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="date"
-                          className="flex-1 p-2 border rounded-md dark:bg-gray-800 dark:text-white"
-                          value={booking.date}
-                          onChange={(e) => handleDateChange(index, e.target.value)}
-                        />
-                        <button
-                          onClick={() => removeBookingDate(index)}
-                          className="p-1 text-red-500 hover:text-red-700"
-                        >
-                          <XIcon className="h-5 w-5" />
-                        </button>
+                  {loading ? (
+                    <p>Đang tải slots...</p>
+                  ) : error ? (
+                    <p className="text-red-500">Lỗi: {error}</p>
+                  ) : (
+                    bookingDates.map((booking, index) => (
+                      <div key={index} className="mb-4">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="date"
+                            className="flex-1 p-2 border rounded-md dark:bg-gray-800 dark:text-white"
+                            value={booking.date}
+                            onChange={(e) => handleDateChange(index, e.target.value)}
+                          />
+                          <button
+                            onClick={() => removeBookingDate(index)}
+                            className="p-1 text-red-500 hover:text-red-700"
+                          >
+                            <XIcon className="h-5 w-5" />
+                          </button>
+                        </div>
+                        <label className="block font-medium mb-2 mt-2">Chọn Slot:</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {Array.isArray(slots) && slots.length > 0 ? (
+                            slots.map((slot) => (
+                              <label key={slot.slotId} className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={Array.isArray(booking.slots) && booking.slots.includes(slot.slotId)}
+                                  onChange={() => handleSlotChange(index, slot.slotId)}
+                                />
+                                {slot.name || `Slot ${slot.slotId}`} {/* Hiển thị tên slot nếu có */}
+                              </label>
+                            ))
+                          ) : (
+                            <p>Không có slot nào khả dụng</p>
+                          )}
+                        </div>
                       </div>
-                      <label className="block font-medium mb-2 mt-2">Chọn Slot:</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {slots.map((slot) => (
-                          <label key={slot.id} className="flex items-center gap-2">
-                            <input
-                              type="checkbox"
-                              checked={Array.isArray(booking.slots) && booking.slots.includes(slot.id)}
-                              onChange={() => handleSlotChange(index, slot.id)}
-                              disabled={isSlotDisabled(slot)}
-                              className={isSlotDisabled(slot) ? 'cursor-not-allowed opacity-50' : ''}
-                            />
-                            {slot.name}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
                 <button className="flex items-center gap-2 text-orange-500 mt-2 mb-5" onClick={addBookingDate}>
                   <PlusCircleIcon className="h-5 w-5" /> Thêm ngày
@@ -229,7 +234,7 @@ const ViewAreas = () => {
                   </p>
                 </div>
                 <div className="flex justify-end gap-2">
-                  {selectedArea.type === "group" && (
+                  {selectedArea?.type === "group" && (
                     <button className="px-4 py-2 bg-gray-500 rounded-lg" onClick={() => setStep('selectPeople')}>
                       Quay lại
                     </button>

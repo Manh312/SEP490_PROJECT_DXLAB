@@ -20,14 +20,13 @@ export const listSlots = createAsyncThunk(
 
 export const createSlot = createAsyncThunk(
   "slots/createSlot",
-  async (slot, { rejectWithValue }) => {
+  async (slot) => {
     try {
       const response = await axios.post(`${API_URL}/Generate`, slot);
       console.log(response.data);
       return response.data;
     } catch (error) {
       console.log(error);
-      return rejectWithValue(error.response?.data || "Có lỗi xảy ra");
     }
   }
 );
