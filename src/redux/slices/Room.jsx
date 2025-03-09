@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { toast } from "react-toastify";
 
 // Endpoint API
 const API_URL = "/api/room";
@@ -10,7 +9,7 @@ export const fetchRooms = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await fetch(API_URL);
-      if (!response.ok) throw toast.error("Không thể lấy danh sách phòng");
+      if (!response.ok) throw new Error("Không thể lấy danh sách phòng");
       return await response.json();
     } catch (error) {
       return rejectWithValue(error.message);
@@ -24,7 +23,7 @@ export const getRoomById = createAsyncThunk(
   async (roomId, { rejectWithValue }) => {
     try {
       const response = await fetch(`${API_URL}/${roomId}`);
-      if (!response.ok) throw toast.error("Không tìm thấy phòng");
+      if (!response.ok) throw new Error("Không tìm thấy phòng");
       return await response.json();
     } catch (error) {
       return rejectWithValue(error.message);
@@ -43,7 +42,7 @@ export const createRoom = createAsyncThunk(
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(roomData),
         });
-        if (!response.ok) throw toast.error("Không thể tạo phòng");
+        if (!response.ok) throw new Error("Không thể tạo phòng");
         return await response.json();
       } catch (error) {
         return rejectWithValue(error.message);
@@ -61,7 +60,7 @@ export const updateRoom = createAsyncThunk(
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(roomData),
       });
-      if (!response.ok) throw new toast.error("Cập nhật phòng thất bại");
+      if (!response.ok) throw new Error("Cập nhật phòng thất bại");
       return await response.json();
     } catch (error) {
       return rejectWithValue(error.message);
@@ -77,7 +76,7 @@ export const deleteRoom = createAsyncThunk(
       const response = await fetch(`${API_URL}/${roomId}`, {
         method: "DELETE",
       });
-      if (!response.ok) throw new toast.error("Xóa phòng thất bại");
+      if (!response.ok) throw new Error("Xóa phòng thất bại");
       return roomId; // Trả về roomId để cập nhật danh sách trong store
     } catch (error) {
       return rejectWithValue(error.message);
