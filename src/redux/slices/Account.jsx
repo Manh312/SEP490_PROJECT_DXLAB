@@ -10,8 +10,9 @@ const initialState = {
 
 // 🛠️ Fetch danh sách tài khoản từ API
 export const fetchAccounts = createAsyncThunk("accounts/fetchAccounts", async () => {
-  const response = await axios.get("https://api.example.com/accounts"); // Thay API URL của bạn
+  const response = await axios.get("http://localhost:9999/api/Account/AddFromExcel"); // Thay API URL của bạn
   return response.data;
+  
 });
 
 // 🛠️ Cập nhật vai trò của tài khoản

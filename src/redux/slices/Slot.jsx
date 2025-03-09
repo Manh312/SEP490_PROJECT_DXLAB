@@ -23,8 +23,10 @@ export const createSlot = createAsyncThunk(
   async (slot, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${API_URL}/Generate`, slot);
+      console.log(response.data);
       return response.data;
     } catch (error) {
+      console.log(error);
       return rejectWithValue(error.response?.data || "Có lỗi xảy ra");
     }
   }
