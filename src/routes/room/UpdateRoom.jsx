@@ -26,7 +26,7 @@ const UpdateRoom = () => {
     e.preventDefault();
     console.log("Cập nhật phòng:", formData);
     // Thêm logic cập nhật phòng vào cơ sở dữ liệu ở đây
-    navigate("/dashboard/rooms");
+    navigate("/dashboard/room");
   };
 
   return (
