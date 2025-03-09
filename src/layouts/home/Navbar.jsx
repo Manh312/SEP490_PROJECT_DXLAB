@@ -1,4 +1,4 @@
-import { LogOut, Menu, Moon, Sun, X } from "lucide-react";
+import { HistoryIcon, LogOut, LucideHistory, Menu, Moon, Sun, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import logo from "../../assets/logo_images.png";
 import { navItems } from "../../constants";
@@ -58,7 +58,7 @@ const Navbar = () => {
           <img className="h-30 w-35" src={logo} alt="logo" />
         </div>
 
-        <ul className="hidden lg:flex ml-14 space-x-12 text-xl">
+        <ul className="hidden lg:flex space-x-12 text-xl">
           {navItems.map((item, index) => (
             <li key={index}>
               <Link to={item.href}>{item.label}</Link>
@@ -97,26 +97,28 @@ const Navbar = () => {
                   <ul className="space-y-2">
                     <li>
                       <Link to={"/booked-history"}>
-                        <button className="w-full text-left px-2 py-1 hover:bg-gray-500 rounded">
-                          Lịch sử giao dịch
+                        <button className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded">
+                          <span className="ml-2">Lịch sử giao dịch</span>
+                          <LucideHistory size={20} className="ml-2" />
                         </button>
                       </Link>
                     </li>
                     <li className="flex items-center">
-                      <label className="ml-2">Màu nền:</label>
                       <button
-                        className="transition-colors ml-2"
+                        className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded"
                         onClick={() => setTheme(theme === "light" ? "dark" : "light")}
                       >
-                        {theme === "dark" ? <Moon size={20} /> : <Sun size={20} />}
+                        <span className="ml-2">Màu nền</span>
+                        {theme === "dark" ? <Moon size={20} className="ml-2" /> : <Sun size={20} className="ml-2" />}
                       </button>
                     </li>
-                    <li>
+                    <li className="flex items-center">
                       <button
-                        className="w-full text-left px-2 py-1 hover:bg-gray-500 rounded"
+                        className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded"
                         onClick={handleDisconnect}
                       >
-                        Đăng xuất
+                        <span className="ml-2">Đăng xuất</span>
+                        <LogOut size={20} className="ml-2" />
                       </button>
                     </li>
 
@@ -210,27 +212,26 @@ const Navbar = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    to="/booked-history"
-                    onClick={() => setMobileDrawerOpen(false)}
-                    className="block px-4 py-3 dark:hover:bg-gray-500"
-                  >
-                    Lịch sử giao dịch
+                  <Link to={"/booked-history"}>
+                    <button className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded">
+                      <span className="ml-4">Lịch sử giao dịch</span>
+                      <LucideHistory size={20} className="ml-2" />
+                    </button>
                   </Link>
                 </li>
               </>
             )}
           </ul>
 
-          <div className="flex items-center ml-4">
-            <label>Màu nền: </label>
+          <li className="flex items-center">
             <button
-              className="p-2 ml-2 border rounded-md transition-colors"
+              className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded"
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
             >
-              {theme === "dark" ? <Moon size={20} /> : <Sun size={20} />}
+              <span className="ml-4">Màu nền</span>
+              {theme === "dark" ? <Moon size={20} className="ml-2" /> : <Sun size={20} className="ml-2" />}
             </button>
-          </div>
+          </li>
           {address && (
             <div className="flex flex-col mt-5 border-t border-b">
               <button
