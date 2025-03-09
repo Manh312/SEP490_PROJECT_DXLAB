@@ -1,10 +1,10 @@
-import { HistoryIcon, LogOut, LucideHistory, Menu, Moon, Sun, X } from "lucide-react";
+import { LogOut, LucideHistory, Menu, Moon, Sun, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import logo from "../../assets/logo_images.png";
 import { navItems } from "../../constants";
 import { useTheme } from "../../hooks/use-theme";
 import { Link } from "react-router-dom";
-import { ConnectWallet, useAddress, useDisconnect } from "@thirdweb-dev/react";
+import { ConnectWallet, useAddress, useAuth, useDisconnect } from "@thirdweb-dev/react";
 import { useDispatch, useSelector } from "react-redux";
 import { clearAuthData } from "../../redux/slices/Authentication";
 import { FaUserCircle } from "react-icons/fa";
@@ -19,7 +19,21 @@ const Navbar = () => {
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
   const user = useSelector((state) => state.auth.user);
-  console.log("User:", user);
+
+  const getAuthToken = useAuth(); 
+  console.log("getAuthToken:", getAuthToken);
+  const getUser = useAuth();
+  console.log("getUser:", getUser);
+  
+  
+    // useEffect(() => {
+    //   const fetchToken = async () => {
+    //     const token = await getAuthToken();
+    //     console.log("Fetched ID Token:", token);
+    //   };
+    //   if (address) fetchToken();
+    // }, [address, getAuthToken]);
+  
 
   const handleDisconnect = async () => {
     try {
