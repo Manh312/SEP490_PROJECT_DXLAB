@@ -15,36 +15,34 @@ const AccountList = () => {
 
   // Lọc danh sách người dùng theo role
   const filteredAccounts = useMemo(() => {
-    return roleFilter === "All" ? accounts : accounts.filter((acc) => acc.roleId === roleFilter);
+    return roleFilter === "All"
+      ? accounts
+      : accounts.filter((acc) => String(acc.roleId) === String(roleFilter)); // Đảm bảo kiểu dữ liệu khớp
   }, [accounts, roleFilter]);
 
   // Xử lý nhập file Excel
-  const handleImportExcel = (event) => {
+  const handleImportExcel = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.readAsBinaryString(file);
 
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       const data = e.target.result;
       const workbook = XLSX.read(data, { type: "binary" });
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const newAccounts = XLSX.utils.sheet_to_json(sheet);
 
-      newAccounts.forEach((acc) => {
-        dispatch(
-          addAccount({
-            id: accounts.length + 1,
-            fullName: acc.fullName || "Unknown",
-            email: acc.email || "N/A",
-            roleId: acc.roleId || "Student",
-            avatar: acc.avatar || "https://via.placeholder.com/40",
-            walletAddress: acc.walletAddress || "N/A",
-          })
-        );
-      });
+      try {
+        for (const account of newAccounts) {
+          await dispatch(addAccount(account)).unwrap();
+        }
+        dispatch(fetchAccounts()); // Cập nhật danh sách sau khi import
+      } catch (error) {
+        console.error("Import thất bại:", error);
+      }
     };
   };
 
@@ -99,7 +97,11 @@ const AccountList = () => {
               {filteredAccounts.map((user) => (
                 <tr key={user.id} className="border-t">
                   <td className="px-4 py-2">
-                    <img src={user.avatar} alt="Avatar" className="w-10 h-10 rounded-full" />
+                    <img
+                      src={user.avatar || "/default-avatar.png"} // Avatar mặc định nếu không có
+                      alt="Avatar"
+                      className="w-10 h-10 rounded-full"
+                    />
                   </td>
                   <td className="px-4 py-2">{user.fullName}</td>
                   <td className="px-4 py-2">{user.email}</td>
