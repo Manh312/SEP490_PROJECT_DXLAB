@@ -149,13 +149,13 @@ const AccountList = () => {
                   <td className="px-4 py-2">{user.walletAddress}</td>
                   <td className="px-4 py-2 flex space-x-2">
                     <button
-                      onClick={() => dispatch(deleteAccount(user.id))}
+                      onClick={() => dispatch(deleteAccount(user.userId))}
                       className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700"
                     >
                       Xóa
                     </button>
                     <Link
-                      to={`/dashboard/account/update/${user.id}`}
+                      to={`/dashboard/account/update/${user.userId}`}
                       className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"
                     >
                       ✏️ Cập Nhật
