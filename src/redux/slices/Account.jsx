@@ -1,11 +1,12 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 
-// API endpoint (cập nhật URL thực tế)
-const API_URL = "http://localhost:9999/api/accounts";
+// API endpoint
+const API_URL = "http://localhost:9999/api/Account";
+
 // Lấy danh sách tài khoản
 export const fetchAccounts = createAsyncThunk(
-  'accounts/fetch',
+  "accounts/fetch",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}`);
@@ -18,19 +19,30 @@ export const fetchAccounts = createAsyncThunk(
 
 // Thêm tài khoản mới (từ import Excel)
 export const addAccount = createAsyncThunk(
-  'accounts/add',
-  async (account, { rejectWithValue }) => {
+  "accounts/add",
+  async (file, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}`, account);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await axios.post(`${API_URL}/AddFromExcel`, formData, {
+        headers: {
+          // "Content-Type": "multipart/form-data",
+        },
+      });
+
+      console.log(response.data);
+
       return response.data;
     } catch (error) {
+      console.log(error.response.data);
       return rejectWithValue(error.response?.data || "Không thể thêm tài khoản");
     }
   }
 );
 
 const accountSlice = createSlice({
-  name: 'accounts',
+  name: "accounts",
   initialState: {
     accounts: [],
     loading: false,
@@ -42,15 +54,16 @@ const accountSlice = createSlice({
       state.roleFilter = action.payload;
     },
     deleteAccount: (state, action) => {
-      state.accounts = state.accounts.filter(account => account.id !== action.payload);
+      state.accounts = state.accounts.filter((account) => account.id !== action.payload);
+    },
+    resetError: (state) => {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Xử lý lấy danh sách tài khoản
       .addCase(fetchAccounts.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(fetchAccounts.fulfilled, (state, action) => {
         state.accounts = action.payload;
@@ -60,22 +73,19 @@ const accountSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Xử lý thêm tài khoản từ file Excel
       .addCase(addAccount.pending, (state) => {
         state.loading = true;
-        state.error = null;
+        state.error = null; // ✅ Reset lỗi khi bắt đầu nhập file
       })
-      .addCase(addAccount.fulfilled, (state, action) => {
-        state.accounts.push(action.payload);
+      .addCase(addAccount.fulfilled, (state) => {
         state.loading = false;
       })
       .addCase(addAccount.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload; // ✅ Cập nhật lỗi ngay lập tức
       });
   },
 });
 
-export const { setRoleFilter, deleteAccount } = accountSlice.actions;
+export const { setRoleFilter, deleteAccount, resetError } = accountSlice.actions;
 export default accountSlice.reducer;
