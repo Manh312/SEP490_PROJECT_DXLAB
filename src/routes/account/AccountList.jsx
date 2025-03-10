@@ -24,10 +24,10 @@ const AccountList = () => {
   // const handleImportExcel = (event) => {
   //   const file = event.target.files[0];
   //   if (!file) return;
-  
+
   //   // Reset lỗi trước khi gửi request
   //   dispatch({ type: "accounts/resetError" });
-  
+
   //   dispatch(addAccount(file))
   //     .then((res) => {
   //       if (res.meta.requestStatus === "fulfilled") {
@@ -43,37 +43,37 @@ const AccountList = () => {
   //       console.error("Lỗi import:", err.message);
   //     });
   // };
-  
-    // Xử lý nhập file Excel
-    // const handleImportExcel = async (event) => {
-    //   const file = event.target.files[0];
-    //   if (!file) return;
-  
-    //   const reader = new FileReader();
-    //   reader.readAsBinaryString(file);
-  
-    //   reader.onload = async (e) => {
-    //     const data = e.target.result;
-    //     const workbook = XLSX.read(data, { type: "binary" });
-    //     const sheetName = workbook.SheetNames[0];
-    //     const sheet = workbook.Sheets[sheetName];
-    //     const newAccounts = XLSX.utils.sheet_to_json(sheet);
-  
-    //     try {
-    //       for (const account of newAccounts) {
-    //         await dispatch(addAccount(account)).unwrap();
-    //       }
-    //       dispatch(fetchAccounts()); // Cập nhật danh sách sau khi import
-    //     } catch (error) {
-    //       console.error("Import thất bại:", error);
-    //     }
-    //   };
-    // };
+
+  // Xử lý nhập file Excel
+  // const handleImportExcel = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
+
+  //   const reader = new FileReader();
+  //   reader.readAsBinaryString(file);
+
+  //   reader.onload = async (e) => {
+  //     const data = e.target.result;
+  //     const workbook = XLSX.read(data, { type: "binary" });
+  //     const sheetName = workbook.SheetNames[0];
+  //     const sheet = workbook.Sheets[sheetName];
+  //     const newAccounts = XLSX.utils.sheet_to_json(sheet);
+
+  //     try {
+  //       for (const account of newAccounts) {
+  //         await dispatch(addAccount(account)).unwrap();
+  //       }
+  //       dispatch(fetchAccounts()); // Cập nhật danh sách sau khi import
+  //     } catch (error) {
+  //       console.error("Import thất bại:", error);
+  //     }
+  //   };
+  // };
 
   const handleImportExcel = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-  
+
     try {
       const res = await dispatch(addAccount(file)).unwrap();
       toast.success(res.message || "Nhập file Excel thành công! ✅");
@@ -87,7 +87,7 @@ const AccountList = () => {
   return (
     <div className="relative p-6 shadow-xl rounded-lg bg-white max-w-5xl mx-auto">
       {/* Nút Import Excel */}
-      <ToastContainer/>
+      <ToastContainer />
       <div className="absolute top-4 right-4">
         <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition">
           📥 Thêm từ Excel
@@ -158,7 +158,7 @@ const AccountList = () => {
                       to={`/dashboard/account/update/${user.id}`}
                       className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"
                     >
-                      Cập Nhật
+                      ✏️ Cập Nhật
                     </Link>
                   </td>
                 </tr>
