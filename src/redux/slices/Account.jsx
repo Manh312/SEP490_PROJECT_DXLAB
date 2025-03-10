@@ -17,6 +17,19 @@ export const fetchAccounts = createAsyncThunk(
   }
 );
 
+// 📌 Lấy tài khoản theo ID
+export const fetchAccountById = createAsyncThunk(
+  "accounts/fetchById",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/${id}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Không thể tải thông tin tài khoản");
+    }
+  }
+);
+
 // 📌 Thêm tài khoản mới (từ import Excel)
 export const addAccount = createAsyncThunk(
   "accounts/add",
@@ -53,6 +66,7 @@ const accountSlice = createSlice({
   name: "accounts",
   initialState: {
     accounts: [],
+    selectedAccount: null,
     loading: false,
     error: null,
     roleFilter: "All",
@@ -79,6 +93,19 @@ const accountSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchAccounts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // 🔹 Lấy tài khoản theo ID
+      .addCase(fetchAccountById.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchAccountById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedAccount = action.payload;
+      })
+      .addCase(fetchAccountById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -115,4 +142,4 @@ const accountSlice = createSlice({
 
 export const { setRoleFilter, deleteAccount, resetError } = accountSlice.actions;
 export default accountSlice.reducer;
-// export { fetchAccounts, addAccount, updateAccount };
+// export { fetchAccounts, fetchAccountById, addAccount, updateAccount };

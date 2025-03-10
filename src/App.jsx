@@ -21,7 +21,7 @@ import UpdateFacilities from './routes/facilities/UpdateFacilities';
 import DeleteFacilities from './routes/facilities/DeleteFacilities';
 import AccountDetail from './routes/account/AccountDetail';
 import CreateAccount from './routes/account/CreateAccount';
-// import UpdateAccount from './routes/account/UpdateAccount';
+import UpdateAccount from "./routes/account/UpdateAccount";
 import DeleteAccount from './routes/account/DeleteAccount';
 import NotFound from './layouts/home/NotFound';
 import 'react-toastify/dist/ReactToastify.css';
@@ -161,10 +161,10 @@ const router = createBrowserRouter([
         path: "dashboard/account/create",
         element: <ProtectedRoute><CreateAccount /></ProtectedRoute>,
       },
-      // {
-      //   path: "dashboard/account/update/:id",
-      //   element: <ProtectedRoute><UpdateAccount /></ProtectedRoute>,
-      // },
+      {
+        path: "dashboard/account/update/:id",
+        element: <ProtectedRoute><UpdateAccount /></ProtectedRoute>,
+      },
       {
         path: "dashboard/account/delete/:id",
         element: <ProtectedRoute><DeleteAccount /></ProtectedRoute>,
