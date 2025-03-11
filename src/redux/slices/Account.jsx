@@ -86,6 +86,7 @@ export const fetchAccountsByRoleName = createAsyncThunk(
   async (roleName, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/role/${roleName}`);
+      console.log("API response:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -176,7 +177,7 @@ const accountSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchAccounts.fulfilled, (state, action) => {
-        state.accounts = action.payload;
+        state.accounts = action.payload.accounts || action.payload; // Chuẩn hóa dữ liệu
         state.loading = false;
       })
       .addCase(fetchAccounts.rejected, (state, action) => {
@@ -243,7 +244,7 @@ const accountSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchAccountsByRoleName.fulfilled, (state, action) => {
-        state.accounts = action.payload;
+        state.accounts = action.payload.accounts || action.payload; // Chuẩn hóa dữ liệu
         state.loading = false;
       })
       .addCase(fetchAccountsByRoleName.rejected, (state, action) => {
