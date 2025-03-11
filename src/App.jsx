@@ -19,7 +19,6 @@ import CreateFacilities from './routes/facilities/CreateFacilities';
 import FacilitiesDetail from './routes/facilities/FacilitiesDetail';
 import UpdateFacilities from './routes/facilities/UpdateFacilities';
 import DeleteFacilities from './routes/facilities/DeleteFacilities';
-import AccountDetail from './routes/account/AccountDetail';
 import CreateAccount from './routes/account/CreateAccount';
 import UpdateAccount from "./routes/account/UpdateAccount";
 import DeleteAccount from './routes/account/DeleteAccount';
@@ -52,6 +51,8 @@ import ReportDetail from "./routes/staff-manage/Report-management/ReportDetail";
 
 import CreateSlot from "./routes/slot/CreateSlot";
 import CreateBlog from "./routes/staff-manage/blog-management/CreateBolg";
+import StorageListAccount from "./routes/account/StorageListAccount";
+import StorageListFacilities from "./routes/facilities/StorageListFacilities.jsx";
 
 
 
@@ -124,6 +125,10 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><DeleteFacilities /></ProtectedRoute>,
       },
       {
+        path: "dashboard/facilities/storage",
+        element: <ProtectedRoute><StorageListFacilities /></ProtectedRoute>,
+      },
+      {
         path: "dashboard/room",
         element: <ProtectedRoute><RoomList /></ProtectedRoute>,
       },
@@ -154,8 +159,8 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><AccountList /></ProtectedRoute>,
       },
       {
-        path: "dashboard/account/detail",
-        element: <ProtectedRoute><AccountDetail /></ProtectedRoute>,
+        path: "dashboard/account/storage",
+        element: <ProtectedRoute><StorageListAccount /></ProtectedRoute>,
       },
       {
         path: "dashboard/account/create",

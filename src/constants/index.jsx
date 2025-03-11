@@ -373,6 +373,8 @@ export const navbarLinks = [
         icon: Package,
         path: "/dashboard/blog",
       },
+    
+
     ],
   },
 ];

@@ -1,80 +1,111 @@
-import { PencilLine, Trash, Eye, PlusCircle } from "lucide-react";
-import { products } from "../../constants";
-import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { fetchFacilities, addFacility, moveToStorage } from "../../redux/slices/Facilities";
+import { Link, useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 
-const Facilities = () => {
+const FacilitiesList = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { facilities, loading } = useSelector((state) => state.facilities);
+  const [loadingId, setLoadingId] = useState(null); // Theo dõi mục nào đang loading
 
-  const handleDelete = (id) => {
-    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này?");
-    if (confirmDelete) {
-      console.log(`Xóa sản phẩm có ID: ${id}`);
-      // Thêm logic xóa sản phẩm ở đây
+  useEffect(() => {
+    dispatch(fetchFacilities());
+  }, [dispatch]);
+
+  const handleImportExcel = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    try {
+      const res = await dispatch(addFacility(file)).unwrap();
+      toast.success(res.message || "Nhập file Excel thành công! ✅");
+      dispatch(fetchFacilities());
+    } catch (err) {
+      console.error("Lỗi khi nhập file Excel:", err);
+      toast.error(err?.message || "Có lỗi xảy ra khi nhập file Excel! ❌");
     }
   };
 
+  const handleSoftDelete = async (id) => {
+    try {
+      await dispatch(moveToStorage(id)).unwrap();
+      toast.success("Đã chuyển vào thùng rác! 🗑");
+    } catch (err) {
+      console.error("Lỗi khi xóa:", err);
+      toast.error(err?.message || "Có lỗi xảy ra khi xóa!");
+    }
+  };
+  
+
   return (
-    <div className={`p-6 shadow-xl rounded-lg  transition-all`}>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">📦 Danh Sách Sản Phẩm</h2>
-        <button 
-          className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-green-600 transition"
-          onClick={() => navigate("/dashboard/facilities/create")}
+    <div className="relative p-6 shadow-xl rounded-lg bg-white max-w-5xl mx-auto">
+      <ToastContainer />
+      <div className="absolute top-4 right-4 flex space-x-2">
+        <label className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition">
+          📥 Thêm từ Excel
+          <input type="file" accept=".xlsx, .xls" onChange={handleImportExcel} className="hidden" />
+        </label>
+        <button
+          onClick={() => navigate("/dashboard/facilities/storage")}
+          className="bg-gray-600 text-white px-4 py-2 rounded-lg shadow hover:bg-gray-700 transition"
         >
-          <PlusCircle size={20}/> Thêm Sản Phẩm
+          🗑 Thùng rác
         </button>
       </div>
-      <div className="overflow-x-auto rounded-lg shadow-lg">
-        <table className="w-full border-collapse">
-          <thead className="bg-blue-500 text-white">
-            <tr>
-              <th className="p-3 text-left">#</th>
-              <th className="p-3 text-left">Tên Sản Phẩm</th>
-              <th className="p-3 text-center">Số Lượng</th>
-              <th className="p-3 text-center">Hành Động</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-300">
-            {products.map((product, index) => (
-              <tr key={product.id} className="hover:bg-gray-500 transition">
-                <td className="p-3">{index + 1}</td>
-                <td className="p-3">{product.name}</td>
-                <td className="p-3 text-center">{product.quantity}</td>
-                {/* <td className="p-3 text-center">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    product.status === "Còn hàng" ? "bg-green-200 text-green-700" 
-                    : "bg-red-200 text-red-700"
-                  }`}>
-                    {product.status}
-                  </span>
-                </td> */}
-                <td className="p-3 flex justify-center gap-x-3">
-                  <button 
-                    className="text-blue-500 hover:text-blue-700 transition"
-                    onClick={() => navigate(`/dashboard/facilities/${product.id}`)}
-                  >
-                    <Eye size={22} />
-                  </button>
-                  <button 
-                    className="text-yellow-500 hover:text-yellow-700 transition"
-                    onClick={() => navigate(`/dashboard/facilities/update/${product.id}`)}
-                  >
-                    <PencilLine size={22}/>
-                  </button>
-                  <button 
-                    className="text-red-500 hover:text-red-700 transition"
-                    onClick={() => handleDelete(product.id)}
-                  >
-                    <Trash size={22}/>
-                  </button>
-                </td>
+
+      <h2 className="text-2xl font-semibold mb-4">🏢 Danh Sách Cơ Sở Vật Chất</h2>
+
+      {loading && <p className="text-blue-500">Đang tải dữ liệu...</p>}
+
+      <div className="mt-4">
+        <h3 className="text-lg font-semibold">Tổng số: {facilities.length} mục</h3>
+        <div className="border rounded-lg mt-2 max-h-80 overflow-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="px-4 py-2">#</th>
+                <th className="px-4 py-2">Tên</th>
+                <th className="px-4 py-2">Số Lượng</th>
+                <th className="px-4 py-2">Trạng Thái</th>
+                <th className="px-4 py-2">Hành Động</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {facilities.map((facility, index) => (
+                <tr key={facility.id} className="border-t">
+                  <td className="px-4 py-2">{index + 1}</td>
+                  <td className="px-4 py-2">{facility.name}</td>
+                  <td className="px-4 py-2">{facility.quantity}</td>
+                  <td className="px-4 py-2">{facility.status}</td>
+                  <td className="px-4 py-2 flex space-x-2">
+                    <button
+                      onClick={() => handleSoftDelete(facility.id)}
+                      disabled={loadingId === facility.id}
+                      className={`px-3 py-1 rounded-lg ${
+                        loadingId === facility.id
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-red-600 text-white hover:bg-red-700"
+                      }`}
+                    >
+                      🗑 {loadingId === facility.id ? "Đang xử lý..." : "Xóa"}
+                    </button>
+                    <Link
+                      to={`/dashboard/facilities/update/${facility.id}`}
+                      className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"
+                    >
+                      ✏️ Cập Nhật
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
-}
+};
 
-export default Facilities;
+export default FacilitiesList;

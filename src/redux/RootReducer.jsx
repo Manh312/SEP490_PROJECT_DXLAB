@@ -2,11 +2,12 @@ import { combineReducers } from "redux";
 import storage from "redux-persist/lib/storage";
 import bookingReducer from "./slices/Booking";
 import slotReducer from "./slices/Slot";
-
 import roomReducer from "./slices/Room";
 import authReducer from "./slices/Authentication";
-
 import accountReducer from "./slices/Account";
+import storageReducer from "./slices/Storage";
+import facilitiesReducer from "./slices/Facilities";
+
 
 
 // slices
@@ -23,7 +24,10 @@ const rootReducer = combineReducers({
   slots: slotReducer,
   rooms: roomReducer,
   auth: authReducer,
-  accounts: accountReducer
+  accounts: accountReducer,
+  storage: storageReducer,
+  facilities: facilitiesReducer,
+  
 
 });
 

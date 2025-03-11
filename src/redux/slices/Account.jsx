@@ -17,7 +17,6 @@ export const fetchAccounts = createAsyncThunk(
   }
 );
 
-
 // 📌 Lấy tài khoản theo ID
 export const fetchAccountById = createAsyncThunk(
   "accounts/fetchById",
@@ -30,7 +29,6 @@ export const fetchAccountById = createAsyncThunk(
     }
   }
 );
-
 
 // 📌 Thêm tài khoản mới (từ import Excel)
 export const addAccount = createAsyncThunk(
@@ -63,6 +61,26 @@ export const updateAccount = createAsyncThunk(
     }
   }
 );
+
+// 📌 Chuyển tài khoản sang storage (xóa mềm)
+export const moveToStorage = createAsyncThunk("accounts/moveToStorage", async (id, { rejectWithValue }) => {
+  try {
+    await axios.delete(`${API_URL}/${id}`);
+    return id;
+  } catch (error) {
+    return rejectWithValue(error.response?.data || "Không thể xóa tài khoản");
+  }
+});
+
+// 📌 Xóa vĩnh viễn tài khoản
+export const deletePermanently = createAsyncThunk("accounts/deletePermanently", async (id, { rejectWithValue }) => {
+  try {
+    await axios.delete(`${API_URL}/deletePermanently/${id}`);
+    return id;
+  } catch (error) {
+    return rejectWithValue(error.response?.data || "Không thể xóa vĩnh viễn tài khoản");
+  }
+});
 
 const accountSlice = createSlice({
   name: "accounts",
@@ -138,10 +156,20 @@ const accountSlice = createSlice({
       .addCase(updateAccount.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // 🔹 Xóa tài khoản (chuyển vào storage)
+      .addCase(moveToStorage.fulfilled, (state, action) => {
+        state.accounts = state.accounts.filter((account) => account.id !== action.payload);
+      })
+
+      // 🔹 Xóa vĩnh viễn tài khoản
+      .addCase(deletePermanently.fulfilled, (state, action) => {
+        state.accounts = state.accounts.filter((account) => account.id !== action.payload);
       });
   },
 });
 
 export const { setRoleFilter, deleteAccount, resetError } = accountSlice.actions;
 export default accountSlice.reducer;
-// export { fetchAccounts, fetchAccountById, addAccount, updateAccount };
+// export { fetchAccounts, fetchAccountById, addAccount, updateAccount, deletePermanently };
