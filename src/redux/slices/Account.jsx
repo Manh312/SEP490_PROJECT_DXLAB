@@ -109,6 +109,30 @@ export const softDeleteAccount = createAsyncThunk(
     }
   }
 );
+// 📌 Lấy danh sách tài khoản đã xóa
+export const fetchDeletedAccounts = createAsyncThunk(
+  "accounts/fetchDeleted",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/deleted`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Không thể tải danh sách tài khoản đã xóa");
+    }
+  }
+);
+// 📌 Khôi phục tài khoản đã xóa
+export const restoreAccount = createAsyncThunk(
+  "accounts/restore",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(`${API_URL}/${id}/restore`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Không thể khôi phục tài khoản");
+    }
+  }
+);
 
 // 📌 Xóa vĩnh viễn tài khoản
 export const deletePermanently = createAsyncThunk("accounts/deletePermanently", async (id, { rejectWithValue }) => {
@@ -120,8 +144,8 @@ export const deletePermanently = createAsyncThunk("accounts/deletePermanently", 
   }
 });
 
-export const fetchDeletedAccounts = createAsyncThunk();
-export const restoreAccount = createAsyncThunk();
+// export const fetchDeletedAccounts = createAsyncThunk();
+// export const restoreAccount = createAsyncThunk();
 
 const accountSlice = createSlice({
   name: "accounts",
@@ -132,6 +156,7 @@ const accountSlice = createSlice({
     error: null,
     roleFilter: "All",
     roles: [], // Danh sách vai trò
+    deletedAccounts: [], // 🔹 Thêm state cho danh sách tài khoản đã xóa
   },
   reducers: {
     setRoleFilter: (state, action) => {
@@ -242,6 +267,35 @@ const accountSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+          // 🔹 Lấy danh sách tài khoản đã xóa
+          .addCase(fetchDeletedAccounts.pending, (state) => {
+            state.loading = true;
+          })
+          .addCase(fetchDeletedAccounts.fulfilled, (state, action) => {
+            state.loading = false;
+            state.deletedAccounts = action.payload; // Cập nhật danh sách tài khoản đã xóa
+          })
+          .addCase(fetchDeletedAccounts.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+          })
+    
+          // 🔹 Khôi phục tài khoản đã xóa
+          .addCase(restoreAccount.pending, (state) => {
+            state.loading = true;
+          })
+          .addCase(restoreAccount.fulfilled, (state, action) => {
+            state.loading = false;
+            state.deletedAccounts = state.deletedAccounts.filter(
+              (account) => account.id !== action.payload.id
+            );
+            state.accounts.push(action.payload); // Đưa tài khoản đã khôi phục về danh sách chính
+          })
+          .addCase(restoreAccount.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.payload;
+          })
+
 
       // 🔹 Xóa vĩnh viễn tài khoản
       .addCase(deletePermanently.fulfilled, (state, action) => {
