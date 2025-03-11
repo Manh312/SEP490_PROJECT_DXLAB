@@ -20,10 +20,10 @@ const Navbar = () => {
   const dropdownRef = useRef(null);
   const user = useSelector((state) => state.auth.user);
 
-  const getAuthToken = useAuth(); 
-  console.log("getAuthToken:", getAuthToken);
-  const getUser = useAuth();
-  console.log("getUser:", getUser);
+  // const getAuthToken = useAuth(); 
+  // console.log("getAuthToken:", getAuthToken);
+  // const getUser = useAuth();
+  // console.log("getUser:", getUser);
   
   
     // useEffect(() => {
@@ -37,11 +37,11 @@ const Navbar = () => {
 
   const handleDisconnect = async () => {
     try {
-      console.log("Attempting to disconnect...");
+      // console.log("Attempting to disconnect...");
       await disconnect();
       dispatch(clearAuthData());
       setDropdownOpen(false);
-      console.log("Disconnected and auth cleared, address:", address);
+      // console.log("Disconnected and auth cleared, address:", address);
     } catch (error) {
       console.error("Disconnect error:", error);
     }

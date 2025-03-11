@@ -12,8 +12,8 @@ const activeChain = "sepolia";
 
 const sendUserDataToBackend = async (user, walletAddress, dispatch) => {
   try {
-    console.log("Thirdweb User Info:", user);
-    console.log("Wallet Address:", walletAddress);
+    // console.log("Thirdweb User Info:", user);
+    // console.log("Wallet Address:", walletAddress);
 
     const userEmail = user?.storedToken?.authDetails?.email || user?.email || "unknown@example.com";
 

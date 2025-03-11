@@ -1,12 +1,12 @@
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import {
   fetchAccounts,
   setRoleFilter,
   addAccount,
-  fetchRoles,
   fetchAccountsByRoleName,
   softDeleteAccount,
+  fetchDeletedAccounts,
 } from "../../redux/slices/Account";
 import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
@@ -14,28 +14,29 @@ import { toast, ToastContainer } from "react-toastify";
 const AccountList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { accounts, roleFilter, loading, roles } = useSelector(
-    (state) => state.accounts
-  );
+  const { accounts, roleFilter, loading } = useSelector((state) => state.accounts);
 
-  // Fetch danh sách tài khoản từ API khi component mount
+  // Fetch initial data when component mounts
   useEffect(() => {
     dispatch(setRoleFilter("All"));
-    dispatch(fetchRoles());
+    dispatch(fetchAccounts());
   }, [dispatch]);
 
   useEffect(() => {
-    if (roleFilter === "All") {
-      dispatch(fetchAccounts());
+    if (roleFilter !== "All") {
+      dispatch(fetchAccountsByRoleName(roleFilter));
     } else {
-      dispatch(fetchAccountsByRoleName(roleFilter)); // Fetch theo role
+      dispatch(fetchAccounts());
     }
   }, [dispatch, roleFilter]);
 
-  // Lọc danh sách tài khoản theo vai trò
-  const filteredAccounts = accounts.filter((acc) =>
-    roleFilter === "All" ? true : acc.roleName === roleFilter
-  );
+  // Filter accounts based on roleFilter
+  const filteredAccounts = useMemo(() => {
+    if (!Array.isArray(accounts)) return [];
+    return accounts.filter((acc) =>
+      roleFilter === "All" ? true : acc.roleName === roleFilter
+    );
+  }, [accounts, roleFilter]);
 
   const handleImportExcel = async (event) => {
     const file = event.target.files[0];
@@ -51,36 +52,20 @@ const AccountList = () => {
     }
   };
 
-  // xóa mềm
-  // const handleSoftDelete = async (id) => {
-  //   try {
-  //     const res = await dispatch(softDeleteAccount(id));
-  //     toast.success(res.message || "Xóa mềm thành công");
-  
-  //     // Gọi lại fetchAccounts() để lấy lại tất cả tài khoản
-  //     dispatch(fetchAccounts()); 
-  //     // Nếu cần load lại theo role đã chọn sau khi xóa mềm
-  //     dispatch(fetchAccountsByRoleName(roleFilter)); // Đảm bảo dữ liệu theo role được tải lại
-  //   } catch (err) {
-  //     console.error("Lỗi khi xóa mềm tài khoản:", err);
-  //     toast.error(err?.message || "Lỗi khi xóa mềm tài khoản");
-  //   }
-  // };
   const handleSoftDelete = async (id) => {
     try {
       const res = await dispatch(softDeleteAccount(id)).unwrap();
       toast.success(res.message || "Xóa mềm thành công");
-  
-      // Sau khi xóa mềm, load lại danh sách tài khoản và danh sách tài khoản đã xóa
-      dispatch(fetchAccounts()); 
-      dispatch(fetchAccountsByRoleName(roleFilter));
-      dispatch(fetchDeletedAccounts()); // Cập nhật danh sách tài khoản đã xóa
+      dispatch(fetchAccounts());
+      if (roleFilter !== "All") {
+        dispatch(fetchAccountsByRoleName(roleFilter));
+      }
+      dispatch(fetchDeletedAccounts());
     } catch (err) {
       console.error("Lỗi khi xóa mềm tài khoản:", err);
       toast.error(err?.message || "Lỗi khi xóa mềm tài khoản");
     }
   };
-
 
   return (
     <div className="relative p-6 shadow-xl rounded-lg bg-white max-w-5xl mx-auto">
@@ -105,7 +90,7 @@ const AccountList = () => {
 
       <h2 className="text-2xl font-semibold mb-4">📝 Danh Sách Người Dùng</h2>
 
-      {/* Bộ lọc Role */}
+      {/* Role Filter */}
       <div className="mb-4 w-40">
         <label className="block font-medium">📌 Lọc theo Vai Trò</label>
         <select
@@ -114,64 +99,64 @@ const AccountList = () => {
           className="w-full px-3 py-2 border rounded-lg"
         >
           <option value="All">Tất Cả</option>
-          {Array.isArray(roles) && roles.length > 0 ? (
-            roles.map((role) => (
-              <option key={role.roleId} value={role.roleName}>
-                {role.roleName}
-              </option>
-            ))
-          ) : (
-            <option disabled>Không có vai trò nào</option>
-          )}
+          <option value="Student">Student</option>
+          <option value="Staff">Staff</option>
+          {/* If you want to keep dynamic roles, uncomment the below */}
+          {/* {uniqueRoles.map((roleName) => (
+            <option key={roleName} value={roleName}>
+              {roleName}
+            </option>
+          ))} */}
         </select>
       </div>
 
-
-      {loading && <p className="text-blue-500">Đang tải dữ liệu...</p>}
-
-      <div className="mt-4">
-        <h3 className="text-lg font-semibold">
-          Danh sách {roleFilter === "All" ? "Tất Cả" : roleFilter} (
-          {filteredAccounts.length} người)
-        </h3>
-        <div className="border rounded-lg mt-2 max-h-80 overflow-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="px-4 py-2">#</th>
-                <th className="px-4 py-2">Họ và Tên</th>
-                <th className="px-4 py-2">Email</th>
-                <th className="px-4 py-2">Vai Trò</th>
-                <th className="px-4 py-2">Hành Động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAccounts.map((user, index) => (
-                <tr key={user.id} className="border-t">
-                  <td className="px-4 py-2">{index + 1}</td>
-                  <td className="px-4 py-2">{user.fullName}</td>
-                  <td className="px-4 py-2">{user.email}</td>
-                  <td className="px-4 py-2">{user.roleName}</td>
-                  <td className="px-4 py-2 flex space-x-2">
-                  <button
-                      onClick={() => handleSoftDelete(user.userId)}
-                      className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700"
-                    >
-                      Xóa Mềm
-                    </button>
-                    <Link
-                      to={`/dashboard/account/update/${user.userId}`}
-                      className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"
-                    >
-                      ✏️ Cập Nhật
-                    </Link>
-                  </td>
+      {loading ? (
+        <p className="text-blue-500">Đang tải dữ liệu...</p>
+      ) : (
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold">
+            Danh sách {roleFilter === "All" ? "Tất Cả" : roleFilter} (
+            {filteredAccounts.length} người)
+          </h3>
+          <div className="border rounded-lg mt-2 max-h-80 overflow-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="px-4 py-2">#</th>
+                  <th className="px-4 py-2">Họ và Tên</th>
+                  <th className="px-4 py-2">Email</th>
+                  <th className="px-4 py-2">Vai Trò</th>
+                  <th className="px-4 py-2">Hành Động</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredAccounts.map((user, index) => (
+                  <tr key={user.id} className="border-t">
+                    <td className="px-4 py-2">{index + 1}</td>
+                    <td className="px-4 py-2">{user.fullName}</td>
+                    <td className="px-4 py-2">{user.email}</td>
+                    <td className="px-4 py-2">{user.roleName}</td>
+                    <td className="px-4 py-2 flex space-x-2">
+                      <button
+                        onClick={() => handleSoftDelete(user.userId)}
+                        className="bg-red-600 text-white px-3 py-1 rounded-lg hover:bg-red-700"
+                      >
+                        Xóa Mềm
+                      </button>
+                      <Link
+                        to={`/dashboard/account/update/${user.userId}`}
+                        className="bg-yellow-500 text-white px-3 py-1 rounded-lg hover:bg-yellow-600"
+                      >
+                        ✏️ Cập Nhật
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
