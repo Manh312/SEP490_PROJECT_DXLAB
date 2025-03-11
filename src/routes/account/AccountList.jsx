@@ -52,15 +52,29 @@ const AccountList = () => {
   };
 
   // xóa mềm
+  // const handleSoftDelete = async (id) => {
+  //   try {
+  //     const res = await dispatch(softDeleteAccount(id));
+  //     toast.success(res.message || "Xóa mềm thành công");
+  
+  //     // Gọi lại fetchAccounts() để lấy lại tất cả tài khoản
+  //     dispatch(fetchAccounts()); 
+  //     // Nếu cần load lại theo role đã chọn sau khi xóa mềm
+  //     dispatch(fetchAccountsByRoleName(roleFilter)); // Đảm bảo dữ liệu theo role được tải lại
+  //   } catch (err) {
+  //     console.error("Lỗi khi xóa mềm tài khoản:", err);
+  //     toast.error(err?.message || "Lỗi khi xóa mềm tài khoản");
+  //   }
+  // };
   const handleSoftDelete = async (id) => {
     try {
-      const res = await dispatch(softDeleteAccount(id));
+      const res = await dispatch(softDeleteAccount(id)).unwrap();
       toast.success(res.message || "Xóa mềm thành công");
   
-      // Gọi lại fetchAccounts() để lấy lại tất cả tài khoản
+      // Sau khi xóa mềm, load lại danh sách tài khoản và danh sách tài khoản đã xóa
       dispatch(fetchAccounts()); 
-      // Nếu cần load lại theo role đã chọn sau khi xóa mềm
-      dispatch(fetchAccountsByRoleName(roleFilter)); // Đảm bảo dữ liệu theo role được tải lại
+      dispatch(fetchAccountsByRoleName(roleFilter));
+      dispatch(fetchDeletedAccounts()); // Cập nhật danh sách tài khoản đã xóa
     } catch (err) {
       console.error("Lỗi khi xóa mềm tài khoản:", err);
       toast.error(err?.message || "Lỗi khi xóa mềm tài khoản");
