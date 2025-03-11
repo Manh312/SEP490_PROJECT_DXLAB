@@ -3,6 +3,7 @@ import axios from "axios";
 
 // API endpoint
 const API_URL = "http://localhost:9999/api/Account";
+const API_Role_URL = "http://localhost:9999/api/Role/RoleByAdmin";
 
 // 📌 Lấy danh sách tài khoản
 export const fetchAccounts = createAsyncThunk(
@@ -13,6 +14,23 @@ export const fetchAccounts = createAsyncThunk(
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể tải danh sách tài khoản");
+    }
+  }
+);
+
+// 📌 Lấy danh sách vai trò
+export const fetchRoles = createAsyncThunk(
+  "accounts/fetchRoles",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(API_Role_URL);
+      console.log(response.data);
+      return response.data; // Trả về danh sách vai trò
+    } catch (error) {
+      console.log(error.response.data);
+      return rejectWithValue(
+        error.response?.data || "Không thể tải danh sách vai trò"
+      );
     }
   }
 );
@@ -62,15 +80,35 @@ export const updateAccount = createAsyncThunk(
   }
 );
 
-// 📌 Chuyển tài khoản sang storage (xóa mềm)
-export const moveToStorage = createAsyncThunk("accounts/moveToStorage", async (id, { rejectWithValue }) => {
-  try {
-    await axios.delete(`${API_URL}/${id}`);
-    return id;
-  } catch (error) {
-    return rejectWithValue(error.response?.data || "Không thể xóa tài khoản");
+// 📌 Lấy danh sách tài khoản theo roleName
+export const fetchAccountsByRoleName = createAsyncThunk(
+  "accounts/fetchByRoleName",
+  async (roleName, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/role/${roleName}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || "Không thể tải danh sách tài khoản theo vai trò"
+      );
+    }
   }
-});
+);
+
+// 📌 Xóa mềm tài khoản (chỉ cập nhật trạng thái isDeleted)
+export const softDeleteAccount = createAsyncThunk(
+  "accounts/softDelete",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await axios.patch(`${API_URL}/${id}/soft-delete`);
+      console.log(response.data);
+      return response.data; // Trả về dữ liệu xóa mềm nếu cần
+    } catch (error) {
+      console.log(error.response.data);
+      return rejectWithValue(error.response?.data || "Không thể xóa tài khoản");
+    }
+  }
+);
 
 // 📌 Xóa vĩnh viễn tài khoản
 export const deletePermanently = createAsyncThunk("accounts/deletePermanently", async (id, { rejectWithValue }) => {
@@ -82,6 +120,9 @@ export const deletePermanently = createAsyncThunk("accounts/deletePermanently", 
   }
 });
 
+export const fetchDeletedAccounts = createAsyncThunk();
+export const restoreAccount = createAsyncThunk();
+
 const accountSlice = createSlice({
   name: "accounts",
   initialState: {
@@ -90,6 +131,7 @@ const accountSlice = createSlice({
     loading: false,
     error: null,
     roleFilter: "All",
+    roles: [], // Danh sách vai trò
   },
   reducers: {
     setRoleFilter: (state, action) => {
@@ -113,6 +155,19 @@ const accountSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchAccounts.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+       // Fetch danh sách vai trò
+       .addCase(fetchRoles.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchRoles.fulfilled, (state, action) => {
+        state.roles = action.payload; // Cập nhật danh sách vai trò
+        state.loading = false;
+      })
+      .addCase(fetchRoles.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -158,9 +213,34 @@ const accountSlice = createSlice({
         state.error = action.payload;
       })
 
-      // 🔹 Xóa tài khoản (chuyển vào storage)
-      .addCase(moveToStorage.fulfilled, (state, action) => {
-        state.accounts = state.accounts.filter((account) => account.id !== action.payload);
+      // 🔹 Lấy danh sách tài khoản theo vai trò
+      .addCase(fetchAccountsByRoleName.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchAccountsByRoleName.fulfilled, (state, action) => {
+        state.accounts = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchAccountsByRoleName.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // 🔹 Xóa mềm tài khoản
+      .addCase(softDeleteAccount.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(softDeleteAccount.fulfilled, (state, action) => {
+        state.loading = false;
+        state.accounts = state.accounts.map((account) =>
+          account.id === action.payload.id
+            ? { ...account, isDeleted: true }
+            : account
+        );
+      })
+      .addCase(softDeleteAccount.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       })
 
       // 🔹 Xóa vĩnh viễn tài khoản
