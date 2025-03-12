@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { createSlot } from "../../redux/slices/Slot";
 import { toast } from "react-toastify";
+import { Clock } from "lucide-react";
 
 const CreateSlot = () => {
   const navigate = useNavigate();
@@ -49,13 +49,16 @@ const CreateSlot = () => {
         navigate("/dashboard/slot");
       })
       .catch((err) => {
-        toast.error(err.message)
+        toast.error(err.message);
       });
   };
 
   return (
-    <div className="p-6 shadow-xl rounded-lg bg-white max-w-lg mx-auto">
-      <h2 className="text-2xl font-semibold mb-4">🕒 Tạo Slot Mới</h2>
+    <div className="p-6 shadow-xl border rounded-lg max-w-lg mx-auto mt-10 mb-30">
+      <div className="text-2xl font-semibold mb-4 flex items-center">
+        <Clock className="mr-2" />
+        <span>Tạo Slot Mới</span>
+      </div>
       {loading && <p>Đang tạo slot...</p>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -67,7 +70,7 @@ const CreateSlot = () => {
             name="start_time"
             value={slot.start_time}
             onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-lg"
+            className="w-full px-3 py-2 border rounded-lg hover:bg-gray-400"
             required
           />
         </div>
@@ -80,7 +83,7 @@ const CreateSlot = () => {
             name="end_time"
             value={slot.end_time}
             onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-lg"
+            className="w-full px-3 py-2 border rounded-lg hover:bg-gray-400"
             required
           />
         </div>
@@ -90,6 +93,7 @@ const CreateSlot = () => {
           <label className="block font-medium">Thời Gian Nghỉ (phút)</label>
           <input
             type="number"
+            min={1}
             name="break_time"
             value={slot.break_time}
             onChange={handleChange}
@@ -109,7 +113,7 @@ const CreateSlot = () => {
           </button>
           <button
             type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+            className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition"
             disabled={loading}
           >
             {loading ? "Đang tạo..." : "Tạo Slot"}

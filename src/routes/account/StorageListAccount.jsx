@@ -75,7 +75,7 @@ const StorageListAccount = () => {
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
       <Tooltip id="action-tooltip" />
 
-      <div className="max-w-full sm:max-w-6xl mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
+      <div className="w-full mx-auto border border-gray-600 rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold flex items-center gap-2">
             <FaUsers className="text-orange-500" /> Danh Sách Tài Khoản Đã Xóa Mềm
@@ -108,7 +108,7 @@ const StorageListAccount = () => {
           <select
             value={roleFilter}
             onChange={(e) => dispatch(setRoleFilter(e.target.value))}
-            className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+            className="w-30 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
           >
             <option value="All">Tất Cả</option>
             <option value="Student">Student</option>
@@ -118,10 +118,9 @@ const StorageListAccount = () => {
 
         {!loading && !error && (
           <>
-            {/* Table for Desktop and Tablet */}
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead className="border-b">
+                <thead className="border-b text-center">
                   <tr>
                     <th className="px-2 py-2 md:px-4 md:py-3 font-semibold text-xs md:text-sm uppercase tracking-wide">#</th>
                     <th className="px-2 py-2 md:px-4 md:py-3 font-semibold text-xs md:text-sm uppercase tracking-wide">Họ và Tên</th>
@@ -132,7 +131,7 @@ const StorageListAccount = () => {
                 </thead>
                 <tbody>
                   {currentPosts.map((user, index) => (
-                    <tr key={user.id} className="border-b hover:bg-gray-500 transition-colors">
+                    <tr key={user.id} className="border-b text-center hover:bg-gray-500 transition-colors">
                       <td className="px-2 py-3 md:px-4 md:py-4">{index + 1}</td>
                       <td className="px-2 py-3 md:px-4 md:py-4">{user.fullName}</td>
                       <td className="px-2 py-3 md:px-4 md:py-4">{user.email}</td>
@@ -144,7 +143,7 @@ const StorageListAccount = () => {
                           {user.roleName}
                         </span>
                       </td>
-                      <td className="px-2 py-3 md:px-4 md:py-4 flex gap-2 md:gap-3">
+                      <td className="px-2 py-3 md:px-4 md:py-4 flex gap-2 md:gap-3 justify-center">
                         <button
                           onClick={() => handleRestore(user.userId)}
                           data-tooltip-id="action-tooltip"

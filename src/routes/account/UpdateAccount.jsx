@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
-import { updateAccount, fetchAccountById } from "../../redux/slices/Account";
-import { toast, ToastContainer } from "react-toastify";
+import { updateAccount, fetchAccountById, fetchRolesByAdmin } from "../../redux/slices/Account";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaUser, FaEnvelope, FaTag, FaCheck } from "react-icons/fa";
 
@@ -11,24 +11,33 @@ const UpdateAccount = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { selectedAccount, loading, error } = useSelector((state) => state.accounts);
+  const { selectedAccount, roles, loading } = useSelector((state) => state.accounts);
+
   const [role, setRole] = useState("");
 
+  // Fetch roles và account khi component mount
   useEffect(() => {
-    if (!selectedAccount && !loading) {
-      dispatch(fetchAccountById(id));
-    }
-  }, [dispatch, id, selectedAccount, loading]);
+    dispatch(fetchRolesByAdmin()); // Lấy danh sách roles
+    dispatch(fetchAccountById(id)); // Lấy thông tin tài khoản
+  }, [dispatch, id]);
 
+  // Đồng bộ role khi selectedAccount thay đổi
   useEffect(() => {
-    if (selectedAccount && selectedAccount.id === id) {
-      console.log("Dữ liệu selectedAccount:", selectedAccount); // Log để kiểm tra
-      const roleNameFromServer = selectedAccount.roleName || "";
-      // Chuyển đổi roleName để khớp với giá trị trong <option>
-      const normalizedRoleName = roleNameFromServer.charAt(0).toUpperCase() + roleNameFromServer.slice(1).toLowerCase();
-      setRole(normalizedRoleName);
+    if (selectedAccount?.account && selectedAccount.account.userId === id) {
+      const roleNameFromServer = selectedAccount.account.roleName || "";
+      if (roles.some((r) => r.roleName === roleNameFromServer)) {
+        setRole(roleNameFromServer);
+      }
     }
-  }, [selectedAccount, id]);
+  }, [selectedAccount, id, roles]);
+  
+  useEffect(() => {
+    if (roles.length > 0 && selectedAccount?.account) {
+      setRole(selectedAccount.account.roleName || "");
+    }
+  }, [roles, selectedAccount]);
+  
+
 
   const handleUpdate = async () => {
     try {
@@ -36,71 +45,37 @@ const UpdateAccount = () => {
         toast.error("Vui lòng chọn vai trò!");
         return;
       }
-      const updatedData = { roleName: role }; // Sử dụng roleName
-      console.log("Dữ liệu gửi đi:", updatedData); // Log để kiểm tra
-      const result = await dispatch(updateAccount({ id, updatedData })).unwrap();
-      console.log("Phản hồi từ server:", result); // Log để kiểm tra
-      if (result) {
-        toast.success("Cập nhật thành công!");
-        dispatch(fetchAccountById(id));
-        navigate("/dashboard/account");
-      }
+
+      const roleName = role;
+      await dispatch(updateAccount({ id, roleName })).unwrap();
+      toast.success("Cập nhật thành công!");
+      navigate("/dashboard/account");
     } catch (err) {
       const errorMessage = err.errors
         ? Object.values(err.errors).join(", ")
         : err.message || "Unknown error";
       toast.error(`Lỗi khi cập nhật tài khoản: ${errorMessage}`);
-      console.error("Lỗi cập nhật:", err);
+      console.error("Update error:", err);
     }
   };
 
-  if (loading)
+  // Hiển thị loading nếu dữ liệu chưa sẵn sàng
+  if (loading || !selectedAccount?.account) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
         <p className="text-gray-600 text-lg animate-pulse">Đang tải dữ liệu...</p>
       </div>
     );
-
-  if (error) {
-    const errorMessage =
-      error.message ||
-      (error.errors && Object.values(error.errors).join(", ")) ||
-      "Đã xảy ra lỗi không xác định";
-    return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <p className="text-red-600 text-lg font-medium bg-red-50 p-4 rounded-lg">
-          Lỗi: {errorMessage}
-        </p>
-      </div>
-    );
   }
 
-  if (!selectedAccount)
-    return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <p className="text-gray-600 text-lg">Không tìm thấy tài khoản!</p>
-      </div>
-    );
-
   return (
-    <div className=" flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 rounded-xl shadow-lg p-8 transform transition-all hover:shadow-xl">
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          theme="colored"
-        />
-
-        <div>
+    <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-lg rounded-xl border shadow-2xl p-8 space-y-8 transition-all duration-300 hover:shadow-3xl">
+      <div>
           <h2 className="text-3xl font-bold text-center">Cập Nhật Tài Khoản</h2>
-          <p className="mt-2 text-sm text-center">
-            Chỉnh sửa thông tin vai trò tài khoản
-          </p>
+          <p className="mt-2 text-sm text-center">Chỉnh sửa thông tin vai trò tài khoản</p>
         </div>
-
         <div className="space-y-6">
-          {/* Full Name */}
           <div>
             <label className="block text-sm font-medium mb-1">
               <span className="flex items-center">
@@ -109,13 +84,11 @@ const UpdateAccount = () => {
             </label>
             <input
               type="text"
-              value={selectedAccount.account?.fullName || ""}
+              value={selectedAccount.account.fullName || ""}
               disabled
               className="w-full px-4 py-3 rounded-lg border focus:outline-none"
             />
           </div>
-
-          {/* Email */}
           <div>
             <label className="block text-sm font-medium mb-1">
               <span className="flex items-center">
@@ -124,13 +97,11 @@ const UpdateAccount = () => {
             </label>
             <input
               type="text"
-              value={selectedAccount.account?.email || ""}
+              value={selectedAccount.account.email || ""}
               disabled
               className="w-full px-4 py-3 rounded-lg border focus:outline-none"
             />
           </div>
-
-          {/* Role Selection */}
           <div>
             <label className="block text-sm font-medium mb-1">
               <span className="flex items-center">
@@ -138,17 +109,24 @@ const UpdateAccount = () => {
               </span>
             </label>
             <select
-              value={role}
+              value={role || ""}
               onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500  duration-150 ease-in-out"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 duration-150 ease-in-out"
             >
-              <option value="">-- Chọn vai trò --</option> {/* Tùy chọn mặc định */}
-              <option value="Staff">Staff</option>
-              <option value="Student">Student</option>
+              {roles?.length > 0 ? (
+                roles.map((r) => (
+                  <option key={r.id} value={r.roleName}>
+                    {r.roleName}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>
+                  Không có vai trò nào
+                </option>
+              )}
             </select>
-          </div>
 
-          {/* Submit Button */}
+          </div>
           <button
             onClick={handleUpdate}
             disabled={loading}
@@ -157,7 +135,11 @@ const UpdateAccount = () => {
             {loading ? (
               <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
             ) : (
               <>

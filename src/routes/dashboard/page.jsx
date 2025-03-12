@@ -7,7 +7,7 @@ const Page = () => {
   const { theme } = useTheme(); 
 
   return (
-    <div className="flex flex-col gap-y-4">
+    <div className="flex flex-col gap-y-4 mb-20">
       <h1 className={`title ${theme === "dark" ? "text-white" : "text-black"}`}>Dashboard</h1>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mr-5">
 

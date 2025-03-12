@@ -47,12 +47,29 @@ export const addAccount = createAsyncThunk(
   }
 );
 
+// Fetch roles By Admin
+export const fetchRolesByAdmin = createAsyncThunk(
+  "accounts/fetchRolesByAdmin",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get('https://localhost:9999/api/Role/GetRoleByAdmin');
+      console.log("response", response.data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Failed to fetch roles");
+    }
+  }
+);
+
+
+
 // Update account
 export const updateAccount = createAsyncThunk(
   "accounts/update",
   async ({ id, roleName }, { rejectWithValue }) => {
     try {
       const response = await axios.put(`${API_URL}/${id}/role`, { roleName });
+      console.log("Update response:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Failed to update account");
@@ -137,6 +154,7 @@ const accountSlice = createSlice({
     error: null,
     roleFilter: "All",
     deletedAccounts: [],
+    roles: [],
   },
   reducers: {
     setRoleFilter: (state, action) => {
@@ -221,6 +239,20 @@ const accountSlice = createSlice({
       .addCase(fetchAccountsByRoleName.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+
+      // Fetch roles by admin
+      .addCase(fetchRolesByAdmin.pending, (state) => {
+        state.loading = true;
+        state.error = null; // Reset error khi bắt đầu fetch
+      })
+      .addCase(fetchRolesByAdmin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.roles = Array.isArray(action.payload) ? action.payload : action.payload.roles || [];
+      })
+      .addCase(fetchRolesByAdmin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload; // Lưu lỗi nếu có
       })
 
       // Soft delete account

@@ -1,8 +1,8 @@
 import { useEffect } from "react"; // Thêm useEffect để gọi API khi component mount
 import { useDispatch, useSelector } from "react-redux";
-import { PencilLine, Trash, PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { listSlots, deleteSlot } from "../../redux/slices/Slot"; 
+import { listSlots } from "../../redux/slices/Slot"; 
 import { useTheme } from "../../hooks/use-theme";
 
 const SlotList = () => {
@@ -16,18 +16,18 @@ const SlotList = () => {
     dispatch(listSlots());
   }, [dispatch]);
 
-  const handleDelete = (id) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa slot này?")) {
-      dispatch(deleteSlot(id)); 
-    }
-  };
+  // const handleDelete = (id) => {
+  //   if (window.confirm("Bạn có chắc chắn muốn xóa slot này?")) {
+  //     dispatch(deleteSlot(id)); 
+  //   }
+  // };
 
   const handleAddSlot = () => {
     navigate("/dashboard/slot/create"); // Điều hướng sang trang CreateSlot
   };
 
   return (
-    <div className="p-6 shadow-xl rounded-lg transition-all mt-10 mb-20">
+    <div className="p-6 shadow-xl border rounded-lg transition-all mt-10 mb-20 mr-10">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Danh Sách Slot Trong Ngày</h2>
         <button
@@ -53,7 +53,7 @@ const SlotList = () => {
               <th className="p-3 text-left">Tên Slot</th>
               <th className="p-3 text-center">Giờ Bắt Đầu</th>
               <th className="p-3 text-center">Giờ Kết Thúc</th>
-              <th className="p-3 text-center">Hành Động</th>
+              {/* <th className="p-3 text-center">Hành Động</th> */}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-300">
@@ -64,7 +64,7 @@ const SlotList = () => {
                   <td className="p-3">{slot.slot_name || `Slot ${index + 1}`}</td>
                   <td className="p-3 text-center">{slot.startTime}</td>
                   <td className="p-3 text-center">{slot.endTime}</td>
-                  <td className="p-3 flex justify-center gap-x-3">
+                  {/* <td className="p-3 flex justify-center gap-x-3">
                     <button
                       className="text-yellow-500 hover:text-yellow-700 transition"
                       onClick={() =>
@@ -79,7 +79,7 @@ const SlotList = () => {
                     >
                       <Trash size={22} />
                     </button>
-                  </td>
+                  </td> */}
                 </tr>
               ))
             ) : (
