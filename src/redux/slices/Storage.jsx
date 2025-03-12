@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 // API endpoint
-const STORAGE_API_URL = "http://localhost:9999/api/BinStorage"; // API cho storage
+const STORAGE_API_URL = "https://localhost:9999/api/BinStorage"; // API cho storage
 // const FACILITIES_STORAGE_API_URL = "http://localhost:9999/api/Facilities/Storage"; // API cho facilities
 
 // 📌 Lấy danh sách tài khoản đã bị xóa từ storage

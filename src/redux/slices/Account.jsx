@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "http://localhost:9999/api/Account";
-const STORAGE_API_URL = "http://localhost:9999/api/BinStorage";
+const API_URL = "https://localhost:9999/api/Account";
+const STORAGE_API_URL = "https://localhost:9999/api/BinStorage";
 
 // Fetch all accounts
 export const fetchAccounts = createAsyncThunk(
@@ -10,6 +10,7 @@ export const fetchAccounts = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(API_URL);
+      console.log("response", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Failed to fetch accounts");
@@ -49,9 +50,9 @@ export const addAccount = createAsyncThunk(
 // Update account
 export const updateAccount = createAsyncThunk(
   "accounts/update",
-  async ({ id, updatedData }, { rejectWithValue }) => {
+  async ({ id, roleName }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/${id}`, updatedData);
+      const response = await axios.put(`${API_URL}/${id}/role`, { roleName });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Failed to update account");
@@ -174,11 +175,11 @@ const accountSlice = createSlice({
       })
       .addCase(fetchAccountById.fulfilled, (state, action) => {
         state.loading = false;
-        state.selectedAccount = action.payload.accountss || action.payload;
+        state.selectedAccount = action.payload;
       })
       .addCase(fetchAccountById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.accounts || action.payload;
+        state.error = action.payload;
       })
 
       // Add new account

@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 // API endpoint (cập nhật URL thực tế)
-const API_URL = "http://localhost:9999/api/Slot";
+const API_URL = "https://localhost:9999/api/Slot";
 
 
 // Lấy danh sách slots

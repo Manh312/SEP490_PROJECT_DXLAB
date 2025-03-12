@@ -26,7 +26,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch) => {
       roleId: 1,
     };
 
-    const response = await fetch("http://localhost:9999/api/User", {
+    const response = await fetch("https://localhost:9999/api/User", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

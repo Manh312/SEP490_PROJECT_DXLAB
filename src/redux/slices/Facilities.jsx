@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 // API endpoint
-const API_URL = "http://localhost:9999/api/facilities";
+const API_URL = "https://localhost:9999/api/facilities";
 
 // 📌 Lấy danh sách cơ sở vật chất
 export const fetchFacilities = createAsyncThunk(

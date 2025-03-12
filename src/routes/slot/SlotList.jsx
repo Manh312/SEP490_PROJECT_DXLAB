@@ -29,7 +29,7 @@ const SlotList = () => {
   return (
     <div className="p-6 shadow-xl rounded-lg transition-all mt-10 mb-20">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">⏳ Danh Sách Slot Trong Ngày</h2>
+        <h2 className="text-2xl font-semibold">Danh Sách Slot Trong Ngày</h2>
         <button
           className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-orange-600 transition"
           onClick={handleAddSlot}
