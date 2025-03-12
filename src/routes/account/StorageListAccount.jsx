@@ -118,9 +118,9 @@ const StorageListAccount = () => {
 
         {!loading && !error && (
           <>
-            <div className="hidden md:block overflow-x-auto">
+            <div className="hidden md:block overflow-x-auto rounded-lg">
               <table className="w-full text-left border-collapse">
-                <thead className="border-b text-center">
+                <thead className="border-b text-center bg-gray-500">
                   <tr>
                     <th className="px-2 py-2 md:px-4 md:py-3 font-semibold text-xs md:text-sm uppercase tracking-wide">#</th>
                     <th className="px-2 py-2 md:px-4 md:py-3 font-semibold text-xs md:text-sm uppercase tracking-wide">Họ và Tên</th>
@@ -172,7 +172,7 @@ const StorageListAccount = () => {
               {currentPosts.map((user, index) => (
                 <div
                   key={user.id}
-                  className="border rounded-lg p-4 bg-white shadow-sm hover:bg-gray-100 transition-colors"
+                  className="border rounded-lg p-4 shadow-sm hover:bg-gray-500 transition-colors"
                 >
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between">

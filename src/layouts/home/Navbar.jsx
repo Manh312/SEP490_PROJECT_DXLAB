@@ -4,7 +4,7 @@ import logo from "../../assets/logo_images.png";
 import { navItems } from "../../constants";
 import { useTheme } from "../../hooks/use-theme";
 import { Link } from "react-router-dom";
-import { ConnectWallet, useAddress, useAuth, useDisconnect } from "@thirdweb-dev/react";
+import { ConnectWallet, useAddress, useDisconnect } from "@thirdweb-dev/react";
 import { useDispatch, useSelector } from "react-redux";
 import { clearAuthData } from "../../redux/slices/Authentication";
 import { FaUserCircle } from "react-icons/fa";
@@ -20,28 +20,11 @@ const Navbar = () => {
   const dropdownRef = useRef(null);
   const user = useSelector((state) => state.auth.user);
 
-  // const getAuthToken = useAuth(); 
-  // console.log("getAuthToken:", getAuthToken);
-  // const getUser = useAuth();
-  // console.log("getUser:", getUser);
-  
-  
-    // useEffect(() => {
-    //   const fetchToken = async () => {
-    //     const token = await getAuthToken();
-    //     console.log("Fetched ID Token:", token);
-    //   };
-    //   if (address) fetchToken();
-    // }, [address, getAuthToken]);
-  
-
   const handleDisconnect = async () => {
     try {
-      // console.log("Attempting to disconnect...");
       await disconnect();
       dispatch(clearAuthData());
       setDropdownOpen(false);
-      // console.log("Disconnected and auth cleared, address:", address);
     } catch (error) {
       console.error("Disconnect error:", error);
     }
@@ -64,6 +47,9 @@ const Navbar = () => {
       console.log("Address changed to:", address);
     }
   }, [address]);
+
+  // Kiểm tra xem có email không, nếu không thì hiển thị "Wallet User"
+  const displayName = user?.storedToken?.authDetails?.email || "Wallet User";
 
   return (
     <nav className="sticky top-0 z-50 py-2 backdrop-blur-lg border-b border-neutral-700/80">
@@ -97,7 +83,7 @@ const Navbar = () => {
                   ref={dropdownRef}
                   className={`absolute right-0 top-12 w-80 ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} p-4 rounded-lg shadow-lg z-50`}
                 >
-                  <span className="block mb-2">{user.storedToken.authDetails.email}</span>
+                  <span className="block mb-2">{displayName}</span> {/* Sử dụng displayName thay vì email trực tiếp */}
                   <div className="mb-4">
                     <ConnectWallet
                       btnTitle="Manage Wallet"
@@ -135,7 +121,6 @@ const Navbar = () => {
                         <LogOut size={20} className="ml-2" />
                       </button>
                     </li>
-
                   </ul>
                 </div>
               )}
@@ -175,7 +160,7 @@ const Navbar = () => {
                 <FaUserCircle
                   className="h-8 w-8 rounded-full cursor-pointer"
                 />
-                <span className="text-sm">{user?.storedToken?.authDetails?.email || "Guest"}</span>
+                <span className="text-sm">{displayName}</span> {/* Sử dụng displayName trong mobile drawer */}
               </div>
             )}
           </div>

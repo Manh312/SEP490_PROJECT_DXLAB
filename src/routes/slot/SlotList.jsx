@@ -1,8 +1,8 @@
 import { useEffect } from "react"; // Thêm useEffect để gọi API khi component mount
 import { useDispatch, useSelector } from "react-redux";
-import { PlusCircle } from "lucide-react";
+import { Clock10Icon, PlusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { listSlots } from "../../redux/slices/Slot"; 
+import { listSlots } from "../../redux/slices/Slot";
 import { useTheme } from "../../hooks/use-theme";
 
 const SlotList = () => {
@@ -29,7 +29,12 @@ const SlotList = () => {
   return (
     <div className="p-6 shadow-xl border rounded-lg transition-all mt-10 mb-20 mr-10">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Danh Sách Slot Trong Ngày</h2>
+        <div className="flex items-center gap-x-2">
+          <Clock10Icon className="text-orange-500" />
+          <h2 className="text-2xl font-semibold">
+            Danh Sách Slot Trong Ngày
+          </h2>
+        </div>
         <button
           className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-orange-600 transition"
           onClick={handleAddSlot}

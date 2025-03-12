@@ -156,9 +156,9 @@ const AccountList = () => {
         ) : (
           <>
             {/* Table for Desktop and Larger Tablets */}
-            <div className="hidden md:block overflow-x-auto">
+            <div className="hidden md:block rounded-lg overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead className="border-b items-center">
+                <thead className="border-b items-center bg-gray-500">
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Họ và Tên</th>
@@ -211,7 +211,7 @@ const AccountList = () => {
                 currentPosts.map((user, index) => (
                   <div
                     key={user.id}
-                    className="border rounded-lg p-3 sm:p-4 bg-white shadow-sm hover:bg-gray-100 transition-colors"
+                    className="border rounded-lg p-3 sm:p-4 shadow-sm hover:bg-gray-500 transition-colors"
                   >
                     <div className="flex flex-col gap-2">
                       <div className="flex justify-between">
