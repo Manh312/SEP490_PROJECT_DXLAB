@@ -1,21 +1,33 @@
 import { createRoot } from "react-dom/client";
 import { Provider, useDispatch } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { ThirdwebProvider, metamaskWallet, walletConnect, coinbaseWallet, trustWallet, embeddedWallet, useAddress } from "@thirdweb-dev/react";
+import {
+  ThirdwebProvider,
+  metamaskWallet,
+  walletConnect,
+  coinbaseWallet,
+  trustWallet,
+  embeddedWallet,
+  useAddress,
+  useDisconnect,
+  useWallet,
+} from "@thirdweb-dev/react";
 import App from "./App.jsx";
 import { store, persistor } from "./redux/Store.jsx";
 import "./styles.css";
 import { toast } from "react-toastify";
-import { setAuthData } from "./redux/slices/Authentication.jsx";
+import { clearAuthData, setAuthData } from "./redux/slices/Authentication.jsx";
+import React from "react";
 
 const activeChain = "sepolia";
 
-const sendUserDataToBackend = async (user, walletAddress, dispatch) => {
+const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) => {
   try {
-    // console.log("Thirdweb User Info:", user);
-    // console.log("Wallet Address:", walletAddress);
-
-    const userEmail = user?.storedToken?.authDetails?.email || user?.email || "unknown@example.com";
+    // Nếu là MetaMask hoặc ví không yêu cầu email, sử dụng email mặc định
+    const userEmail =
+      walletType === "embeddedWallet"
+        ? user?.storedToken?.authDetails?.email || user?.email || "unknown@example.com"
+        : `${walletAddress}@metamask.default`; // Email mặc định cho MetaMask
 
     const payload = {
       userId: 0,
@@ -55,18 +67,47 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch) => {
     }
 
     dispatch(setAuthData({ token: result.token, user }));
+
+    if (walletAddress &&walletType === "metamask") {
+      toast.success("Đăng nhập MetaMask thành công!");
+    } else if (walletType === "embeddedWallet") {
+      toast.success("Đăng nhập Google thành công!");
+    }
+    else {
+      toast.success("Đăng nhập ví thành công!");
+    }
   } catch (error) {
     console.error("Lỗi khi gửi dữ liệu về backend:", error.message);
     toast.error("Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại sau.");
+    throw error;
   }
 };
 
 const AppWithWallet = () => {
-  const walletAddress = useAddress(); 
+  const walletAddress = useAddress();
+  const disconnect = useDisconnect();
+  const dispatch = useDispatch();
+  const wallet = useWallet(); // Hook để lấy thông tin ví hiện tại
+
+  React.useEffect(() => {
+    const user = store.getState().auth.user;
+    const userEmail = user?.storedToken?.authDetails?.email || user?.email;
+    const walletType = wallet?.walletId; 
+    console.log("Wallet Type:", walletType);
+
+    if (walletAddress && walletType === "metamask") {
+        toast.success("Đăng nhập MetaMask thành công!");
+    }
+    if (walletType === "embeddedWallet" && walletAddress && (!userEmail || !userEmail.endsWith("@fpt.edu.vn"))) {
+      disconnect();
+      dispatch(clearAuthData());
+    }
+    // Không chặn MetaMask hoặc các ví khác
+  }, [walletAddress, disconnect, dispatch, wallet]);
+
   return <App walletAddress={walletAddress} />;
 };
 
-// Component RootApp chỉ chứa ThirdwebProvider
 const RootApp = () => {
   const dispatch = useDispatch();
 
@@ -86,19 +127,17 @@ const RootApp = () => {
           onAuthSuccess: async (user) => {
             const userEmail = user.email || user.storedToken?.authDetails?.email;
             if (!userEmail || !userEmail.endsWith("@fpt.edu.vn")) {
-              toast.error("Bạn cần sử dụng email @fpt.edu.vn để đăng nhập.");
-              return;
+              toast.error("Bạn cần sử dụng email @fpt.edu.vn để đăng nhập.", {
+                toastId: "invalid-email",
+              });
+              throw new Error("Email không hợp lệ");
             }
-            const walletAddress = user.walletDetails?.walletAddress; // Lấy từ user nếu có
-            await sendUserDataToBackend(user, walletAddress, dispatch);
-            toast.success("Đăng nhập thành công!");
+
+            const walletAddress = user.walletDetails?.walletAddress;
+            await sendUserDataToBackend(user, walletAddress, dispatch, "embeddedWallet");
           },
         }),
       ]}
-      authConfig={{
-        domain: "localhost:5173",
-        // authUrl: "https://localhost:9999/api",
-      }}
     >
       <PersistGate loading={null} persistor={persistor}>
         <AppWithWallet />

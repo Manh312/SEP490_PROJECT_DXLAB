@@ -37,18 +37,15 @@ const Navbar = () => {
   const handleProfileClick = () => {
     if (address) {
       setDropdownOpen(!dropdownOpen);
-      console.log("Profile clicked, dropdownOpen:", dropdownOpen);
     }
   };
 
   useEffect(() => {
     if (!address) {
       setDropdownOpen(false);
-      console.log("Address changed to:", address);
     }
   }, [address]);
 
-  // Kiểm tra xem có email không, nếu không thì hiển thị "Wallet User"
   const displayName = user?.storedToken?.authDetails?.email || "Wallet User";
 
   return (
@@ -83,7 +80,7 @@ const Navbar = () => {
                   ref={dropdownRef}
                   className={`absolute right-0 top-12 w-80 ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} p-4 rounded-lg shadow-lg z-50`}
                 >
-                  <span className="block mb-2">{displayName}</span> {/* Sử dụng displayName thay vì email trực tiếp */}
+                  <span className="block mb-2">{displayName}</span>
                   <div className="mb-4">
                     <ConnectWallet
                       btnTitle="Manage Wallet"
@@ -149,7 +146,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Drawer */}
       <div
         className={`fixed top-0 left-0 h-screen z-20 transition-transform duration-300 w-4/5 max-w-sm flex flex-col ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} ${mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
@@ -160,7 +156,7 @@ const Navbar = () => {
                 <FaUserCircle
                   className="h-8 w-8 rounded-full cursor-pointer"
                 />
-                <span className="text-sm">{displayName}</span> {/* Sử dụng displayName trong mobile drawer */}
+                <span className="text-sm">{displayName}</span>
               </div>
             )}
           </div>
