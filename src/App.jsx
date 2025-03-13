@@ -13,13 +13,11 @@ import BlogDetail from './layouts/blog/BlogDetail';
 import AreaList from './routes/areas/AreaList';
 import FacilitiesList from './routes/facilities/FacilitiesList';
 import AccountList from './routes/account/AccountList';
-import BannedList from './routes/dashboard/BannedList';
 import BlogListOfStaff from './routes/blog-manage/BlogListOfStaff';
 import CreateFacilities from './routes/facilities/CreateFacilities';
 import FacilitiesDetail from './routes/facilities/FacilitiesDetail';
 import UpdateFacilities from './routes/facilities/UpdateFacilities';
 import DeleteFacilities from './routes/facilities/DeleteFacilities';
-// import AccountDetail from './routes/account/AccountDetail';
 import CreateAccount from './routes/account/CreateAccount';
 import UpdateAccount from "./routes/account/UpdateAccount";
 import DeleteAccount from './routes/account/DeleteAccount';
@@ -46,13 +44,13 @@ import UpdateRoom from "./routes/room/UpdateRoom";
 import CreateRoom from "./routes/room/CreateRoom";
 import AreaDetail from "./routes/students/AreaDetail";
 
-import Test from "./routes/students/Test";
 import ReportList from "./routes/staff-manage/Report-management/ReportList";
 import ReportDetail from "./routes/staff-manage/Report-management/ReportDetail";
 
 import CreateSlot from "./routes/slot/CreateSlot";
 import CreateBlog from "./routes/staff-manage/blog-management/CreateBolg";
 import StorageListAccount from "./routes/account/StorageListAccount";
+import AccountDetail from "./routes/account/AccountDetail";
 
 
 
@@ -82,130 +80,125 @@ const router = createBrowserRouter([
       { path: "not-found", element: <NotFound /> },
       { path: "not-authenticate", element: <NotAuthenticate /> },
 
-      { path: "rooms", element: <ProtectedRoute><ViewRoom /></ProtectedRoute> },
-      { path: "room/:id", element: <ProtectedRoute><ViewAreas /></ProtectedRoute> },
-      { path: "area/:typeName", element: <ProtectedRoute><AreaDetail /></ProtectedRoute> },
-      { path: "confirm-payment", element: <ProtectedRoute><Payment /></ProtectedRoute> },
-      { path: "booked-seats", element: <ProtectedRoute><ViewBookedSeats /></ProtectedRoute> },
-      { path: "booked-history", element: <ProtectedRoute><ViewBookingHistory /></ProtectedRoute> },
-      { path: "booked-history/:id", element: <ProtectedRoute><BookHistoriedDetail /></ProtectedRoute> },
-      { path: "test", element: <Test /> },
+      { path: "rooms", element: <ProtectedRoute allowedRoles={["Student"]}><ViewRoom /></ProtectedRoute> },
+      { path: "room/:id", element: <ProtectedRoute allowedRoles={["Student"]}><ViewAreas /></ProtectedRoute> },
+      { path: "area/:typeName", element: <ProtectedRoute allowedRoles={["Student"]}><AreaDetail /></ProtectedRoute> },
+      { path: "confirm-payment", element: <ProtectedRoute allowedRoles={["Student"]}><Payment /></ProtectedRoute> },
+      { path: "booked-seats", element: <ProtectedRoute allowedRoles={["Student"]}><ViewBookedSeats /></ProtectedRoute> },
+      { path: "booked-history", element: <ProtectedRoute allowedRoles={["Student"]}><ViewBookingHistory /></ProtectedRoute> },
+      { path: "booked-history/:id", element: <ProtectedRoute allowedRoles={["Student"]}><BookHistoriedDetail /></ProtectedRoute> },
 
       {
         path: "dashboard",
-        element: <ProtectedRoute><DashboardPage /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><DashboardPage /></ProtectedRoute>,
       },
       {
         path: "dashboard/area",
-        element: <ProtectedRoute><AreaList /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><AreaList /></ProtectedRoute>,
       },
       {
         path: "dashboard/blog",
-        element: <ProtectedRoute><BlogListOfStaff /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><BlogListOfStaff /></ProtectedRoute>,
       },
       {
         path: "dashboard/facilities",
-        element: <ProtectedRoute><FacilitiesList /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><FacilitiesList /></ProtectedRoute>,
       },
       {
         path: "dashboard/facilities/:id",
-        element: <ProtectedRoute><FacilitiesDetail /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><FacilitiesDetail /></ProtectedRoute>,
       },
       {
         path: "dashboard/facilities/create",
-        element: <ProtectedRoute><CreateFacilities /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><CreateFacilities /></ProtectedRoute>,
       },
       {
         path: "dashboard/facilities/update/:id",
-        element: <ProtectedRoute><UpdateFacilities /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><UpdateFacilities /></ProtectedRoute>,
       },
       {
         path: "dashboard/facilities/delete/:id",
 
-        element: <ProtectedRoute><DeleteFacilities /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><DeleteFacilities /></ProtectedRoute>,
       },
       {
         path: "dashboard/room",
-        element: <ProtectedRoute><RoomList /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><RoomList /></ProtectedRoute>,
       },
       {
         path: "dashboard/room/:id",
-        element: <ProtectedRoute><RoomDetail /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><RoomDetail /></ProtectedRoute>,
       },
       {
         path: "/dashboard/room/update/:id" ,
-        element: <ProtectedRoute><UpdateRoom /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><UpdateRoom /></ProtectedRoute>,
       },
       {
         path: "dashboard/room/create",
-        element: <ProtectedRoute><CreateRoom /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><CreateRoom /></ProtectedRoute>,
       },
 
       
       {
         path: "dashboard/slot",
-        element: <ProtectedRoute><SlotList /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><SlotList /></ProtectedRoute>,
       },
       {
         path: "dashboard/slot/create",
-        element: <ProtectedRoute>< CreateSlot/></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}>< CreateSlot/></ProtectedRoute>,
       },
       {
         path: "dashboard/account",
-        element: <ProtectedRoute><AccountList /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><AccountList /></ProtectedRoute>,
       },
-      // {
-      //   path: "dashboard/account/detail",
-      //   element: <ProtectedRoute><AccountDetail /></ProtectedRoute>,
-      // },
+      {
+        path: "dashboard/account/detail",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><AccountDetail /></ProtectedRoute>,
+      },
       {
         path: "dashboard/account/create",
-        element: <ProtectedRoute><CreateAccount /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><CreateAccount /></ProtectedRoute>,
       },
       {
         path: "dashboard/account/update/:id",
-        element: <ProtectedRoute><UpdateAccount /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><UpdateAccount /></ProtectedRoute>,
       },
       {
         path: "dashboard/account/delete/:id",
-        element: <ProtectedRoute><DeleteAccount /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><DeleteAccount /></ProtectedRoute>,
       },
       {
         path: "dashboard/account/storage",
-        element: <ProtectedRoute><StorageListAccount /></ProtectedRoute>,
-      },
-      {
-        path: "dashboard/banned",
-        element: <ProtectedRoute><BannedList /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}><StorageListAccount /></ProtectedRoute>,
       },
 
       {
         path: "manage",
-        element: <ProtectedRoute><BookingList /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Staff"]}><BookingList /></ProtectedRoute>,
       },
       {
         path: "manage/booking-history/:id",
-        element: <ProtectedRoute><BookingDetail /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Staff"]}><BookingDetail /></ProtectedRoute>,
       },
       {
         path: "manage/reports",
-        element: <ProtectedRoute><ReportList /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Staff"]}><ReportList /></ProtectedRoute>,
       },
       {
         path: "manage/reports/:id",
-        element: <ProtectedRoute><ReportDetail /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Staff"]}><ReportDetail /></ProtectedRoute>,
       },
       {
         path: "manage/blog",
-        element: <ProtectedRoute><BlogList /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Staff"]}><BlogList /></ProtectedRoute>,
       },
       {
         path: "manage/blog/create",
-        element: <ProtectedRoute><CreateBlog /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Staff"]}><CreateBlog /></ProtectedRoute>,
       },
       {
         path: "manage/blog/:id",
-        element: <ProtectedRoute><ModifieBlog /></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Staff"]}><ModifieBlog /></ProtectedRoute>,
       },
 
 
