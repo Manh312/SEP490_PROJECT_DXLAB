@@ -6,9 +6,8 @@ import { useTheme } from "../../hooks/use-theme";
 import { Link } from "react-router-dom";
 import { ConnectWallet, useAddress, useDisconnect } from "@thirdweb-dev/react";
 import { useDispatch, useSelector } from "react-redux";
-import { setAuthData, clearAuthData, fetchRoleByID } from "../../redux/slices/Authentication";
+import { clearAuthData } from "../../redux/slices/Authentication";
 import { FaUserCircle } from "react-icons/fa";
-import axios from "../../utils/axios";
 
 const Navbar = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -19,29 +18,7 @@ const Navbar = () => {
   const disconnect = useDisconnect();
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
-  const { user } = useSelector((state) => state.auth);
-
-  // Hàm lấy thông tin người dùng sau khi đăng nhập
-  const fetchUserData = async (walletAddress) => {
-    try {
-      const response = await axios.get(`/user/${walletAddress}`); // Giả sử có API này
-      const userData = response.data;
-      // Lưu user và roleId vào Redux
-      dispatch(setAuthData({ token: "some-token", user: userData }));
-      // Gọi fetchRoleByID với roleId từ userData
-      if (userData.roleId) {
-        await dispatch(fetchRoleByID(userData.roleId)).unwrap();
-      }
-    } catch (error) {
-      console.error("Failed to fetch user data:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (address && !user) {
-      fetchUserData(address); // Gọi API khi có address mới
-    }
-  }, [address, user, dispatch]);
+  const user = useSelector((state) => state.auth.user);
 
   const handleDisconnect = async () => {
     try {
@@ -72,8 +49,6 @@ const Navbar = () => {
   const displayName = user?.storedToken?.authDetails?.email || "Wallet User";
 
   return (
-    // Giữ nguyên phần JSX của Navbar như bạn đã viết
-    // Chỉ cần đảm bảo các phần khác không thay đổi
     <nav className="sticky top-0 z-50 py-2 backdrop-blur-lg border-b border-neutral-700/80">
       <div className="container px-4 mx-auto relative text-sm flex justify-between items-center">
         <div className="flex items-center flex-shrink-0">

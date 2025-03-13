@@ -16,17 +16,18 @@ import App from "./App.jsx";
 import { store, persistor } from "./redux/Store.jsx";
 import "./styles.css";
 import { toast } from "react-toastify";
-import { clearAuthData, fetchRoleByID, setAuthData } from "./redux/slices/Authentication.jsx";
+import { clearAuthData, setAuthData } from "./redux/slices/Authentication.jsx";
 import React from "react";
 
 const activeChain = "sepolia";
 
 const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) => {
   try {
+    // Nếu là MetaMask hoặc ví không yêu cầu email, sử dụng email mặc định
     const userEmail =
       walletType === "embeddedWallet"
         ? user?.storedToken?.authDetails?.email || user?.email || "unknown@example.com"
-        : `${walletAddress}@metamask.default`;
+        : `${walletAddress}@metamask.default`; // Email mặc định cho MetaMask
 
     const payload = {
       userId: 0,
@@ -34,7 +35,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       fullName: "manhmeo",
       walletAddress: walletAddress,
       status: true,
-      roleId: 3, // Có thể bỏ hoặc thay bằng logic lấy roleId từ server
+      roleId: 1,
     };
 
     const response = await fetch("https://localhost:9999/api/User", {
@@ -65,20 +66,14 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       result = { token };
     }
 
-    // Lấy roleId từ response và gọi fetchRoleByID
-    const { roleId } = result.user; // Lấy roleId từ response
-    if (roleId) {
-      await dispatch(fetchRoleByID(roleId)).unwrap(); // Cập nhật role từ API /Role/${roleId}
-    }
+    dispatch(setAuthData({ token: result.token, user }));
 
-    // Cập nhật state với token và user từ response
-    dispatch(setAuthData({ token: result.token, user: result.user }));
-
-    if (walletAddress && walletType === "metamask") {
+    if (walletAddress &&walletType === "metamask") {
       toast.success("Đăng nhập MetaMask thành công!");
     } else if (walletType === "embeddedWallet") {
       toast.success("Đăng nhập Google thành công!");
-    } else {
+    }
+    else {
       toast.success("Đăng nhập ví thành công!");
     }
   } catch (error) {
