@@ -2,62 +2,30 @@ import { useAddress, useConnectionStatus } from "@thirdweb-dev/react";
 import PropTypes from "prop-types";
 import { useEffect, useState } from "react";
 import NotAuthenticate from "../../layouts/home/NotAuthenticate";
-import { FaSpinner } from "react-icons/fa";
-import { fetchRoleByID } from "../../redux/slices/Authentication";
-import { useDispatch, useSelector } from "react-redux";
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const address = useAddress();
-  const status = useConnectionStatus();
-  const dispatch = useDispatch();
-  const { user, role, loading } = useSelector((state) => state.auth);
+const ProtectedRoute = ({ children }) => {
+  const address = useAddress(); // Lấy địa chỉ ví
+  const status = useConnectionStatus(); // Kiểm tra trạng thái kết nối
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkUserRole = async () => {
-      console.log("Checking user role:", { address, status, user, role });
-      if (address && status === "connected") {
-        if (!role && !loading) {
-          const roleId = user?.roleId;
-          if (roleId) {
-            await dispatch(fetchRoleByID(roleId)).unwrap();
-          } else {
-            console.error("Role ID not found in user data");
-          }
-        }
-      }
-      setIsLoading(false);
-    };
+    setIsLoading(true); // Khi component mount, luôn đặt loading để đảm bảo không bị flicker
 
     const timeout = setTimeout(() => {
-      checkUserRole();
-    }, 300);
+      setIsLoading(false);
+    }, 300); // Đảm bảo thời gian chờ đủ lâu để tránh nhấp nháy
 
-    return () => clearTimeout(timeout);
-  }, [status, address, role, loading, user, dispatch]);
+    return () => clearTimeout(timeout); // Xóa timeout khi component unmount
+  }, [status, address]);
 
-  if (isLoading || loading || status === "connecting") {
-    return (
-      <div className="flex items-center justify-center py-6">
-        <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
-        <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
-      </div>
-    );
+  // 🔥 Nếu đang tải, hiển thị "Đang tải..."
+  if (isLoading) {
+    return <div className="text-center mt-10">Đang tải...</div>;
   }
 
-  if (!address || status === "disconnected") {
+  // 🔥 Nếu địa chỉ ví không tồn tại và trạng thái là "disconnected", hiển thị NotAuthenticate
+  if (!address && status === "disconnected") {
     return <NotAuthenticate />;
-  }
-
-  console.log("Role:", role, "Allowed Roles:", allowedRoles);
-
-  if (!role || (allowedRoles && !allowedRoles.includes(role))) {
-    return (
-      <div className="text-center mt-10">
-        <h2 className="text-red-500">Không có quyền truy cập</h2>
-        <p>Bạn không có quyền truy cập vào trang này. Vai trò yêu cầu: {allowedRoles.join(", ")}</p>
-      </div>
-    );
   }
 
   return children;
@@ -65,11 +33,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
 ProtectedRoute.propTypes = {
   children: PropTypes.node.isRequired,
-  allowedRoles: PropTypes.arrayOf(PropTypes.string),
-};
-
-ProtectedRoute.defaultProps = {
-  allowedRoles: [],
 };
 
 export default ProtectedRoute;
