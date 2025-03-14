@@ -5,6 +5,7 @@ import { FaSpinner } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useAddress, useConnectionStatus } from "@thirdweb-dev/react";
+import { fetchRoleByID } from "../../redux/slices/Authentication";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const address = useAddress();
