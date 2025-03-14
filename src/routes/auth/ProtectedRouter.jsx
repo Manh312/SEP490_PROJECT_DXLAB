@@ -11,19 +11,21 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const address = useAddress();
   const status = useConnectionStatus();
   const dispatch = useDispatch();
-  const { user, role, loading } = useSelector((state) => state.auth);
+  const { user, loading } = useSelector((state) => state.auth); // Xóa role khỏi đây
   const [isLoading, setIsLoading] = useState(true);
+  const [roleName, setRoleName] = useState(null); // State cục bộ để lưu roleName
 
   useEffect(() => {
     const checkUserRole = async () => {
-      console.log("Checking user role:", { address, status, user, role });
-      if (address && status === "connected") {
-        if (!role && !loading) {
-          const roleId = user?.roleId;
-          if (roleId) {
-            await dispatch(fetchRoleByID(roleId)).unwrap();
-          } else {
-            console.error("Role ID not found in user data");
+      console.log("Checking user role:", { address, status, user });
+      if (address && status === "connected" && user) {
+        const roleId = user?.roleId;
+        if (roleId && !roleName && !loading) {
+          try {
+            const fetchedRole = await dispatch(fetchRoleByID(roleId)).unwrap();
+            setRoleName(fetchedRole); // Lưu roleName vào state cục bộ
+          } catch (error) {
+            console.error("Failed to fetch role:", error);
           }
         }
       }
@@ -35,7 +37,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     }, 300);
 
     return () => clearTimeout(timeout);
-  }, [status, address, role, loading, user, dispatch]);
+  }, [status, address, user, loading, roleName, dispatch]);
 
   if (isLoading || loading || status === "connecting") {
     return (
@@ -50,10 +52,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <NotAuthenticate />;
   }
 
-  console.log("Role:", role, "Allowed Roles:", allowedRoles);
+  console.log("RoleName:", roleName, "Allowed Roles:", allowedRoles);
 
-  if (!role || (allowedRoles && !allowedRoles.includes(role))) {
-    return <NotAuthorization/>;
+  if (!roleName || (allowedRoles && !allowedRoles.includes(roleName))) {
+    return <NotAuthorization />;
   }
 
   return children;

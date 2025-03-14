@@ -6,7 +6,7 @@ export const fetchRoleByID = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`/Role/${id}`);
-      const data = response.data; 
+      const data = response.data;
       console.log("Role data:", data);
       return data.roleName; 
     } catch (error) {
@@ -19,21 +19,18 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: {
     token: null,
-    user: null,
-    role: null,
+    user: null, // user sẽ chứa roleId
     loading: false,
     error: null,
   },
   reducers: {
     setAuthData: (state, action) => {
       state.token = action.payload.token;
-      state.user = action.payload.user;
-      state.role = action.payload.role; 
+      state.user = action.payload.user; // roleId nằm trong user
     },
     clearAuthData: (state) => {
       state.token = null;
       state.user = null;
-      state.role = null;
     },
   },
   extraReducers: (builder) => {
@@ -42,9 +39,8 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchRoleByID.fulfilled, (state, action) => {
+      .addCase(fetchRoleByID.fulfilled, (state) => {
         state.loading = false;
-        state.role = action.payload;
       })
       .addCase(fetchRoleByID.rejected, (state, action) => {
         state.loading = false;
