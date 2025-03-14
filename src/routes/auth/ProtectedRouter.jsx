@@ -1,3 +1,11 @@
+import PropTypes from "prop-types";
+import NotAuthorization from "../../layouts/home/NotAuthorization";
+import NotAuthenticate from "../../layouts/home/NotAuthenticate";
+import { FaSpinner } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useAddress, useConnectionStatus } from "@thirdweb-dev/react";
+
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const address = useAddress();
   const status = useConnectionStatus();
