@@ -51,6 +51,7 @@ import CreateSlot from "./routes/slot/CreateSlot";
 import CreateBlog from "./routes/staff-manage/blog-management/CreateBolg";
 import StorageListAccount from "./routes/account/StorageListAccount";
 import AccountDetail from "./routes/account/AccountDetail";
+import NotAuthorization from "./layouts/home/NotAuthorization";
 
 
 
@@ -79,6 +80,8 @@ const router = createBrowserRouter([
       { path: "about", element: <About /> },
       { path: "not-found", element: <NotFound /> },
       { path: "not-authenticate", element: <NotAuthenticate /> },
+      { path: "not-authorization", element: <NotAuthorization /> },
+
 
       { path: "rooms", element: <ProtectedRoute allowedRoles={["Student"]}><ViewRoom /></ProtectedRoute> },
       { path: "room/:id", element: <ProtectedRoute allowedRoles={["Student"]}><ViewAreas /></ProtectedRoute> },

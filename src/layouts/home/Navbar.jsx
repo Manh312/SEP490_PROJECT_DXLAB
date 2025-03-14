@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setAuthData, clearAuthData, fetchRoleByID } from "../../redux/slices/Authentication";
 import { FaUserCircle } from "react-icons/fa";
 import axios from "../../utils/axios";
+import { toast } from "react-toastify";
 
 const Navbar = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -19,37 +20,55 @@ const Navbar = () => {
   const disconnect = useDisconnect();
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
-  const { user } = useSelector((state) => state.auth);
+  const { user, role } = useSelector((state) => state.auth); // Lấy user và role từ Redux
 
   // Hàm lấy thông tin người dùng sau khi đăng nhập
   const fetchUserData = async (walletAddress) => {
     try {
-      const response = await axios.get(`/user/${walletAddress}`); // Giả sử có API này
+      const response = await axios.get(`/user/${walletAddress}`);
       const userData = response.data;
-      // Lưu user và roleId vào Redux
+      const userEmail = userData?.storedToken?.authDetails?.email || userData?.email;
+
+      // Kiểm tra email nếu là embeddedWallet
+      if (userData.walletType === "embeddedWallet" && (!userEmail || !userEmail.endsWith("@fpt.edu.vn"))) {
+        await disconnect();
+        dispatch(clearAuthData());
+        toast.error("Bạn cần sử dụng email @fpt.edu.vn để đăng nhập.");
+        return;
+      }
+
       dispatch(setAuthData({ token: "some-token", user: userData }));
-      // Gọi fetchRoleByID với roleId từ userData
       if (userData.roleId) {
         await dispatch(fetchRoleByID(userData.roleId)).unwrap();
       }
     } catch (error) {
       console.error("Failed to fetch user data:", error);
+      await disconnect();
+      dispatch(clearAuthData());
     }
   };
 
+  // Kiểm tra khi address thay đổi
   useEffect(() => {
     if (address && !user) {
-      fetchUserData(address); // Gọi API khi có address mới
+      fetchUserData(address);
+    }
+    // Nếu không có address, đóng dropdown
+    if (!address) {
+      setDropdownOpen(false);
     }
   }, [address, user, dispatch]);
 
+  // Xử lý ngắt kết nối
   const handleDisconnect = async () => {
     try {
       await disconnect();
       dispatch(clearAuthData());
       setDropdownOpen(false);
+      toast.success("Đã đăng xuất thành công!");
     } catch (error) {
       console.error("Disconnect error:", error);
+      toast.error("Có lỗi khi đăng xuất.");
     }
   };
 
@@ -58,43 +77,50 @@ const Navbar = () => {
   };
 
   const handleProfileClick = () => {
-    if (address) {
+    if (address && user) {
       setDropdownOpen(!dropdownOpen);
     }
   };
 
-  useEffect(() => {
-    if (!address) {
-      setDropdownOpen(false);
-    }
-  }, [address]);
-
-  const displayName = user?.storedToken?.authDetails?.email || "Wallet User";
+  // Xác định trạng thái đăng nhập hợp lệ
+  const isLoggedIn = address && user && (user?.walletType !== "embeddedWallet" || (user?.storedToken?.authDetails?.email || user?.email)?.endsWith("@fpt.edu.vn"));
+  const displayName = user?.storedToken?.authDetails?.email || user?.email || "Wallet User";
 
   return (
-    // Giữ nguyên phần JSX của Navbar như bạn đã viết
-    // Chỉ cần đảm bảo các phần khác không thay đổi
     <nav className="sticky top-0 z-50 py-2 backdrop-blur-lg border-b border-neutral-700/80">
       <div className="container px-4 mx-auto relative text-sm flex justify-between items-center">
         <div className="flex items-center flex-shrink-0">
           <img className="h-30 w-35" src={logo} alt="logo" />
         </div>
 
+        {/* Menu cho desktop */}
         <ul className="hidden lg:flex space-x-12 text-xl">
           {navItems.map((item, index) => (
             <li key={index}>
               <Link to={item.href}>{item.label}</Link>
             </li>
           ))}
-          {address && (
-            <li>
-              <Link to="/rooms">Dịch vụ</Link>
-            </li>
+          {isLoggedIn && (
+            <>
+              {/* Ẩn nút Dịch vụ nếu là Admin hoặc Staff */}
+              {role !== "Admin" && role !== "Staff" && (
+                <li>
+                  <Link to="/rooms">Dịch vụ</Link>
+                </li>
+              )}
+              {/* Hiển thị nút Dashboard nếu là Admin */}
+              {role === "Admin" && (
+                <li>
+                  <Link to="/dashboard">Bảng điều khiển</Link>
+                </li>
+              )}
+            </>
           )}
         </ul>
 
+        {/* Phần hiển thị cho desktop */}
         <div className="hidden lg:flex justify-center space-x-6 items-center relative z-10">
-          {address ? (
+          {isLoggedIn ? (
             <div ref={profileRef} className="relative">
               <FaUserCircle
                 className="h-10 w-10 rounded-full cursor-pointer"
@@ -108,7 +134,6 @@ const Navbar = () => {
                   <span className="block mb-2">{displayName}</span>
                   <div className="mb-4">
                     <ConnectWallet
-                      btnTitle="Manage Wallet"
                       modalSize="wide"
                       hideTestnetFaucet
                       hideBuyButton
@@ -117,14 +142,16 @@ const Navbar = () => {
                     />
                   </div>
                   <ul className="space-y-2">
-                    <li>
-                      <Link to={"/booked-history"}>
-                        <button className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded">
-                          <span className="ml-2">Lịch sử giao dịch</span>
-                          <LucideHistory size={20} className="ml-2" />
-                        </button>
-                      </Link>
-                    </li>
+                    {role === "Student" && (
+                      <li>
+                        <Link to={"/booked-history"}>
+                          <button className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded">
+                            <span className="ml-4">Lịch sử giao dịch</span>
+                            <LucideHistory size={20} className="ml-2" />
+                          </button>
+                        </Link>
+                      </li>
+                    )}
                     <li className="flex items-center">
                       <button
                         className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded"
@@ -164,6 +191,7 @@ const Navbar = () => {
           )}
         </div>
 
+        {/* Nút menu cho mobile */}
         <div className="lg:hidden flex">
           <button onClick={handleMobileDrawer} className="p-2 border rounded-md">
             {mobileDrawerOpen ? <X /> : <Menu />}
@@ -171,16 +199,15 @@ const Navbar = () => {
         </div>
       </div>
 
+      {/* Drawer cho mobile */}
       <div
         className={`fixed top-0 left-0 h-screen z-20 transition-transform duration-300 w-4/5 max-w-sm flex flex-col ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} ${mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex items-center justify-between p-4 border-b relative z-10">
           <div className="flex items-center space-x-4">
-            {address && (
+            {isLoggedIn && (
               <div>
-                <FaUserCircle
-                  className="h-8 w-8 rounded-full cursor-pointer"
-                />
+                <FaUserCircle className="h-8 w-8 rounded-full cursor-pointer" />
                 <span className="text-sm">{displayName}</span>
               </div>
             )}
@@ -192,7 +219,7 @@ const Navbar = () => {
 
         <div className="flex-1 overflow-y-auto">
           <div className="p-4">
-            {address ? (
+            {isLoggedIn ? (
               <ConnectWallet
                 btnTitle="Manage Wallet"
                 modalSize="wide"
@@ -220,25 +247,40 @@ const Navbar = () => {
                 </Link>
               </li>
             ))}
-            {address && (
+            {isLoggedIn && (
               <>
-                <li>
-                  <Link
-                    to="/rooms"
-                    onClick={() => setMobileDrawerOpen(false)}
-                    className="block px-4 py-3 dark:hover:bg-gray-500"
-                  >
-                    Dịch vụ
-                  </Link>
-                </li>
-                <li>
-                  <Link to={"/booked-history"}>
-                    <button className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded">
-                      <span className="ml-4">Lịch sử giao dịch</span>
-                      <LucideHistory size={20} className="ml-2" />
-                    </button>
-                  </Link>
-                </li>
+                {role !== "Admin" && role !== "Staff" && (
+                  <li>
+                    <Link
+                      to="/rooms"
+                      onClick={() => setMobileDrawerOpen(false)}
+                      className="block px-4 py-3 dark:hover:bg-gray-500"
+                    >
+                      Dịch vụ
+                    </Link>
+                  </li>
+                )}
+                {role === "Admin" && (
+                  <li>
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setMobileDrawerOpen(false)}
+                      className="block px-4 py-3 dark:hover:bg-gray-500"
+                    >
+                      Bảng điều khiển
+                    </Link>
+                  </li>
+                )}
+                {role === "Student" && (
+                  <li>
+                    <Link to={"/booked-history"}>
+                      <button className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded">
+                        <span className="ml-4">Lịch sử giao dịch</span>
+                        <LucideHistory size={20} className="ml-2" />
+                      </button>
+                    </Link>
+                  </li>
+                )}
               </>
             )}
           </ul>
@@ -252,7 +294,7 @@ const Navbar = () => {
               {theme === "dark" ? <Moon size={20} className="ml-2" /> : <Sun size={20} className="ml-2" />}
             </button>
           </li>
-          {address && (
+          {isLoggedIn && (
             <div className="flex flex-col mt-5 border-t border-b">
               <button
                 className="flex items-center w-full h-10 text-left hover:bg-gray-500"
