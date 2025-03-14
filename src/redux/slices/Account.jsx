@@ -1,19 +1,16 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
-
-const API_URL = "https://localhost:9999/api/Account";
-const STORAGE_API_URL = "https://localhost:9999/api/BinStorage";
+import axios from '../../utils/axios';
 
 // Fetch all accounts
 export const fetchAccounts = createAsyncThunk(
   "accounts/fetch",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(API_URL);
+      const response = await axios.get('/Account');
       console.log("response", response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch accounts");
+      return rejectWithValue(error || "Không thể lấy dữ liệu tài khoản");
     }
   }
 );
@@ -23,11 +20,11 @@ export const fetchAccountById = createAsyncThunk(
   "accounts/fetchById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/${id}`);
+      const response = await axios.get(`/Account/${id}`);
       console.log("response", response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch account");
+      return rejectWithValue(error.response?.data || "Không thể lấy dữ liệu tài khoản");
     }
   }
 );
@@ -39,10 +36,14 @@ export const addAccount = createAsyncThunk(
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const response = await axios.post(`${API_URL}/AddFromExcel`, formData);
+      const response = await axios.post('/Account/AddFromExcel', formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to add account");
+      return rejectWithValue(error.response?.data || "Không thể thêm tài khoản");
     }
   }
 );
@@ -52,11 +53,11 @@ export const fetchRolesByAdmin = createAsyncThunk(
   "accounts/fetchRolesByAdmin",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('https://localhost:9999/api/Role/GetRoleByAdmin');
+      const response = await axios.get('/Role/GetRoleByAdmin');
       console.log("response", response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch roles");
+      return rejectWithValue(error.response?.data || "Không thể hiển thị vai trò");
     }
   }
 );
@@ -68,11 +69,11 @@ export const updateAccount = createAsyncThunk(
   "accounts/update",
   async ({ id, roleName }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/${id}/role`, { roleName });
+      const response = await axios.put(`/Account/${id}/role`, { roleName });
       console.log("Update response:", response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to update account");
+      return rejectWithValue(error.response?.data || "Không thể cập nhật tài khoản");
     }
   }
 );
@@ -82,10 +83,10 @@ export const fetchAccountsByRoleName = createAsyncThunk(
   "accounts/fetchByRoleName",
   async (roleName, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/role/${roleName}`);
+      const response = await axios.get(`/Account/role/${roleName}`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch accounts by role");
+      return rejectWithValue(error.response?.data || "Không thể lấy dữ liệu tài khoản");
     }
   }
 );
@@ -95,10 +96,10 @@ export const softDeleteAccount = createAsyncThunk(
   "accounts/softDelete",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`${API_URL}/${id}/soft-delete`);
+      const response = await axios.patch(`/Account/${id}/soft-delete`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to soft delete account");
+      return rejectWithValue(error.response?.data || "Không thể xóa mềm tài khoản");
     }
   }
 );
@@ -108,11 +109,11 @@ export const fetchDeletedAccounts = createAsyncThunk(
   "accounts/fetchDeleted",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${STORAGE_API_URL}`);
+      const response = await axios.get('/BinStorage');
       console.log("response", response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to fetch deleted accounts");
+      return rejectWithValue(error.response?.data || "Không thể lấy dữ liệu tài khoản đã xóa mềm");
     }
   }
 );
@@ -122,11 +123,11 @@ export const restoreAccount = createAsyncThunk(
   "accounts/restore",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`${STORAGE_API_URL}/${id}/restore`);
+      const response = await axios.patch(`/BinStorage/${id}/restore`);
       console.log("response", response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to restore account");
+      return rejectWithValue(error.response?.data || "Không thể khôi phục tài khoản");
     }
   }
 );
@@ -136,11 +137,11 @@ export const deletePermanently = createAsyncThunk(
   "accounts/deletePermanently",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`${STORAGE_API_URL}/${id}`);
+      const response = await axios.delete(`/BinStorage/${id}`);
       console.log("response", response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Failed to permanently delete account");
+      return rejectWithValue(error.response?.data || "Không thể xóa vĩnh viễn tài khoản");
     }
   }
 );
