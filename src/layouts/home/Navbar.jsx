@@ -20,6 +20,40 @@ const Navbar = () => {
   const dropdownRef = useRef(null);
   const user = useSelector((state) => state.auth.user);
 
+  // // Hàm lấy thông tin người dùng sau khi đăng nhập
+  // const fetchUserData = async (walletAddress) => {
+  //   try {
+  //     const response = await axios.get(`/user/${walletAddress}`);
+  //     const userData = response.data;
+  //     const userEmail = userData?.storedToken?.authDetails?.email || userData?.email;
+
+  //     // Kiểm tra email nếu là embeddedWallet
+  //     if (userData.walletType === "embeddedWallet" && (!userEmail || !userEmail.endsWith("@fpt.edu.vn"))) {
+  //       await disconnect();
+  //       dispatch(clearAuthData());
+  //       toast.error("Bạn cần sử dụng email @fpt.edu.vn để đăng nhập.");
+  //       return;
+  //     }
+
+  //     dispatch(setAuthData({ token: "some-token", user: userData }));
+  //     if (userData.roleId) {
+  //       await dispatch(fetchRoleByID(userData.roleId)).unwrap();
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to fetch user data:", error);
+  //     await disconnect();
+  //     dispatch(clearAuthData());
+  //   }
+  // };
+
+  // Kiểm tra khi address thay đổi
+  useEffect(() => {
+    if (!address) {
+      setDropdownOpen(false);
+    }
+  }, [address, user, dispatch]);
+
+  // Xử lý ngắt kết nối
   const handleDisconnect = async () => {
     try {
       await disconnect();
