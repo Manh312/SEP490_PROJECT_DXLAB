@@ -92,33 +92,25 @@ const AppWithWallet = () => {
   const walletAddress = useAddress();
   const disconnect = useDisconnect();
   const dispatch = useDispatch();
-  const wallet = useWallet();
-
-  const [isValidUser, setIsValidUser] = React.useState(false);
+  const wallet = useWallet(); // Hook để lấy thông tin ví hiện tại
 
   React.useEffect(() => {
     const user = store.getState().auth.user;
     const userEmail = user?.storedToken?.authDetails?.email || user?.email;
-    const walletType = wallet?.walletId;
+    const walletType = wallet?.walletId; 
+    console.log("Wallet Type:", walletType);
 
-    if (walletAddress && walletType) {
-      if (walletType === "embeddedWallet") {
-        if (!userEmail || !userEmail.endsWith("@fpt.edu.vn")) {
-          disconnect();
-          dispatch(clearAuthData());
-          setIsValidUser(false);
-        } else {
-          setIsValidUser(true);
-        }
-      } else {
-        setIsValidUser(true);
-      }
-    } else {
-      setIsValidUser(false);
+    if (walletAddress && walletType === "metamask") {
+        toast.success("Đăng nhập MetaMask thành công!");
     }
+    if (walletType === "embeddedWallet" && walletAddress && (!userEmail || !userEmail.endsWith("@fpt.edu.vn"))) {
+      disconnect();
+      dispatch(clearAuthData());
+    }
+    // Không chặn MetaMask hoặc các ví khác
   }, [walletAddress, disconnect, dispatch, wallet]);
 
-  return <App walletAddress={isValidUser ? walletAddress : null} />;
+  return <App walletAddress={walletAddress} />;
 };
 
 const RootApp = () => {

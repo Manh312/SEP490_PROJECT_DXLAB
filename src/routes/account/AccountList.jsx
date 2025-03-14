@@ -13,7 +13,6 @@ import { Upload, Trash2, Edit, Users, Filter } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
 
-// Phần còn lại của code giữ nguyên, chỉ thay đổi phần Filter Section
 const AccountList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -92,20 +91,6 @@ const AccountList = () => {
     return `Không có người dùng nào thuộc vai trò "${roleFilter}"`;
   };
 
-  // Hàm để xác định màu nền dựa trên roleFilter
-  const getFilterBgClass = () => {
-    switch (roleFilter) {
-      case "All":
-        return "bg-gray-100 text-gray-800";
-      case "Student":
-        return "bg-green-100 text-green-800";
-      case "Staff":
-        return "bg-blue-100 text-blue-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
@@ -149,7 +134,7 @@ const AccountList = () => {
           <select
             value={roleFilter}
             onChange={(e) => dispatch(setRoleFilter(e.target.value))}
-            className={`w-30 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base ${getFilterBgClass()} transition-colors duration-300`}
+            className="w-30 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
           >
             <option value="All">Tất Cả</option>
             <option value="Student">Student</option>
@@ -157,7 +142,7 @@ const AccountList = () => {
           </select>
         </div>
 
-        {/* Phần còn lại của component giữ nguyên */}
+        {/* Accounts Display */}
         {loading ? (
           <div className="flex items-center justify-center py-6">
             <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
@@ -191,7 +176,7 @@ const AccountList = () => {
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
                           className={`inline-flex items-center text-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm 
-                            ${user.roleName === "Staff" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
+                            ${user.roleName === "Admin" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
                         >
                           {user.roleName}
                         </span>
@@ -233,7 +218,7 @@ const AccountList = () => {
                         <span className="font-semibold text-sm">#{(currentPage - 1) * postsPerPage + index + 1}</span>
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal 
-                            ${user.roleName === "Staff" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
+                            ${user.roleName === "Admin" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
                         >
                           {user.roleName}
                         </span>

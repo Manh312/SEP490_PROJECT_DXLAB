@@ -5,7 +5,6 @@ import NotAuthenticate from "../../layouts/home/NotAuthenticate";
 import { FaSpinner } from "react-icons/fa";
 import { fetchRoleByID } from "../../redux/slices/Authentication";
 import { useDispatch, useSelector } from "react-redux";
-import NotAuthorization from "../../layouts/home/NotAuthorization";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const address = useAddress();
@@ -53,7 +52,12 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   console.log("Role:", role, "Allowed Roles:", allowedRoles);
 
   if (!role || (allowedRoles && !allowedRoles.includes(role))) {
-    return <NotAuthorization/>;
+    return (
+      <div className="text-center mt-10">
+        <h2 className="text-red-500">Không có quyền truy cập</h2>
+        <p>Bạn không có quyền truy cập vào trang này. Vai trò yêu cầu: {allowedRoles.join(", ")}</p>
+      </div>
+    );
   }
 
   return children;

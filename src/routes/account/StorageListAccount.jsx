@@ -50,26 +50,6 @@ const StorageListAccount = () => {
     setLoadingId(null);
   };
 
-  const getEmptyStateMessage = () => {
-    if (roleFilter === "All") {
-      return "Hiện tại không có người dùng nào";
-    }
-    return `Không có người dùng nào thuộc vai trò "${roleFilter}"`;
-  };
-
-  const getFilterBgClass = () => {
-    switch (roleFilter) {
-      case "All":
-        return "bg-gray-100 text-gray-800";
-      case "Student":
-        return "bg-green-100 text-green-800";
-      case "Staff":
-        return "bg-blue-100 text-blue-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
   const handleDeletePermanently = async (userId) => {
     const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản này?");
     if (!confirmDelete) return;
@@ -105,6 +85,19 @@ const StorageListAccount = () => {
           </span>
         </div>
 
+        {loading ? (
+          <div className="flex items-center justify-center py-6">
+            <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+            <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
+          </div>
+        ) : null}
+
+        {error && (
+          <p className="text-red-600 bg-red-50 p-4 rounded-lg mb-6 text-center text-sm sm:text-base">
+            Lỗi: {error.message || "Đã xảy ra lỗi không xác định"}
+          </p>
+        )}
+
         <div className="mb-6 rounded-lg shadow p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
@@ -115,7 +108,7 @@ const StorageListAccount = () => {
           <select
             value={roleFilter}
             onChange={(e) => dispatch(setRoleFilter(e.target.value))}
-            className={`w-30 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base ${getFilterBgClass()} transition-colors duration-300`}
+            className="w-30 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
           >
             <option value="All">Tất Cả</option>
             <option value="Student">Student</option>
@@ -123,23 +116,7 @@ const StorageListAccount = () => {
           </select>
         </div>
 
-        {error && (
-          <p className="text-red-600 bg-red-50 p-4 rounded-lg mb-6 text-center text-sm sm:text-base">
-            Lỗi: {error.message || "Đã xảy ra lỗi không xác định"}
-          </p>
-        )}
-
-        {loading ? (
-          <div className="flex items-center justify-center py-6">
-            <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
-            <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
-          </div>
-        ) : filteredDeletedAccounts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <FaUsers className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 text-lg">{getEmptyStateMessage()}</p>
-          </div>
-        ) : (
+        {!loading && !error && (
           <>
             <div className="hidden md:block overflow-x-auto rounded-lg">
               <table className="w-full text-left border-collapse">
@@ -161,7 +138,7 @@ const StorageListAccount = () => {
                       <td className="px-2 py-3 md:px-4 md:py-4">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm 
-                            ${user.roleName === "Staff" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
+                            ${user.roleName === "Admin" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
                         >
                           {user.roleName}
                         </span>
@@ -202,7 +179,7 @@ const StorageListAccount = () => {
                       <span className="font-semibold text-sm">#{index + 1}</span>
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal 
-                          ${user.roleName === "Staff" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
+                          ${user.roleName === "Admin" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
                       >
                         {user.roleName}
                       </span>
@@ -248,7 +225,9 @@ const StorageListAccount = () => {
               <button
                 key={index}
                 onClick={() => setCurrentPage(index + 1)}
-                className={`px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded-lg text-sm ${currentPage === index + 1 ? "bg-orange-500 text-white" : "bg-gray-200 text-black"}`}
+                className={`px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded-lg text-sm ${
+                  currentPage === index + 1 ? "bg-orange-500 text-white" : "bg-gray-200 text-black"
+                }`}
               >
                 {index + 1}
               </button>
