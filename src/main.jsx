@@ -16,18 +16,17 @@ import App from "./App.jsx";
 import { store, persistor } from "./redux/Store.jsx";
 import "./styles.css";
 import { toast } from "react-toastify";
-import { clearAuthData, setAuthData } from "./redux/slices/Authentication.jsx";
+import { clearAuthData, fetchRoleByID, setAuthData } from "./redux/slices/Authentication.jsx";
 import React from "react";
 
 const activeChain = "sepolia";
 
 const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) => {
   try {
-    // Nếu là MetaMask hoặc ví không yêu cầu email, sử dụng email mặc định
     const userEmail =
       walletType === "embeddedWallet"
         ? user?.storedToken?.authDetails?.email || user?.email || "unknown@example.com"
-        : `${walletAddress}@metamask.default`; // Email mặc định cho MetaMask
+        : `${walletAddress}@metamask.default`;
 
     const payload = {
       userId: 0,
@@ -35,7 +34,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       fullName: "manhmeo",
       walletAddress: walletAddress,
       status: true,
-      roleId: 1,
+      roleId: 3, // Có thể bỏ hoặc thay bằng logic lấy roleId từ server
     };
 
     const response = await fetch("https://localhost:9999/api/User", {
@@ -66,14 +65,20 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       result = { token };
     }
 
-    dispatch(setAuthData({ token: result.token, user }));
+    // Lấy roleId từ response và gọi fetchRoleByID
+    const { roleId } = result.user; // Lấy roleId từ response
+    if (roleId) {
+      await dispatch(fetchRoleByID(roleId)).unwrap(); // Cập nhật role từ API /Role/${roleId}
+    }
 
-    if (walletAddress &&walletType === "metamask") {
+    // Cập nhật state với token và user từ response
+    dispatch(setAuthData({ token: result.token, user: result.user }));
+
+    if (walletAddress && walletType === "metamask") {
       toast.success("Đăng nhập MetaMask thành công!");
     } else if (walletType === "embeddedWallet") {
       toast.success("Đăng nhập Google thành công!");
-    }
-    else {
+    } else {
       toast.success("Đăng nhập ví thành công!");
     }
   } catch (error) {
@@ -87,25 +92,33 @@ const AppWithWallet = () => {
   const walletAddress = useAddress();
   const disconnect = useDisconnect();
   const dispatch = useDispatch();
-  const wallet = useWallet(); // Hook để lấy thông tin ví hiện tại
+  const wallet = useWallet();
+
+  const [isValidUser, setIsValidUser] = React.useState(false);
 
   React.useEffect(() => {
     const user = store.getState().auth.user;
     const userEmail = user?.storedToken?.authDetails?.email || user?.email;
-    const walletType = wallet?.walletId; 
-    console.log("Wallet Type:", walletType);
+    const walletType = wallet?.walletId;
 
-    if (walletAddress && walletType === "metamask") {
-        toast.success("Đăng nhập MetaMask thành công!");
+    if (walletAddress && walletType) {
+      if (walletType === "embeddedWallet") {
+        if (!userEmail || !userEmail.endsWith("@fpt.edu.vn")) {
+          disconnect();
+          dispatch(clearAuthData());
+          setIsValidUser(false);
+        } else {
+          setIsValidUser(true);
+        }
+      } else {
+        setIsValidUser(true);
+      }
+    } else {
+      setIsValidUser(false);
     }
-    if (walletType === "embeddedWallet" && walletAddress && (!userEmail || !userEmail.endsWith("@fpt.edu.vn"))) {
-      disconnect();
-      dispatch(clearAuthData());
-    }
-    // Không chặn MetaMask hoặc các ví khác
   }, [walletAddress, disconnect, dispatch, wallet]);
 
-  return <App walletAddress={walletAddress} />;
+  return <App walletAddress={isValidUser ? walletAddress : null} />;
 };
 
 const RootApp = () => {

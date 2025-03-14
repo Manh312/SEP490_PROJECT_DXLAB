@@ -1,31 +1,50 @@
-import { useAddress, useConnectionStatus } from "@thirdweb-dev/react";
-import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
-import NotAuthenticate from "../../layouts/home/NotAuthenticate";
-
-const ProtectedRoute = ({ children }) => {
-  const address = useAddress(); // Lấy địa chỉ ví
-  const status = useConnectionStatus(); // Kiểm tra trạng thái kết nối
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const address = useAddress();
+  const status = useConnectionStatus();
+  const dispatch = useDispatch();
+  const { user, role, loading } = useSelector((state) => state.auth);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true); // Khi component mount, luôn đặt loading để đảm bảo không bị flicker
+    const checkUserRole = async () => {
+      console.log("Checking user role:", { address, status, user, role });
+      if (address && status === "connected") {
+        if (!role && !loading) {
+          const roleId = user?.roleId;
+          if (roleId) {
+            await dispatch(fetchRoleByID(roleId)).unwrap();
+          } else {
+            console.error("Role ID not found in user data");
+          }
+        }
+      }
+      setIsLoading(false);
+    };
 
     const timeout = setTimeout(() => {
-      setIsLoading(false);
-    }, 300); // Đảm bảo thời gian chờ đủ lâu để tránh nhấp nháy
+      checkUserRole();
+    }, 300);
 
-    return () => clearTimeout(timeout); // Xóa timeout khi component unmount
-  }, [status, address]);
+    return () => clearTimeout(timeout);
+  }, [status, address, role, loading, user, dispatch]);
 
-  // 🔥 Nếu đang tải, hiển thị "Đang tải..."
-  if (isLoading) {
-    return <div className="text-center mt-10">Đang tải...</div>;
+  if (isLoading || loading || status === "connecting") {
+    return (
+      <div className="flex items-center justify-center py-6">
+        <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+        <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
+      </div>
+    );
   }
 
-  // 🔥 Nếu địa chỉ ví không tồn tại và trạng thái là "disconnected", hiển thị NotAuthenticate
-  if (!address && status === "disconnected") {
+  if (!address || status === "disconnected") {
     return <NotAuthenticate />;
+  }
+
+  console.log("Role:", role, "Allowed Roles:", allowedRoles);
+
+  if (!role || (allowedRoles && !allowedRoles.includes(role))) {
+    return <NotAuthorization/>;
   }
 
   return children;
@@ -33,6 +52,11 @@ const ProtectedRoute = ({ children }) => {
 
 ProtectedRoute.propTypes = {
   children: PropTypes.node.isRequired,
+  allowedRoles: PropTypes.arrayOf(PropTypes.string),
+};
+
+ProtectedRoute.defaultProps = {
+  allowedRoles: [],
 };
 
 export default ProtectedRoute;
