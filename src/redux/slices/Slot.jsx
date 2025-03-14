@@ -1,16 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-// API endpoint (cập nhật URL thực tế)
-const API_URL = "https://localhost:9999/api/Slot";
-
+import axios from '../../utils/axios';
 
 // Lấy danh sách slots
 export const listSlots = createAsyncThunk(
   'slots/list',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}`);
+      const response = await axios.get('/Slot');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể tải danh sách slots");
@@ -22,7 +18,7 @@ export const createSlot = createAsyncThunk(
   "slots/createSlot",
   async (slot, { rejectWithValue }) => {
     try {
-      const response = await axios.post(`${API_URL}/Generate`, slot);
+      const response = await axios.post('/Slot/Create', slot);
       console.log(response.data);
       return response.data;
     } catch (error) {
