@@ -109,7 +109,7 @@ export const fetchDeletedAccounts = createAsyncThunk(
   "accounts/fetchDeleted",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/AccountStorage');
+      const response = await axios.get('/BinStorage');
       console.log("response", response.data);
       return response.data;
     } catch (error) {
@@ -123,7 +123,7 @@ export const restoreAccount = createAsyncThunk(
   "accounts/restore",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`/AccountStorage/${id}/restore`);
+      const response = await axios.patch(`/BinStorage/${id}/restore`);
       console.log("response", response.data);
       return response.data;
     } catch (error) {
@@ -137,7 +137,7 @@ export const deletePermanently = createAsyncThunk(
   "accounts/deletePermanently",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`/AccountStorage/${id}`);
+      const response = await axios.delete(`/BinStorage/${id}`);
       console.log("response", response.data);
       return response.data;
     } catch (error) {

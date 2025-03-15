@@ -1,13 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from '../../utils/axios';
+import axios from "axios";
 
+// API endpoint
+const API_URL = "https://localhost:9999/api/facilities";
 
 // 📌 Lấy danh sách cơ sở vật chất
 export const fetchFacilities = createAsyncThunk(
   "facilities/fetch",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/Facility/GetAllFacilities');
+      const response = await axios.get(`${API_URL}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể tải danh sách cơ sở vật chất");
@@ -20,7 +22,7 @@ export const fetchFacilityById = createAsyncThunk(
   "facilities/fetchById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${''}/${id}`);
+      const response = await axios.get(`${API_URL}/${id}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể tải thông tin cơ sở vật chất");
@@ -33,29 +35,10 @@ export const addFacility = createAsyncThunk(
   "facilities/add",
   async (facility, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/Facility/AddNewFacility', facility);
-      console.log(response.data);
+      const response = await axios.post(`${API_URL}`, facility);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể thêm cơ sở vật chất");
-    }
-  }
-);
-
-
-// 📌 Thêm cơ sở vật chất mới từ excel
-export const addFacilityFromExcel = createAsyncThunk(
-  "facilities/addFacilityFromExcel",
-  async (formData, { rejectWithValue }) => {
-    try {
-      const response = await axios.post("/Facility/AddFacilityFromExcel", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data", // Ensure this header is set
-        },
-      });
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
     }
   }
 );
@@ -65,7 +48,7 @@ export const updateFacility = createAsyncThunk(
   "facilities/update",
   async ({ id, updatedData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${''}/${id}`, updatedData);
+      const response = await axios.put(`${API_URL}/${id}`, updatedData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể cập nhật cơ sở vật chất");
@@ -78,7 +61,7 @@ export const moveToStorage = createAsyncThunk(
   "facilities/moveToStorage",
   async (id, { rejectWithValue }) => {
     try {
-      await axios.delete(`${''}/${id}`);
+      await axios.delete(`${API_URL}/${id}`);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể xóa cơ sở vật chất");
@@ -91,7 +74,7 @@ export const deletePermanently = createAsyncThunk(
   "facilities/deletePermanently",
   async (id, { rejectWithValue }) => {
     try {
-      await axios.delete(`${''}/permanent/${id}`);
+      await axios.delete(`${API_URL}/permanent/${id}`);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể xóa vĩnh viễn cơ sở vật chất");
@@ -104,7 +87,7 @@ export const restoreFacility = createAsyncThunk(
   "facilities/restore",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${''}/restore/${id}`);
+      const response = await axios.put(`${API_URL}/restore/${id}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể khôi phục cơ sở vật chất");
@@ -132,8 +115,8 @@ const facilitiesSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchFacilities.fulfilled, (state, action) => {
-        state.loading = false;
         state.facilities = action.payload;
+        state.loading = false;
       })
       .addCase(fetchFacilities.rejected, (state, action) => {
         state.loading = false;
@@ -167,19 +150,6 @@ const facilitiesSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Thêm cơ sở vật chất từ excel
-      .addCase(addFacilityFromExcel.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(addFacilityFromExcel.fulfilled, (state) => {
-        state.loading = false;
-      })
-      .addCase(addFacilityFromExcel.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
       // 🔹 Cập nhật cơ sở vật chất
       .addCase(updateFacility.pending, (state) => {
         state.loading = true;
@@ -199,12 +169,12 @@ const facilitiesSlice = createSlice({
       .addCase(moveToStorage.fulfilled, (state, action) => {
         state.facilities = state.facilities.filter((fac) => fac.id !== action.payload);
       })
-
+      
       // 🔹 Xóa vĩnh viễn cơ sở vật chất
       .addCase(deletePermanently.fulfilled, (state, action) => {
         state.facilities = state.facilities.filter((fac) => fac.id !== action.payload);
       })
-
+      
       // 🔹 Khôi phục cơ sở vật chất từ thùng rác
       .addCase(restoreFacility.fulfilled, (state, action) => {
         state.facilities.push(action.payload);
