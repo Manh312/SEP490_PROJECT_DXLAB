@@ -5,19 +5,19 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { FaPlus, FaFileExcel } from "react-icons/fa";
 import { Edit, Trash2 } from "lucide-react";
-import { MdChair } from 'react-icons/md'
+import { MdChair } from 'react-icons/md';
 import { Tooltip } from "react-tooltip";
 
 const FacilitiesList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { facilities, loading } = useSelector((state) => state.facilities);
-  console.log(facilities);
   const [loadingId, setLoadingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6;
 
-  const totalAccounts = Math.ceil(facilities.length / postsPerPage);
+  const totalAccounts = Math.ceil((facilities || []).length / postsPerPage);
+
   useEffect(() => {
     if (currentPage > totalAccounts && totalAccounts > 0) {
       setCurrentPage(totalAccounts);
@@ -25,7 +25,8 @@ const FacilitiesList = () => {
       setCurrentPage(1);
     }
   }, [totalAccounts, currentPage]);
-  const currentPosts = facilities.facilities.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
+
+  const currentPosts = (facilities || []).slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
 
   useEffect(() => {
     dispatch(fetchFacilities());
@@ -33,7 +34,6 @@ const FacilitiesList = () => {
 
   const handleImportExcel = async (event) => {
     const file = event.target.files[0];
-    console.log("Selected file:", file);
     if (!file) {
       toast.error("Vui lòng chọn file Excel!");
       return;
@@ -105,7 +105,7 @@ const FacilitiesList = () => {
         <div className="text-center py-4">
           <p className="text-orange-500">Đang tải dữ liệu...</p>
         </div>
-      ) : facilities.length === 0 ? (
+      ) : (facilities || []).length === 0 ? (
         <div className="text-center py-4">
           <p className="text-gray-500">Không có dữ liệu để hiển thị</p>
         </div>
@@ -113,7 +113,7 @@ const FacilitiesList = () => {
         <>
           <div className="mb-4">
             <p className="text-lg font-semibold text-gray-500">
-              Tổng số: {facilities.facilities.length} mục
+              Tổng số: {(facilities || []).length} mục
             </p>
           </div>
 
@@ -170,7 +170,6 @@ const FacilitiesList = () => {
             </table>
           </div>
 
-          {/* Pagination */}
           {totalAccounts > 1 && (
             <div className="flex justify-center mt-6 flex-wrap gap-2">
               {[...Array(totalAccounts)].map((_, index) => (
@@ -180,7 +179,7 @@ const FacilitiesList = () => {
                   className={`px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded-lg text-sm ${currentPage === index + 1
                     ? "bg-orange-500 text-white"
                     : "bg-gray-200 text-black"
-                    }`}
+                  }`}
                 >
                   {index + 1}
                 </button>
