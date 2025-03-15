@@ -6,9 +6,9 @@ export const fetchAccounts = createAsyncThunk(
   "accounts/fetch",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/Account');
-      console.log("response", response.data);
-      return response.data;
+      const response = await axios.get('/account');
+      console.log("fetchAccounts response:", response.data.data);
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error || "Không thể lấy dữ liệu tài khoản");
     }
@@ -20,9 +20,9 @@ export const fetchAccountById = createAsyncThunk(
   "accounts/fetchById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/Account/${id}`);
-      console.log("response", response.data);
-      return response.data;
+      const response = await axios.get(`/account/${id}`);
+      console.log("fetchAccountById response:", response.data.data);
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy dữ liệu tài khoản");
     }
@@ -36,12 +36,12 @@ export const addAccount = createAsyncThunk(
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const response = await axios.post('/Account/AddFromExcel', formData, {
+      const response = await axios.post('/account/importexcel', formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      return response.data;
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể thêm tài khoản");
     }
@@ -53,38 +53,36 @@ export const fetchRolesByAdmin = createAsyncThunk(
   "accounts/fetchRolesByAdmin",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/Role/GetRoleByAdmin');
-      console.log("response", response.data);
-      return response.data;
+      const response = await axios.get('/role/rolebyadmin');
+      console.log("fetchRolesByAdmin response:", response.data);
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể hiển thị vai trò");
     }
   }
 );
 
-
-
 // Update account
 export const updateAccount = createAsyncThunk(
   "accounts/update",
   async ({ id, roleName }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`/Account/${id}/role`, { roleName });
+      const response = await axios.put(`/account/update/${id}`, { roleName });
       console.log("Update response:", response.data);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể cập nhật tài khoản");
     }
   }
 );
 
-// Fetch accounts by role name (replacing fetchRoles)
+// Fetch accounts by role name
 export const fetchAccountsByRoleName = createAsyncThunk(
   "accounts/fetchByRoleName",
   async (roleName, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/Account/role/${roleName}`);
-      return response.data;
+      const response = await axios.get(`/account/role/${roleName}`);
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy dữ liệu tài khoản");
     }
@@ -96,8 +94,13 @@ export const softDeleteAccount = createAsyncThunk(
   "accounts/softDelete",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`/Account/${id}/soft-delete`);
-      return response.data;
+      const response = await axios.patch(`/account/soft-delete/${id}`);
+      const data = response.data.data;
+      if (!data || !data.id) {
+        throw new Error("Invalid response data");
+      }
+      console.log("softDelete response:", data);
+      return data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể xóa mềm tài khoản");
     }
@@ -109,9 +112,9 @@ export const fetchDeletedAccounts = createAsyncThunk(
   "accounts/fetchDeleted",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/BinStorage');
-      console.log("response", response.data);
-      return response.data;
+      const response = await axios.get('/accountstorage');
+      console.log("fetchDeletedAccounts response:", response.data);
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy dữ liệu tài khoản đã xóa mềm");
     }
@@ -123,9 +126,9 @@ export const restoreAccount = createAsyncThunk(
   "accounts/restore",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`/BinStorage/${id}/restore`);
-      console.log("response", response.data);
-      return response.data;
+      const response = await axios.patch(`/accountstorage/restore/${id}`);
+      console.log("restoreAccount response:", response.data);
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể khôi phục tài khoản");
     }
@@ -137,9 +140,9 @@ export const deletePermanently = createAsyncThunk(
   "accounts/deletePermanently",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`/BinStorage/${id}`);
-      console.log("response", response.data);
-      return response.data;
+      const response = await axios.delete(`/accountstorage/hard-delete/${id}`);
+      console.log("deletePermanently response:", response.data.data);
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể xóa vĩnh viễn tài khoản");
     }
@@ -167,7 +170,6 @@ const accountSlice = createSlice({
     resetError: (state) => {
       state.error = null;
     },
-    // Thêm reducer để reset selectedAccount
     resetSelectedAccount: (state) => {
       state.selectedAccount = null;
     },
@@ -179,7 +181,7 @@ const accountSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchAccounts.fulfilled, (state, action) => {
-        state.accounts = action.payload.accounts || action.payload;
+        state.accounts = action.payload;
         state.loading = false;
       })
       .addCase(fetchAccounts.rejected, (state, action) => {
@@ -234,7 +236,7 @@ const accountSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchAccountsByRoleName.fulfilled, (state, action) => {
-        state.accounts = action.payload.accounts || action.payload;
+        state.accounts = action.payload;
         state.loading = false;
       })
       .addCase(fetchAccountsByRoleName.rejected, (state, action) => {
@@ -245,7 +247,7 @@ const accountSlice = createSlice({
       // Fetch roles by admin
       .addCase(fetchRolesByAdmin.pending, (state) => {
         state.loading = true;
-        state.error = null; // Reset error khi bắt đầu fetch
+        state.error = null;
       })
       .addCase(fetchRolesByAdmin.fulfilled, (state, action) => {
         state.loading = false;
@@ -253,7 +255,7 @@ const accountSlice = createSlice({
       })
       .addCase(fetchRolesByAdmin.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload; // Lưu lỗi nếu có
+        state.error = action.payload;
       })
 
       // Soft delete account
@@ -261,14 +263,7 @@ const accountSlice = createSlice({
         state.loading = true;
       })
       .addCase(softDeleteAccount.fulfilled, (state, action) => {
-        state.loading = false;
-        state.accounts = state.accounts.map((account) =>
-          account.id === action.payload.id ? { ...account, isDeleted: true } : account
-        );
-        // Reset selectedAccount nếu tài khoản vừa xóa là selectedAccount
-        if (state.selectedAccount?.id === action.payload.id) {
-          state.selectedAccount = null;
-        }
+        state.accounts = state.accounts.filter(acc => acc.userId !== action.meta.arg); // Lọc tài khoản đã xóa
       })
       .addCase(softDeleteAccount.rejected, (state, action) => {
         state.loading = false;
@@ -282,7 +277,7 @@ const accountSlice = createSlice({
       })
       .addCase(fetchDeletedAccounts.fulfilled, (state, action) => {
         state.loading = false;
-        state.deletedAccounts = action.payload.accounts || action.payload;
+        state.deletedAccounts = action.payload.accounts || action.payload || [];
       })
       .addCase(fetchDeletedAccounts.rejected, (state, action) => {
         state.loading = false;
@@ -308,7 +303,6 @@ const accountSlice = createSlice({
       // Permanently delete account
       .addCase(deletePermanently.fulfilled, (state, action) => {
         state.accounts = state.accounts.filter((account) => account.id !== action.payload);
-        // Reset selectedAccount nếu tài khoản vừa xóa là selectedAccount
         if (state.selectedAccount?.id === action.payload) {
           state.selectedAccount = null;
         }

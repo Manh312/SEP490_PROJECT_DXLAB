@@ -13,20 +13,23 @@ import { Upload, Trash2, Edit, Users, Filter } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
 
-// Phần còn lại của code giữ nguyên, chỉ thay đổi phần Filter Section
 const AccountList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { accounts, roleFilter, loading } = useSelector((state) => state.accounts);
+  console.log("Accounts state:", accounts); // Log để debug
 
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6;
 
   const filteredAccounts = useMemo(() => {
+    console.log("Filtering accounts:", accounts); // Log để debug
     if (!Array.isArray(accounts)) return [];
-    return accounts.filter((acc) =>
-      roleFilter === "All" ? true : acc.roleName === roleFilter
-    );
+    return accounts.filter((acc) => {
+      // Ensure acc has the required properties
+      if (!acc || typeof acc !== "object" || !acc.userId || !acc.roleName) return false;
+      return roleFilter === "All" ? true : acc.roleName === roleFilter;
+    });
   }, [accounts, roleFilter]);
 
   const totalAccounts = Math.ceil(filteredAccounts.length / postsPerPage);
@@ -72,6 +75,11 @@ const AccountList = () => {
   };
 
   const handleSoftDelete = async (id) => {
+    if (!id) {
+      console.error("Invalid userId for soft delete:", id);
+      toast.error("Không thể xóa: ID không hợp lệ!");
+      return;
+    }
     try {
       const res = await dispatch(softDeleteAccount(id)).unwrap();
       toast.success(res.message || "Xóa mềm thành công");
@@ -92,7 +100,6 @@ const AccountList = () => {
     return `Không có người dùng nào thuộc vai trò "${roleFilter}"`;
   };
 
-  // Hàm để xác định màu nền dựa trên roleFilter
   const getFilterBgClass = () => {
     switch (roleFilter) {
       case "All":
@@ -157,7 +164,7 @@ const AccountList = () => {
           </select>
         </div>
 
-        {/* Phần còn lại của component giữ nguyên */}
+        {/* Loading or Empty State */}
         {loading ? (
           <div className="flex items-center justify-center py-6">
             <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
@@ -186,14 +193,14 @@ const AccountList = () => {
                   {currentPosts.map((user, index) => (
                     <tr key={user.id} className="border-b hover:bg-gray-500 transition-colors">
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{(currentPage - 1) * postsPerPage + index + 1}</td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{user.fullName}</td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{user.email}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{user.fullName || "N/A"}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{user.email || "N/A"}</td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
                           className={`inline-flex items-center text-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm 
                             ${user.roleName === "Staff" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
                         >
-                          {user.roleName}
+                          {user.roleName || "N/A"}
                         </span>
                       </td>
                       <td className="px-2 py-3 justify-center md:px-4 md:py-4 flex gap-2">
@@ -202,14 +209,16 @@ const AccountList = () => {
                           data-tooltip-id="action-tooltip"
                           data-tooltip-content="Xóa mềm"
                           className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                          disabled={!user.userId}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                         <Link
-                          to={`/dashboard/account/update/${user.userId}`}
+                          to={`/dashboard/account/update/${user.userId || ""}`}
                           data-tooltip-id="action-tooltip"
                           data-tooltip-content="Cập nhật"
                           className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                          disabled={!user.userId}
                         >
                           <Edit className="w-4 h-4" />
                         </Link>
@@ -225,7 +234,7 @@ const AccountList = () => {
               {currentPosts.length > 0 ? (
                 currentPosts.map((user, index) => (
                   <div
-                    key={user.id}
+                    key={user.id || index} // Fallback to index if id is missing
                     className="border rounded-lg p-3 sm:p-4 shadow-sm hover:bg-gray-500 transition-colors"
                   >
                     <div className="flex flex-col gap-2">
@@ -235,28 +244,30 @@ const AccountList = () => {
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal 
                             ${user.roleName === "Staff" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}
                         >
-                          {user.roleName}
+                          {user.roleName || "N/A"}
                         </span>
                       </div>
                       <p className="text-sm">
-                        <span className="font-medium">Họ và Tên:</span> {user.fullName}
+                        <span className="font-medium">Họ và Tên:</span> {user.fullName || "N/A"}
                       </p>
                       <p className="text-sm">
-                        <span className="font-medium">Email:</span> {user.email}
+                        <span className="font-medium">Email:</span> {user.email || "N/A"}
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <Link
-                          to={`/dashboard/account/update/${user.userId}`}
+                          to={`/dashboard/account/update/${user.userId || ""}`}
                           className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                          disabled={!user.userId}
                         >
                           <Edit className="w-4 h-4" /> Cập nhật
                         </Link>
-                        <Link
+                        <button
                           onClick={() => handleSoftDelete(user.userId)}
-                          className="bg-red-500 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                          className="bg-red-500 text-white hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                          disabled={!user.userId}
                         >
                           <Trash2 className="w-4 h-4" /> Xóa mềm
-                        </Link>
+                        </button>
                       </div>
                     </div>
                   </div>

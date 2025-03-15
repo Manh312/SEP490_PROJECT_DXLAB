@@ -6,8 +6,9 @@ export const listSlots = createAsyncThunk(
   'slots/list',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/Slot');
-      return response.data;
+      const response = await axios.get('/slot');
+      console.log("response", response.data);
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể tải danh sách slots");
     }
@@ -18,9 +19,9 @@ export const createSlot = createAsyncThunk(
   "slots/createSlot",
   async (slot, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/Slot/Create', slot);
+      const response = await axios.post('/slot/create', slot);
       console.log(response.data);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       // console.log(error.response.data);
       return rejectWithValue(error.response?.data || "Có lỗi xảy ra");

@@ -59,7 +59,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
 
     if (contentType && contentType.includes("application/json")) {
       result = await response.json();
-      console.log("Kết quả từ backend (JSON):", result);
+      console.log("Kết quả từ backend (JSON):", result.data);
       if (!result.data || !result.data.token) {
         throw new Error("Token không tồn tại hoặc không đúng định dạng trong response từ backend");
       }
@@ -72,7 +72,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       result = { token };
     }
 
-    const { roleId } = result.data.user || {};
+    const { roleId } = result.data.user.roleId || {};
     if (roleId) {
       await dispatch(fetchRoleByID(roleId)).unwrap();
     }
