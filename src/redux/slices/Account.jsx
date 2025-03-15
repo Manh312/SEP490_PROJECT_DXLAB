@@ -95,12 +95,13 @@ export const softDeleteAccount = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.patch(`/account/soft-delete/${id}`);
-      const data = response.data.data;
-      if (!data || !data.id) {
-        throw new Error("Invalid response data");
-      }
-      console.log("softDelete response:", data);
-      return data.data;
+      console.log(response.data.message);
+      // const data = response.data.data;
+      // if (!data || !data.id) {
+      //   throw new Error("Invalid response data");
+      // }
+      // console.log("softDelete response:", data);
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể xóa mềm tài khoản");
     }
@@ -128,7 +129,7 @@ export const restoreAccount = createAsyncThunk(
     try {
       const response = await axios.patch(`/accountstorage/restore/${id}`);
       console.log("restoreAccount response:", response.data);
-      return response.data.data;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể khôi phục tài khoản");
     }
