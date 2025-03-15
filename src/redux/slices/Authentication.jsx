@@ -5,8 +5,9 @@ export const fetchRoleByID = createAsyncThunk(
   'auth/fetchRoleByID',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/Role/${id}`);
+      const response = await axios.get(`/role/${id}`);
       const data = response.data;
+      console.log("Role data:", data);
       return data.roleName; 
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch role");
@@ -19,7 +20,6 @@ const authSlice = createSlice({
   initialState: {
     token: null,
     user: null, // user sẽ chứa roleId
-    roleName: null, // Add roleName to state
     loading: false,
     error: null,
   },
@@ -31,7 +31,6 @@ const authSlice = createSlice({
     clearAuthData: (state) => {
       state.token = null;
       state.user = null;
-      state.roleName = null; // Clear roleName
     },
   },
   extraReducers: (builder) => {
@@ -40,9 +39,8 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchRoleByID.fulfilled, (state, action) => {
+      .addCase(fetchRoleByID.fulfilled, (state) => {
         state.loading = false;
-        state.roleName = action.payload; // Update roleName on success
       })
       .addCase(fetchRoleByID.rejected, (state, action) => {
         state.loading = false;

@@ -15,24 +15,23 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [roleName, setRoleName] = useState(null);
 
+  // Giả định roleName có thể được lưu trong user (nếu backend trả về)
   const cachedRoleName = user?.roleName || null;
 
   useEffect(() => {
     const checkUserRole = async () => {
-      // Nếu không có address, không kết nối hoặc không có user, dừng lại
       if (!address || status !== "connected" || !user) {
         setIsLoading(false);
         return;
       }
 
-      // Nếu đã có cachedRoleName, sử dụng nó và dừng lại
+      // Nếu roleName đã có trong user hoặc state, không cần fetch lại
       if (cachedRoleName) {
         setRoleName(cachedRoleName);
         setIsLoading(false);
         return;
       }
 
-      // Chỉ gọi API nếu có roleId và chưa có roleName
       const roleId = user?.roleId;
       if (roleId && !roleName && !loading) {
         try {
@@ -46,11 +45,12 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     };
 
     setIsLoading(true);
-    checkUserRole();
+    checkUserRole(); // Gọi ngay lập tức, bỏ timeout nếu không cần thiết
 
-    // Chỉ依赖 các giá trị cần thiết, không bao gồm roleName
-  }, [status, address, user, loading, dispatch]); // Loại bỏ roleName và cachedRoleName
+    // Không cần clearTimeout nếu không dùng timeout
+  }, [status, address, user, loading, roleName, cachedRoleName, dispatch]);
 
+  // Dùng useMemo để tối ưu hóa điều kiện render
   const isAuthLoading = useMemo(() => {
     return isLoading || loading || status === "connecting";
   }, [isLoading, loading, status]);
