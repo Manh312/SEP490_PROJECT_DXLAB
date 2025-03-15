@@ -21,7 +21,7 @@ export const createSlot = createAsyncThunk(
     try {
       const response = await axios.post('/slot/create', slot);
       console.log(response.data);
-      return response.data.data;
+      return response.data;
     } catch (error) {
       // console.log(error.response.data);
       return rejectWithValue(error.response?.data || "Có lỗi xảy ra");

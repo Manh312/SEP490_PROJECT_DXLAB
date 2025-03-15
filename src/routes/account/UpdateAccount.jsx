@@ -23,8 +23,8 @@ const UpdateAccount = () => {
 
   // Đồng bộ role khi selectedAccount thay đổi
   useEffect(() => {
-    if (selectedAccount?.account && selectedAccount.account.userId === id) {
-      const roleNameFromServer = selectedAccount.account.roleName || "";
+    if (selectedAccount && selectedAccount.userId === id) {
+      const roleNameFromServer = selectedAccount.roleName || "";
       if (roles.some((r) => r.roleName === roleNameFromServer)) {
         setRole(roleNameFromServer);
       }
@@ -32,8 +32,8 @@ const UpdateAccount = () => {
   }, [selectedAccount, id, roles]);
   
   useEffect(() => {
-    if (roles.length > 0 && selectedAccount?.account) {
-      setRole(selectedAccount.account.roleName || "");
+    if (roles.length > 0 && selectedAccount) {
+      setRole(selectedAccount.roleName || "");
     }
   }, [roles, selectedAccount]);
   
@@ -60,7 +60,7 @@ const UpdateAccount = () => {
   };
 
   // Hiển thị loading nếu dữ liệu chưa sẵn sàng
-  if (loading || !selectedAccount?.account) {
+  if (loading || !selectedAccount) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
         <p className="text-gray-600 text-lg animate-pulse">Đang tải dữ liệu...</p>
@@ -84,7 +84,7 @@ const UpdateAccount = () => {
             </label>
             <input
               type="text"
-              value={selectedAccount.account.fullName || ""}
+              value={selectedAccount.fullName || ""}
               disabled
               className="w-full px-4 py-3 rounded-lg border focus:outline-none"
             />
@@ -97,7 +97,7 @@ const UpdateAccount = () => {
             </label>
             <input
               type="text"
-              value={selectedAccount.account.email || ""}
+              value={selectedAccount.email || ""}
               disabled
               className="w-full px-4 py-3 rounded-lg border focus:outline-none"
             />
