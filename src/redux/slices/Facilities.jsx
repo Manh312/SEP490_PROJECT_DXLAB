@@ -7,7 +7,7 @@ export const fetchFacilities = createAsyncThunk(
   "facilities/fetch",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/facility');
+      const response = await axios.get('/Facility/GetAllFacilities');
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể tải danh sách cơ sở vật chất");
@@ -33,7 +33,7 @@ export const addFacility = createAsyncThunk(
   "facilities/add",
   async (facility, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/facility/importexcel', facility);
+      const response = await axios.post('/Facility/AddNewFacility', facility);
       console.log(response.data);
       return response.data;
     } catch (error) {
@@ -48,7 +48,7 @@ export const addFacilityFromExcel = createAsyncThunk(
   "facilities/addFacilityFromExcel",
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/facility/createfacility", formData, {
+      const response = await axios.post("/Facility/AddFacilityFromExcel", formData, {
         headers: {
           "Content-Type": "multipart/form-data", // Ensure this header is set
         },

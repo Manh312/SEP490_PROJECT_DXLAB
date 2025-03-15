@@ -37,7 +37,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       roleId: 1,
     };
 
-    const response = await fetch("https://localhost:9999/api/user/createuser", {
+    const response = await fetch("https://localhost:9999/api/User", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

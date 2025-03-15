@@ -3,7 +3,7 @@ import axios from '../../utils/axios';
 
 // Lấy danh sách slots
 export const listSlots = createAsyncThunk(
-  '/slot',
+  'slots/list',
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get('/Slot');
@@ -15,7 +15,7 @@ export const listSlots = createAsyncThunk(
 );
 
 export const createSlot = createAsyncThunk(
-  "/slot/create",
+  "slots/createSlot",
   async (slot, { rejectWithValue }) => {
     try {
       const response = await axios.post('/Slot/Create', slot);

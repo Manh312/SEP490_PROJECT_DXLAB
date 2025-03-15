@@ -5,7 +5,7 @@ export const fetchRoleByID = createAsyncThunk(
   'auth/fetchRoleByID',
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/role/${id}`);
+      const response = await axios.get(`/Role/${id}`);
       const data = response.data;
       return data.roleName; 
     } catch (error) {
