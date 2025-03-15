@@ -19,6 +19,7 @@ const authSlice = createSlice({
   initialState: {
     token: null,
     user: null, // user sẽ chứa roleId
+    roleName: null, // Add roleName to state
     loading: false,
     error: null,
   },
@@ -30,6 +31,7 @@ const authSlice = createSlice({
     clearAuthData: (state) => {
       state.token = null;
       state.user = null;
+      state.roleName = null; // Clear roleName
     },
   },
   extraReducers: (builder) => {
@@ -38,8 +40,9 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchRoleByID.fulfilled, (state) => {
+      .addCase(fetchRoleByID.fulfilled, (state, action) => {
         state.loading = false;
+        state.roleName = action.payload; // Update roleName on success
       })
       .addCase(fetchRoleByID.rejected, (state, action) => {
         state.loading = false;
