@@ -31,10 +31,10 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
     const payload = {
       userId: 0,
       email: userEmail,
-      fullName: "manhmeo",
+      fullName: "",
       walletAddress: walletAddress,
       status: true,
-      roleId: 1,
+      roleId: 3,
     };
 
     const response = await fetch("https://localhost:9999/api/User", {
