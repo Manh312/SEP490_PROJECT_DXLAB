@@ -37,7 +37,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       roleId: 3, // Có thể bỏ hoặc thay bằng logic lấy roleId từ server
     };
 
-    const response = await fetch("https://localhost:9999/api/User", {
+    const response = await fetch("https://localhost:9999/api/user/createuser", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

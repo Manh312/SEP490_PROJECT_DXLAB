@@ -6,7 +6,7 @@ export const fetchAccounts = createAsyncThunk(
   "accounts/fetch",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/Account');
+      const response = await axios.get('/account');
       console.log("response", response.data);
       return response.data;
     } catch (error) {
@@ -20,7 +20,7 @@ export const fetchAccountById = createAsyncThunk(
   "accounts/fetchById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/Account/${id}`);
+      const response = await axios.get(`/account/${id}`);
       console.log("response", response.data);
       return response.data;
     } catch (error) {
@@ -36,7 +36,7 @@ export const addAccount = createAsyncThunk(
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const response = await axios.post('/Account/AddFromExcel', formData, {
+      const response = await axios.post('/account/importexcel', formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -53,7 +53,7 @@ export const fetchRolesByAdmin = createAsyncThunk(
   "accounts/fetchRolesByAdmin",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/Role/GetRoleByAdmin');
+      const response = await axios.get('/role/rolebyadmin');
       console.log("response", response.data);
       return response.data;
     } catch (error) {
@@ -69,7 +69,7 @@ export const updateAccount = createAsyncThunk(
   "accounts/update",
   async ({ id, roleName }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`/Account/${id}/role`, { roleName });
+      const response = await axios.put(`/account/update/${id}`, { roleName });
       console.log("Update response:", response.data);
       return response.data;
     } catch (error) {
@@ -83,7 +83,7 @@ export const fetchAccountsByRoleName = createAsyncThunk(
   "accounts/fetchByRoleName",
   async (roleName, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/Account/role/${roleName}`);
+      const response = await axios.get(`/account/${roleName}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy dữ liệu tài khoản");
@@ -96,7 +96,7 @@ export const softDeleteAccount = createAsyncThunk(
   "accounts/softDelete",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`/Account/${id}/soft-delete`);
+      const response = await axios.patch(`/account/soft-delete/${id}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể xóa mềm tài khoản");
@@ -109,7 +109,7 @@ export const fetchDeletedAccounts = createAsyncThunk(
   "accounts/fetchDeleted",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get('/AccountStorage');
+      const response = await axios.get('/accountstorage');
       console.log("response", response.data);
       return response.data;
     } catch (error) {
@@ -123,7 +123,7 @@ export const restoreAccount = createAsyncThunk(
   "accounts/restore",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(`/AccountStorage/${id}/restore`);
+      const response = await axios.patch(`/accountstorage/restore/${id}`);
       console.log("response", response.data);
       return response.data;
     } catch (error) {
@@ -137,7 +137,7 @@ export const deletePermanently = createAsyncThunk(
   "accounts/deletePermanently",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`/AccountStorage/${id}`);
+      const response = await axios.delete(`/accountstorage/hard-delete/${id}`);
       console.log("response", response.data);
       return response.data;
     } catch (error) {
