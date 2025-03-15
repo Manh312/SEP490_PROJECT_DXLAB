@@ -1,18 +1,18 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axiosInstance from "../../utils/axios"; // Import axiosInstance
 
-// Endpoint API
-const API_URL = "/api/room";
+const API_URL = "/Room"; // Đã có baseURL từ axiosInstance
 
 // **1. Lấy danh sách tất cả các phòng**
 export const fetchRooms = createAsyncThunk(
-  "room/fetchAll",
+  "room/fetchRooms",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch(API_URL);
-      if (!response.ok) throw new Error("Không thể lấy danh sách phòng");
-      return await response.json();
+      const response = await axiosInstance.get(API_URL);
+      console.log(response.data);
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || "Không thể lấy danh sách phòng");
     }
   }
 );
@@ -22,75 +22,63 @@ export const getRoomById = createAsyncThunk(
   "room/getById",
   async (roomId, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_URL}/${roomId}`);
-      if (!response.ok) throw new Error("Không tìm thấy phòng");
-      return await response.json();
+      const response = await axiosInstance.get(`${API_URL}/${roomId}`);
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || "Không tìm thấy phòng");
     }
   }
 );
 
-//tạo phòng
+// **3. Tạo phòng**
 export const createRoom = createAsyncThunk(
-    "room/create",
-    async (roomData, { rejectWithValue }) => {
-        console.log(roomData);
-      try {
-        const response = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(roomData),
-        });
-        if (!response.ok) throw new Error("Không thể tạo phòng");
-        return await response.json();
-      } catch (error) {
-        return rejectWithValue(error.message);
-      }
+  "room/create",
+  async (roomData, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post(API_URL, roomData);
+      console.log("create room: "+response);
+      return response.data;
+    } catch (error) {
+      console.log(error.response.data.errors.RoomName);
+      return rejectWithValue(error.message || "Không thể tạo phòng");
     }
-  );
+  }
+);
 
-// **3. Cập nhật phòng**
+// **4. Cập nhật phòng**
 export const updateRoom = createAsyncThunk(
   "room/update",
   async ({ roomId, roomData }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_URL}/${roomId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(roomData),
-      });
-      if (!response.ok) throw new Error("Cập nhật phòng thất bại");
-      return await response.json();
+      const response = await axiosInstance.put(`${API_URL}/${roomId}`, roomData);
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || "Cập nhật phòng thất bại");
     }
   }
 );
 
-// **4. Xóa phòng**
+// **5. Xóa phòng**
 export const deleteRoom = createAsyncThunk(
   "room/delete",
   async (roomId, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_URL}/${roomId}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Xóa phòng thất bại");
-      return roomId; // Trả về roomId để cập nhật danh sách trong store
+      await axiosInstance.delete(`${API_URL}/${roomId}`);
+      return roomId;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || "Xóa phòng thất bại");
     }
   }
 );
 
+// **Slice Redux**
 const roomSlice = createSlice({
   name: "rooms",
   initialState: {
     rooms: [],
     loading: false,
     error: null,
-    selectedRoom: null, // Lưu thông tin phòng khi getById
+    selectedRoom: null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -108,7 +96,7 @@ const roomSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       // Get Room by ID
       .addCase(getRoomById.pending, (state) => {
         state.loading = true;
