@@ -9,9 +9,9 @@ import {
 } from "../../redux/slices/Account";
 import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import { Upload, Trash2, Edit, Users, Filter } from "lucide-react";
+import { Trash2, Edit, Users, Filter } from "lucide-react";
 import { Tooltip } from "react-tooltip";
-import { FaSpinner } from "react-icons/fa";
+import { FaFileExcel, FaSpinner } from "react-icons/fa";
 
 const AccountList = () => {
   const dispatch = useDispatch();
@@ -126,7 +126,7 @@ const AccountList = () => {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <label className="relative cursor-pointer bg-orange-500 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all">
-              <Upload className="h-5 w-5" />
+              <FaFileExcel className="h-5 w-5" />
               <span className="hidden sm:inline">Thêm từ Excel</span>
               <input
                 type="file"

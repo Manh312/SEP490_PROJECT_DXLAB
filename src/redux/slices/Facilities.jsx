@@ -1,15 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axios from '../../utils/axios';
 
-// API endpoint
-const API_URL = "https://localhost:9999/api/facilities";
 
 // 📌 Lấy danh sách cơ sở vật chất
 export const fetchFacilities = createAsyncThunk(
   "facilities/fetch",
   async (_, { rejectWithValue }) => {
     try {
-
       const response = await axios.get('/Facility/GetAllFacilities');
       return response.data;
     } catch (error) {
@@ -23,7 +20,7 @@ export const fetchFacilityById = createAsyncThunk(
   "facilities/fetchById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/${id}`);
+      const response = await axios.get(`${''}/${id}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể tải thông tin cơ sở vật chất");
@@ -36,7 +33,6 @@ export const addFacility = createAsyncThunk(
   "facilities/add",
   async (facility, { rejectWithValue }) => {
     try {
-
       const response = await axios.post('/Facility/AddNewFacility', facility);
       console.log(response.data);
       return response.data;
@@ -69,7 +65,7 @@ export const updateFacility = createAsyncThunk(
   "facilities/update",
   async ({ id, updatedData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/${id}`, updatedData);
+      const response = await axios.put(`${''}/${id}`, updatedData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể cập nhật cơ sở vật chất");
@@ -82,7 +78,7 @@ export const moveToStorage = createAsyncThunk(
   "facilities/moveToStorage",
   async (id, { rejectWithValue }) => {
     try {
-      await axios.delete(`${API_URL}/${id}`);
+      await axios.delete(`${''}/${id}`);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể xóa cơ sở vật chất");
@@ -95,7 +91,7 @@ export const deletePermanently = createAsyncThunk(
   "facilities/deletePermanently",
   async (id, { rejectWithValue }) => {
     try {
-      await axios.delete(`${API_URL}/permanent/${id}`);
+      await axios.delete(`${''}/permanent/${id}`);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể xóa vĩnh viễn cơ sở vật chất");
@@ -108,7 +104,7 @@ export const restoreFacility = createAsyncThunk(
   "facilities/restore",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`${API_URL}/restore/${id}`);
+      const response = await axios.put(`${''}/restore/${id}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể khôi phục cơ sở vật chất");
@@ -136,8 +132,8 @@ const facilitiesSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchFacilities.fulfilled, (state, action) => {
-        state.facilities = action.payload;
         state.loading = false;
+        state.facilities = action.payload;
       })
       .addCase(fetchFacilities.rejected, (state, action) => {
         state.loading = false;
@@ -171,6 +167,19 @@ const facilitiesSlice = createSlice({
         state.error = action.payload;
       })
 
+      // Thêm cơ sở vật chất từ excel
+      .addCase(addFacilityFromExcel.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addFacilityFromExcel.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(addFacilityFromExcel.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
       // 🔹 Cập nhật cơ sở vật chất
       .addCase(updateFacility.pending, (state) => {
         state.loading = true;
@@ -190,12 +199,12 @@ const facilitiesSlice = createSlice({
       .addCase(moveToStorage.fulfilled, (state, action) => {
         state.facilities = state.facilities.filter((fac) => fac.id !== action.payload);
       })
-      
+
       // 🔹 Xóa vĩnh viễn cơ sở vật chất
       .addCase(deletePermanently.fulfilled, (state, action) => {
         state.facilities = state.facilities.filter((fac) => fac.id !== action.payload);
       })
-      
+
       // 🔹 Khôi phục cơ sở vật chất từ thùng rác
       .addCase(restoreFacility.fulfilled, (state, action) => {
         state.facilities.push(action.payload);
