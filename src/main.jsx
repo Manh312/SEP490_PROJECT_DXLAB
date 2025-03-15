@@ -34,7 +34,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       fullName: "manhmeo",
       walletAddress: walletAddress,
       status: true,
-      roleId: 3, // Có thể bỏ hoặc thay bằng logic lấy roleId từ server
+      roleId: 1,
     };
 
     const response = await fetch("https://localhost:9999/api/user/createuser", {
@@ -48,6 +48,9 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
     if (!response.ok) {
       const errorData = await response.text();
       console.error("API request failed with status:", response.status, errorData);
+      if (response.status === 404) {
+        throw new Error("Backend API endpoint not found. Please check the server.");
+      }
       throw new Error(`API request failed with status ${response.status}: ${errorData}`);
     }
 
@@ -56,23 +59,25 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
 
     if (contentType && contentType.includes("application/json")) {
       result = await response.json();
-      console.log("Kết quả từ backend (JSON):", result);
-      if (!result.token) throw new Error("Token không tồn tại trong response từ backend");
+      console.log("Kết quả từ backend (JSON):", result.data);
+      if (!result.data || !result.data.token) {
+        throw new Error("Token không tồn tại hoặc không đúng định dạng trong response từ backend");
+      }
     } else {
       const token = await response.text();
       console.log("Token từ backend (plain text):", token);
-      if (!token || token.trim() === "") throw new Error("Token không hợp lệ hoặc rỗng từ backend");
+      if (!token || token.trim() === "") {
+        throw new Error("Token không hợp lệ hoặc rỗng từ backend");
+      }
       result = { token };
     }
 
-    // Lấy roleId từ response và gọi fetchRoleByID
-    const { roleId } = result.user; // Lấy roleId từ response
+    const { roleId } = result.data.user.roleId || {};
     if (roleId) {
-      await dispatch(fetchRoleByID(roleId)).unwrap(); // Cập nhật role từ API /Role/${roleId}
+      await dispatch(fetchRoleByID(roleId)).unwrap();
     }
 
-    // Cập nhật state với token và user từ response
-    dispatch(setAuthData({ token: result.token, user: result.user }));
+    dispatch(setAuthData({ token: result.data.token, user: result.data.user }));
 
     if (walletAddress && walletType === "metamask") {
       toast.success("Đăng nhập MetaMask thành công!");
@@ -83,7 +88,11 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
     }
   } catch (error) {
     console.error("Lỗi khi gửi dữ liệu về backend:", error.message);
-    toast.error("Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại sau.");
+    toast.error(
+      error.message.includes("404")
+        ? "Backend server không khả dụng. Vui lòng kiểm tra lại."
+        : "Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại sau."
+    );
     throw error;
   }
 };
