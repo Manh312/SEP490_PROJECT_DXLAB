@@ -31,10 +31,10 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
     const payload = {
       userId: 0,
       email: userEmail,
-      fullName: "manhmeo",
+      fullName: "",
       walletAddress: walletAddress,
       status: true,
-      roleId: 3, // Có thể bỏ hoặc thay bằng logic lấy roleId từ server
+      roleId: 3,
     };
 
     const response = await fetch("https://localhost:9999/api/user/createuser", {
@@ -57,22 +57,24 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
     if (contentType && contentType.includes("application/json")) {
       result = await response.json();
       console.log("Kết quả từ backend (JSON):", result);
-      if (!result.token) throw new Error("Token không tồn tại trong response từ backend");
+      if (!result.data || !result.data.token) {
+        throw new Error("Token không tồn tại hoặc không đúng định dạng trong response từ backend");
+      }
     } else {
       const token = await response.text();
       console.log("Token từ backend (plain text):", token);
-      if (!token || token.trim() === "") throw new Error("Token không hợp lệ hoặc rỗng từ backend");
+      if (!token || token.trim() === "") {
+        throw new Error("Token không hợp lệ hoặc rỗng từ backend");
+      }
       result = { token };
     }
 
-    // Lấy roleId từ response và gọi fetchRoleByID
-    const { roleId } = result.user; // Lấy roleId từ response
+    const { roleId } = result.data.user || {};
     if (roleId) {
-      await dispatch(fetchRoleByID(roleId)).unwrap(); // Cập nhật role từ API /Role/${roleId}
+      await dispatch(fetchRoleByID(roleId)).unwrap();
     }
 
-    // Cập nhật state với token và user từ response
-    dispatch(setAuthData({ token: result.token, user: result.user }));
+    dispatch(setAuthData({ token: result.data.token, user: result.data.user }));
 
     if (walletAddress && walletType === "metamask") {
       toast.success("Đăng nhập MetaMask thành công!");

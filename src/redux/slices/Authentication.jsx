@@ -7,7 +7,6 @@ export const fetchRoleByID = createAsyncThunk(
     try {
       const response = await axios.get(`/role/${id}`);
       const data = response.data;
-      console.log("Role data:", data);
       return data.roleName; 
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch role");
