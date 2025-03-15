@@ -31,13 +31,13 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
     const payload = {
       userId: 0,
       email: userEmail,
-      fullName: "",
+      fullName: "manhmeo",
       walletAddress: walletAddress,
       status: true,
-      roleId: 3,
+      roleId: 1,
     };
 
-    const response = await fetch("https://localhost:9999/api/User", {
+    const response = await fetch("https://localhost:9999/api/user/createuser", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -48,6 +48,9 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
     if (!response.ok) {
       const errorData = await response.text();
       console.error("API request failed with status:", response.status, errorData);
+      if (response.status === 404) {
+        throw new Error("Backend API endpoint not found. Please check the server.");
+      }
       throw new Error(`API request failed with status ${response.status}: ${errorData}`);
     }
 
@@ -85,7 +88,11 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
     }
   } catch (error) {
     console.error("Lỗi khi gửi dữ liệu về backend:", error.message);
-    toast.error("Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại sau.");
+    toast.error(
+      error.message.includes("404")
+        ? "Backend server không khả dụng. Vui lòng kiểm tra lại."
+        : "Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại sau."
+    );
     throw error;
   }
 };
