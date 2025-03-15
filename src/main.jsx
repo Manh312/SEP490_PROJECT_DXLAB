@@ -31,10 +31,10 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
     const payload = {
       userId: 0,
       email: userEmail,
-      fullName: "",
+      fullName: "manhmeo",
       walletAddress: walletAddress,
       status: true,
-      roleId: 3,
+      roleId: 1,
     };
 
     const response = await fetch("https://localhost:9999/api/user/createuser", {

@@ -24,16 +24,15 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
         setIsLoading(false);
         return;
       }
-
-      // Nếu roleName đã có trong user hoặc state, không cần fetch lại
+  
       if (cachedRoleName) {
         setRoleName(cachedRoleName);
         setIsLoading(false);
         return;
       }
-
+  
       const roleId = user?.roleId;
-      if (roleId && !roleName && !loading) {
+      if (roleId && !loading) {
         try {
           const fetchedRole = await dispatch(fetchRoleByID(roleId)).unwrap();
           setRoleName(fetchedRole);
@@ -43,12 +42,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       }
       setIsLoading(false);
     };
-
+  
     setIsLoading(true);
-    checkUserRole(); // Gọi ngay lập tức, bỏ timeout nếu không cần thiết
-
-    // Không cần clearTimeout nếu không dùng timeout
-  }, [status, address, user, loading, roleName, cachedRoleName, dispatch]);
+    checkUserRole();
+  }, [status, address, user, loading, cachedRoleName, dispatch]); // Loại bỏ roleName
 
   // Dùng useMemo để tối ưu hóa điều kiện render
   const isAuthLoading = useMemo(() => {
