@@ -31,7 +31,7 @@ const SlotList = () => {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-x-2">
           <Clock10Icon className="text-orange-500" />
-          <h2 className="text-2xl font-semibold">
+          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
             Danh Sách Slot Trong Ngày
           </h2>
         </div>
