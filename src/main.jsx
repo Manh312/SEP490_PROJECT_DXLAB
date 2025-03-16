@@ -15,7 +15,7 @@ import {
 import App from "./App.jsx";
 import { store, persistor } from "./redux/Store.jsx";
 import "./styles.css";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { clearAuthData, fetchRoleByID, setAuthData } from "./redux/slices/Authentication.jsx";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -36,7 +36,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       fullName: "unknown",
       walletAddress,
       status: true,
-      roleId: 1,
+      roleId: 3,
     };
 
     const response = await fetch("https://localhost:9999/api/user/createuser", {
@@ -71,8 +71,8 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       walletType === "metamask"
         ? "Đăng nhập MetaMask thành công!"
         : walletType === "embeddedWallet"
-        ? "Đăng nhập Google thành công!"
-        : "Đăng nhập ví thành công!",
+          ? "Đăng nhập Google thành công!"
+          : "Đăng nhập ví thành công!",
       { toastId: `login-${walletType}` }
     );
   } catch (error) {
@@ -165,6 +165,7 @@ const RootApp = () => {
 // Render ứng dụng
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
+    <ToastContainer />
     <RootApp />
   </Provider>
 );
