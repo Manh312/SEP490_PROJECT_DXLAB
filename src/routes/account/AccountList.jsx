@@ -228,7 +228,7 @@ const AccountList = () => {
                     <tr key={user.id} className="border-b hover:bg-gray-400 transition-colors">
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{(currentPage - 1) * postsPerPage + index + 1}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        <Link to={`/dashboard/account/${user.userId}`} className="hover:text-gray-400 inline-block">
+                        <Link to={`/dashboard/account/${user.userId}`} className="hover:text-neutral-300 inline-block">
                           {user.fullName || "N/A"}
                         </Link>
                       </td>

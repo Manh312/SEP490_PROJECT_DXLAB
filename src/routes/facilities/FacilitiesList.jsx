@@ -258,7 +258,7 @@ const FacilitiesList = () => {
                     <td className="px-3 py-4 text-center">
                       <Link
                         to={`/dashboard/facilities/${facility.facilityId}`}
-                        className="hover:text-gray-400 transition-colors"
+                        className="hover:text-neutral-300  transition-colors"
                       >
                         {facility.batchNumber}
                       </Link>
