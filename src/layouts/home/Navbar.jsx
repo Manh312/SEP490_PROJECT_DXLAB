@@ -95,6 +95,11 @@ const Navbar = () => {
                   <Link to="/dashboard">Bảng điều khiển</Link>
                 </li>
               )}
+              {roleName === "Staff" && (
+                <li>
+                  <Link to="/manage">Quản lý</Link>
+                </li>
+              )}
             </>
           )}
         </ul>
@@ -249,6 +254,17 @@ const Navbar = () => {
                       className="block px-4 py-3 dark:hover:bg-gray-500"
                     >
                       Bảng điều khiển
+                    </Link>
+                  </li>
+                )}
+                {roleName === "Staff" && (
+                  <li>
+                    <Link
+                      to="/manage"
+                      onClick={() => setMobileDrawerOpen(false)}
+                      className="block px-4 py-3 dark:hover:bg-gray-500"
+                    >
+                      Quản lý
                     </Link>
                   </li>
                 )}
