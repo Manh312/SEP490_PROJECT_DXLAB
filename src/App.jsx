@@ -51,6 +51,7 @@ import CreateBlog from "./routes/staff-manage/blog-management/CreateBolg";
 import StorageListAccount from "./routes/account/StorageListAccount";
 import AccountDetail from "./routes/account/AccountDetail";
 import NotAuthorization from "./layouts/home/NotAuthorization";
+import ManageBlogDetail from "./routes/staff-manage/blog-management/ManageBlogDetail";
 
 
 
@@ -195,11 +196,15 @@ const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={["Staff"]}><BlogList /></ProtectedRoute>,
       },
       {
+        path: "manage/blog/:id",
+        element: <ProtectedRoute allowedRoles={["Staff"]}><ManageBlogDetail /></ProtectedRoute>,
+      },
+      {
         path: "manage/blog/create",
         element: <ProtectedRoute allowedRoles={["Staff"]}><CreateBlog /></ProtectedRoute>,
       },
       {
-        path: "manage/blog/:id",
+        path: "manage/blog/update/:id",
         element: <ProtectedRoute allowedRoles={["Staff"]}><ModifieBlog /></ProtectedRoute>,
       },
 

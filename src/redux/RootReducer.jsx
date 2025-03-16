@@ -7,6 +7,7 @@ import authReducer from "./slices/Authentication";
 import accountReducer from "./slices/Account";
 import storageReducer from "./slices/Storage";
 import facilitiesReducer from "./slices/Facilities";
+import blogsReducer from "./slices/Blog";
 
 
 
@@ -27,7 +28,7 @@ const rootReducer = combineReducers({
   accounts: accountReducer,
   storage: storageReducer,
   facilities: facilitiesReducer,
-  
+  blogs: blogsReducer,
 
 });
 
