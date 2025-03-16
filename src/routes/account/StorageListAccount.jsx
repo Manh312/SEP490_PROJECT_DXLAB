@@ -123,22 +123,22 @@ const StorageListAccount = () => {
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
       <Tooltip id="action-tooltip" />
-      <div className="w-full mx-auto border border-gray-600 rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 bg-white">
+      <div className="w-full mx-auto border border-gray-600 rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 ">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
           <div className="flex items-center space-x-2">
             <FaUsers className="h-6 w-6 text-orange-500" />
-            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">
+            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
               Thùng Rác Tài Khoản
             </h2>
           </div>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm">
             Tổng: {filteredDeletedAccounts.length} tài khoản
           </span>
         </div>
 
         {/* Search and Filter Section */}
-        <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+        <div className="mb-6 p-4 rounded-lg shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             {/* Search Input */}
             <div className="relative w-full sm:w-1/2 lg:w-1/3">
@@ -154,7 +154,7 @@ const StorageListAccount = () => {
             {/* Filter Dropdown */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Filter className="h-5 w-5 text-orange-500" />
-              <span className="font-medium text-sm sm:text-base text-gray-700">Lọc theo vai trò:</span>
+              <span className="font-medium text-sm sm:text-base">Lọc theo vai trò:</span>
               <select
                 value={roleFilter}
                 onChange={(e) => dispatch(setRoleFilter(e.target.value))}

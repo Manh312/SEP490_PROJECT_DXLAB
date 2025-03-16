@@ -166,7 +166,7 @@ const AccountList = () => {
         </div>
 
         {/* Search and Filter Section */}
-        <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+        <div className="mb-6 p-4 rounded-lg shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             {/* Search Input */}
             <div className="relative w-full sm:w-1/2 lg:w-1/3">
@@ -182,7 +182,7 @@ const AccountList = () => {
             {/* Filter Dropdown */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Filter className="h-5 w-5 text-orange-500" />
-              <span className="font-medium text-sm sm:text-base text-gray-700">Lọc theo vai trò:</span>
+              <span className="font-medium text-sm sm:text-base">Lọc theo vai trò:</span>
               <select
                 value={roleFilter}
                 onChange={(e) => dispatch(setRoleFilter(e.target.value))}
