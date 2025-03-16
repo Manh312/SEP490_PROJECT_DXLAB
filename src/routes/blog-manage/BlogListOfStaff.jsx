@@ -18,7 +18,6 @@ const BlogListOfStaff = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
 
-  // Select admin state from Redux store
   const { adminBlogs, adminLoading, adminStatusFilter } = useSelector(
     (state) => state.blogs
   );
@@ -27,38 +26,33 @@ const BlogListOfStaff = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const blogsPerPage = 5;
 
-  // Debounced search function
   const debouncedSearch = debounce((value) => {
     setSearchTerm(value);
     setCurrentPage(1);
   }, 300);
 
-  // Fetch blogs based on adminStatusFilter
   useEffect(() => {
     if (adminStatusFilter === "Pending") {
       dispatch(fetchAdminPendingBlogs());
     } else if (adminStatusFilter === "Approved") {
       dispatch(fetchAdminApprovedBlogs());
     } else if (adminStatusFilter === "All") {
-      // Fetch both Pending and Approved blogs when filter is "All"
       dispatch(fetchAdminPendingBlogs());
       dispatch(fetchAdminApprovedBlogs());
     }
   }, [dispatch, adminStatusFilter]);
 
-  // Map numeric status to string for display
   const mapStatusToString = (status) => {
     switch (status) {
       case 1:
-        return "Pending";
+        return "Đang chờ";
       case 2:
-        return "Approved";
+        return "Đã duyệt";
       default:
-        return "Unknown";
+        return "Không xác định";
     }
   };
 
-  // Filter and search logic (client-side filtering for search)
   const filteredBlogs = useMemo(() => {
     let result = adminBlogs || [];
 
@@ -68,7 +62,6 @@ const BlogListOfStaff = () => {
       );
     }
 
-    // Map status to string for each blog
     return result.map((blog) => ({
       ...blog,
       status: mapStatusToString(blog.status),
@@ -81,7 +74,6 @@ const BlogListOfStaff = () => {
     currentPage * blogsPerPage
   );
 
-  // Adjust current page if it exceeds total pages
   useEffect(() => {
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(totalPages);
@@ -90,7 +82,6 @@ const BlogListOfStaff = () => {
     }
   }, [totalPages, currentPage]);
 
-  // Handle approve blog
   const handleApprove = async (blogId) => {
     if (!blogId) {
       toast.error("Không tìm thấy ID của blog!");
@@ -113,7 +104,6 @@ const BlogListOfStaff = () => {
     }
   };
 
-  // Handle cancel/delete blog
   const handleCancel = async (blogId) => {
     if (!blogId) {
       toast.error("Không tìm thấy ID của blog!");
@@ -156,8 +146,12 @@ const BlogListOfStaff = () => {
         : "Hiện tại không có blog nào";
     }
     return searchTerm
-      ? `Không tìm thấy blog nào với trạng thái "${adminStatusFilter}" khớp với tìm kiếm`
-      : `Không có blog nào với trạng thái "${adminStatusFilter}"`;
+      ? `Không tìm thấy blog nào với trạng thái "${mapStatusToString(
+          adminStatusFilter === "Approved" ? 2 : 1
+        )}" khớp với tìm kiếm`
+      : `Không có blog nào với trạng thái "${mapStatusToString(
+          adminStatusFilter === "Approved" ? 2 : 1
+        )}"`;
   };
 
   return (
@@ -168,7 +162,6 @@ const BlogListOfStaff = () => {
           theme === "dark" ? "bg-black text-white" : "bg-white text-gray-800"
         }`}
       >
-        {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <PlusCircle className="h-6 w-6 text-orange-500" />
@@ -178,10 +171,8 @@ const BlogListOfStaff = () => {
           </div>
         </div>
 
-        {/* Search and Filter Section */}
         <div className="mb-6 p-4 rounded-lg shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            {/* Search Input */}
             <div className="relative w-full sm:w-1/2 lg:w-1/3">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
@@ -192,7 +183,6 @@ const BlogListOfStaff = () => {
               />
             </div>
 
-            {/* Filter Dropdown */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Filter className="h-5 w-5 text-orange-500" />
               <span className="font-medium text-sm sm:text-base">Lọc theo trạng thái:</span>
@@ -209,7 +199,6 @@ const BlogListOfStaff = () => {
           </div>
         </div>
 
-        {/* Loading or Empty State */}
         {adminLoading ? (
           <div className="flex items-center justify-center py-6">
             <span className="animate-spin text-orange-500 w-6 h-6 mr-2">⏳</span>
@@ -222,7 +211,6 @@ const BlogListOfStaff = () => {
           </div>
         ) : (
           <>
-            {/* Desktop Table View */}
             <div className="hidden md:block border rounded-lg overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead className="border-b bg-gray-400">
@@ -269,7 +257,7 @@ const BlogListOfStaff = () => {
                       <td className="px-3 py-4 text-center">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${
-                            blog.status === "Approved"
+                            blog.status === "Đã duyệt"
                               ? "bg-green-100 text-green-800"
                               : "bg-yellow-100 text-yellow-800"
                           }`}
@@ -278,7 +266,7 @@ const BlogListOfStaff = () => {
                         </span>
                       </td>
                       <td className="px-3 py-4 flex justify-center gap-2">
-                        {blog.status === "Pending" && (
+                        {blog.status === "Đang chờ" && (
                           <>
                             <button
                               onClick={() => handleApprove(blog.blogId)}
@@ -296,7 +284,7 @@ const BlogListOfStaff = () => {
                             </button>
                           </>
                         )}
-                        {blog.status === "Approved" && (
+                        {blog.status === "Đã duyệt" && (
                           <button
                             onClick={() => handleCancel(blog.blogId)}
                             className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
@@ -312,7 +300,6 @@ const BlogListOfStaff = () => {
               </table>
             </div>
 
-            {/* Mobile Card View */}
             <div className="block md:hidden space-y-4">
               {displayedBlogs.map((blog, index) => (
                 <div
@@ -326,7 +313,7 @@ const BlogListOfStaff = () => {
                       </span>
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${
-                          blog.status === "Approved"
+                          blog.status === "Đã duyệt"
                             ? "bg-green-100 text-green-800"
                             : "bg-yellow-100 text-yellow-800"
                         }`}
@@ -345,7 +332,7 @@ const BlogListOfStaff = () => {
                         : "N/A"}
                     </p>
                     <div className="flex gap-2">
-                      {blog.status === "Pending" && (
+                      {blog.status === "Đang chờ" && (
                         <>
                           <button
                             onClick={() => handleApprove(blog.blogId)}
@@ -363,7 +350,7 @@ const BlogListOfStaff = () => {
                           </button>
                         </>
                       )}
-                      {blog.status === "Approved" && (
+                      {blog.status === "Đã duyệt" && (
                         <button
                           onClick={() => handleCancel(blog.blogId)}
                           className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
@@ -378,7 +365,6 @@ const BlogListOfStaff = () => {
               ))}
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <Pagination
                 currentPage={currentPage}
