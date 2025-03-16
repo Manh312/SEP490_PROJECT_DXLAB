@@ -165,7 +165,17 @@ const RootApp = () => {
 // Render ứng dụng
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
-    <ToastContainer />
+    <ToastContainer 
+      position="top-right"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+    />
     <RootApp />
   </Provider>
 );
