@@ -9,8 +9,8 @@ export const fetchRooms = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get(API_URL);
-      console.log(response.data);
-      return response.data;
+      console.log("Dữ liệu room từ BE:", response.data.data);
+      return response.data.data; // Chỉ lấy mảng data
     } catch (error) {
       return rejectWithValue(error.message || "Không thể lấy danh sách phòng");
     }
@@ -23,7 +23,7 @@ export const getRoomById = createAsyncThunk(
   async (roomId, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get(`${API_URL}/${roomId}`);
-      return response.data;
+      return response.data.data; // Chỉ lấy data
     } catch (error) {
       return rejectWithValue(error.message || "Không tìm thấy phòng");
     }
@@ -36,28 +36,30 @@ export const createRoom = createAsyncThunk(
   async (roomData, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(API_URL, roomData);
-      console.log("create room: "+response);
-      return response.data;
+      console.log("Dữ liệu trả về từ BE:", response.data);
+      return response.data; // Chỉ lấy data
     } catch (error) {
-      console.log(error.response.data.errors.RoomName);
-      return rejectWithValue(error.message || "Không thể tạo phòng");
+      console.error(error.response.data);
+      return rejectWithValue(error.response.data || "Không thể tạo phòng");
     }
   }
 );
 
-// **4. Cập nhật phòng**
+// **3. Cập nhật phòng (Dùng JSON Patch)**
 export const updateRoom = createAsyncThunk(
   "room/update",
-  async ({ roomId, roomData }, { rejectWithValue }) => {
+  async ({ roomId, updates }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.put(`${API_URL}/${roomId}`, roomData);
-      return response.data;
+      const response = await axiosInstance.patch(`${API_URL}/${roomId}`, updates, {
+        headers: { "Content-Type": "application/json-patch+json" }
+      });
+      console.log(response);
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.message || "Cập nhật phòng thất bại");
     }
   }
 );
-
 // **5. Xóa phòng**
 export const deleteRoom = createAsyncThunk(
   "room/delete",
@@ -75,7 +77,7 @@ export const deleteRoom = createAsyncThunk(
 const roomSlice = createSlice({
   name: "rooms",
   initialState: {
-    rooms: [],
+    rooms: [], // Đảm bảo là một mảng
     loading: false,
     error: null,
     selectedRoom: null,
@@ -90,7 +92,7 @@ const roomSlice = createSlice({
       })
       .addCase(fetchRooms.fulfilled, (state, action) => {
         state.loading = false;
-        state.rooms = action.payload;
+        state.rooms = Array.isArray(action.payload) ? action.payload : []; // Đảm bảo rooms luôn là mảng
       })
       .addCase(fetchRooms.rejected, (state, action) => {
         state.loading = false;
@@ -118,7 +120,9 @@ const roomSlice = createSlice({
       })
       .addCase(createRoom.fulfilled, (state, action) => {
         state.loading = false;
-        state.rooms.push(action.payload);
+        if (action.payload) {
+          state.rooms = [...state.rooms, action.payload]; // Thêm phòng mới vào danh sách
+        }
       })
       .addCase(createRoom.rejected, (state, action) => {
         state.loading = false;

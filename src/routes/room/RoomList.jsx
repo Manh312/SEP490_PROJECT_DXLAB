@@ -1,9 +1,16 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useMemo, useState } from "react";
 import { fetchRooms, deleteRoom } from "../../redux/slices/Room";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import { Eye, PencilLine, Trash2, PlusCircle, Filter, Hotel } from "lucide-react";
+import {
+  Eye,
+  PencilLine,
+  Trash2,
+  PlusCircle,
+  Filter,
+  Hotel,
+} from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
 
@@ -24,16 +31,19 @@ const RoomList = () => {
     );
   }, [rooms, statusFilter]);
 
-  const totalRooms = Math.ceil(filteredRooms.length / roomsPerPage);
+  // const totalRooms = Math.ceil(filteredRooms.length / roomsPerPage);
+  // Tính tổng số trang
+  const totalPages = Math.ceil(filteredRooms.length / roomsPerPage);
 
   useEffect(() => {
-    if (currentPage > totalRooms && totalRooms > 0) {
-      setCurrentPage(totalRooms);
-    } else if (totalRooms === 0) {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    } else if (totalPages === 0) {
       setCurrentPage(1);
     }
-  }, [totalRooms, currentPage]);
+  }, [totalPages, currentPage]);
 
+  // Lấy danh sách phòng hiện tại theo trang
   const currentRooms = filteredRooms.slice(
     (currentPage - 1) * roomsPerPage,
     currentPage * roomsPerPage
@@ -70,16 +80,40 @@ const RoomList = () => {
     }
   };
 
+  // Chuyển trang
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  // hiển thị thông báo tạo thành công
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      toast.success(location.state.successMessage);
+
+      // Xóa state sau khi hiển thị toast để tránh hiển thị lại khi refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+      />
       <Tooltip id="action-tooltip" />
       <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
         {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <Hotel className="h-6 w-6 text-blue-500" />
-            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">Danh Sách Phòng</h2>
+            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
+              Danh Sách Phòng
+            </h2>
           </div>
           <button
             className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
@@ -95,7 +129,9 @@ const RoomList = () => {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
-              <span className="font-medium text-sm sm:text-base">Lọc theo trạng thái</span>
+              <span className="font-medium text-sm sm:text-base">
+                Lọc theo trạng thái
+              </span>
             </div>
           </div>
           <select
@@ -128,7 +164,7 @@ const RoomList = () => {
                 <thead className="border-b items-center bg-blue-500 text-white">
                   <tr>
                     <th className="p-3 text-left">#</th>
-                    <th className="p-3 text-left">Hình ảnhảnh</th>
+                    <th className="p-3 text-left">Hình ảnh</th>
                     <th className="p-3 text-left">Tên Phòng</th>
                     <th className="p-3 text-center">Trạng Thái</th>
                     <th className="p-3 text-center">Hành Động</th>
@@ -136,32 +172,96 @@ const RoomList = () => {
                 </thead>
                 <tbody>
                   {currentRooms.map((room, index) => (
-                    <tr key={room.roomId} className="border-b hover:bg-gray-500 transition">
-                      <td className="p-3">{(currentPage - 1) * roomsPerPage + index + 1}</td>
+                    <tr
+                      key={room.roomId}
+                      className="border-b hover:bg-gray-500 transition"
+                    >
                       <td className="p-3">
-                      <img src={`../../assets/${room.images}`} alt="Room" className="w-20 h-20 object-cover rounded-md shadow" />
+                        {(currentPage - 1) * roomsPerPage + index + 1}
+                      </td>
+                      <td className="p-3 flex gap-2">
+                        {room.images?.map((img, index) => (
+                          <img
+                            key={index}
+                            src={`/assets/${img}`} // Truy cập trực tiếp từ public
+                            alt={`Room ${index + 1}`}
+                            className="w-20 h-20 object-cover rounded-md shadow"
+                          />
+                        ))}
                       </td>
                       <td className="p-3">{room.roomName}</td>
                       <td className="p-3 text-center">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${room.isDeleted === true ? "bg-green-200 text-green-700" : "bg-red-200 text-red-700"}`}>
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            room.isDeleted === true
+                              ? "bg-green-200 text-green-700"
+                              : "bg-red-200 text-red-700"
+                          }`}
+                        >
                           {room.isDeleted ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      <td className="p-3 flex justify-center gap-x-3">
-                        <button onClick={() => navigate(`/dashboard/room/${room.roomId}`)} className="text-blue-500 hover:text-blue-700 transition">
-                          <Eye size={22} />
-                        </button>
-                        <button onClick={() => navigate(`/dashboard/room/update/${room.roomId}`)} className="text-yellow-500 hover:text-yellow-700 transition">
-                          <PencilLine size={22} />
-                        </button>
-                        <button onClick={() => handleDelete(room.roomId)} className="text-red-500 hover:text-red-700 transition">
-                          <Trash2 size={22} />
-                        </button>
+                      <td className="p-3">
+                        <div className="flex justify-center items-center gap-x-3">
+                          <button
+                            onClick={() =>
+                              navigate(`/dashboard/room/${room.roomId}`)
+                            }
+                            className="text-blue-500 hover:text-blue-700 transition"
+                          >
+                            <Eye size={22} />
+                          </button>
+                          <button
+                            onClick={() =>
+                              navigate(`/dashboard/room/update/${room.roomId}`)
+                            }
+                            className="text-yellow-500 hover:text-yellow-700 transition"
+                          >
+                            <PencilLine size={22} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(room.roomId)}
+                            className="text-red-500 hover:text-red-700 transition"
+                          >
+                            <Trash2 size={22} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-4 py-2 mx-1 bg-gray-300 rounded"
+              >
+                &laquo;
+              </button>
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => handlePageChange(i + 1)}
+                  className={`px-4 py-2 mx-1 ${
+                    currentPage === i + 1
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-300"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 mx-1 bg-gray-300 rounded"
+              >
+                &raquo;
+              </button>
             </div>
           </>
         )}

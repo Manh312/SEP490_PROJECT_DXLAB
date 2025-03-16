@@ -35,27 +35,58 @@ const RoomDetail = () => {
   if (error) return <p className="text-red-500 text-center">Lỗi: {error}</p>;
   if (!selectedRoom) return <p className="text-gray-500 text-center">Không tìm thấy phòng có ID {id}!</p>;
 
+  // Lấy dữ liệu từ API response mới
+  const { roomId, roomName, roomDescription, capacity, isDeleted, images } = selectedRoom;
+
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 rounded-lg shadow-lg bg-white">
+    <div className="max-w-lg mx-auto mt-10 p-6 rounded-lg shadow-lg">
       <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">Chi Tiết Phòng</h2>
       <table className="w-full border-collapse border border-gray-300">
         <tbody>
           <tr className="border-b">
-            <td className="px-4 py-3 font-semibold bg-gray-200">Tên Phòng</td>
-            <td className="px-4 py-3">{selectedRoom.roomName}</td>
+            <td className="px-4 py-3 font-semibold border-r border-gray-300">Tên Phòng</td>
+            <td className="px-4 py-3">{roomName}</td>
           </tr>
+          <tr className="border-b">
+            <td className="px-4 py-3 font-semibold  border-r border-gray-300">Mô Tả</td>
+            <td className="px-4 py-3">{roomDescription}</td>
+          </tr>
+          <tr className="border-b">
+            <td className="px-4 py-3 font-semibold border-r border-gray-300">Sức Chứa</td>
+            <td className="px-4 py-3">{capacity} người</td>
+          </tr>
+          <tr className="border-b">
+            <td className="px-4 py-3 font-semibold  border-r border-gray-300">Trạng Thái</td>
+            <td className={`px-4 py-3 font-semibold ${isDeleted ? "text-red-500" : "text-green-500"}`}>
+              {isDeleted ? "Inactive" : "Active"}
+            </td>
+          </tr>
+          {/* Hiển thị ảnh */}
           <tr>
-            <td className="px-4 py-3 font-semibold bg-gray-200">Trạng Thái</td>
-            <td className={`px-4 py-3 text-center font-semibold ${selectedRoom.status === "Còn trống" ? "text-green-500" : "text-red-500"}`}>
-              {selectedRoom.status}
+            <td className="px-4 py-3 font-semibold border-r border-gray-300">Hình Ảnh</td>
+            <td className="px-4 py-3 flex flex-wrap gap-2">
+              {images && images.length > 0 ? (
+                images.map((img, index) => (
+                  <img
+                    key={index}
+                    src={`/assets/${img}`} // Load ảnh từ thư mục assets
+                    alt={`room-${index}`}
+                    className="w-20 h-20 object-cover rounded-md shadow"
+                  />
+                ))
+              ) : (
+                <span className="text-gray-500">Không có hình ảnh</span>
+              )}
             </td>
           </tr>
         </tbody>
       </table>
+
+      {/* Nút Chỉnh sửa & Xóa */}
       <div className="flex gap-x-3 mt-4">
         <button
           className="bg-yellow-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-yellow-600 transition"
-          onClick={() => navigate(`/dashboard/room/update/${selectedRoom.roomId}`)}
+          onClick={() => navigate(`/dashboard/room/update/${roomId}`)}
         >
           <PencilLine size={20} /> Chỉnh Sửa
         </button>
