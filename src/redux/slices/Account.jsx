@@ -7,7 +7,6 @@ export const fetchAccounts = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get('/account');
-      console.log("fetchAccounts response:", response.data.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error || "Không thể lấy dữ liệu tài khoản");
@@ -21,7 +20,6 @@ export const fetchAccountById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`/account/${id}`);
-      console.log("fetchAccountById response:", response.data.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy dữ liệu tài khoản");
@@ -54,7 +52,6 @@ export const fetchRolesByAdmin = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get('/role/rolebyadmin');
-      console.log("fetchRolesByAdmin response:", response.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể hiển thị vai trò");
@@ -68,7 +65,6 @@ export const updateAccount = createAsyncThunk(
   async ({ id, roleName }, { rejectWithValue }) => {
     try {
       const response = await axios.put(`/account/update/${id}`, { roleName });
-      console.log("Update response:", response.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể cập nhật tài khoản");
@@ -95,12 +91,6 @@ export const softDeleteAccount = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.patch(`/account/soft-delete/${id}`);
-      console.log(response.data.message);
-      // const data = response.data.data;
-      // if (!data || !data.id) {
-      //   throw new Error("Invalid response data");
-      // }
-      // console.log("softDelete response:", data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể xóa mềm tài khoản");
@@ -114,7 +104,6 @@ export const fetchDeletedAccounts = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get('/accountstorage');
-      console.log("fetchDeletedAccounts response:", response.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy dữ liệu tài khoản đã xóa mềm");
@@ -128,7 +117,6 @@ export const restoreAccount = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.patch(`/accountstorage/restore/${id}`);
-      console.log("restoreAccount response:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể khôi phục tài khoản");
@@ -142,7 +130,6 @@ export const deletePermanently = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.delete(`/accountstorage/hard-delete/${id}`);
-      console.log("deletePermanently response:", response.data.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể xóa vĩnh viễn tài khoản");

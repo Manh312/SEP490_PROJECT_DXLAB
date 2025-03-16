@@ -36,10 +36,7 @@ const Layout = () => {
       const script = document.createElement("script");
       script.src = TIDIO_SCRIPT_URL;
       script.async = true;
-      script.onload = () => console.log("Tidio script loaded successfully");
-      script.onerror = () => console.error("Failed to load Tidio script");
       document.body.appendChild(script);
-  
       return () => {
         document.body.removeChild(script);
       };

@@ -7,7 +7,6 @@ export const listSlots = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get('/slot');
-      console.log("response", response.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể tải danh sách slots");
@@ -20,7 +19,6 @@ export const createSlot = createAsyncThunk(
   async (slot, { rejectWithValue }) => {
     try {
       const response = await axios.post('/slot/create', slot);
-      console.log(response.data);
       return response.data;
     } catch (error) {
       // console.log(error.response.data);
