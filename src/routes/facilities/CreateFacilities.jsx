@@ -13,9 +13,9 @@ const CreateFacilities = () => {
   const [facility, setFacility] = useState({
     batchNumber: "",
     facilityDescription: "",
-    cost: 1,
+    cost: 0,
     expiredTime: "",
-    quantity: 1,
+    quantity: 0,
     importDate: new Date().toISOString().split("T")[0],
   });
 
@@ -88,6 +88,7 @@ const CreateFacilities = () => {
           <input
             type="text"
             name="batchNumber"
+            placeholder="Nhập số lô"
             value={facility.batchNumber}
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
@@ -100,6 +101,7 @@ const CreateFacilities = () => {
           <input
             type="text"
             name="facilityDescription"
+            placeholder="Nhập mô tả cơ sở vật chất"
             value={facility.facilityDescription}
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
