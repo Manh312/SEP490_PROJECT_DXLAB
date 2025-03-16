@@ -9,28 +9,44 @@ import {
 } from "../../redux/slices/Account";
 import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import { Upload, Trash2, Edit, Users, Filter } from "lucide-react";
+import { Trash2, Edit, Users, Filter, Search } from "lucide-react";
 import { Tooltip } from "react-tooltip";
-import { FaSpinner } from "react-icons/fa";
+import { FaFileExcel, FaSpinner } from "react-icons/fa";
+import Pagination from "../../hooks/use-pagination";
+import debounce from "lodash/debounce";
 
 const AccountList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { accounts, roleFilter, loading } = useSelector((state) => state.accounts);
-  console.log("Accounts state:", accounts); // Log để debug
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
   const postsPerPage = 6;
 
+  // Debounced search function
+  const debouncedSearch = debounce((value) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  }, 300);
+
   const filteredAccounts = useMemo(() => {
-    console.log("Filtering accounts:", accounts); // Log để debug
     if (!Array.isArray(accounts)) return [];
-    return accounts.filter((acc) => {
-      // Ensure acc has the required properties
+
+    let result = accounts.filter((acc) => {
       if (!acc || typeof acc !== "object" || !acc.userId || !acc.roleName) return false;
       return roleFilter === "All" ? true : acc.roleName === roleFilter;
     });
-  }, [accounts, roleFilter]);
+
+    if (searchTerm) {
+      result = result.filter((acc) =>
+      (acc.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        acc.email?.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    return result;
+  }, [accounts, roleFilter, searchTerm]);
 
   const totalAccounts = Math.ceil(filteredAccounts.length / postsPerPage);
 
@@ -95,9 +111,13 @@ const AccountList = () => {
 
   const getEmptyStateMessage = () => {
     if (roleFilter === "All") {
-      return "Hiện tại không có người dùng nào";
+      return searchTerm
+        ? "Không tìm thấy người dùng nào khớp với tìm kiếm"
+        : "Hiện tại không có người dùng nào";
     }
-    return `Không có người dùng nào thuộc vai trò "${roleFilter}"`;
+    return searchTerm
+      ? `Không tìm thấy người dùng nào thuộc vai trò "${roleFilter}" khớp với tìm kiếm`
+      : `Không có người dùng nào thuộc vai trò "${roleFilter}"`;
   };
 
   const getFilterBgClass = () => {
@@ -126,7 +146,7 @@ const AccountList = () => {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <label className="relative cursor-pointer bg-orange-500 hover:bg-orange-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all">
-              <Upload className="h-5 w-5" />
+              <FaFileExcel className="h-5 w-5" />
               <span className="hidden sm:inline">Thêm từ Excel</span>
               <input
                 type="file"
@@ -145,23 +165,35 @@ const AccountList = () => {
           </div>
         </div>
 
-        {/* Filter Section */}
-        <div className="mb-6 rounded-lg shadow p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
-              <span className="font-medium text-sm sm:text-base">Lọc theo vai trò</span>
+        {/* Search and Filter Section */}
+        <div className="mb-6 p-4 rounded-lg shadow-sm">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            {/* Search Input */}
+            <div className="relative w-full sm:w-1/2 lg:w-1/3">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo tên hoặc email"
+                onChange={(e) => debouncedSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2  text-sm sm:text-base shadow-sm"
+              />
+            </div>
+
+            {/* Filter Dropdown */}
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Filter className="h-5 w-5 text-orange-500" />
+              <span className="font-medium text-sm sm:text-base">Lọc theo vai trò:</span>
+              <select
+                value={roleFilter}
+                onChange={(e) => dispatch(setRoleFilter(e.target.value))}
+                className={`w-full sm:w-auto px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm sm:text-base ${getFilterBgClass()} shadow-sm`}
+              >
+                <option value="All">Tất cả</option>
+                <option value="Student">Student</option>
+                <option value="Staff">Staff</option>
+              </select>
             </div>
           </div>
-          <select
-            value={roleFilter}
-            onChange={(e) => dispatch(setRoleFilter(e.target.value))}
-            className={`w-30 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base ${getFilterBgClass()} transition-colors duration-300`}
-          >
-            <option value="All">Tất Cả</option>
-            <option value="Student">Student</option>
-            <option value="Staff">Staff</option>
-          </select>
         </div>
 
         {/* Loading or Empty State */}
@@ -177,13 +209,15 @@ const AccountList = () => {
           </div>
         ) : (
           <>
-            {/* Table for Desktop and Larger Tablets */}
-            <div className="hidden md:block rounded-lg overflow-x-auto">
+            {/* Table and List views remain the same */}
+            <div className="hidden md:block border rounded-lg overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead className="border-b items-center bg-gray-500">
+                <thead className="border-b items-center bg-gray-400">
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Họ và Tên</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
+                      Họ và Tên
+                    </th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Email</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Vai Trò</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành Động</th>
@@ -191,9 +225,13 @@ const AccountList = () => {
                 </thead>
                 <tbody>
                   {currentPosts.map((user, index) => (
-                    <tr key={user.id} className="border-b hover:bg-gray-500 transition-colors">
+                    <tr key={user.id} className="border-b hover:bg-gray-400 transition-colors">
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{(currentPage - 1) * postsPerPage + index + 1}</td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{user.fullName || "N/A"}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        <Link to={`/dashboard/account/${user.userId}`} className="hover:text-gray-400 inline-block">
+                          {user.fullName || "N/A"}
+                        </Link>
+                      </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{user.email || "N/A"}</td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
@@ -229,12 +267,11 @@ const AccountList = () => {
               </table>
             </div>
 
-            {/* List for Mobile and Smaller Tablets */}
             <div className="block md:hidden space-y-4">
               {currentPosts.length > 0 ? (
                 currentPosts.map((user, index) => (
                   <div
-                    key={user.id || index} // Fallback to index if id is missing
+                    key={user.id || index}
                     className="border rounded-lg p-3 sm:p-4 shadow-sm hover:bg-gray-500 transition-colors"
                   >
                     <div className="flex flex-col gap-2">
@@ -280,20 +317,12 @@ const AccountList = () => {
               )}
             </div>
 
-            {/* Pagination */}
             {totalAccounts > 1 && (
-              <div className="flex justify-center mt-6 flex-wrap gap-2">
-                {[...Array(totalAccounts)].map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentPage(index + 1)}
-                    className={`px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded-lg text-sm ${currentPage === index + 1 ? "bg-orange-500 text-white" : "bg-gray-200 text-black"
-                      }`}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
-              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalAccounts}
+                setCurrentPage={setCurrentPage}
+              />
             )}
           </>
         )}

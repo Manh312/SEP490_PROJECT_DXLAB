@@ -127,7 +127,7 @@ const Navbar = () => {
                       <li>
                         <Link to={"/booked-history"}>
                           <button className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded">
-                            <span className="ml-4">Lịch sử giao dịch</span>
+                            <span className="ml-2">Lịch sử giao dịch</span>
                             <LucideHistory size={20} className="ml-2" />
                           </button>
                         </Link>

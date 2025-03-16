@@ -23,7 +23,6 @@ import UpdateAccount from "./routes/account/UpdateAccount";
 import DeleteAccount from './routes/account/DeleteAccount';
 import NotFound from './layouts/home/NotFound';
 import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
 import ViewAreas from './routes/students/ViewAreas';
 import Payment from './routes/students/Payment';
 import ViewBookedSeats from './routes/students/ViewBookedSeats';
@@ -133,7 +132,7 @@ const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={["Admin"]}><RoomDetail /></ProtectedRoute>,
       },
       {
-        path: "/dashboard/room/update/:id" ,
+        path: "/dashboard/room/update/:id",
         element: <ProtectedRoute allowedRoles={["Admin"]}><UpdateRoom /></ProtectedRoute>,
       },
       {
@@ -141,21 +140,21 @@ const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={["Admin"]}><CreateRoom /></ProtectedRoute>,
       },
 
-      
+
       {
         path: "dashboard/slot",
         element: <ProtectedRoute allowedRoles={["Admin"]}><SlotList /></ProtectedRoute>,
       },
       {
         path: "dashboard/slot/create",
-        element: <ProtectedRoute allowedRoles={["Admin"]}>< CreateSlot/></ProtectedRoute>,
+        element: <ProtectedRoute allowedRoles={["Admin"]}>< CreateSlot /></ProtectedRoute>,
       },
       {
         path: "dashboard/account",
         element: <ProtectedRoute allowedRoles={["Admin"]}><AccountList /></ProtectedRoute>,
       },
       {
-        path: "dashboard/account/detail",
+        path: "dashboard/account/:id",
         element: <ProtectedRoute allowedRoles={["Admin"]}><AccountDetail /></ProtectedRoute>,
       },
       {
@@ -213,17 +212,6 @@ const router = createBrowserRouter([
 function App() {
   return (
     <ThemeProvider storageKey="theme">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
       <RouterProvider router={router} />
     </ThemeProvider>
   );
