@@ -1,87 +1,90 @@
 import PropTypes from "prop-types";
-import NotAuthorization from "../../layouts/home/NotAuthorization";
-import NotAuthenticate from "../../layouts/home/NotAuthenticate";
-import { FaSpinner } from "react-icons/fa";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useAddress, useConnectionStatus } from "@thirdweb-dev/react";
 import { fetchRoleByID } from "../../redux/slices/Authentication";
+import NotAuthorization from "../../layouts/home/NotAuthorization";
+import NotAuthenticate from "../../layouts/home/NotAuthenticate";
+import { FaSpinner } from "react-icons/fa";
 
-const ProtectedRoute = ({ children, allowedRoles }) => {
+// Component Loading riêng biệt để tái sử dụng
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-6 mt-30 mb-80">
+    <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+    <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
+  </div>
+);
+
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const address = useAddress();
   const status = useConnectionStatus();
   const dispatch = useDispatch();
-  const { user, loading, roleName } = useSelector((state) => state.auth); // Lấy roleName từ Redux state
 
+  // Lấy dữ liệu từ Redux một cách chọn lọc
+  const { user, loading, roleName } = useSelector(
+    (state) => ({
+      user: state.auth.user,
+      loading: state.auth.loading,
+      roleName: state.auth.roleName,
+    }),
+    // So sánh shallow để tránh re-render không cần thiết
+    (prev, next) => 
+      prev.user === next.user && 
+      prev.loading === next.loading && 
+      prev.roleName === next.roleName
+  );
+
+  // Chỉ fetch role khi cần thiết
   useEffect(() => {
-    const checkUserRole = async () => {
-      if (!address || status !== "connected" || !user) {
-        return;
-      }
-
-      // Nếu roleName đã có trong Redux state, không cần fetch lại
-      if (roleName) {
-        return;
-      }
-
-      const roleId = user?.roleId;
-      if (roleId && !roleName && !loading) {
-        try {
-          await dispatch(fetchRoleByID(roleId)).unwrap();
-        } catch (error) {
-          console.error("Failed to fetch role:", error);
-        }
-      }
-    };
-
-    checkUserRole();
+    if (
+      status === "connected" &&
+      address &&
+      user?.roleId &&
+      !roleName &&
+      !loading
+    ) {
+      dispatch(fetchRoleByID(user.roleId)).catch((error) => {
+        console.error("Failed to fetch role:", error);
+      });
+    }
   }, [status, address, user, roleName, loading, dispatch]);
 
-  // Dùng useMemo để tối ưu hóa điều kiện render
-  const isAuthLoading = useMemo(() => {
-    // Đang tải nếu: Redux đang loading, hoặc status đang connecting, hoặc chưa có roleName nhưng user và address tồn tại
-    return (
+  // Tối ưu các điều kiện render
+  const isAuthLoading = useMemo(
+    () =>
       loading ||
       status === "connecting" ||
-      (!roleName && !!user && !!address && status === "connected")
-    );
-  }, [loading, status, roleName, user, address]);
+      (!roleName && !!user && !!address && status === "connected"),
+    [loading, status, roleName, user, address]
+  );
 
-  const isDisconnected = useMemo(() => {
-    return !address || status === "disconnected";
-  }, [address, status]);
+  const isDisconnected = useMemo(
+    () => !address || status === "disconnected",
+    [address, status]
+  );
 
-  const isUnauthorized = useMemo(() => {
-    return roleName && allowedRoles && !allowedRoles.includes(roleName);
-  }, [roleName, allowedRoles]);
+  const isUnauthorized = useMemo(
+    () => roleName && !allowedRoles.includes(roleName),
+    [roleName, allowedRoles]
+  );
 
-  if (isAuthLoading) {
-    return (
-      <div className="flex items-center justify-center py-6 mt-30 mb-80">
-        <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
-        <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
-      </div>
-    );
-  }
-
-  if (isDisconnected) {
-    return <NotAuthenticate />;
-  }
-
-  if (isUnauthorized) {
-    return <NotAuthorization />;
-  }
+  if (isAuthLoading) return <LoadingSpinner />;
+  if (isDisconnected) return <NotAuthenticate />;
+  if (isUnauthorized) return <NotAuthorization />;
 
   return children;
 };
 
+// Định nghĩa propTypes
 ProtectedRoute.propTypes = {
   children: PropTypes.node.isRequired,
   allowedRoles: PropTypes.arrayOf(PropTypes.string),
 };
 
-ProtectedRoute.defaultProps = {
-  allowedRoles: [],
-};
-
-export default ProtectedRoute;
+// Sử dụng React.memo để tránh re-render không cần thiết
+export default memo(ProtectedRoute, (prevProps, nextProps) => {
+  return (
+    prevProps.children === nextProps.children &&
+    prevProps.allowedRoles.join() === nextProps.allowedRoles.join()
+  );
+});

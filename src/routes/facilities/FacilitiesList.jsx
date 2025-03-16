@@ -4,7 +4,7 @@ import { fetchFacilities, addFacilityFromExcel, moveToStorage } from "../../redu
 import { Link, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { FaPlus, FaFileExcel, FaFilter } from "react-icons/fa";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Search, Trash2 } from "lucide-react";
 import { MdChair } from "react-icons/md";
 import { format } from "date-fns";
 import debounce from "lodash/debounce";
@@ -146,62 +146,68 @@ const FacilitiesList = () => {
         </div>
       </div>
 
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        <input
-          type="text"
-          placeholder="Tìm kiếm theo số lô"
-          onChange={(e) => debouncedSearch(e.target.value)}
-          className="px-4 py-2 border rounded-lg w-full sm:w-1/3"
-        />
-        <button
-          onClick={() => setIsFilterOpen(!isFilterOpen)}
-          className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-        >
-          <FaFilter className="mr-2" /> {isFilterOpen ? "Ẩn" : "Hiện"} bộ lọc
-        </button>
+      <div className="mb-6 p-4 rounded-lg shadow-sm">
+        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="relative w-full sm:w-1/2 lg:w-1/3">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo số lô"
+              value={searchTerm}
+              onChange={(e) => debouncedSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 text-gray-400 text-sm sm:text-base shadow-sm"
+            />
+          </div>
+          <button
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+          >
+            <FaFilter className="mr-2" /> {isFilterOpen ? "Ẩn" : "Hiện"} bộ lọc
+          </button>
+        </div>
       </div>
 
       {isFilterOpen && (
-        <div className="mb-6 p-4 border rounded-lg bg-gray-50 transition-all duration-300">
+        <div className="mb-6 p-4 border rounded-lg transition-all duration-300">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-gray-700">Ngày nhập từ:</label>
+              <label>Ngày nhập từ:</label>
               <input
                 type="date"
                 name="importDateStart"
                 value={filters.importDateStart}
                 onChange={handleFilterChange}
-                className="mt-1 px-4 py-2 border rounded-lg w-full"
+                className="mt-1 px-4 py-2 border rounded-lg w-full bg-gray-400 "
               />
             </div>
             <div>
-              <label className="text-gray-700">Đến:</label>
+              <label>Đến:</label>
               <input
                 type="date"
                 name="importDateEnd"
                 value={filters.importDateEnd}
                 onChange={handleFilterChange}
-                className="mt-1 px-4 py-2 border rounded-lg w-full"
+                className="mt-1 px-4 py-2 border rounded-lg w-full bg-gray-400 "
               />
             </div>
             <div>
-              <label className="text-gray-700">Ngày hết hạn từ:</label>
+              <label>Ngày hết hạn từ:</label>
               <input
                 type="date"
                 name="expiredDateStart"
                 value={filters.expiredDateStart}
                 onChange={handleFilterChange}
-                className="mt-1 px-4 py-2 border rounded-lg w-full"
+                className="mt-1 px-4 py-2 border rounded-lg w-full bg-gray-400 "
               />
             </div>
             <div>
-              <label className="text-gray-700">Đến:</label>
+              <label>Đến:</label>
               <input
                 type="date"
                 name="expiredDateEnd"
                 value={filters.expiredDateEnd}
                 onChange={handleFilterChange}
-                className="mt-1 px-4 py-2 border rounded-lg w-full"
+                className="mt-1 px-4 py-2 border rounded-lg w-full bg-gray-400 "
               />
             </div>
           </div>
@@ -231,7 +237,7 @@ const FacilitiesList = () => {
           {/* Bảng cho desktop */}
           <div className="hidden md:block overflow-x-auto border rounded-lg">
             <table className="w-full text-left">
-              <thead className="bg-gray-500 sticky top-0">
+              <thead className="bg-gray-400 sticky top-0">
                 <tr>
                   <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">#</th>
                   <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">Số lô</th>
@@ -245,7 +251,7 @@ const FacilitiesList = () => {
               </thead>
               <tbody>
                 {currentPosts.map((facility, index) => (
-                  <tr key={facility.id} className="border-t hover:bg-gray-100 transition-colors">
+                  <tr key={facility.id} className="border-t hover:bg-gray-400 transition-colors">
                     <td className="px-3 py-4 text-center">
                       {(currentPage - 1) * postsPerPage + index + 1}
                     </td>

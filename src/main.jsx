@@ -17,10 +17,12 @@ import { store, persistor } from "./redux/Store.jsx";
 import "./styles.css";
 import { toast } from "react-toastify";
 import { clearAuthData, fetchRoleByID, setAuthData } from "./redux/slices/Authentication.jsx";
-import React from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
+// Cấu hình chain cố định
 const activeChain = "sepolia";
 
+// Hàm gửi dữ liệu người dùng về backend
 const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) => {
   try {
     const userEmail =
@@ -31,105 +33,100 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
     const payload = {
       userId: 0,
       email: userEmail,
-      fullName: "manhmeo",
-      walletAddress: walletAddress,
+      fullName: "unknown",
+      walletAddress,
       status: true,
       roleId: 1,
     };
 
     const response = await fetch("https://localhost:9999/api/user/createuser", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error("API request failed with status:", response.status, errorData);
-      if (response.status === 404) {
-        throw new Error("Backend API endpoint not found. Please check the server.");
-      }
-      throw new Error(`API request failed with status ${response.status}: ${errorData}`);
+      console.error("API request failed:", response.status, errorData);
+      throw new Error(response.status === 404 ? "Backend API not found." : `API failed: ${errorData}`);
     }
 
     const contentType = response.headers.get("Content-Type");
-    let result;
+    const result = contentType?.includes("application/json")
+      ? await response.json()
+      : { token: await response.text() };
 
-    if (contentType && contentType.includes("application/json")) {
-      result = await response.json();
-      console.log("Kết quả từ backend (JSON):", result.data);
-      if (!result.data || !result.data.token) {
-        throw new Error("Token không tồn tại hoặc không đúng định dạng trong response từ backend");
-      }
-    } else {
-      const token = await response.text();
-      console.log("Token từ backend (plain text):", token);
-      if (!token || token.trim() === "") {
-        throw new Error("Token không hợp lệ hoặc rỗng từ backend");
-      }
-      result = { token };
+    if (!result.data?.token) {
+      throw new Error("Invalid or missing token from backend.");
     }
 
-    const { roleId } = result.data.user.roleId || {};
+    const { roleId } = result.data.user || {};
     if (roleId) {
       await dispatch(fetchRoleByID(roleId)).unwrap();
     }
 
     dispatch(setAuthData({ token: result.data.token, user: result.data.user }));
 
-    if (walletAddress && walletType === "metamask") {
-      toast.success("Đăng nhập MetaMask thành công!");
-    } else if (walletType === "embeddedWallet") {
-      toast.success("Đăng nhập Google thành công!");
-    } else {
-      toast.success("Đăng nhập ví thành công!");
-    }
+    toast.success(
+      walletType === "metamask"
+        ? "Đăng nhập MetaMask thành công!"
+        : walletType === "embeddedWallet"
+        ? "Đăng nhập Google thành công!"
+        : "Đăng nhập ví thành công!",
+      { toastId: `login-${walletType}` }
+    );
   } catch (error) {
-    console.error("Lỗi khi gửi dữ liệu về backend:", error.message);
+    console.error("Backend error:", error.message);
     toast.error(
       error.message.includes("404")
-        ? "Backend server không khả dụng. Vui lòng kiểm tra lại."
-        : "Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại sau."
+        ? "Backend server không khả dụng."
+        : "Lỗi đăng nhập. Vui lòng thử lại.",
+      { toastId: "login-error" }
     );
     throw error;
   }
 };
 
-const AppWithWallet = () => {
+// Thành phần AppWithWallet tối ưu hóa
+const AppWithWallet = React.memo(() => {
   const walletAddress = useAddress();
   const disconnect = useDisconnect();
   const dispatch = useDispatch();
   const wallet = useWallet();
+  const [isValidUser, setIsValidUser] = useState(false);
 
-  const [isValidUser, setIsValidUser] = React.useState(false);
+  // Memoize walletType để tránh tính toán lại
+  const walletType = useMemo(() => wallet?.walletId, [wallet]);
 
-  React.useEffect(() => {
+  // Callback để kiểm tra user hợp lệ
+  const validateUser = useCallback(() => {
     const user = store.getState().auth.user;
     const userEmail = user?.storedToken?.authDetails?.email || user?.email;
-    const walletType = wallet?.walletId;
 
-    if (walletAddress && walletType) {
-      if (walletType === "embeddedWallet") {
-        if (!userEmail || !userEmail.endsWith("@fpt.edu.vn")) {
-          disconnect();
-          dispatch(clearAuthData());
-          setIsValidUser(false);
-        } else {
-          setIsValidUser(true);
-        }
-      } else {
-        setIsValidUser(true);
-      }
-    } else {
+    if (!walletAddress || !walletType) {
       setIsValidUser(false);
+      return;
     }
-  }, [walletAddress, disconnect, dispatch, wallet]);
+
+    if (walletType === "embeddedWallet" && (!userEmail || !userEmail.endsWith("@fpt.edu.vn"))) {
+      disconnect();
+      dispatch(clearAuthData());
+      setIsValidUser(false);
+    } else {
+      setIsValidUser(true);
+    }
+  }, [walletAddress, walletType, disconnect, dispatch]);
+
+  useEffect(() => {
+    validateUser();
+  }, [validateUser]);
 
   return <App walletAddress={isValidUser ? walletAddress : null} />;
-};
+});
 
+AppWithWallet.displayName = "AppWithWallet";
+
+// Thành phần RootApp
 const RootApp = () => {
   const dispatch = useDispatch();
 
@@ -138,14 +135,12 @@ const RootApp = () => {
       activeChain={activeChain}
       clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID}
       supportedWallets={[
-        metamaskWallet(),
+        metamaskWallet({ recommended: true }), // Đánh dấu ví ưu tiên
         walletConnect(),
         coinbaseWallet(),
         trustWallet(),
         embeddedWallet({
-          auth: {
-            options: ["google"],
-          },
+          auth: { options: ["google"] },
           onAuthSuccess: async (user) => {
             const userEmail = user.email || user.storedToken?.authDetails?.email;
             if (!userEmail || !userEmail.endsWith("@fpt.edu.vn")) {
@@ -154,12 +149,11 @@ const RootApp = () => {
               });
               throw new Error("Email không hợp lệ");
             }
-
-            const walletAddress = user.walletDetails?.walletAddress;
-            await sendUserDataToBackend(user, walletAddress, dispatch, "embeddedWallet");
+            await sendUserDataToBackend(user, user.walletDetails?.walletAddress, dispatch, "embeddedWallet");
           },
         }),
       ]}
+      autoConnect={true} // Tự động kết nối ví đã dùng trước đó
     >
       <PersistGate loading={null} persistor={persistor}>
         <AppWithWallet />
@@ -168,6 +162,7 @@ const RootApp = () => {
   );
 };
 
+// Render ứng dụng
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <RootApp />

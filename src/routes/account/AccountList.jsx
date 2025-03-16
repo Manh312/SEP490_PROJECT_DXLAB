@@ -175,7 +175,7 @@ const AccountList = () => {
                 type="text"
                 placeholder="Tìm kiếm theo tên hoặc email"
                 onChange={(e) => debouncedSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm sm:text-base shadow-sm"
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2  text-sm sm:text-base shadow-sm"
               />
             </div>
 
@@ -212,7 +212,7 @@ const AccountList = () => {
             {/* Table and List views remain the same */}
             <div className="hidden md:block border rounded-lg overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead className="border-b items-center bg-gray-500">
+                <thead className="border-b items-center bg-gray-400">
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
@@ -225,7 +225,7 @@ const AccountList = () => {
                 </thead>
                 <tbody>
                   {currentPosts.map((user, index) => (
-                    <tr key={user.id} className="border-b hover:bg-gray-500 transition-colors">
+                    <tr key={user.id} className="border-b hover:bg-gray-400 transition-colors">
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{(currentPage - 1) * postsPerPage + index + 1}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         <Link to={`/dashboard/account/${user.userId}`} className="hover:text-gray-400 inline-block">
