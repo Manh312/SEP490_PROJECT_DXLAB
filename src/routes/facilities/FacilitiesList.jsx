@@ -140,7 +140,14 @@ const FacilitiesList = () => {
                     <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                       {(currentPage - 1) * postsPerPage + index + 1}
                     </td>
-                    <td className="px-2 py-3 md:px-4 md:py-4 text-center">{facility.batchNumber}</td>
+                    <td className="px-2 py-3 md:px-4 md:py-4 text-center">
+                      <Link
+                        to={`/dashboard/facilities/${facility.facilityId}`}
+                        className="hover:text-gray-400 transition-colors inline-block"
+                      >
+                        {facility.batchNumber}
+                      </Link>
+                    </td>
                     <td className="px-2 py-3 md:px-4 md:py-4 text-center">{facility.facilityDescription}</td>
                     <td className="px-2 py-3 md:px-4 md:py-4 text-center">{facility.cost}</td>
                     <td className="px-2 py-3 md:px-4 md:py-4 text-center">{new Date(facility.expiredTime).toLocaleDateString("vi-VN")}</td>
@@ -179,7 +186,7 @@ const FacilitiesList = () => {
                   className={`px-2 py-1 sm:px-3 sm:py-1 md:px-4 md:py-2 rounded-lg text-sm ${currentPage === index + 1
                     ? "bg-orange-500 text-white"
                     : "bg-gray-200 text-black"
-                  }`}
+                    }`}
                 >
                   {index + 1}
                 </button>

@@ -1,40 +1,65 @@
 import { useParams } from "react-router-dom";
-import { products } from "../../constants";
+import { useSelector } from "react-redux";
 
 const FacilitiesDetail = () => {
   const { id } = useParams();
+  const { facilities, loading } = useSelector((state) => state.facilities);
+
+  console.log(facilities);
 
   if (!id) {
-    return <p className="text-red-500">Lỗi: ID không hợp lệ!</p>;
+    return <p className="text-red-500 text-center mt-10">Lỗi: ID không hợp lệ!</p>;
   }
 
-  const product = products.find((p) => p.id.toString() === id);
+  const facility = facilities.find((f) => f.facilityId === parseInt(id));
 
-  if (!product) {
-    return <p className="text-red-500">Không tìm thấy sản phẩm có ID {id}!</p>;
+  if (loading) {
+    return (
+      <div className="text-center py-4 mt-10">
+        <p className="text-orange-500 text-lg">Đang tải dữ liệu...</p>
+      </div>
+    );
+  }
+
+  if (!facility) {
+    return <p className="text-red-500 text-center mt-10">Không tìm thấy cơ sở vật chất có ID {id}!</p>;
   }
 
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 rounded-lg shadow-lg bg-white">
-      <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">Chi tiết sản phẩm</h2>
-      <table className="w-full border-collapse border border-gray-300">
-        <tbody>
-          <tr className="border-b">
-            <td className="px-4 py-3 font-semibold bg-gray-200">Tên Sản Phẩm</td>
-            <td className="px-4 py-3">{product.name}</td>
-          </tr>
-          <tr className="border-b">
-            <td className="px-4 py-3 font-semibold bg-gray-200">Số Lượng</td>
-            <td className="px-4 py-3 text-center">{product.quantity}</td>
-          </tr>
-          <tr>
-            <td className="px-4 py-3 font-semibold bg-gray-200">Tình Trạng</td>
-            <td className={`px-4 py-3 text-center font-semibold ${product.status === "Còn hàng" ? "text-green-500" : "text-red-500"}`}>
-              {product.status}
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div className="max-w-2xl mx-auto mt-10 mb-20 p-6 rounded-lg shadow-xl border transition-all">
+      <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 text-orange-500">
+        Chi Tiết Cơ Sở Vật Chất
+      </h2>
+      <div className="border rounded-lg overflow-hidden">
+        <table className="w-full text-left">
+          <tbody>
+            <tr className="border-b bg-gray-500">
+              <td className="px-4 py-3 font-semibold text-white">Số Lô</td>
+              <td className="px-4 py-3 text-white">{facility.batchNumber}</td>
+            </tr>
+            <tr className="border-b">
+              <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Mô Tả Cơ Sở Vật Chất</td>
+              <td className="px-4 py-3">{facility.facilityDescription}</td>
+            </tr>
+            <tr className="border-b">
+              <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Giá</td>
+              <td className="px-4 py-3">{facility.cost}</td>
+            </tr>
+            <tr className="border-b">
+              <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Ngày Hết Hạn</td>
+              <td className="px-4 py-3">{new Date(facility.expiredTime).toLocaleDateString("vi-VN")}</td>
+            </tr>
+            <tr className="border-b">
+              <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Số Lượng</td>
+              <td className="px-4 py-3">{facility.quantity}</td>
+            </tr>
+            <tr>
+              <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Ngày Nhập</td>
+              <td className="px-4 py-3">{new Date(facility.importDate).toLocaleDateString("vi-VN")}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

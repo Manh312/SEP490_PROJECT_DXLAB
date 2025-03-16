@@ -178,12 +178,14 @@ const AccountList = () => {
         ) : (
           <>
             {/* Table for Desktop and Larger Tablets */}
-            <div className="hidden md:block rounded-lg overflow-x-auto">
+            <div className="hidden md:block border rounded-lg overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead className="border-b items-center bg-gray-500">
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Họ và Tên</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
+                      Họ và Tên
+                    </th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Email</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Vai Trò</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành Động</th>
@@ -193,7 +195,11 @@ const AccountList = () => {
                   {currentPosts.map((user, index) => (
                     <tr key={user.id} className="border-b hover:bg-gray-500 transition-colors">
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{(currentPage - 1) * postsPerPage + index + 1}</td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{user.fullName || "N/A"}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        <Link to={`/dashboard/account/${user.userId}`} className="hover:text-gray-400  inline-block">
+                          {user.fullName || "N/A"}
+                        </Link>
+                      </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{user.email || "N/A"}</td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span

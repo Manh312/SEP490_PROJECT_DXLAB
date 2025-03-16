@@ -155,7 +155,7 @@ const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={["Admin"]}><AccountList /></ProtectedRoute>,
       },
       {
-        path: "dashboard/account/detail",
+        path: "dashboard/account/:id",
         element: <ProtectedRoute allowedRoles={["Admin"]}><AccountDetail /></ProtectedRoute>,
       },
       {
@@ -213,17 +213,7 @@ const router = createBrowserRouter([
 function App() {
   return (
     <ThemeProvider storageKey="theme">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+      <ToastContainer/>
       <RouterProvider router={router} />
     </ThemeProvider>
   );

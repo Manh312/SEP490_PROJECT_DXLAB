@@ -71,7 +71,7 @@ const RoomList = () => {
   };
 
   return (
-    <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
+    <div className="py-4 px-2 sm:px-4 lg:px-8">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
       <Tooltip id="action-tooltip" />
       <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">

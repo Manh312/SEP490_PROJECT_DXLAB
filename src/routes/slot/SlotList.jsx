@@ -50,7 +50,7 @@ const SlotList = () => {
         </p>
       )}
 
-      <div className="overflow-x-auto rounded-lg shadow-lg">
+      <div className="overflow-x-auto border rounded-lg shadow-lg">
         <table className="w-full border-collapse">
           <thead className="bg-gray-500 text-white">
             <tr>
