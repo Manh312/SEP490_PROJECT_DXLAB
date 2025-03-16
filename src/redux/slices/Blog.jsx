@@ -8,7 +8,6 @@ export const fetchBlogsByStatus = createAsyncThunk(
   async (status, { rejectWithValue }) => {
     try {
       const response = await axios.get(`/blog/list/${status || ""}`);
-      console.log("fetchBlogsByStatus response:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy danh sách blog");
@@ -22,7 +21,6 @@ export const fetchBlogById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`/blog/${id}`);
-      console.log("fetchBlogById response:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy dữ liệu blog");
@@ -36,7 +34,6 @@ export const createBlog = createAsyncThunk(
   async (blogData, { rejectWithValue }) => {
     try {
       const response = await axios.post("/blog", blogData);
-      console.log("createBlog response:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể tạo blog");
@@ -64,7 +61,7 @@ export const fetchAdminPendingBlogs = createAsyncThunk(
   "adminBlogs/fetchPending",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("/api/approvalBlog/pending");
+      const response = await axios.get("/approvalblog/pending");
       console.log("fetchAdminPendingBlogs response:", response.data);
       return response.data;
     } catch (error) {
@@ -78,7 +75,7 @@ export const fetchAdminApprovedBlogs = createAsyncThunk(
   "adminBlogs/fetchApproved",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get("/api/approvalBlog/approved");
+      const response = await axios.get("/approvalblog/approved");
       console.log("fetchAdminApprovedBlogs response:", response.data);
       return response.data;
     } catch (error) {
@@ -92,7 +89,7 @@ export const fetchAdminBlogById = createAsyncThunk(
   "adminBlogs/fetchById",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/api/approvalBlog/${id}`);
+      const response = await axios.get(`/approvalblog/${id}`);
       console.log("fetchAdminBlogById response:", response.data);
       return response.data;
     } catch (error) {
@@ -106,7 +103,7 @@ export const approveAdminBlog = createAsyncThunk(
   "adminBlogs/approve",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`/api/approvalBlog/approve/${id}`);
+      const response = await axios.put(`/approvalblog/approve/${id}`);
       console.log("approveAdminBlog response:", response.data);
       return response.data;
     } catch (error) {
@@ -120,7 +117,7 @@ export const cancelAdminBlog = createAsyncThunk(
   "adminBlogs/cancel",
   async (id, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`/api/approvalBlog/cancel/${id}`);
+      const response = await axios.put(`/approvalblog/cancel/${id}`);
       console.log("cancelAdminBlog response:", response.data);
       return response.data;
     } catch (error) {

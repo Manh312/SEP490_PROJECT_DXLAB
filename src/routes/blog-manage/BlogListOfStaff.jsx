@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { PlusCircle, Filter, Search, CheckCircle, XCircle } from "lucide-react";
+import { PlusCircle, Filter, Search, CheckCircle, XCircle, Trash } from "lucide-react";
 import { useTheme } from "../../hooks/use-theme";
 import { toast, ToastContainer } from "react-toastify";
 import Pagination from "../../hooks/use-pagination";
@@ -39,8 +39,24 @@ const BlogListOfStaff = () => {
       dispatch(fetchAdminPendingBlogs());
     } else if (adminStatusFilter === "Approved") {
       dispatch(fetchAdminApprovedBlogs());
+    } else if (adminStatusFilter === "All") {
+      // Fetch both Pending and Approved blogs when filter is "All"
+      dispatch(fetchAdminPendingBlogs());
+      dispatch(fetchAdminApprovedBlogs());
     }
   }, [dispatch, adminStatusFilter]);
+
+  // Map numeric status to string for display
+  const mapStatusToString = (status) => {
+    switch (status) {
+      case 1:
+        return "Pending";
+      case 2:
+        return "Approved";
+      default:
+        return "Unknown";
+    }
+  };
 
   // Filter and search logic (client-side filtering for search)
   const filteredBlogs = useMemo(() => {
@@ -52,7 +68,11 @@ const BlogListOfStaff = () => {
       );
     }
 
-    return result;
+    // Map status to string for each blog
+    return result.map((blog) => ({
+      ...blog,
+      status: mapStatusToString(blog.status),
+    }));
   }, [adminBlogs, searchTerm]);
 
   const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
@@ -71,25 +91,48 @@ const BlogListOfStaff = () => {
   }, [totalPages, currentPage]);
 
   // Handle approve blog
-  const handleApprove = async (id) => {
+  const handleApprove = async (blogId) => {
+    if (!blogId) {
+      toast.error("Không tìm thấy ID của blog!");
+      return;
+    }
     try {
-      await dispatch(approveAdminBlog(id)).unwrap();
+      await dispatch(approveAdminBlog(blogId)).unwrap();
       toast.success("Bài blog đã được phê duyệt!");
-      if (adminStatusFilter === "Pending") dispatch(fetchAdminPendingBlogs());
-      else if (adminStatusFilter === "Approved") dispatch(fetchAdminApprovedBlogs());
+      if (adminStatusFilter === "Pending") {
+        dispatch(fetchAdminPendingBlogs());
+      } else if (adminStatusFilter === "Approved") {
+        dispatch(fetchAdminApprovedBlogs());
+      } else if (adminStatusFilter === "All") {
+        dispatch(fetchAdminPendingBlogs());
+        dispatch(fetchAdminApprovedBlogs());
+      }
     } catch (err) {
+      console.log(err);
       toast.error("Phê duyệt thất bại!");
     }
   };
 
-  // Handle cancel blog
-  const handleCancel = async (id) => {
+  // Handle cancel/delete blog
+  const handleCancel = async (blogId) => {
+    if (!blogId) {
+      toast.error("Không tìm thấy ID của blog!");
+      return;
+    }
     try {
-      await dispatch(cancelAdminBlog(id)).unwrap();
-      toast.success("Bài blog đã bị hủy!");
-      if (adminStatusFilter === "Pending") dispatch(fetchAdminPendingBlogs());
+      await dispatch(cancelAdminBlog(blogId)).unwrap();
+      toast.success("Bài blog đã bị xóa!");
+      if (adminStatusFilter === "Pending") {
+        dispatch(fetchAdminPendingBlogs());
+      } else if (adminStatusFilter === "Approved") {
+        dispatch(fetchAdminApprovedBlogs());
+      } else if (adminStatusFilter === "All") {
+        dispatch(fetchAdminPendingBlogs());
+        dispatch(fetchAdminApprovedBlogs());
+      }
     } catch (err) {
-      toast.error("Hủy thất bại!");
+      console.log(err);
+      toast.error("Xóa thất bại!");
     }
   };
 
@@ -203,17 +246,25 @@ const BlogListOfStaff = () => {
                 </thead>
                 <tbody>
                   {displayedBlogs.map((blog, index) => (
-                    <tr key={blog.id} className="border-b hover:bg-gray-400 transition-colors">
+                    <tr
+                      key={blog.blogId}
+                      className="border-b hover:bg-gray-400 transition-colors"
+                    >
                       <td className="px-3 py-4 text-center">
                         {(currentPage - 1) * blogsPerPage + index + 1}
                       </td>
                       <td className="px-3 py-4 text-center">
-                        <Link to={`/manage/admin/blog/${blog.id}`} className="hover:text-neutral-300">
+                        <Link
+                          to={`/manage/admin/blog/${blog.blogId}`}
+                          className="hover:text-neutral-300"
+                        >
                           {blog.blogTitle}
                         </Link>
                       </td>
                       <td className="px-3 py-4 text-center">
-                        {new Date(blog.blogCreatedDate).toLocaleDateString()}
+                        {blog.blogCreatedDate
+                          ? new Date(blog.blogCreatedDate).toLocaleDateString()
+                          : "N/A"}
                       </td>
                       <td className="px-3 py-4 text-center">
                         <span
@@ -230,20 +281,29 @@ const BlogListOfStaff = () => {
                         {blog.status === "Pending" && (
                           <>
                             <button
-                              onClick={() => handleApprove(blog.id)}
+                              onClick={() => handleApprove(blog.blogId)}
                               className="bg-green-100 text-green-700 hover:bg-green-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                               title="Phê duyệt"
                             >
                               <CheckCircle className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => handleCancel(blog.id)}
+                              onClick={() => handleCancel(blog.blogId)}
                               className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                               title="Hủy"
                             >
                               <XCircle className="w-4 h-4" />
                             </button>
                           </>
+                        )}
+                        {blog.status === "Approved" && (
+                          <button
+                            onClick={() => handleCancel(blog.blogId)}
+                            className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                            title="Xóa"
+                          >
+                            <Trash className="w-4 h-4" />
+                          </button>
                         )}
                       </td>
                     </tr>
@@ -256,7 +316,7 @@ const BlogListOfStaff = () => {
             <div className="block md:hidden space-y-4">
               {displayedBlogs.map((blog, index) => (
                 <div
-                  key={blog.id}
+                  key={blog.blogId}
                   className="border rounded-lg p-3 sm:p-4 shadow-sm hover:bg-gray-500 transition-colors"
                 >
                   <div className="flex flex-col gap-2">
@@ -275,30 +335,42 @@ const BlogListOfStaff = () => {
                       </span>
                     </div>
                     <p className="text-sm">
-                      <span className="font-medium">Tiêu đề:</span> {blog.blogTitle}
+                      <span className="font-medium">Tiêu đề:</span>{" "}
+                      {blog.blogTitle}
                     </p>
                     <p className="text-sm">
                       <span className="font-medium">Ngày tạo:</span>{" "}
-                      {new Date(blog.blogCreatedDate).toLocaleDateString()}
+                      {blog.blogCreatedDate
+                        ? new Date(blog.blogCreatedDate).toLocaleDateString()
+                        : "N/A"}
                     </p>
                     <div className="flex gap-2">
                       {blog.status === "Pending" && (
                         <>
                           <button
-                            onClick={() => handleApprove(blog.id)}
+                            onClick={() => handleApprove(blog.blogId)}
                             className="bg-green-100 text-green-700 hover:bg-green-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                           >
                             <CheckCircle className="w-4 h-4" />
                             <span>Phê duyệt</span>
                           </button>
                           <button
-                            onClick={() => handleCancel(blog.id)}
+                            onClick={() => handleCancel(blog.blogId)}
                             className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                           >
                             <XCircle className="w-4 h-4" />
                             <span>Hủy</span>
                           </button>
                         </>
+                      )}
+                      {blog.status === "Approved" && (
+                        <button
+                          onClick={() => handleCancel(blog.blogId)}
+                          className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                        >
+                          <Trash className="w-4 h-4" />
+                          <span>Xóa</span>
+                        </button>
                       )}
                     </div>
                   </div>
