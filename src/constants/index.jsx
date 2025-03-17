@@ -343,6 +343,11 @@ export const navbarLinks = [
         path: "/dashboard/area",
       },
       {
+        label: "Quản lý loại khu vực",
+        icon: ChartColumn,
+        path: "/dashboard/areaType",
+      },
+      {
         label: "Quản lý thiết bị",
         icon: NotepadText,
         path: "/dashboard/facilities",

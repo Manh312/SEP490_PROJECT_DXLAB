@@ -2,8 +2,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getRoomById, updateRoom } from "../../redux/slices/Room";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 import { X } from "lucide-react";
+import { toast, ToastContainer } from "react-toastify";
 
 const UpdateRoom = () => {
   const { id } = useParams();
@@ -99,7 +100,7 @@ const UpdateRoom = () => {
         value: formData.capacity,
       });
     }
-    if (formData.status !== (selectedRoom.isDeleted ? "Inactive" : "Active")) {
+    if (formData.isDeleted !== (selectedRoom.isDeleted)) {
       updates.push({
         operationType: 0,
         path: "/isDeleted",
@@ -120,18 +121,23 @@ const UpdateRoom = () => {
       toast.info("Không có thay đổi nào cần cập nhật!");
       return;
     }
+  console.log(updates);
+
 
     try {
-      await dispatch(updateRoom({ roomId: id, updates })).unwrap();
-      toast.success("Cập nhật phòng thành công!");
-      navigate("/dashboard/room");
+      const res = await dispatch(updateRoom({ roomId: id, updates })).unwrap();
+      console.log(res.message);
+      navigate("/dashboard/room", { state: { successMessage: res.message } });
     } catch (error) {
-      toast.error("Lỗi khi cập nhật phòng: " + error);
+      toast.error("Lỗi khi cập nhật phòng: " + error.message);
     }
   };
 
+  console.log(selectedRoom);
+
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 rounded-lg shadow-lg">
+      <ToastContainer/>
       <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">
         Chỉnh Sửa Phòng {id}
       </h2>
@@ -182,8 +188,8 @@ const UpdateRoom = () => {
               onChange={handleChange}
               className="w-full p-2 border rounded-lg"
             >
-              <option value="false">Active</option>
-              <option value="true">Inactive</option>
+              <option value="false">False</option>
+              <option value="true">True</option>
             </select>
           </div>
 

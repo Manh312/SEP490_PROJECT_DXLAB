@@ -48,11 +48,16 @@ export const createRoom = createAsyncThunk(
 // **4. Cập nhật phòng (Dùng JSON Patch)**
 export const updateRoom = createAsyncThunk(
   "room/update",
-  async ({ roomId, patchData }, { rejectWithValue }) => {
+  async ({ roomId, updates }, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.patch(`${API_URL}/${roomId}`, patchData);
-      return response.data.data; // Trả về dữ liệu phòng đã cập nhật
+
+      const response = await axiosInstance.patch(`${API_URL}/${roomId}`, updates, {
+        headers: { "Content-Type": "application/json-patch+json" }
+      });
+      console.log( response.data);
+      return response.data; // Trả về dữ liệu phòng đã cập nhật
     } catch (error) {
+      console.log(error.response);
       return rejectWithValue(error.response?.data || "Cập nhật phòng thất bại");
     }
   }

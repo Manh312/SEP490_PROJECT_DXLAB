@@ -198,7 +198,7 @@ const RoomList = () => {
                               : "bg-red-200 text-red-700"
                           }`}
                         >
-                          {room.isDeleted ? "Active" : "Inactive"}
+                          {room.isDeleted ? "True" : "False"}
                         </span>
                       </td>
                       <td className="p-3">

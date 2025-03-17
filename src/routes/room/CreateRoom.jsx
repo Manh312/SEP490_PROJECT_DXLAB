@@ -50,14 +50,23 @@ const CreateRoom = () => {
 
   // Xử lý chọn nhiều ảnh từ file input
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files); // Lấy danh sách file được chọn
-    const fileNames = files.map((file) => file.name); // Lấy danh sách tên file
-      
+    const files = Array.from(e.target.files);
+    const fileNames = files.map((file) => file.name);
+  
+    // Lọc những ảnh chưa có trong danh sách
+    const newImages = fileNames.filter((name) => !roomData.images.includes(name));
+  
+    if (newImages.length === 0) {
+      toast.error("Ảnh đã tồn tại, vui lòng chọn ảnh khác!");
+      return;
+    }
+  
     setRoomData((prevData) => ({
       ...prevData,
-      images: [...prevData.images, ...fileNames], // Thêm ảnh mới vào danh sách
+      images: [...prevData.images, ...newImages], // Chỉ thêm ảnh mới
     }));
   };
+  
 
   // Xóa ảnh khỏi danh sách
   const handleRemoveImage = (index) => {
@@ -74,7 +83,7 @@ const CreateRoom = () => {
   
     try {
       const res = await dispatch(createRoom(roomData)).unwrap();
-      console.log(res.message);
+      console.log(res);
       navigate("/dashboard/room", { state: { successMessage: res.message } });
     } catch (error) {
       toast.error(error.message);
@@ -162,7 +171,7 @@ const CreateRoom = () => {
             {roomData.images.map((img, index) => (
               <div key={index} className="relative">
                 <img 
-                  src={img} 
+                  src={`/assets/${img}`} 
                   alt={`room-img-${index}`} 
                   className="w-20 h-20 object-cover rounded-md shadow-md" 
                 />
