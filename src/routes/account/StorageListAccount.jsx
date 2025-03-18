@@ -21,6 +21,9 @@ const StorageListAccount = () => {
   const [loadingId, setLoadingId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State cho modal
+  const [userIdToDelete, setUserIdToDelete] = useState(null); // Lưu userId cần xóa
+  const [userFullName, setUserFullName] = useState(""); // Lưu tên người dùng cho modal
   const postsPerPage = 6;
 
   const debouncedSearch = debounce((value) => {
@@ -76,13 +79,26 @@ const StorageListAccount = () => {
     setLoadingId(null);
   };
 
-  const handleDeletePermanently = async (userId) => {
-    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản này?");
-    if (!confirmDelete) return;
+  const handleOpenDeleteModal = (userId, fullName) => {
+    setUserIdToDelete(userId);
+    setUserFullName(fullName || "N/A");
+    setIsDeleteModalOpen(true);
+  };
 
-    setLoadingId(userId);
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setUserIdToDelete(null);
+    setUserFullName("");
+  };
+
+  const handleDeletePermanently = async () => {
+    if (!userIdToDelete) {
+      toast.error("Không tìm thấy ID tài khoản để xóa!");
+      return;
+    }
+    setLoadingId(userIdToDelete);
     try {
-      await dispatch(deletePermanently(userId)).unwrap();
+      await dispatch(deletePermanently(userIdToDelete)).unwrap();
       toast.success("Xóa vĩnh viễn tài khoản thành công!");
       dispatch(fetchDeletedAccounts());
       if (roleFilter !== "All") {
@@ -91,8 +107,12 @@ const StorageListAccount = () => {
     } catch (err) {
       toast.error("Lỗi xóa vĩnh viễn tài khoản!");
       console.log(err);
+    } finally {
+      setLoadingId(null);
+      setIsDeleteModalOpen(false);
+      setUserIdToDelete(null);
+      setUserFullName("");
     }
-    setLoadingId(null);
   };
 
   const getEmptyStateMessage = () => {
@@ -232,7 +252,7 @@ const StorageListAccount = () => {
                           )}
                         </button>
                         <button
-                          onClick={() => handleDeletePermanently(user.userId)}
+                          onClick={() => handleOpenDeleteModal(user.userId, user.fullName)}
                           data-tooltip-id="action-tooltip"
                           data-tooltip-content="Xóa vĩnh viễn"
                           className="bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors disabled:opacity-50"
@@ -291,7 +311,7 @@ const StorageListAccount = () => {
                         Khôi phục
                       </button>
                       <button
-                        onClick={() => handleDeletePermanently(user.userId)}
+                        onClick={() => handleOpenDeleteModal(user.userId, user.fullName)}
                         className="flex-1 bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg flex items-center justify-center gap-2 text-sm transition-colors disabled:opacity-50"
                         disabled={loadingId === user.userId}
                       >
@@ -319,6 +339,41 @@ const StorageListAccount = () => {
               </div>
             )}
           </>
+        )}
+
+        {/* Modal Xóa Vĩnh Viễn */}
+        {isDeleteModalOpen && (
+          <div
+            className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50"
+            onClick={handleCloseDeleteModal}
+          >
+            <div
+              className="bg-neutral-300 rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-semibold text-red-600 mb-4">Xác nhận xóa vĩnh viễn</h2>
+              <p className="text-gray-600 mb-6">
+                Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản{" "}
+                <strong>"{userFullName}"</strong> không? Hành động này không thể hoàn tác.
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={handleCloseDeleteModal}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors cursor-pointer"
+                  disabled={loadingId === userIdToDelete}
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleDeletePermanently}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer"
+                  disabled={loadingId === userIdToDelete}
+                >
+                  {loadingId === userIdToDelete ? "Đang xóa..." : "Xóa vĩnh viễn"}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

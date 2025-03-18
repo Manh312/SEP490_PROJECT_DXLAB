@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { PlusCircle, ArrowLeftCircle, Bold, Italic, List, Link as LinkIcon, Upload } from "lucide-react";
+import { PlusCircle, ArrowLeftCircle, Upload, Link as LinkIcon } from "lucide-react";
 import { useTheme } from "../../../hooks/use-theme";
 import { createBlog } from "../../../redux/slices/Blog";
 
@@ -12,16 +12,16 @@ const CreateBlog = () => {
   const { theme } = useTheme();
   const { loading } = useSelector((state) => state.blogs);
   const fileInputRef = useRef(null);
-  const textareaRef = useRef(null);
 
   const [newBlog, setNewBlog] = useState({
     blogTitle: "",
-    blogContent: "",
+    blogContent: "", 
     blogCreatedDate: new Date().toISOString(),
-    status: 1, // Mặc định là "Đang chờ"
+    status: 1,
     images: [],
   });
 
+  // Xử lý upload file ảnh
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -33,9 +33,17 @@ const CreateBlog = () => {
     }
   };
 
+  // Xử lý nhập link ảnh
+  const handleImageLink = () => {
+    const url = prompt("Nhập URL hình ảnh:");
+    if (url) {
+      setNewBlog({ ...newBlog, images: [url] });
+    }
+  };
+
   const handleSubmitApproval = async () => {
     if (!newBlog.blogTitle || !newBlog.blogContent) {
-      toast.error("Vui lòng điền đầy đủ tiêu đề và nội dung!");
+      toast.error("Vui lòng điền đầy đủ tiêu đề và mô tả!");
       return;
     }
 
@@ -53,7 +61,7 @@ const CreateBlog = () => {
         ? response.message 
         : `Bài viết "${response.blog?.blogTitle || newBlog.blogTitle}" đã được tạo thành công!`;
       
-      toast.success(successMessage); // Hiển thị thông báo từ backend
+      toast.success(successMessage);
       navigate("/manage/blog");
     } catch (err) {
       console.error("Create error:", err);
@@ -61,29 +69,6 @@ const CreateBlog = () => {
     }
   };
 
-  const insertText = (tag) => {
-    const textarea = textareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    let newText;
-
-    if (tag === "link") {
-      const url = prompt("Nhập URL:");
-      if (!url) return;
-      newText = `${text.substring(0, start)}<a href="${url}">${text.substring(start, end)}</a>${text.substring(end)}`;
-    } else {
-      newText = `${text.substring(0, start)}<${tag}>${text.substring(start, end)}</${tag}>${text.substring(end)}`;
-    }
-
-    setNewBlog({ ...newBlog, blogContent: newText });
-    textarea.focus();
-  };
-
-  const formatDateForInput = (dateString) => {
-    const date = new Date(dateString);
-    return isNaN(date.getTime()) ? "" : date.toISOString().split("T")[0];
-  };
 
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
@@ -100,13 +85,6 @@ const CreateBlog = () => {
               Tạo Blog Mới
             </h2>
           </div>
-          <button
-            onClick={() => navigate("/manage/blog")}
-            className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
-          >
-            <ArrowLeftCircle className="h-5 w-5" />
-            <span className="hidden sm:inline">Quay lại</span>
-          </button>
         </div>
 
         {/* Form Section */}
@@ -124,90 +102,50 @@ const CreateBlog = () => {
             />
           </div>
 
-          {/* Content Textarea */}
+          {/* Description Input */}
           <div className="flex flex-col gap-2">
-            <label className="font-medium text-sm sm:text-base">Nội dung Blog</label>
-            <div className="mb-2 flex gap-2">
-              <button
-                onClick={() => insertText("b")}
-                className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800"
-                title="In đậm"
-              >
-                <Bold className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => insertText("i")}
-                className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800"
-                title="In nghiêng"
-              >
-                <Italic className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => insertText("ul")}
-                className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800"
-                title="Danh sách"
-              >
-                <List className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => insertText("link")}
-                className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800"
-                title="Chèn liên kết"
-              >
-                <LinkIcon className="h-5 w-5" />
-              </button>
-            </div>
-            <textarea
-              ref={textareaRef}
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm resize-y min-h-[200px] ${
-                theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
-              }`}
-              placeholder="Nhập nội dung blog (hỗ trợ HTML cơ bản)"
-              value={newBlog.blogContent}
-              onChange={(e) => setNewBlog({ ...newBlog, blogContent: e.target.value })}
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Hỗ trợ định dạng HTML: <b>đậm</b>, <i>nghiêng</i>, <ul><li>danh sách</li></ul>, <a href="...">liên kết</a>
-            </p>
-          </div>
-
-          {/* Created Date */}
-          <div className="flex flex-col gap-2">
-            <label className="font-medium text-sm sm:text-base">Ngày tạo blog</label>
+            <label className="font-medium text-sm sm:text-base">Mô tả Blog</label>
             <input
-              type="date"
               className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm ${
                 theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
               }`}
-              value={formatDateForInput(newBlog.blogCreatedDate)}
-              onChange={(e) =>
-                setNewBlog({
-                  ...newBlog,
-                  blogCreatedDate: e.target.value ? new Date(e.target.value).toISOString() : "",
-                })
-              }
+              placeholder="Nhập mô tả blog"
+              type="text"
+              value={newBlog.blogContent}
+              onChange={(e) => setNewBlog({ ...newBlog, blogContent: e.target.value })}
             />
           </div>
 
           {/* Image Upload */}
           <div className="flex flex-col gap-2">
             <label className="font-medium text-sm sm:text-base">Hình ảnh</label>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               {newBlog.images.length > 0 && (
                 <img
                   src={newBlog.images[0]}
                   alt="Blog preview"
                   className="w-24 h-24 object-cover rounded-lg shadow-sm"
+                  onError={(e) => (e.target.src = "/placeholder-image.jpg")} // Xử lý khi ảnh lỗi
                 />
               )}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current.click()}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-all"
-              >
-                <Upload className="h-5 w-5" />
-                <span>Tải ảnh lên</span>
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current.click()}
+                  className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-all"
+                >
+                  <Upload className="h-5 w-5" />
+                  <span>Tải ảnh lên</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleImageLink}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all"
+                >
+                  <LinkIcon className="h-5 w-5" />
+                  <span>Nhập link ảnh</span>
+                </button>
+              </div>
               <input
                 type="file"
                 ref={fileInputRef}

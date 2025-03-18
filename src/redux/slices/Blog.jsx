@@ -121,6 +121,19 @@ export const cancelAdminBlog = createAsyncThunk(
   }
 );
 
+//Delete a blog (for admin)
+export const deleteAdminBlog = createAsyncThunk(
+  "adminBlogs/delete",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(`/approvalblog/${id}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Không thể xóa blog");
+    }
+  }
+);
+
 const blogSlice = createSlice({
   name: "blogs",
   initialState: {
@@ -284,7 +297,20 @@ const blogSlice = createSlice({
       .addCase(cancelAdminBlog.rejected, (state, action) => {
         state.adminLoading = false;
         state.adminError = action.payload;
-      });
+      })
+      .addCase(deleteAdminBlog.pending, (state) => {
+        state.adminLoading = true;
+        state.adminError = null;
+      })
+      .addCase(deleteAdminBlog.fulfilled, (state, action) => {
+        const blogId = action.meta.arg;
+        state.pendingBlogs = state.pendingBlogs.filter((b) => b.blogId !== blogId);
+        state.approvedBlogs = state.approvedBlogs.filter((b) => b.blogId !== blogId);
+      })
+      .addCase(deleteAdminBlog.rejected, (state, action) => {
+        state.adminLoading = false;
+        state.adminError = action.payload;
+      })
   },
 });
 
