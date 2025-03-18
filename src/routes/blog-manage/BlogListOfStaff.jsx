@@ -12,6 +12,7 @@ import {
   approveAdminBlog,
   cancelAdminBlog,
   setAdminStatusFilter,
+  deleteAdminBlog,
 } from "../../redux/slices/Blog";
 
 const BlogListOfStaff = () => {
@@ -24,7 +25,10 @@ const BlogListOfStaff = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [localLoading, setLocalLoading] = useState(false); // Thêm trạng thái loading cục bộ
+  const [localLoading, setLocalLoading] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [blogIdToDelete, setBlogIdToDelete] = useState(null); // Thêm state để lưu blogId cần xóa
+  const [blogTitle, setBlogTitle] = useState(""); // Thêm state để lưu tiêu đề blog
   const blogsPerPage = 5;
 
   const debouncedSearch = debounce((value) => {
@@ -33,7 +37,6 @@ const BlogListOfStaff = () => {
   }, 300);
 
   useEffect(() => {
-    // Luôn lấy cả hai danh sách để đảm bảo dữ liệu đầy đủ
     dispatch(fetchAdminPendingBlogs());
     dispatch(fetchAdminApprovedBlogs());
   }, [dispatch]);
@@ -91,11 +94,10 @@ const BlogListOfStaff = () => {
       toast.error("Không tìm thấy ID của blog!");
       return;
     }
-    setLocalLoading(true); // Bật loading cục bộ
+    setLocalLoading(true);
     try {
       const response = await dispatch(approveAdminBlog(blogId)).unwrap();
       toast.success(response.message || "Bài blog đã được phê duyệt!");
-      // Cập nhật lại danh sách ngay sau khi phê duyệt
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
@@ -103,7 +105,7 @@ const BlogListOfStaff = () => {
     } catch (err) {
       toast.error(err.message || "Phê duyệt thất bại!");
     } finally {
-      setLocalLoading(false); // Tắt loading cục bộ
+      setLocalLoading(false);
     }
   };
 
@@ -112,11 +114,30 @@ const BlogListOfStaff = () => {
       toast.error("Không tìm thấy ID của blog!");
       return;
     }
-    setLocalLoading(true); // Bật loading cục bộ
+    setLocalLoading(true);
     try {
       const response = await dispatch(cancelAdminBlog(blogId)).unwrap();
-      toast.success(response.message || "Bài blog đã bị xóa!");
-      // Cập nhật lại danh sách ngay sau khi hủy
+      toast.success(response.message || "Bài blog đã bị hủy!");
+      await Promise.all([
+        dispatch(fetchAdminPendingBlogs()),
+        dispatch(fetchAdminApprovedBlogs()),
+      ]);
+    } catch (err) {
+      toast.error(err.message || "Hủy thất bại!");
+    } finally {
+      setLocalLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!blogIdToDelete) {
+      toast.error("Không tìm thấy ID của blog!");
+      return;
+    }
+    setLocalLoading(true);
+    try {
+      const response = await dispatch(deleteAdminBlog(blogIdToDelete)).unwrap();
+      toast.success(response.message || "Bài blog đã được xóa!");
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
@@ -124,8 +145,23 @@ const BlogListOfStaff = () => {
     } catch (err) {
       toast.error(err.message || "Xóa thất bại!");
     } finally {
-      setLocalLoading(false); // Tắt loading cục bộ
+      setLocalLoading(false);
+      setIsDeleteModalOpen(false);
+      setBlogIdToDelete(null); // Reset sau khi xóa
+      setBlogTitle(""); // Reset tiêu đề
     }
+  };
+
+  const handleOpenDeleteModal = (blogId, title) => {
+    setBlogIdToDelete(blogId);
+    setBlogTitle(title);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setBlogIdToDelete(null);
+    setBlogTitle("");
   };
 
   const getFilterBgClass = () => {
@@ -149,20 +185,30 @@ const BlogListOfStaff = () => {
     }
     return searchTerm
       ? `Không tìm thấy blog nào với trạng thái "${mapStatusToString(
-          adminStatusFilter === "Approved" ? 2 : 1
-        )}" khớp với tìm kiếm`
+        adminStatusFilter === "Approved" ? 2 : 1
+      )}" khớp với tìm kiếm`
       : `Không có blog nào với trạng thái "${mapStatusToString(
-          adminStatusFilter === "Approved" ? 2 : 1
-        )}"`;
+        adminStatusFilter === "Approved" ? 2 : 1
+      )}"`;
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
       <div
-        className={`w-full border mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 ${
-          theme === "dark" ? "bg-black text-white" : "bg-white text-gray-800"
-        }`}
+        className={`w-full border mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 ${theme === "dark" ? "bg-black text-white" : "bg-white text-gray-800"
+          }`}
       >
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
@@ -221,6 +267,9 @@ const BlogListOfStaff = () => {
                       #
                     </th>
                     <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
+                      Ảnh
+                    </th>
+                    <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
                       Tiêu đề
                     </th>
                     <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
@@ -247,6 +296,13 @@ const BlogListOfStaff = () => {
                         {(currentPage - 1) * blogsPerPage + index + 1}
                       </td>
                       <td className="px-3 py-4 text-center">
+                        <img
+                          src={blog?.images[0]}
+                          alt={blog.blogTitle}
+                          className="w-16 h-16 object-cover rounded-lg mx-auto"
+                        />
+                      </td>
+                      <td className="px-3 py-4 text-center">
                         <Link
                           to={`/manage/admin/blog/${blog.blogId}`}
                           className="hover:text-neutral-300"
@@ -254,33 +310,28 @@ const BlogListOfStaff = () => {
                           {blog.blogTitle}
                         </Link>
                       </td>
+                      <td className="px-3 py-4 text-center">{blog.blogContent}</td>
                       <td className="px-3 py-4 text-center">
-                          {blog.blogContent}
-                      </td>
-                      <td className="px-3 py-4 text-center">
-                        {blog.blogCreatedDate
-                          ? new Date(blog.blogCreatedDate).toLocaleDateString()
-                          : "N/A"}
+                        {formatDate(blog.blogCreatedDate)}
                       </td>
                       <td className="px-3 py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${
-                            blog.status === "Đã duyệt"
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${blog.status === "Đã duyệt"
                               ? "bg-green-100 text-green-800"
                               : "bg-yellow-100 text-yellow-800"
-                          }`}
+                            }`}
                         >
                           {blog.status}
                         </span>
                       </td>
-                      <td className="px-3 py-4 flex justify-center gap-2">
+                      <td className="px-3 py-4 flex justify-center gap-2 mt-4">
                         {blog.status === "Đang chờ" && (
                           <>
                             <button
                               onClick={() => handleApprove(blog.blogId)}
                               className="bg-green-100 text-green-700 hover:bg-green-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                               title="Phê duyệt"
-                              disabled={localLoading} // Vô hiệu hóa khi đang loading
+                              disabled={localLoading}
                             >
                               <CheckCircle className="w-4 h-4" />
                             </button>
@@ -288,7 +339,7 @@ const BlogListOfStaff = () => {
                               onClick={() => handleCancel(blog.blogId)}
                               className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                               title="Hủy"
-                              disabled={localLoading} // Vô hiệu hóa khi đang loading
+                              disabled={localLoading}
                             >
                               <XCircle className="w-4 h-4" />
                             </button>
@@ -296,10 +347,10 @@ const BlogListOfStaff = () => {
                         )}
                         {blog.status === "Đã duyệt" && (
                           <button
-                            onClick={() => handleCancel(blog.blogId)}
+                            onClick={() => handleOpenDeleteModal(blog.blogId, blog.blogTitle)}
                             className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                             title="Xóa"
-                            disabled={localLoading} // Vô hiệu hóa khi đang loading
+                            disabled={localLoading}
                           >
                             <Trash className="w-4 h-4" />
                           </button>
@@ -323,24 +374,20 @@ const BlogListOfStaff = () => {
                         #{(currentPage - 1) * blogsPerPage + index + 1}
                       </span>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${
-                          blog.status === "Đã duyệt"
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${blog.status === "Đã duyệt"
                             ? "bg-green-100 text-green-800"
                             : "bg-yellow-100 text-yellow-800"
-                        }`}
+                          }`}
                       >
                         {blog.status}
                       </span>
                     </div>
                     <p className="text-sm">
-                      <span className="font-medium">Tiêu đề:</span>{" "}
-                      {blog.blogTitle}
+                      <span className="font-medium">Tiêu đề:</span> {blog.blogTitle}
                     </p>
                     <p className="text-sm">
                       <span className="font-medium">Ngày tạo:</span>{" "}
-                      {blog.blogCreatedDate
-                        ? new Date(blog.blogCreatedDate).toLocaleDateString()
-                        : "N/A"}
+                      {formatDate(blog.blogCreatedDate)}
                     </p>
                     <div className="flex gap-2">
                       {blog.status === "Đang chờ" && (
@@ -348,7 +395,7 @@ const BlogListOfStaff = () => {
                           <button
                             onClick={() => handleApprove(blog.blogId)}
                             className="bg-green-100 text-green-700 hover:bg-green-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
-                            disabled={localLoading} // Vô hiệu hóa khi đang loading
+                            disabled={localLoading}
                           >
                             <CheckCircle className="w-4 h-4" />
                             <span>Phê duyệt</span>
@@ -356,7 +403,7 @@ const BlogListOfStaff = () => {
                           <button
                             onClick={() => handleCancel(blog.blogId)}
                             className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
-                            disabled={localLoading} // Vô hiệu hóa khi đang loading
+                            disabled={localLoading}
                           >
                             <XCircle className="w-4 h-4" />
                             <span>Hủy</span>
@@ -365,9 +412,9 @@ const BlogListOfStaff = () => {
                       )}
                       {blog.status === "Đã duyệt" && (
                         <button
-                          onClick={() => handleCancel(blog.blogId)}
+                          onClick={() => handleOpenDeleteModal(blog.blogId, blog.blogTitle)}
                           className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
-                          disabled={localLoading} // Vô hiệu hóa khi đang loading
+                          disabled={localLoading}
                         >
                           <Trash className="w-4 h-4" />
                           <span>Xóa</span>
@@ -387,6 +434,40 @@ const BlogListOfStaff = () => {
               />
             )}
           </>
+        )}
+
+        {/* Modal xóa */}
+        {isDeleteModalOpen && (
+          <div
+            className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50"
+            onClick={handleCloseDeleteModal}
+          >
+            <div
+              className="bg-neutral-300 rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-semibold text-red-600 mb-4">Xác nhận xóa</h2>
+              <p className="text-gray-600 mb-6">
+                Bạn có chắc chắn muốn xóa blog <strong>"{blogTitle}"</strong> không? Hành
+                động này không thể hoàn tác.
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={handleCloseDeleteModal}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer"
+                  disabled={localLoading}
+                >
+                  {localLoading ? "Đang xóa..." : "Xóa"}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

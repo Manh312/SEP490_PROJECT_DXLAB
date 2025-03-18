@@ -26,9 +26,7 @@ const BlogList = () => {
 
   const filteredBlogs = useMemo(() => {
     let result = blogs;
-    // Lọc theo statusFilter
     result = result.filter((blog) => String(blog.status) === String(statusFilter));
-    // Lọc theo searchTerm nếu có
     if (searchTerm) {
       result = result.filter((blog) =>
         (blog.blogTitle || "").toLowerCase().includes(searchTerm.toLowerCase())
@@ -98,6 +96,18 @@ const BlogList = () => {
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  // Hàm định dạng thời gian
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
   return (
@@ -180,7 +190,7 @@ const BlogList = () => {
                 <tbody>
                   {displayedBlogs.map((blog, index) => (
                     <tr
-                      key={blog.id || blog.blogId}
+                      key={blog.blogId}
                       className="border-b hover:bg-gray-50 dark:hover:bg-gray-400 transition-colors"
                     >
                       <td className="px-4 py-4 text-center">
@@ -189,7 +199,7 @@ const BlogList = () => {
                       <td className="px-4 py-4 text-center">
                         {blog.images && blog.images.length > 0 && (
                           <img
-                            src={`https://localhost:9999/${blog.images[0]}`}
+                            src={blog.images[0]}
                             alt={blog.blogTitle || "Blog image"}
                             className="w-16 h-16 object-cover rounded-lg mx-auto"
                           />
@@ -197,17 +207,17 @@ const BlogList = () => {
                       </td>
                       <td className="px-4 py-4 text-center">
                         <Link
-                          to={`/manage/blog/${blog.id || blog.blogId}`}
+                          to={`/manage/blog/${blog.blogId}`}
                           className="hover:text-orange-500 transition-colors"
                         >
                           {blog.blogTitle}
                         </Link>
                       </td>
                       <td className="px-4 py-4 text-center truncate max-w-xs">
-                        {blog.content || blog.blogContent}
+                        {blog.blogContent}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {new Date(blog.createdDate || blog.blogCreatedDate).toLocaleDateString()}
+                        {formatDate( blog.blogCreatedDate)}
                       </td>
                       <td className="px-4 py-4 text-center">
                         <span
@@ -278,7 +288,7 @@ const BlogList = () => {
                     </p>
                     <p className="text-sm">
                       <span className="font-medium">Ngày tạo:</span>{" "}
-                      {new Date(blog.createdDate || blog.blogCreatedDate).toLocaleDateString()}
+                      {formatDate(blog.createdDate || blog.blogCreatedDate)}
                     </p>
                     {blog.status === 0 && (
                       <Link
