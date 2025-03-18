@@ -1,14 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "../../utils/axios";
 
-// Existing Staff Actions
 // Fetch blogs by status (for staff)
 export const fetchBlogsByStatus = createAsyncThunk(
   "blogs/fetchByStatus",
   async (status, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/blog/list/${status || ""}`);
-      return response.data;
+      const response = await axios.get(`/blog/list/${status}`);
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy danh sách blog");
     }
@@ -18,10 +17,10 @@ export const fetchBlogsByStatus = createAsyncThunk(
 // Fetch blog by ID (for staff)
 export const fetchBlogById = createAsyncThunk(
   "blogs/fetchById",
-  async (id, { rejectWithValue }) => {
-    try {
-      const response = await axios.get(`/blog/${id}`);
-      return response.data;
+  async (blogId, { rejectWithValue }) => {
+    try {      
+      const response = await axios.get(`/blog/${blogId}`);
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy dữ liệu blog");
     }
@@ -46,14 +45,15 @@ export const updateBlog = createAsyncThunk(
   "blogs/update",
   async ({ id, blogData }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`/blog/${id}`, blogData);
-      console.log("updateBlog response:", response.data);
+      const response = await axios.put(`/blog/edit-cancelled/${id}`, blogData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể cập nhật blog");
     }
   }
 );
+
+// Giữ nguyên các phần khác của file...
 
 // Admin-Specific Actions
 // Fetch pending approval blogs (for admin)
@@ -62,8 +62,7 @@ export const fetchAdminPendingBlogs = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get("/approvalblog/pending");
-      console.log("fetchAdminPendingBlogs response:", response.data);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy danh sách blog chờ duyệt");
     }
@@ -76,8 +75,7 @@ export const fetchAdminApprovedBlogs = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get("/approvalblog/approved");
-      console.log("fetchAdminApprovedBlogs response:", response.data);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy danh sách blog đã duyệt");
     }
@@ -90,8 +88,7 @@ export const fetchAdminBlogById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.get(`/approvalblog/${id}`);
-      console.log("fetchAdminBlogById response:", response.data);
-      return response.data;
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy dữ liệu blog");
     }
@@ -104,7 +101,6 @@ export const approveAdminBlog = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.put(`/approvalblog/approve/${id}`);
-      console.log("approveAdminBlog response:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể phê duyệt blog");
@@ -118,7 +114,6 @@ export const cancelAdminBlog = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axios.put(`/approvalblog/cancel/${id}`);
-      console.log("cancelAdminBlog response:", response.data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể hủy blog");
@@ -137,7 +132,8 @@ const blogSlice = createSlice({
     statusFilter: "All",
 
     // State for admin (separate state to avoid conflict)
-    adminBlogs: [],
+    pendingBlogs: [], 
+    approvedBlogs: [],
     adminSelectedBlog: null,
     adminLoading: false,
     adminError: null,
@@ -233,7 +229,7 @@ const blogSlice = createSlice({
       })
       .addCase(fetchAdminPendingBlogs.fulfilled, (state, action) => {
         state.adminLoading = false;
-        state.adminBlogs = action.payload;
+        state.pendingBlogs = action.payload;
       })
       .addCase(fetchAdminPendingBlogs.rejected, (state, action) => {
         state.adminLoading = false;
@@ -245,7 +241,7 @@ const blogSlice = createSlice({
       })
       .addCase(fetchAdminApprovedBlogs.fulfilled, (state, action) => {
         state.adminLoading = false;
-        state.adminBlogs = action.payload;
+        state.approvedBlogs = action.payload;
       })
       .addCase(fetchAdminApprovedBlogs.rejected, (state, action) => {
         state.adminLoading = false;
@@ -268,13 +264,9 @@ const blogSlice = createSlice({
         state.adminError = null;
       })
       .addCase(approveAdminBlog.fulfilled, (state, action) => {
-        state.adminLoading = false;
-        state.adminBlogs = state.adminBlogs.map((blog) =>
-          blog.id === action.payload.id ? { ...blog, status: "approved" } : blog
-        );
-        if (state.adminSelectedBlog?.id === action.payload.id) {
-          state.adminSelectedBlog.status = "approved";
-        }
+        const blogId = action.meta.arg;
+        state.pendingBlogs = state.pendingBlogs.filter((b) => b.blogId !== blogId);
+        state.approvedBlogs = [...state.approvedBlogs, action.payload];
       })
       .addCase(approveAdminBlog.rejected, (state, action) => {
         state.adminLoading = false;
@@ -285,13 +277,9 @@ const blogSlice = createSlice({
         state.adminError = null;
       })
       .addCase(cancelAdminBlog.fulfilled, (state, action) => {
-        state.adminLoading = false;
-        state.adminBlogs = state.adminBlogs.map((blog) =>
-          blog.id === action.payload.id ? { ...blog, status: "cancelled" } : blog
-        );
-        if (state.adminSelectedBlog?.id === action.payload.id) {
-          state.adminSelectedBlog.status = "cancelled";
-        }
+        const blogId = action.meta.arg;
+        state.pendingBlogs = state.pendingBlogs.filter((b) => b.blogId !== blogId);
+        state.approvedBlogs = state.approvedBlogs.filter((b) => b.blogId !== blogId);
       })
       .addCase(cancelAdminBlog.rejected, (state, action) => {
         state.adminLoading = false;

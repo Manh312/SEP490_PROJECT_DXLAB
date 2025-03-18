@@ -10,6 +10,9 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'unsafe-none',
+    },
     allowedHosts: ['.ngrok-free.app'], // Chấp nhận tất cả subdomain của ngrok
   },
 })

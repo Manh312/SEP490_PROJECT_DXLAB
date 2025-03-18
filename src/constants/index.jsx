@@ -369,7 +369,7 @@ export const navbarLinks = [
       },
 
       {
-        label: "Quản lý blog",
+        label: "Quản lý duyệt Blog",
         icon: Package,
         path: "/dashboard/blog",
       },

@@ -18,12 +18,13 @@ const BlogListOfStaff = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
 
-  const { adminBlogs, adminLoading, adminStatusFilter } = useSelector(
+  const { pendingBlogs, approvedBlogs, adminLoading, adminStatusFilter } = useSelector(
     (state) => state.blogs
   );
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [localLoading, setLocalLoading] = useState(false); // Thêm trạng thái loading cục bộ
   const blogsPerPage = 5;
 
   const debouncedSearch = debounce((value) => {
@@ -32,15 +33,10 @@ const BlogListOfStaff = () => {
   }, 300);
 
   useEffect(() => {
-    if (adminStatusFilter === "Pending") {
-      dispatch(fetchAdminPendingBlogs());
-    } else if (adminStatusFilter === "Approved") {
-      dispatch(fetchAdminApprovedBlogs());
-    } else if (adminStatusFilter === "All") {
-      dispatch(fetchAdminPendingBlogs());
-      dispatch(fetchAdminApprovedBlogs());
-    }
-  }, [dispatch, adminStatusFilter]);
+    // Luôn lấy cả hai danh sách để đảm bảo dữ liệu đầy đủ
+    dispatch(fetchAdminPendingBlogs());
+    dispatch(fetchAdminApprovedBlogs());
+  }, [dispatch]);
 
   const mapStatusToString = (status) => {
     switch (status) {
@@ -54,8 +50,16 @@ const BlogListOfStaff = () => {
   };
 
   const filteredBlogs = useMemo(() => {
-    let result = adminBlogs || [];
+    let result = [];
+    if (adminStatusFilter === "All") {
+      result = [...(pendingBlogs || []), ...(approvedBlogs || [])];
+    } else if (adminStatusFilter === "Pending") {
+      result = pendingBlogs || [];
+    } else if (adminStatusFilter === "Approved") {
+      result = approvedBlogs || [];
+    }
 
+    result = result.filter((blog) => blog && typeof blog === "object");
     if (searchTerm) {
       result = result.filter((blog) =>
         blog.blogTitle?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -64,9 +68,9 @@ const BlogListOfStaff = () => {
 
     return result.map((blog) => ({
       ...blog,
-      status: mapStatusToString(blog.status),
+      status: blog.status != null ? mapStatusToString(blog.status) : "Không xác định",
     }));
-  }, [adminBlogs, searchTerm]);
+  }, [pendingBlogs, approvedBlogs, searchTerm, adminStatusFilter]);
 
   const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
   const displayedBlogs = filteredBlogs.slice(
@@ -87,20 +91,19 @@ const BlogListOfStaff = () => {
       toast.error("Không tìm thấy ID của blog!");
       return;
     }
+    setLocalLoading(true); // Bật loading cục bộ
     try {
-      await dispatch(approveAdminBlog(blogId)).unwrap();
-      toast.success("Bài blog đã được phê duyệt!");
-      if (adminStatusFilter === "Pending") {
-        dispatch(fetchAdminPendingBlogs());
-      } else if (adminStatusFilter === "Approved") {
-        dispatch(fetchAdminApprovedBlogs());
-      } else if (adminStatusFilter === "All") {
-        dispatch(fetchAdminPendingBlogs());
-        dispatch(fetchAdminApprovedBlogs());
-      }
+      const response = await dispatch(approveAdminBlog(blogId)).unwrap();
+      toast.success(response.message || "Bài blog đã được phê duyệt!");
+      // Cập nhật lại danh sách ngay sau khi phê duyệt
+      await Promise.all([
+        dispatch(fetchAdminPendingBlogs()),
+        dispatch(fetchAdminApprovedBlogs()),
+      ]);
     } catch (err) {
-      console.log(err);
-      toast.error("Phê duyệt thất bại!");
+      toast.error(err.message || "Phê duyệt thất bại!");
+    } finally {
+      setLocalLoading(false); // Tắt loading cục bộ
     }
   };
 
@@ -109,20 +112,19 @@ const BlogListOfStaff = () => {
       toast.error("Không tìm thấy ID của blog!");
       return;
     }
+    setLocalLoading(true); // Bật loading cục bộ
     try {
-      await dispatch(cancelAdminBlog(blogId)).unwrap();
-      toast.success("Bài blog đã bị xóa!");
-      if (adminStatusFilter === "Pending") {
-        dispatch(fetchAdminPendingBlogs());
-      } else if (adminStatusFilter === "Approved") {
-        dispatch(fetchAdminApprovedBlogs());
-      } else if (adminStatusFilter === "All") {
-        dispatch(fetchAdminPendingBlogs());
-        dispatch(fetchAdminApprovedBlogs());
-      }
+      const response = await dispatch(cancelAdminBlog(blogId)).unwrap();
+      toast.success(response.message || "Bài blog đã bị xóa!");
+      // Cập nhật lại danh sách ngay sau khi hủy
+      await Promise.all([
+        dispatch(fetchAdminPendingBlogs()),
+        dispatch(fetchAdminApprovedBlogs()),
+      ]);
     } catch (err) {
-      console.log(err);
-      toast.error("Xóa thất bại!");
+      toast.error(err.message || "Xóa thất bại!");
+    } finally {
+      setLocalLoading(false); // Tắt loading cục bộ
     }
   };
 
@@ -199,7 +201,7 @@ const BlogListOfStaff = () => {
           </div>
         </div>
 
-        {adminLoading ? (
+        {(adminLoading || localLoading) ? (
           <div className="flex items-center justify-center py-6">
             <span className="animate-spin text-orange-500 w-6 h-6 mr-2">⏳</span>
             <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
@@ -220,6 +222,9 @@ const BlogListOfStaff = () => {
                     </th>
                     <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
                       Tiêu đề
+                    </th>
+                    <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
+                      Nội dung
                     </th>
                     <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
                       Ngày tạo
@@ -250,6 +255,9 @@ const BlogListOfStaff = () => {
                         </Link>
                       </td>
                       <td className="px-3 py-4 text-center">
+                          {blog.blogContent}
+                      </td>
+                      <td className="px-3 py-4 text-center">
                         {blog.blogCreatedDate
                           ? new Date(blog.blogCreatedDate).toLocaleDateString()
                           : "N/A"}
@@ -272,6 +280,7 @@ const BlogListOfStaff = () => {
                               onClick={() => handleApprove(blog.blogId)}
                               className="bg-green-100 text-green-700 hover:bg-green-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                               title="Phê duyệt"
+                              disabled={localLoading} // Vô hiệu hóa khi đang loading
                             >
                               <CheckCircle className="w-4 h-4" />
                             </button>
@@ -279,6 +288,7 @@ const BlogListOfStaff = () => {
                               onClick={() => handleCancel(blog.blogId)}
                               className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                               title="Hủy"
+                              disabled={localLoading} // Vô hiệu hóa khi đang loading
                             >
                               <XCircle className="w-4 h-4" />
                             </button>
@@ -289,6 +299,7 @@ const BlogListOfStaff = () => {
                             onClick={() => handleCancel(blog.blogId)}
                             className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                             title="Xóa"
+                            disabled={localLoading} // Vô hiệu hóa khi đang loading
                           >
                             <Trash className="w-4 h-4" />
                           </button>
@@ -337,6 +348,7 @@ const BlogListOfStaff = () => {
                           <button
                             onClick={() => handleApprove(blog.blogId)}
                             className="bg-green-100 text-green-700 hover:bg-green-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                            disabled={localLoading} // Vô hiệu hóa khi đang loading
                           >
                             <CheckCircle className="w-4 h-4" />
                             <span>Phê duyệt</span>
@@ -344,6 +356,7 @@ const BlogListOfStaff = () => {
                           <button
                             onClick={() => handleCancel(blog.blogId)}
                             className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                            disabled={localLoading} // Vô hiệu hóa khi đang loading
                           >
                             <XCircle className="w-4 h-4" />
                             <span>Hủy</span>
@@ -354,6 +367,7 @@ const BlogListOfStaff = () => {
                         <button
                           onClick={() => handleCancel(blog.blogId)}
                           className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                          disabled={localLoading} // Vô hiệu hóa khi đang loading
                         >
                           <Trash className="w-4 h-4" />
                           <span>Xóa</span>
