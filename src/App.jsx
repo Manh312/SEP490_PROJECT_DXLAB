@@ -47,7 +47,7 @@ import ReportList from "./routes/staff-manage/Report-management/ReportList";
 import ReportDetail from "./routes/staff-manage/Report-management/ReportDetail";
 
 import CreateSlot from "./routes/slot/CreateSlot";
-import CreateBlog from "./routes/staff-manage/blog-management/CreateBolg";
+import CreateBlog from "./routes/staff-manage/blog-management/CreateBlog";
 import StorageListAccount from "./routes/account/StorageListAccount";
 import AccountDetail from "./routes/account/AccountDetail";
 import NotAuthorization from "./layouts/home/NotAuthorization";
