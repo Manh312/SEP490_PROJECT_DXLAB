@@ -1,57 +1,116 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Edit, ArrowLeft } from "lucide-react";
+import { Edit, ArrowLeft, Upload, Bold, Italic, List, Link as LinkIcon } from "lucide-react";
 import { useTheme } from "../../../hooks/use-theme";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchBlogById, updateBlog, fetchBlogsByStatus } from "../../../redux/slices/Blog";
+import {
+  fetchBlogById,
+  updateBlog,
+  fetchBlogsByStatus,
+} from "../../../redux/slices/Blog";
 
 const ModifieBlog = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { theme } = useTheme();
   const dispatch = useDispatch();
+  const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
 
-  // Lấy dữ liệu từ Redux store
-  const { selectedBlog, loading, error } = useSelector((state) => state.blogs);
+  const { selectedBlog, loading } = useSelector((state) => state.blogs);
 
   const [editedBlog, setEditedBlog] = useState({
     blogTitle: "",
     blogContent: "",
-    status: "Pending"
+    blogCreatedDate: new Date().toISOString(),
+    status: 0,
+    images: [],
   });
 
-  // Fetch blog data khi component mount
   useEffect(() => {
     dispatch(fetchBlogById(id));
   }, [dispatch, id]);
 
-  // Cập nhật state local khi selectedBlog thay đổi
   useEffect(() => {
     if (selectedBlog) {
+      const blogCreatedDate = selectedBlog.blogCreatedDate
+        ? new Date(selectedBlog.blogCreatedDate)
+        : new Date();
+
       setEditedBlog({
-        title: selectedBlog.blogTitle || "",
-        content: selectedBlog.blogContent || "",
-        status: selectedBlog.status || "Pending"
+        blogTitle: selectedBlog.blogTitle || "",
+        blogContent: selectedBlog.blogContent || "",
+        blogCreatedDate: isNaN(blogCreatedDate.getTime())
+          ? new Date().toISOString()
+          : blogCreatedDate.toISOString(),
+        status: selectedBlog.status || 0,
+        images: Array.isArray(selectedBlog.images) ? selectedBlog.images : [selectedBlog.images || ""],
       });
     }
   }, [selectedBlog]);
 
-  // Handle update blog
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditedBlog({ ...editedBlog, images: [reader.result] });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleUpdateBlog = async () => {
     if (!editedBlog.blogTitle || !editedBlog.blogContent) {
       toast.error("Vui lòng điền đầy đủ tiêu đề và nội dung!");
       return;
     }
 
+    // Gửi dữ liệu dạng phẳng, không bọc trong blogDto
+    const blogData = {
+      blogTitle: editedBlog.blogTitle,
+      blogContent: editedBlog.blogContent,
+      blogCreatedDate: editedBlog.blogCreatedDate,
+      status: editedBlog.status,
+      images: editedBlog.images,
+    };
+
     try {
-      await dispatch(updateBlog({ id, blogData: editedBlog })).unwrap();
-      toast.success("Bài viết đã được cập nhật và gửi yêu cầu duyệt!");
-      dispatch(fetchBlogsByStatus("")); // Refresh danh sách blog
+      console.log("Data sent to API:", blogData); // Log để kiểm tra dữ liệu gửi đi
+      const response = await dispatch(updateBlog({ id, blogData })).unwrap();
+      console.log("Update response:", response);
+      toast.success(response.message);
+      dispatch(fetchBlogsByStatus("Pending"));
       navigate("/manage/blog");
     } catch (err) {
-      toast.error(err || "Lỗi khi cập nhật bài viết!");
+      console.error("Update error:", err); // Log lỗi chi tiết
+      toast.error(err?.message || "Lỗi khi cập nhật bài viết!");
     }
+  };
+
+  const insertText = (tag) => {
+    const textarea = textareaRef.current;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    let newText;
+
+    if (tag === "link") {
+      const url = prompt("Nhập URL:");
+      if (!url) return;
+      newText = `${text.substring(0, start)}<a href="${url}">${text.substring(start, end)}</a>${text.substring(end)}`;
+    } else {
+      newText = `${text.substring(0, start)}<${tag}>${text.substring(start, end)}</${tag}>${text.substring(end)}`;
+    }
+
+    setEditedBlog({ ...editedBlog, blogContent: newText });
+    textarea.focus();
+  };
+
+  const formatDateForInput = (dateString) => {
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? "" : date.toISOString().split("T")[0];
   };
 
   if (loading) {
@@ -63,53 +122,36 @@ const ModifieBlog = () => {
     );
   }
 
-  // if (error) {
-  //   return (
-  //     <div className="flex items-center justify-center py-6">
-  //       <p className="text-red-500 font-medium">{error}</p>
-  //     </div>
-  //   );
-  // }
-
-  // if (!selectedBlog) {
-  //   return (
-  //     <div className="flex items-center justify-center py-6">
-  //       <p className="text-gray-500 font-medium">Không tìm thấy bài viết</p>
-  //     </div>
-  //   );
-  // }
-
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
       <div
-        className={`max-w-3xl mx-auto border rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 ${
-          theme === "dark" ? "bg-black text-white" : "bg-white text-gray-800"
+        className={`max-w-4xl mx-auto border rounded-xl shadow-lg p-6 sm:p-8 lg:p-10 ${
+          theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-800"
         }`}
       >
-        {/* Header Section */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-2">
-            <Edit className="h-6 w-6 text-orange-500" />
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold">
-              Sửa đổi Blog
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-3">
+            <Edit className="h-7 w-7 text-orange-500" />
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">
+              Chỉnh sửa Blog
             </h2>
           </div>
           <Link
             to="/manage/blog"
-            className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
+            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
           >
             <ArrowLeft className="h-5 w-5" />
-            <span>Quay lại</span>
+            <span className="text-sm sm:text-base">Quay lại</span>
           </Link>
         </div>
 
-        {/* Form Section */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium mb-1">Tiêu đề</label>
+            <label className="block text-sm font-medium mb-2">Tiêu đề Blog</label>
             <input
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 shadow-sm"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm ${
+                theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+              }`}
               value={editedBlog.blogTitle}
               onChange={(e) =>
                 setEditedBlog({ ...editedBlog, blogTitle: e.target.value })
@@ -119,24 +161,107 @@ const ModifieBlog = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Nội dung</label>
+            <label className="block text-sm font-medium mb-2">Nội dung Blog</label>
+            <div className="mb-2 flex gap-2">
+              <button
+                onClick={() => insertText("b")}
+                className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800"
+                title="In đậm"
+              >
+                <Bold className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => insertText("i")}
+                className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800"
+                title="In nghiêng"
+              >
+                <Italic className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => insertText("ul")}
+                className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800"
+                title="Danh sách"
+              >
+                <List className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => insertText("link")}
+                className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800"
+                title="Chèn liên kết"
+              >
+                <LinkIcon className="h-5 w-5" />
+              </button>
+            </div>
             <textarea
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 shadow-sm"
-              rows={8}
+              ref={textareaRef}
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm min-h-[200px] ${
+                theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+              }`}
               value={editedBlog.blogContent}
               onChange={(e) =>
                 setEditedBlog({ ...editedBlog, blogContent: e.target.value })
               }
-              placeholder="Nhập nội dung blog"
+              placeholder="Nhập nội dung blog (hỗ trợ HTML cơ bản)"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Hỗ trợ định dạng HTML: <b>đậm</b>, <i>nghiêng</i>, <ul><li>danh sách</li></ul>, <a href="...">liên kết</a>
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Ngày tạo</label>
+            <input
+              type="date"
+              className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm ${
+                theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+              }`}
+              value={formatDateForInput(editedBlog.blogCreatedDate)}
+              onChange={(e) =>
+                setEditedBlog({
+                  ...editedBlog,
+                  blogCreatedDate: e.target.value ? new Date(e.target.value).toISOString() : "",
+                })
+              }
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Hình ảnh</label>
+            <div className="flex items-center gap-4">
+              {editedBlog.images.length > 0 && (
+                <img
+                  src={editedBlog.images[0]}
+                  alt="Blog preview"
+                  className="w-24 h-24 object-cover rounded-lg shadow-sm"
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current.click()}
+                className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-all"
+              >
+                <Upload className="h-5 w-5" />
+                <span>Tải ảnh lên</span>
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+                accept="image/*"
+                className="hidden"
+              />
+            </div>
           </div>
 
           <button
             onClick={handleUpdateBlog}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-all"
+            disabled={loading}
+            className={`w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-lg flex items-center justify-center gap-2 transition-all ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
           >
             <Edit className="h-5 w-5" />
-            <span>Sửa đổi & Gửi yêu cầu duyệt</span>
+            <span>Cập nhật & Gửi yêu cầu duyệt</span>
           </button>
         </div>
       </div>

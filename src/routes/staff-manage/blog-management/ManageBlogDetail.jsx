@@ -32,6 +32,34 @@ const ManageBlogDetail = () => {
     }
   }, [error]);
 
+  // Hàm hiển thị tên trạng thái giống với BlogList
+  const getStatusDisplayName = (status) => {
+    switch (Number(status)) {
+      case 2:
+        return "Đã xuất bản";
+      case 1:
+        return "Đang chờ";
+      case 0:
+        return "Bị hủy";
+      default:
+        return "Không xác định";
+    }
+  };
+
+  // Hàm trả về lớp CSS màu sắc giống với BlogList
+  const getStatusClass = (status) => {
+    switch (Number(status)) {
+      case 2:
+        return "bg-green-100 text-green-800";
+      case 1:
+        return "bg-yellow-100 text-yellow-800";
+      case 0:
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -143,12 +171,16 @@ const ManageBlogDetail = () => {
                     {selectedBlog.blogContent}
                   </p>
                 </div>
-                {status && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500">Trạng thái</label>
-                    <p className="mt-1 text-base">{status}</p>
-                  </div>
-                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-500">Trạng thái</label>
+                  <p
+                    className={`mt-1 text-base inline-flex items-center px-2 py-1 rounded-full font-normal ${getStatusClass(
+                      selectedBlog.status
+                    )}`}
+                  >
+                    {getStatusDisplayName(selectedBlog.status)}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
