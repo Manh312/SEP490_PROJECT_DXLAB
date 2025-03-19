@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import { PlusCircle, ArrowLeftCircle, Upload, Link as LinkIcon } from "lucide-react";
+import { PlusCircle, ArrowLeftCircle } from "lucide-react";
 import { useTheme } from "../../../hooks/use-theme";
 import { createBlog } from "../../../redux/slices/Blog";
 
@@ -15,30 +15,31 @@ const CreateBlog = () => {
 
   const [newBlog, setNewBlog] = useState({
     blogTitle: "",
-    blogContent: "", 
-    blogCreatedDate: new Date().toISOString(),
-    status: 1,
-    images: [],
+    blogContent: "",
+    images: [], 
   });
 
-  // Xử lý upload file ảnh
+  const [imagePreviews, setImagePreviews] = useState([]);
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewBlog({ ...newBlog, images: [reader.result] });
-      };
-      reader.readAsDataURL(file);
+    const files = Array.from(e.target.files); // Convert FileList to Array
+    if (files.length > 0) {
+      setNewBlog((prev) => ({
+        ...prev,
+        images: [...prev.images, ...files],
+      }));
+
+      const previews = files.map((file) => URL.createObjectURL(file));
+      setImagePreviews((prev) => [...prev, ...previews]);
     }
   };
 
-  // Xử lý nhập link ảnh
-  const handleImageLink = () => {
-    const url = prompt("Nhập URL hình ảnh:");
-    if (url) {
-      setNewBlog({ ...newBlog, images: [url] });
-    }
+  // Remove an image from the list
+  const handleRemoveImage = (index) => {
+    setNewBlog((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmitApproval = async () => {
@@ -46,21 +47,20 @@ const CreateBlog = () => {
       toast.error("Vui lòng điền đầy đủ tiêu đề và mô tả!");
       return;
     }
-
+  
     const blogData = {
       blogTitle: newBlog.blogTitle,
       blogContent: newBlog.blogContent,
       blogCreatedDate: newBlog.blogCreatedDate,
       status: newBlog.status,
-      images: newBlog.images,
     };
-
+  
     try {
-      const response = await dispatch(createBlog(blogData)).unwrap();      
-      const successMessage = response.message 
-        ? response.message 
+      const response = await dispatch(createBlog({ blogData, files: newBlog.images })).unwrap();
+      const successMessage = response.message
+        ? response.message
         : `Bài viết "${response.blog?.blogTitle || newBlog.blogTitle}" đã được tạo thành công!`;
-      
+  
       toast.success(successMessage);
       navigate("/manage/blog");
     } catch (err) {
@@ -68,7 +68,6 @@ const CreateBlog = () => {
       toast.error(err?.message || "Có lỗi xảy ra khi tạo bài viết!");
     }
   };
-
 
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
@@ -93,7 +92,7 @@ const CreateBlog = () => {
           <div className="flex flex-col gap-2">
             <label className="font-medium text-sm sm:text-base">Tiêu đề Blog</label>
             <input
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm ${
+              className={`w-full px-4 py-2 border rounded-lg shadow-sm ${
                 theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
               }`}
               placeholder="Nhập tiêu đề blog"
@@ -105,12 +104,12 @@ const CreateBlog = () => {
           {/* Description Input */}
           <div className="flex flex-col gap-2">
             <label className="font-medium text-sm sm:text-base">Mô tả Blog</label>
-            <input
-              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm ${
+            <textarea
+              className={`w-full h-50 px-4 py-2 border rounded-lg shadow-sm ${
                 theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
               }`}
               placeholder="Nhập mô tả blog"
-              type="text"
+              
               value={newBlog.blogContent}
               onChange={(e) => setNewBlog({ ...newBlog, blogContent: e.target.value })}
             />
@@ -120,37 +119,36 @@ const CreateBlog = () => {
           <div className="flex flex-col gap-2">
             <label className="font-medium text-sm sm:text-base">Hình ảnh</label>
             <div className="flex items-center gap-4 flex-wrap">
-              {newBlog.images.length > 0 && (
-                <img
-                  src={newBlog.images[0]}
-                  alt="Blog preview"
-                  className="w-24 h-24 object-cover rounded-lg shadow-sm"
-                  onError={(e) => (e.target.src = "/placeholder-image.jpg")} // Xử lý khi ảnh lỗi
-                />
-              )}
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current.click()}
-                  className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-all"
-                >
-                  <Upload className="h-5 w-5" />
-                  <span>Tải ảnh lên</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleImageLink}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-all"
-                >
-                  <LinkIcon className="h-5 w-5" />
-                  <span>Nhập link ảnh</span>
-                </button>
-              </div>
+              {imagePreviews.length > 0 &&
+                imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={preview}
+                      alt={`Blog preview ${index}`}
+                      className="w-24 h-24 object-cover rounded-lg shadow-sm"
+                      onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+                    />
+                    <button
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current.click()}
+                className="border-dashed border-2 border-gray-400 rounded-lg p-4 text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all"
+              >
+                Chọn tệp
+              </button>
               <input
                 type="file"
                 ref={fileInputRef}
                 onChange={handleImageUpload}
                 accept="image/*"
+                multiple // Allow multiple file selection
                 className="hidden"
               />
             </div>

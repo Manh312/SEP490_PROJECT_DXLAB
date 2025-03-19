@@ -27,12 +27,25 @@ export const fetchBlogById = createAsyncThunk(
   }
 );
 
-// Create a new blog (for staff)
 export const createBlog = createAsyncThunk(
   "blogs/create",
-  async (blogData, { rejectWithValue }) => {
+  async ({ blogData, files }, { rejectWithValue }) => {
     try {
-      const response = await axios.post("/blog", blogData);
+      const formData = new FormData();
+
+      formData.append("BlogTitle", blogData.blogTitle);
+      formData.append("BlogContent", blogData.blogContent);
+      formData.append("BlogCreatedDate", blogData.blogCreatedDate || new Date().toISOString());
+      formData.append("Status", blogData.status || 1);
+
+      if (files && files.length > 0) {
+        files.forEach((file) => {
+          formData.append("ImageFiles", file);
+        });
+      }
+
+      const response = await axios.post("/blog", formData); 
+
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể tạo blog");
