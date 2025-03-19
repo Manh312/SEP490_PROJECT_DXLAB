@@ -35,12 +35,12 @@ const RoomDetail = () => {
   if (error) return <p className="text-red-500 text-center">Lỗi: {error}</p>;
   if (!selectedRoom) return <p className="text-gray-500 text-center">Không tìm thấy phòng có ID {id}!</p>;
 
-  // Lấy dữ liệu từ API response mới
-  const { roomId, roomName, roomDescription, capacity, isDeleted, images } = selectedRoom;
+   // Lấy dữ liệu từ API response mới
+   const { roomId, roomName, roomDescription, capacity, isDeleted, images, area_DTO } = selectedRoom;
 
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">Chi Tiết Phòng</h2>
+      <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">Chi Tiết Phòng: {roomId}</h2>
       <table className="w-full border-collapse border border-gray-300">
         <tbody>
           <tr className="border-b">
@@ -58,7 +58,25 @@ const RoomDetail = () => {
           <tr className="border-b">
             <td className="px-4 py-3 font-semibold  border-r border-gray-300">Trạng Thái</td>
             <td className={`px-4 py-3 font-semibold ${isDeleted ? "text-red-500" : "text-green-500"}`}>
-              {isDeleted ? "Inactive" : "Active"}
+              {isDeleted ? "Đã xóa" : "Đang hoạt động"}
+            </td>
+          </tr>
+          {/* Hiển thị danh sách khu vực */}
+          <tr className="border-b">
+            <td className="px-4 py-3 font-semibold border-r border-gray-300">Khu Vực</td>
+            <td className="px-4 py-3">
+              {area_DTO && area_DTO.length > 0 ? (
+                <ul className="list-disc pl-5">
+                  {area_DTO.map((area, index) => (
+                    <li key={index} className="py-1">
+                      <span className="font-semibold">Loại khu vực:</span> {area.areaTypeId} - 
+                      <span className="font-semibold"> Tên:</span> {area.areaName}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <span className="text-gray-500">Không có khu vực</span>
+              )}
             </td>
           </tr>
           {/* Hiển thị ảnh */}

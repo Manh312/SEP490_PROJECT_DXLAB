@@ -21,9 +21,7 @@ export const fetchAreaTypeById = createAsyncThunk(
     "areaTypes/fetchAreaTypeById",
     async (id, { rejectWithValue }) => {
       try {
-        console.log(id);
         const response = await axiosInstance.get(`/AreaType/${id}`);
-        console.log(response.data.data);
         return response.data.data; // ✅ Trả về dữ liệu chi tiết
       } catch (error) {
         return rejectWithValue(error.response?.data || "Lỗi khi lấy chi tiết loại khu vực");
@@ -50,14 +48,11 @@ export const updateAreaType = createAsyncThunk(
     "areaTypes/updateAreaType",
     async ({ areaTypeId, updatedData }, { rejectWithValue }) => {
       try {
-        console.log({ areaTypeId, updatedData });
         const response = await axiosInstance.patch(`${API_URL}/${areaTypeId}`, updatedData, {
             headers: { "Content-Type": "application/json-patch+json" }
           });
-        console.log(response.data); // ✅ In ra dữ liệu chính xác
         return response.data; // ✅ Chỉ return phần `data`, tránh lỗi React
       } catch (error) {
-        console.log(error.response.data);
         return rejectWithValue(error.response?.data || "Lỗi khi cập nhật loại khu vực");
       }
     }

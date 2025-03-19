@@ -79,7 +79,7 @@ const UpdateRoom = () => {
     if (formData.name !== selectedRoom.roomName) {
       updates.push({
         operationType: 0,
-        path: "/roomName",
+        path: "roomName",
         op: "replace",
         value: formData.name,
       });
@@ -87,7 +87,7 @@ const UpdateRoom = () => {
     if (formData.description !== selectedRoom.roomDescription) {
       updates.push({
         operationType: 0,
-        path: "/roomDescription",
+        path: "roomDescription",
         op: "replace",
         value: formData.description,
       });
@@ -95,15 +95,15 @@ const UpdateRoom = () => {
     if (formData.capacity !== selectedRoom.capacity) {
       updates.push({
         operationType: 0,
-        path: "/capacity",
+        path: "capacity",
         op: "replace",
         value: formData.capacity,
       });
     }
-    if (formData.isDeleted !== (selectedRoom.isDeleted)) {
+    if (formData.isDeleted !== selectedRoom.isDeleted) {
       updates.push({
         operationType: 0,
-        path: "/isDeleted",
+        path: "isDeleted",
         op: "replace",
         value: formData.isDeleted,
       });
@@ -111,9 +111,9 @@ const UpdateRoom = () => {
     if (hasImageChange) {
       updates.push({
         operationType: 0,
-        path: "/images",
+        path: "images",
         op: "replace",
-        value: formData.images,
+        value: formData.images.map((img) => ({ imageUrl: img })),
       });
     }
 
@@ -121,23 +121,20 @@ const UpdateRoom = () => {
       toast.info("Không có thay đổi nào cần cập nhật!");
       return;
     }
-  console.log(updates);
-
+    console.log(updates);
 
     try {
       const res = await dispatch(updateRoom({ roomId: id, updates })).unwrap();
       console.log(res.message);
       navigate("/dashboard/room", { state: { successMessage: res.message } });
     } catch (error) {
-      toast.error("Lỗi khi cập nhật phòng: " + error.message);
+      toast.error(error.message);
     }
   };
 
-  console.log(selectedRoom);
-
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 rounded-lg shadow-lg">
-      <ToastContainer/>
+      <ToastContainer />
       <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">
         Chỉnh Sửa Phòng {id}
       </h2>
@@ -186,11 +183,32 @@ const UpdateRoom = () => {
               name="isDeleted"
               value={String(formData.isDeleted)} // Chuyển boolean thành string để phù hợp với <option> value
               onChange={handleChange}
-              className="w-full p-2 border rounded-lg"
+              className="w-full p-2 border rounded-lg bg-gray-100 text-gray-800"
             >
-              <option value="false">False</option>
-              <option value="true">True</option>
+              <option value="true">Xóa</option>
+              <option value="false">Hoạt động</option>
             </select>
+          </div>
+
+          {/* Hiển thị areaDTO chỉ đọc */}
+          <div className="mb-4">
+            <label className="block font-semibold mb-1">Khu Vực</label>
+            <div className="border p-3 rounded-lg bg-gray-100">
+              {selectedRoom.area_DTO && selectedRoom.area_DTO.length > 0 ? (
+                <ul className="list-disc pl-5">
+                  {selectedRoom.area_DTO.map((area, index) => (
+                    <li key={index} className="py-1">
+                      <span className="font-semibold">Loại:</span>{" "}
+                      {area.areaTypeId} -
+                      <span className="font-semibold"> Tên:</span>{" "}
+                      {area.areaName}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <span className="text-gray-500">Không có khu vực</span>
+              )}
+            </div>
           </div>
 
           {/* Upload ảnh mới */}
@@ -240,13 +258,13 @@ const UpdateRoom = () => {
           <div className="flex justify-between">
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition cursor-pointer"
             >
               Lưu Thay Đổi
             </button>
             <button
               type="button"
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition"
+              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition cursor-pointer"
               onClick={() => navigate("/dashboard/room")}
             >
               Hủy

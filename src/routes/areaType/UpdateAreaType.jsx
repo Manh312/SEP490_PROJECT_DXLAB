@@ -118,7 +118,7 @@ const UpdateAreaType = () => {
         operationType: 0,
         path: "images",
         op: "replace",
-        value: formData.images,
+        value: formData.images.map((img) => ({ imageUrl: img })),
       });
     }
 

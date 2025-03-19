@@ -9,7 +9,6 @@ export const fetchRooms = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get(API_URL);
-      console.log("Dữ liệu room từ BE:", response.data.data);
       return response.data.data; // Chỉ lấy mảng data
     } catch (error) {
       return rejectWithValue(error.message || "Không thể lấy danh sách phòng");
@@ -36,7 +35,6 @@ export const createRoom = createAsyncThunk(
   async (roomData, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(API_URL, roomData);
-      console.log("Dữ liệu trả về từ BE:", response.data);
       return response.data; // Chỉ lấy data
     } catch (error) {
       console.error(error.response.data);
@@ -54,10 +52,8 @@ export const updateRoom = createAsyncThunk(
       const response = await axiosInstance.patch(`${API_URL}/${roomId}`, updates, {
         headers: { "Content-Type": "application/json-patch+json" }
       });
-      console.log( response.data);
       return response.data; // Trả về dữ liệu phòng đã cập nhật
     } catch (error) {
-      console.log(error.response);
       return rejectWithValue(error.response?.data || "Cập nhật phòng thất bại");
     }
   }

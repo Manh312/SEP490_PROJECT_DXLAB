@@ -138,7 +138,7 @@ const AreaTypeList = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-40 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors duration-300"
+              className="w-40 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors duration-300 bg-gray-100 text-gray-800"
             >
               <option value="All">Tất Cả</option>
               <option value="Hoạt động">Hoạt Động</option>
