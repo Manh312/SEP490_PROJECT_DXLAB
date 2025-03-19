@@ -52,6 +52,10 @@ import StorageListAccount from "./routes/account/StorageListAccount";
 import AccountDetail from "./routes/account/AccountDetail";
 import NotAuthorization from "./layouts/home/NotAuthorization";
 import ManageBlogDetail from "./routes/staff-manage/blog-management/ManageBlogDetail";
+import AreaTypeList from "./routes/areaType/AreaTypeList";
+import AreaTypeDetail from "./routes/areaType/AreaTypeDetail";
+import CreateAreaType from "./routes/areaType/CreateAreaType";
+import UpdateAreaType from "./routes/areaType/UpdateAreaType";
 
 
 
@@ -98,6 +102,22 @@ const router = createBrowserRouter([
       {
         path: "dashboard/area",
         element: <ProtectedRoute allowedRoles={["Admin"]}><AreaList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/areaType",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><AreaTypeList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/areaType/:id",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><AreaTypeDetail /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/areaType/create",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><CreateAreaType /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/areaType/update/:id",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><UpdateAreaType /></ProtectedRoute>,
       },
       {
         path: "dashboard/blog",

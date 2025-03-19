@@ -8,6 +8,7 @@ import accountReducer from "./slices/Account";
 import storageReducer from "./slices/Storage";
 import facilitiesReducer from "./slices/Facilities";
 import blogsReducer from "./slices/Blog";
+import areaTypesReducer from "./slices/AreaType"
 
 
 
@@ -24,6 +25,7 @@ const rootReducer = combineReducers({
   booking: bookingReducer,
   slots: slotReducer,
   rooms: roomReducer,
+  areaTypes: areaTypesReducer,
   auth: authReducer,
   accounts: accountReducer,
   storage: storageReducer,
