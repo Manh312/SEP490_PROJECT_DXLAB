@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { PlusCircle, Filter, Search, Edit } from "lucide-react";
-import Pagination from "../../../hooks/use-pagination";
+import { PlusCircle, Filter, Search, Edit, ChevronLeft, ChevronRight } from "lucide-react";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBlogsByStatus, setStatusFilter } from "../../../redux/slices/Blog";
@@ -9,10 +8,11 @@ import { fetchBlogsByStatus, setStatusFilter } from "../../../redux/slices/Blog"
 const BlogList = () => {
   const dispatch = useDispatch();
   const { blogs, loading, statusFilter } = useSelector((state) => state.blogs);
-
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [imageIndices, setImageIndices] = useState({}); // Quản lý chỉ số ảnh cho từng blog
   const blogsPerPage = 5;
+  const baseUrl = "https://localhost:9999";
 
   const debouncedSearch = debounce((value) => {
     setSearchTerm(value);
@@ -21,11 +21,10 @@ const BlogList = () => {
 
   useEffect(() => {
     dispatch(fetchBlogsByStatus(statusFilter));
-    console.log("Fetching blogs with status:", statusFilter);
   }, [dispatch, statusFilter]);
 
   const filteredBlogs = useMemo(() => {
-    let result = blogs;
+    let result = blogs || [];
     result = result.filter((blog) => String(blog.status) === String(statusFilter));
     if (searchTerm) {
       result = result.filter((blog) =>
@@ -45,31 +44,19 @@ const BlogList = () => {
     return filteredBlogs.some((blog) => blog.status === 0);
   }, [filteredBlogs]);
 
-  useEffect(() => {
-    if (currentPage > totalPages && totalPages > 0) {
-      setCurrentPage(totalPages);
-    } else if (totalPages === 0) {
-      setCurrentPage(1);
-    }
-  }, [totalPages, currentPage]);
-
   const getStatusDisplayName = (status) => {
     switch (status) {
-      case 2:
-        return "Đã xuất bản";
-      case 1:
-        return "Đang chờ";
-      case 0:
-        return "Bị hủy";
-      default:
-        return "Không xác định";
+      case 2: return "Đã xuất bản";
+      case 1: return "Đang chờ";
+      case 0: return "Bị hủy";
+      default: return "Không xác định";
     }
   };
 
   const getFilterBgClass = () => {
     switch (statusFilter) {
       case "2":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-800 ";
       case "1":
         return "bg-yellow-100 text-yellow-800";
       case "0":
@@ -79,26 +66,15 @@ const BlogList = () => {
     }
   };
 
-  const getEmptyStateMessage = () => {
-    return searchTerm
-      ? `Không tìm thấy blog nào với trạng thái "${getStatusDisplayName(Number(statusFilter))}" khớp với tìm kiếm`
-      : `Không có blog nào với trạng thái "${getStatusDisplayName(Number(statusFilter))}"`;
-  };
-
   const getStatusClass = (status) => {
     switch (status) {
-      case 2:
-        return "bg-green-100 text-green-800";
-      case 1:
-        return "bg-yellow-100 text-yellow-800";
-      case 0:
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case 2: return "bg-green-100 text-green-800";
+      case 1: return "bg-yellow-100 text-yellow-800";
+      case 0: return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
     }
   };
 
-  // Hàm định dạng thời gian
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, "0");
@@ -108,6 +84,73 @@ const BlogList = () => {
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const seconds = String(date.getSeconds()).padStart(2, "0");
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  };
+
+  const renderImages = (images, blogId) => {
+    if (!Array.isArray(images) || images.length === 0) {
+      return (
+        <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
+          <span className="text-gray-500 text-sm">No Image</span>
+        </div>
+      );
+    }
+
+    const currentIndex = imageIndices[blogId] || 0;
+
+    const prevImage = () => {
+      setImageIndices((prev) => ({
+        ...prev,
+        [blogId]: (currentIndex - 1 + images.length) % images.length,
+      }));
+    };
+
+    const nextImage = () => {
+      setImageIndices((prev) => ({
+        ...prev,
+        [blogId]: (currentIndex + 1) % images.length,
+      }));
+    };
+
+    return (
+      <div className="relative w-40 h-40 mx-auto group">
+        <img
+          src={
+            images[currentIndex].startsWith("http")
+              ? images[currentIndex]
+              : `${baseUrl}/${images[currentIndex]}`
+          }
+          alt={`Blog image ${currentIndex}`}
+          className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
+          onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+        />
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+              {images.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    idx === currentIndex ? "bg-white" : "bg-gray-400"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -123,7 +166,7 @@ const BlogList = () => {
           </div>
           <NavLink
             to="create"
-            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
+            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-md"
           >
             <PlusCircle className="h-5 w-5" />
             <span className="hidden sm:inline">Tạo Blog</span>
@@ -167,7 +210,11 @@ const BlogList = () => {
         ) : filteredBlogs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <PlusCircle className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 text-lg">{getEmptyStateMessage()}</p>
+            <p className="text-gray-500 text-lg">
+              {searchTerm
+                ? `Không tìm thấy blog nào với trạng thái "${getStatusDisplayName(Number(statusFilter))}" khớp với tìm kiếm`
+                : `Không có blog nào với trạng thái "${getStatusDisplayName(Number(statusFilter))}"`}
+            </p>
           </div>
         ) : (
           <>
@@ -176,14 +223,14 @@ const BlogList = () => {
               <table className="w-full text-left border-collapse">
                 <thead className="border-b bg-gray-400">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-sm uppercase tracking-wide text-center">#</th>
-                    <th className="px-4 py-3 font-semibold text-sm uppercase tracking-wide text-center">Ảnh</th>
-                    <th className="px-4 py-3 font-semibold text-sm uppercase tracking-wide text-center">Tiêu đề</th>
-                    <th className="px-4 py-3 font-semibold text-sm uppercase tracking-wide text-center">Nội dung</th>
-                    <th className="px-4 py-3 font-semibold text-sm uppercase tracking-wide text-center">Ngày tạo</th>
-                    <th className="px-4 py-3 font-semibold text-sm uppercase tracking-wide text-center">Trạng thái</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">#</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Ảnh</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Tiêu đề</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Nội dung</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Ngày tạo</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
                     {hasCancelledBlogs && (
-                      <th className="px-4 py-3 font-semibold text-sm uppercase tracking-wide text-center">Thao tác</th>
+                      <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Thao tác</th>
                     )}
                   </tr>
                 </thead>
@@ -191,37 +238,31 @@ const BlogList = () => {
                   {displayedBlogs.map((blog, index) => (
                     <tr
                       key={blog.blogId}
-                      className="border-b hover:bg-gray-50 dark:hover:bg-gray-400 transition-colors"
+                      className="border-b hover:bg-gray-500 transition-colors"
                     >
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-4 text-center ">
                         {(currentPage - 1) * blogsPerPage + index + 1}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {blog.images && blog.images.length > 0 && (
-                          <img
-                            src={blog.images[0]}
-                            alt={blog.blogTitle || "Blog image"}
-                            className="w-16 h-16 object-cover rounded-lg mx-auto"
-                          />
-                        )}
+                        {renderImages(blog.images, blog.blogId)}
                       </td>
                       <td className="px-4 py-4 text-center">
                         <Link
                           to={`/manage/blog/${blog.blogId}`}
-                          className="hover:text-orange-500 transition-colors"
+                          className=" hover:text-orange-400 transition-colors"
                         >
                           {blog.blogTitle}
                         </Link>
                       </td>
-                      <td className="px-4 py-4 text-center truncate max-w-xs">
+                      <td className="px-4 py-4 text-center  truncate max-w-xs">
                         {blog.blogContent}
                       </td>
-                      <td className="px-4 py-4 text-center">
-                        {formatDate( blog.blogCreatedDate)}
+                      <td className="px-4 py-4 text-center ">
+                        {formatDate(blog.blogCreatedDate)}
                       </td>
                       <td className="px-4 py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-md ${getStatusClass(
+                          className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-sm ${getStatusClass(
                             blog.status
                           )}`}
                         >
@@ -232,7 +273,7 @@ const BlogList = () => {
                         <td className="px-4 py-4 text-center">
                           {blog.status === 0 && (
                             <Link
-                              to={`/manage/blog/update/${blog.id || blog.blogId}`}
+                              to={`/manage/blog/update/${blog.blogId}`}
                               className="inline-flex items-center justify-center bg-yellow-100 text-yellow-700 hover:bg-yellow-200 p-2 rounded-lg transition-colors w-10 h-10"
                             >
                               <Edit className="w-4 h-4" />
@@ -250,12 +291,12 @@ const BlogList = () => {
             <div className="block md:hidden space-y-4">
               {displayedBlogs.map((blog, index) => (
                 <div
-                  key={blog.id || blog.blogId}
-                  className="border rounded-lg p-4 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                  key={blog.blogId}
+                  className="border rounded-lg p-4 shadow-sm hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold text-sm">
+                      <span className="font-semibold text-sm text-gray-700">
                         #{(currentPage - 1) * blogsPerPage + index + 1}
                       </span>
                       <span
@@ -266,33 +307,26 @@ const BlogList = () => {
                         {getStatusDisplayName(blog.status)}
                       </span>
                     </div>
-                    {blog.images && blog.images.length > 0 && (
-                      <img
-                        src={blog.images[0]}
-                        alt={blog.blogTitle || "Blog image"}
-                        className="w-20 h-20 object-cover rounded-lg mx-auto"
-                      />
-                    )}
-                    <p className="text-sm">
+                    {renderImages(blog.images, blog.blogId)}
+                    <p className="text-sm text-gray-700">
                       <span className="font-medium">Tiêu đề:</span>{" "}
                       <Link
-                        to={`/manage/blog/${blog.id || blog.blogId}`}
-                        className="hover:text-orange-500"
+                        to={`/manage/blog/${blog.blogId}`}
+                        className="text-orange-500 hover:text-orange-600"
                       >
                         {blog.blogTitle}
                       </Link>
                     </p>
-                    <p className="text-sm truncate">
-                      <span className="font-medium">Nội dung:</span>{" "}
-                      {blog.content || blog.blogContent}
+                    <p className="text-sm text-gray-600 truncate">
+                      <span className="font-medium">Nội dung:</span> {blog.blogContent}
                     </p>
-                    <p className="text-sm">
+                    <p className="text-sm text-gray-600">
                       <span className="font-medium">Ngày tạo:</span>{" "}
-                      {formatDate(blog.createdDate || blog.blogCreatedDate)}
+                      {formatDate(blog.blogCreatedDate)}
                     </p>
                     {blog.status === 0 && (
                       <Link
-                        to={`/manage/blog/update/${blog.id || blog.blogId}`}
+                        to={`/manage/blog/update/${blog.blogId}`}
                         className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 p-2 rounded-lg flex items-center justify-center w-10 h-10 mt-2 mx-auto"
                       >
                         <Edit className="w-4 h-4" />
@@ -305,11 +339,25 @@ const BlogList = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                setCurrentPage={setCurrentPage}
-              />
+              <div className="flex justify-center mt-6 gap-4">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <span className="px-4 py-2 text-gray-700">
+                  Trang {currentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
             )}
           </>
         )}

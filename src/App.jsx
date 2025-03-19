@@ -52,6 +52,7 @@ import StorageListAccount from "./routes/account/StorageListAccount";
 import AccountDetail from "./routes/account/AccountDetail";
 import NotAuthorization from "./layouts/home/NotAuthorization";
 import ManageBlogDetail from "./routes/staff-manage/blog-management/ManageBlogDetail";
+import BlogListOfStaffDetail from "./routes/blog-manage/BlogListOfStaffDetail";
 
 
 
@@ -102,6 +103,11 @@ const router = createBrowserRouter([
       {
         path: "dashboard/blog",
         element: <ProtectedRoute allowedRoles={["Admin"]}><BlogListOfStaff /></ProtectedRoute>,
+      },
+
+      {
+        path: "dashboard/blog/:id",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><BlogListOfStaffDetail /></ProtectedRoute>,
       },
       
       {

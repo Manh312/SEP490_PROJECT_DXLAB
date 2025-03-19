@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { PlusCircle, Filter, Search, CheckCircle, XCircle, Trash } from "lucide-react";
+import { PlusCircle, Filter, Search, CheckCircle, XCircle, Trash, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTheme } from "../../hooks/use-theme";
 import { toast, ToastContainer } from "react-toastify";
-import Pagination from "../../hooks/use-pagination";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -18,7 +17,6 @@ import {
 const BlogListOfStaff = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
-
   const { pendingBlogs, approvedBlogs, adminLoading, adminStatusFilter } = useSelector(
     (state) => state.blogs
   );
@@ -27,9 +25,11 @@ const BlogListOfStaff = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [localLoading, setLocalLoading] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [blogIdToDelete, setBlogIdToDelete] = useState(null); // Thêm state để lưu blogId cần xóa
-  const [blogTitle, setBlogTitle] = useState(""); // Thêm state để lưu tiêu đề blog
+  const [blogIdToDelete, setBlogIdToDelete] = useState(null);
+  const [blogTitle, setBlogTitle] = useState("");
+  const [imageIndices, setImageIndices] = useState({}); // Quản lý chỉ số ảnh
   const blogsPerPage = 5;
+  const baseUrl = "https://localhost:9999";
 
   const debouncedSearch = debounce((value) => {
     setSearchTerm(value);
@@ -43,12 +43,9 @@ const BlogListOfStaff = () => {
 
   const mapStatusToString = (status) => {
     switch (status) {
-      case 1:
-        return "Đang chờ";
-      case 2:
-        return "Đã duyệt";
-      default:
-        return "Không xác định";
+      case 1: return "Đang chờ";
+      case 2: return "Đã duyệt";
+      default: return "Không xác định";
     }
   };
 
@@ -147,8 +144,8 @@ const BlogListOfStaff = () => {
     } finally {
       setLocalLoading(false);
       setIsDeleteModalOpen(false);
-      setBlogIdToDelete(null); // Reset sau khi xóa
-      setBlogTitle(""); // Reset tiêu đề
+      setBlogIdToDelete(null);
+      setBlogTitle("");
     }
   };
 
@@ -166,30 +163,19 @@ const BlogListOfStaff = () => {
 
   const getFilterBgClass = () => {
     switch (adminStatusFilter) {
-      case "All":
-        return "bg-gray-100 text-gray-800";
-      case "Approved":
-        return "bg-green-100 text-green-800";
-      case "Pending":
-        return "bg-yellow-100 text-yellow-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case "All": return "bg-gray-100 text-gray-800";
+      case "Approved": return "bg-green-100 text-green-800";
+      case "Pending": return "bg-yellow-100 text-yellow-800";
+      default: return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getEmptyStateMessage = () => {
-    if (adminStatusFilter === "All") {
-      return searchTerm
-        ? "Không tìm thấy blog nào khớp với tìm kiếm"
-        : "Hiện tại không có blog nào";
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "Đã duyệt": return "bg-green-100 text-green-800";
+      case "Đang chờ": return "bg-yellow-100 text-yellow-800";
+      default: return "bg-gray-100 text-gray-800";
     }
-    return searchTerm
-      ? `Không tìm thấy blog nào với trạng thái "${mapStatusToString(
-        adminStatusFilter === "Approved" ? 2 : 1
-      )}" khớp với tìm kiếm`
-      : `Không có blog nào với trạng thái "${mapStatusToString(
-        adminStatusFilter === "Approved" ? 2 : 1
-      )}"`;
   };
 
   const formatDate = (dateString) => {
@@ -203,13 +189,82 @@ const BlogListOfStaff = () => {
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
+  const renderImages = (images, blogId) => {
+    if (!Array.isArray(images) || images.length === 0) {
+      return (
+        <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
+          <span className="text-gray-500 text-sm">No Image</span>
+        </div>
+      );
+    }
+
+    const currentIndex = imageIndices[blogId] || 0;
+
+    const prevImage = () => {
+      setImageIndices((prev) => ({
+        ...prev,
+        [blogId]: (currentIndex - 1 + images.length) % images.length,
+      }));
+    };
+
+    const nextImage = () => {
+      setImageIndices((prev) => ({
+        ...prev,
+        [blogId]: (currentIndex + 1) % images.length,
+      }));
+    };
+
+    return (
+      <div className="relative w-40 h-40 mx-auto group">
+        <img
+          src={
+            images[currentIndex].startsWith("http")
+              ? images[currentIndex]
+              : `${baseUrl}/${images[currentIndex]}`
+          }
+          alt={`Blog image ${currentIndex}`}
+          className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
+          onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+        />
+        {images.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+              {images.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    idx === currentIndex ? "bg-white" : "bg-gray-400"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
       <div
-        className={`w-full border mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 ${theme === "dark" ? "bg-black text-white" : "bg-white text-gray-800"
-          }`}
+        className={`w-full border mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 ${
+          theme === "dark" ? "bg-black text-white" : "bg-white text-gray-800"
+        }`}
       >
+        {/* Header */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <PlusCircle className="h-6 w-6 text-orange-500" />
@@ -219,6 +274,7 @@ const BlogListOfStaff = () => {
           </div>
         </div>
 
+        {/* Filter and Search */}
         <div className="mb-6 p-4 rounded-lg shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="relative w-full sm:w-1/2 lg:w-1/3">
@@ -230,10 +286,9 @@ const BlogListOfStaff = () => {
                 className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm sm:text-base shadow-sm"
               />
             </div>
-
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Filter className="h-5 w-5 text-orange-500" />
-              <span className="font-medium text-sm sm:text-base">Lọc theo trạng thái:</span>
+              <span className="font-medium text-sm sm:text-base">Lọc:</span>
               <select
                 value={adminStatusFilter}
                 onChange={(e) => dispatch(setAdminStatusFilter(e.target.value))}
@@ -247,6 +302,7 @@ const BlogListOfStaff = () => {
           </div>
         </div>
 
+        {/* Loading State */}
         {(adminLoading || localLoading) ? (
           <div className="flex items-center justify-center py-6">
             <span className="animate-spin text-orange-500 w-6 h-6 mr-2">⏳</span>
@@ -255,81 +311,69 @@ const BlogListOfStaff = () => {
         ) : filteredBlogs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <PlusCircle className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 text-lg">{getEmptyStateMessage()}</p>
+            <p className="text-gray-500 text-lg">
+              {searchTerm
+                ? `Không tìm thấy blog nào với trạng thái "${adminStatusFilter === "All" ? "Tất cả" : mapStatusToString(adminStatusFilter === "Approved" ? 2 : 1)}" khớp với tìm kiếm`
+                : `Không có blog nào với trạng thái "${adminStatusFilter === "All" ? "Tất cả" : mapStatusToString(adminStatusFilter === "Approved" ? 2 : 1)}"`}
+            </p>
           </div>
         ) : (
           <>
+            {/* Desktop Table */}
             <div className="hidden md:block border rounded-lg overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead className="border-b bg-gray-400">
                   <tr>
-                    <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
-                      #
-                    </th>
-                    <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
-                      Ảnh
-                    </th>
-                    <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
-                      Tiêu đề
-                    </th>
-                    <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
-                      Nội dung
-                    </th>
-                    <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
-                      Ngày tạo
-                    </th>
-                    <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
-                      Trạng thái
-                    </th>
-                    <th className="px-3 py-3 font-semibold text-lg uppercase tracking-wide text-center">
-                      Thao tác
-                    </th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">#</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Ảnh</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Tiêu đề</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Nội dung</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Người tạo</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Ngày tạo</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
+                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
                   {displayedBlogs.map((blog, index) => (
                     <tr
                       key={blog.blogId}
-                      className="border-b hover:bg-gray-400 transition-colors"
+                      className="border-b hover:bg-gray-500 transition-colors"
                     >
-                      <td className="px-3 py-4 text-center">
+                      <td className="px-4 py-4 text-center">
                         {(currentPage - 1) * blogsPerPage + index + 1}
                       </td>
-                      <td className="px-3 py-4 text-center">
-                        <img
-                          src={blog?.images[0]}
-                          alt={blog.blogTitle}
-                          className="w-16 h-16 object-cover rounded-lg mx-auto"
-                        />
+                      <td className="px-4 py-4 text-center">
+                        {renderImages(blog.images, blog.blogId)}
                       </td>
-                      <td className="px-3 py-4 text-center">
+                      <td className="px-4 py-4 text-center">
                         <Link
-                          to={`/manage/admin/blog/${blog.blogId}`}
-                          className="hover:text-neutral-300"
+                          to={`/dashboard/blog/${blog.blogId}`}
+                          className="hover:text-orange-400 transition-colors"
                         >
                           {blog.blogTitle}
                         </Link>
                       </td>
-                      <td className="px-3 py-4 text-center">{blog.blogContent}</td>
-                      <td className="px-3 py-4 text-center">
+                      <td className="px-4 py-4 text-center truncate max-w-xs">
+                        {blog.blogContent}
+                      </td>
+                      <td className="px-4 py-4 text-center">{blog.userName}</td>
+                      <td className="px-4 py-4 text-center">
                         {formatDate(blog.blogCreatedDate)}
                       </td>
-                      <td className="px-3 py-4 text-center">
+                      <td className="px-4 py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${blog.status === "Đã duyệt"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
-                            }`}
+                          className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-sm ${getStatusClass(blog.status)}`}
                         >
                           {blog.status}
                         </span>
                       </td>
-                      <td className="px-3 py-4 flex justify-center gap-2 mt-4">
+                      <td className="px-4 py-4 text-center space-x-2">
                         {blog.status === "Đang chờ" && (
                           <>
                             <button
                               onClick={() => handleApprove(blog.blogId)}
-                              className="bg-green-100 text-green-700 hover:bg-green-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                              className="bg-green-100 text-green-700 hover:bg-green-200 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                               title="Phê duyệt"
                               disabled={localLoading}
                             >
@@ -337,7 +381,7 @@ const BlogListOfStaff = () => {
                             </button>
                             <button
                               onClick={() => handleCancel(blog.blogId)}
-                              className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                              className="bg-red-100 text-red-700 hover:bg-red-200 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                               title="Hủy"
                               disabled={localLoading}
                             >
@@ -348,7 +392,7 @@ const BlogListOfStaff = () => {
                         {blog.status === "Đã duyệt" && (
                           <button
                             onClick={() => handleOpenDeleteModal(blog.blogId, blog.blogTitle)}
-                            className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                            className="bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors w-10 h-10 items-center justify-center inline-flex"
                             title="Xóa"
                             disabled={localLoading}
                           >
@@ -362,39 +406,48 @@ const BlogListOfStaff = () => {
               </table>
             </div>
 
+            {/* Mobile View */}
             <div className="block md:hidden space-y-4">
               {displayedBlogs.map((blog, index) => (
                 <div
                   key={blog.blogId}
-                  className="border rounded-lg p-3 sm:p-4 shadow-sm hover:bg-gray-500 transition-colors"
+                  className="border rounded-lg p-4 shadow-sm hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex flex-col gap-2">
-                    <div className="flex justify-between">
-                      <span className="font-semibold text-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-sm text-gray-700">
                         #{(currentPage - 1) * blogsPerPage + index + 1}
                       </span>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${blog.status === "Đã duyệt"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-yellow-100 text-yellow-800"
-                          }`}
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(blog.status)}`}
                       >
                         {blog.status}
                       </span>
                     </div>
-                    <p className="text-sm">
-                      <span className="font-medium">Tiêu đề:</span> {blog.blogTitle}
+                    {renderImages(blog.images, blog.blogId)}
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium">Tiêu đề:</span>{" "}
+                      <Link
+                        to={`/manage/admin/blog/${blog.blogId}`}
+                        className="text-orange-500 hover:text-orange-600"
+                      >
+                        {blog.blogTitle}
+                      </Link>
                     </p>
-                    <p className="text-sm">
+                    <p className="text-sm text-gray-600 truncate">
+                      <span className="font-medium">Nội dung:</span> {blog.blogContent}
+                    </p>
+                    <p className="text-sm text-gray-600 truncate">{blog.userName}</p>
+                    <p className="text-sm text-gray-600">
                       <span className="font-medium">Ngày tạo:</span>{" "}
                       {formatDate(blog.blogCreatedDate)}
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 justify-center mt-2">
                       {blog.status === "Đang chờ" && (
                         <>
                           <button
                             onClick={() => handleApprove(blog.blogId)}
-                            className="bg-green-100 text-green-700 hover:bg-green-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                            className="bg-green-200 text-green-700 hover:bg-green-300 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                             disabled={localLoading}
                           >
                             <CheckCircle className="w-4 h-4" />
@@ -402,7 +455,7 @@ const BlogListOfStaff = () => {
                           </button>
                           <button
                             onClick={() => handleCancel(blog.blogId)}
-                            className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                            className="bg-red-200 text-red-700 hover:bg-red-300 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                             disabled={localLoading}
                           >
                             <XCircle className="w-4 h-4" />
@@ -413,7 +466,7 @@ const BlogListOfStaff = () => {
                       {blog.status === "Đã duyệt" && (
                         <button
                           onClick={() => handleOpenDeleteModal(blog.blogId, blog.blogTitle)}
-                          className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                          className="bg-red-200 text-red-700 hover:bg-red-300 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                           disabled={localLoading}
                         >
                           <Trash className="w-4 h-4" />
@@ -426,24 +479,39 @@ const BlogListOfStaff = () => {
               ))}
             </div>
 
+            {/* Pagination */}
             {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                setCurrentPage={setCurrentPage}
-              />
+              <div className="flex justify-center mt-6 gap-4">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <span className="px-4 py-2">
+                  Trang {currentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
             )}
           </>
         )}
 
-        {/* Modal xóa */}
+        {/* Delete Modal */}
         {isDeleteModalOpen && (
           <div
-            className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50"
             onClick={handleCloseDeleteModal}
           >
             <div
-              className="bg-neutral-300 rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100"
+              className="bg-gray-300 rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100"
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-xl font-semibold text-red-600 mb-4">Xác nhận xóa</h2>
