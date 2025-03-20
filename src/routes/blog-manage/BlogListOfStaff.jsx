@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { PlusCircle, Filter, Search, CheckCircle, XCircle, Trash, ChevronLeft, ChevronRight } from "lucide-react";
-import { useTheme } from "../../hooks/use-theme";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -16,7 +15,6 @@ import {
 import Pagination from "../../hooks/use-pagination";
 
 const BlogListOfStaff = () => {
-  const { theme } = useTheme();
   const dispatch = useDispatch();
   const { pendingBlogs, approvedBlogs, adminLoading, adminStatusFilter } = useSelector(
     (state) => state.blogs
