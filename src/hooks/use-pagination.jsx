@@ -17,7 +17,7 @@ const Pagination = ({ currentPage, totalPages, setCurrentPage }) => {
         className="px-4 py-2 rounded-lg bg-gray-200 text-black disabled:opacity-50"
         disabled={currentPage === 1}
       >
-        Previous
+        Trang trước
       </button>
       {pages[0] > 1 && (
         <>
@@ -57,7 +57,7 @@ const Pagination = ({ currentPage, totalPages, setCurrentPage }) => {
         className="px-4 py-2 rounded-lg bg-gray-200 text-black disabled:opacity-50"
         disabled={currentPage === totalPages}
       >
-        Next
+        Trang sau
       </button>
     </div>
   );

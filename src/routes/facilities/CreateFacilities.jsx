@@ -61,8 +61,6 @@ const CreateFacilities = () => {
         quantity: parseInt(facility.quantity, 10),
         importDate: new Date(facility.importDate).toISOString(),
       };
-
-      console.log("Dữ liệu gửi lên:", facilityData);
       const res = await dispatch(addFacility(facilityData)).unwrap();
       console.log("Phản hồi từ server:", res.message);
 
@@ -92,7 +90,6 @@ const CreateFacilities = () => {
             value={facility.batchNumber}
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
-            required
           />
         </div>
 
@@ -105,7 +102,6 @@ const CreateFacilities = () => {
             value={facility.facilityDescription}
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
-            required
           />
         </div>
 
@@ -119,7 +115,6 @@ const CreateFacilities = () => {
             min="0"
             step="0.01"
             className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
-            required
           />
         </div>
 
@@ -131,7 +126,6 @@ const CreateFacilities = () => {
             value={facility.expiredTime}
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
-            required
           />
         </div>
 
@@ -142,9 +136,8 @@ const CreateFacilities = () => {
             name="quantity"
             value={facility.quantity}
             onChange={handleChange}
-            min="1"
+            min="0"
             className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
-            required
           />
         </div>
 
@@ -156,7 +149,6 @@ const CreateFacilities = () => {
             value={facility.importDate}
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
-            required
           />
         </div>
 

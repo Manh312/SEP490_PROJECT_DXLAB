@@ -46,7 +46,6 @@ const Navbar = () => {
       dispatch(clearAuthData());
       setDropdownOpen(false);
       setRoleName(null); // Reset roleName khi đăng xuất
-      toast.success("Đã đăng xuất thành công!");
     } catch (error) {
       console.error("Disconnect error:", error);
       toast.error("Có lỗi khi đăng xuất.");

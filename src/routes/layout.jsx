@@ -6,7 +6,9 @@ import { useMediaQuery } from "@uidotdev/usehooks";
 import { useClickOutside } from "../hooks/use-click-outside";
 import { useEffect, useRef, useState } from "react";
 import Header from "./dashboard/Header";
-import { useAddress } from "@thirdweb-dev/react"; 
+import { useAddress } from "@thirdweb-dev/react";
+import { ToastContainer } from "react-toastify";
+
 
 const TIDIO_SCRIPT_URL = import.meta.env.VITE_TIDIO_SCRIPT_URL;
 
@@ -42,11 +44,22 @@ const Layout = () => {
       };
     }
   }, []);
-  
+
 
   return (
     <div>
       <Navbar className={isDashboard || isManage ? "w-[200px]" : "w-full"} />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       <div className={`w-full ${isDashboard || isManage ? "" : "max-w-7xl"} mx-auto`}>
 
         <div className="flex w-full">

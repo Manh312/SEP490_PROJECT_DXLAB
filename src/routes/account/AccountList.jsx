@@ -186,7 +186,7 @@ const AccountList = () => {
               <select
                 value={roleFilter}
                 onChange={(e) => dispatch(setRoleFilter(e.target.value))}
-                className={`w-full sm:w-auto px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm sm:text-base ${getFilterBgClass()} shadow-sm`}
+                className={`w-full sm:w-auto px-3 py-2 border rounded-lg text-sm sm:text-base ${getFilterBgClass()} shadow-sm`}
               >
                 <option value="All">Tất cả</option>
                 <option value="Student">Student</option>

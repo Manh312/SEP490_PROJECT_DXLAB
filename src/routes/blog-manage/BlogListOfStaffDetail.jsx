@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { approveAdminBlog, cancelAdminBlog, deleteAdminBlog, fetchAdminApprovedBlogs, fetchAdminPendingBlogs, fetchBlogById } from "../../redux/slices/Blog";
 import { useTheme } from "../../hooks/use-theme";
 import { toast, ToastContainer } from "react-toastify";
-import { Edit, ArrowLeft, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { Edit, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 
 const BlogListOfStaffDetail = () => {
   const { theme } = useTheme();
@@ -241,8 +241,6 @@ const BlogListOfStaffDetail = () => {
 
   return (
     <div className="py-12 px-8 sm:px-12 lg:px-20 min-h-screen">
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} theme={theme} />
-
       <div className={`w-full max-w-7xl mx-auto rounded-2xl shadow-2xl p-10 transition-all duration-300 ${theme === "dark" ? "bg-gray-950 text-gray-100" : "bg-white text-gray-900"}`}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-12 border-b pb-6 border-gray-200 dark:border-gray-800">
           <div className="flex items-center space-x-4">

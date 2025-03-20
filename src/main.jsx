@@ -18,6 +18,8 @@ import "./styles.css";
 import { toast, ToastContainer } from "react-toastify";
 import { clearAuthData, fetchRoleByID, setAuthData } from "./redux/slices/Authentication.jsx";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import 'react-toastify/dist/ReactToastify.css';
+
 
 // Cấu hình chain cố định
 const activeChain = "sepolia";
@@ -131,51 +133,52 @@ const RootApp = () => {
   const dispatch = useDispatch();
 
   return (
-    <ThirdwebProvider
-      activeChain={activeChain}
-      clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID}
-      supportedWallets={[
-        metamaskWallet({ recommended: true }), // Đánh dấu ví ưu tiên
-        walletConnect(),
-        coinbaseWallet(),
-        trustWallet(),
-        embeddedWallet({
-          auth: { options: ["google"] },
-          onAuthSuccess: async (user) => {
-            const userEmail = user.email || user.storedToken?.authDetails?.email;
-            if (!userEmail || !userEmail.endsWith("@fpt.edu.vn")) {
-              toast.error("Bạn cần sử dụng email @fpt.edu.vn để đăng nhập.", {
-                toastId: "invalid-email",
-              });
-              throw new Error("Email không hợp lệ");
-            }
-            await sendUserDataToBackend(user, user.walletDetails?.walletAddress, dispatch, "embeddedWallet");
-          },
-        }),
-      ]}
-      autoConnect={true} // Tự động kết nối ví đã dùng trước đó
-    >
-      <PersistGate loading={null} persistor={persistor}>
-        <AppWithWallet />
-      </PersistGate>
-    </ThirdwebProvider>
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover />
+      <ThirdwebProvider
+        activeChain={activeChain}
+        clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID}
+        supportedWallets={[
+          metamaskWallet({ recommended: true }), // Đánh dấu ví ưu tiên
+          walletConnect(),
+          coinbaseWallet(),
+          trustWallet(),
+          embeddedWallet({
+            auth: { options: ["google"] },
+            onAuthSuccess: async (user) => {
+              const userEmail = user.email || user.storedToken?.authDetails?.email;
+              if (!userEmail || !userEmail.endsWith("@fpt.edu.vn")) {
+                toast.error("Bạn cần sử dụng email @fpt.edu.vn để đăng nhập.", {
+                  toastId: "invalid-email",
+                });
+                throw new Error("Email không hợp lệ");
+              }
+              await sendUserDataToBackend(user, user.walletDetails?.walletAddress, dispatch, "embeddedWallet");
+            },
+          }),
+        ]}
+        autoConnect={true} // Tự động kết nối ví đã dùng trước đó
+      >
+        <PersistGate loading={null} persistor={persistor}>
+          <AppWithWallet />
+        </PersistGate>
+      </ThirdwebProvider>
+    </>
   );
 };
 
 // Render ứng dụng
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
-    <ToastContainer 
-      position="top-right"
-      autoClose={5000}
-      hideProgressBar={false}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-    />
     <RootApp />
   </Provider>
 );

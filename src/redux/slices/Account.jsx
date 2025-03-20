@@ -64,8 +64,8 @@ export const updateAccount = createAsyncThunk(
   "accounts/update",
   async ({ id, roleName }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`/account/update/${id}`, { roleName });
-      return response.data.data;
+      const response = await axios.put(`/account/update/${id}`, { roleName });      
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể cập nhật tài khoản");
     }
