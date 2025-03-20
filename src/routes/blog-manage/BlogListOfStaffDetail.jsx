@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { approveAdminBlog, cancelAdminBlog, deleteAdminBlog, fetchAdminApprovedBlogs, fetchAdminPendingBlogs, fetchBlogById } from "../../redux/slices/Blog";
 import { useTheme } from "../../hooks/use-theme";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { Edit, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 
 const BlogListOfStaffDetail = () => {
@@ -245,7 +245,7 @@ const BlogListOfStaffDetail = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-12 border-b pb-6 border-gray-200 dark:border-gray-800">
           <div className="flex items-center space-x-4">
             <Edit className="h-9 w-9 text-orange-500" />
-            <h2 className="text-4xl font-bold tracking-tight">Chi Tiết Blog</h2>
+            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">Chi Tiết Blog</h2>
           </div>
           <Link to="/dashboard/blog" className={`mt-6 sm:mt-0 px-6 py-3 rounded-lg flex items-center gap-2 transition-all duration-300 shadow-md ${theme === "dark" ? "bg-gray-800 text-gray-100 hover:bg-gray-700" : "bg-gray-700 text-white hover:bg-gray-600"}`}>
             <ArrowLeft className="h-5 w-5" />

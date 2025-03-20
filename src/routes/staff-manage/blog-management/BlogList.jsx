@@ -11,7 +11,7 @@ const BlogList = () => {
   const { blogs, loading, statusFilter } = useSelector((state) => state.blogs);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [imageIndices, setImageIndices] = useState({}); // Quản lý chỉ số ảnh cho từng blog
+  const [imageIndices, setImageIndices] = useState({});
   const blogsPerPage = 5;
   const baseUrl = "https://localhost:9999";
 
@@ -56,14 +56,10 @@ const BlogList = () => {
 
   const getFilterBgClass = () => {
     switch (statusFilter) {
-      case "2":
-        return "bg-green-100 text-green-800 ";
-      case "1":
-        return "bg-yellow-100 text-yellow-800";
-      case "0":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+      case "2": return "bg-green-100 text-green-800";
+      case "1": return "bg-yellow-100 text-yellow-800";
+      case "0": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -88,9 +84,7 @@ const BlogList = () => {
   };
 
   const renderImages = (images, blogId) => {
-    // Kiểm tra images kỹ hơn: nếu không phải mảng hoặc rỗng, hiển thị placeholder
     const validImages = Array.isArray(images) && images.length > 0 ? images : [];
-
     if (!validImages.length) {
       return (
         <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
@@ -115,14 +109,13 @@ const BlogList = () => {
       }));
     };
 
-    // Đảm bảo imageSrc là chuỗi hợp lệ
     const imageSrc = validImages[currentIndex];
     const displaySrc =
       typeof imageSrc === "string"
         ? imageSrc.startsWith("http")
           ? imageSrc
           : `${baseUrl}/${imageSrc}`
-        : "/placeholder-image.jpg"; // Nếu không phải chuỗi, dùng placeholder
+        : "/placeholder-image.jpg";
 
     return (
       <div className="relative w-40 h-40 mx-auto group">
@@ -130,7 +123,7 @@ const BlogList = () => {
           src={displaySrc}
           alt={`Blog image ${currentIndex}`}
           className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
-          onError={(e) => (e.target.src = "/placeholder-image.jpg")} // Đảm bảo placeholder tồn tại
+          onError={(e) => (e.target.src = "/placeholder-image.jpg")}
         />
         {validImages.length > 1 && (
           <>
@@ -232,14 +225,14 @@ const BlogList = () => {
               <table className="w-full text-left border-collapse">
                 <thead className="border-b bg-gray-400">
                   <tr>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">#</th>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Ảnh</th>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Tiêu đề</th>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Nội dung</th>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Ngày tạo</th>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">#</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Ảnh</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Tiêu đề</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Nội dung</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Ngày tạo</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
                     {hasCancelledBlogs && (
-                      <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Thao tác</th>
+                      <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Thao tác</th>
                     )}
                   </tr>
                 </thead>
@@ -249,7 +242,7 @@ const BlogList = () => {
                       key={blog.blogId}
                       className="border-b hover:bg-gray-500 transition-colors"
                     >
-                      <td className="px-4 py-4 text-center ">
+                      <td className="px-4 py-4 text-center">
                         {(currentPage - 1) * blogsPerPage + index + 1}
                       </td>
                       <td className="px-4 py-4 text-center">
@@ -258,15 +251,15 @@ const BlogList = () => {
                       <td className="px-4 py-4 text-center">
                         <Link
                           to={`/manage/blog/${blog.blogId}`}
-                          className=" hover:text-orange-400 transition-colors"
+                          className="hover:text-orange-400 transition-colors"
                         >
                           {blog.blogTitle}
                         </Link>
                       </td>
-                      <td className="px-4 py-4 text-center  truncate max-w-xs">
+                      <td className="px-4 py-4 text-center truncate max-w-xs">
                         {blog.blogContent}
                       </td>
-                      <td className="px-4 py-4 text-center ">
+                      <td className="px-4 py-4 text-center">
                         {formatDate(blog.blogCreatedDate)}
                       </td>
                       <td className="px-4 py-4 text-center">

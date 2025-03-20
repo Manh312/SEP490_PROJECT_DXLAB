@@ -229,7 +229,7 @@ const ManageBlogDetail = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-12 border-b pb-6 border-gray-200 dark:border-gray-800">
           <div className="flex items-center space-x-4">
             <Edit className="h-9 w-9 text-orange-500" />
-            <h2 className="text-4xl font-bold tracking-tight">Chi Tiết Blog</h2>
+            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">Chi Tiết Blog</h2>
           </div>
           <Link
             to="/manage/blog"

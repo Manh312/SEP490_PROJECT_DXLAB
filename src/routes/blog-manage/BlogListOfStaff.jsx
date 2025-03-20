@@ -11,6 +11,7 @@ import {
   cancelAdminBlog,
   setAdminStatusFilter,
   deleteAdminBlog,
+  fetchBlogsByStatus, // Thêm fetchBlogsByStatus
 } from "../../redux/slices/Blog";
 import Pagination from "../../hooks/use-pagination";
 
@@ -97,6 +98,7 @@ const BlogListOfStaff = () => {
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
+        dispatch(fetchBlogsByStatus("2")), // Cập nhật danh sách "Đã xuất bản" trong BlogList
       ]);
     } catch (err) {
       toast.error(err.message || "Phê duyệt thất bại!");
@@ -117,6 +119,7 @@ const BlogListOfStaff = () => {
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
+        dispatch(fetchBlogsByStatus("0")), // Cập nhật danh sách "Bị hủy" trong BlogList
       ]);
     } catch (err) {
       toast.error(err.message || "Hủy thất bại!");
@@ -137,6 +140,9 @@ const BlogListOfStaff = () => {
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
+        dispatch(fetchBlogsByStatus("0")), // Cập nhật danh sách "Bị hủy" trong BlogList
+        dispatch(fetchBlogsByStatus("1")), // Cập nhật danh sách "Đang chờ" trong BlogList
+        dispatch(fetchBlogsByStatus("2")), // Cập nhật danh sách "Đã xuất bản" trong BlogList
       ]);
     } catch (err) {
       toast.error(err.message || "Xóa thất bại!");
@@ -211,7 +217,6 @@ const BlogListOfStaff = () => {
         [blogId]: (currentIndex + 1) % images.length,
       }));
     };
-
 
     return (
       <div className="relative w-16 h-16 sm:w-20 sm:h-20 mx-auto group">
@@ -354,13 +359,13 @@ const BlogListOfStaff = () => {
                       key={blog.blogId}
                       className="border-b hover:bg-gray-500 transition-colors"
                     >
-                      <td className="px-4 py-3 text-center text-lg">
+                      <td className="px-4 py-3 text-center">
                         {(currentPage - 1) * blogsPerPage + index + 1}
                       </td>
                       <td className="px-4 py-3 text-center">
                         {renderImages(blog.images, blog.blogId)}
                       </td>
-                      <td className="px-4 py-3 text-center text-lg whitespace-pre-wrap break-words">
+                      <td className="px-4 py-3 text-center whitespace-pre-wrap break-words">
                         <Link
                           to={`/dashboard/blog/${blog.blogId}`}
                           className="hover:text-orange-400 transition-colors"
@@ -368,16 +373,16 @@ const BlogListOfStaff = () => {
                           {formatTitle(blog.blogTitle)}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-center text-lg truncate max-w-xs">
+                      <td className="px-4 py-3 text-center truncate max-w-xs">
                         {truncateDescription(blog.blogContent)}
                       </td>
-                      <td className="px-4 py-3 text-center text-lg">{blog.userName}</td>
-                      <td className="px-4 py-3 text-center text-lg">
+                      <td className="px-4 py-3 text-center">{blog.userName}</td>
+                      <td className="px-4 py-3 text-center">
                         {formatDate(blog.blogCreatedDate)}
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span
-                          className={`inline-flex items-center text-lg px-2 py-1 rounded-full font-normal ${getStatusClass(blog.status)}`}
+                          className={`inline-flex items-center px-2 py-1 rounded-full font-normal ${getStatusClass(blog.status)}`}
                         >
                           {blog.status}
                         </span>
