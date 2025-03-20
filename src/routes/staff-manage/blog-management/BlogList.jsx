@@ -4,6 +4,7 @@ import { PlusCircle, Filter, Search, Edit, ChevronLeft, ChevronRight } from "luc
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBlogsByStatus, setStatusFilter } from "../../../redux/slices/Blog";
+import Pagination from "../../../hooks/use-pagination";
 
 const BlogList = () => {
   const dispatch = useDispatch();
@@ -87,7 +88,10 @@ const BlogList = () => {
   };
 
   const renderImages = (images, blogId) => {
-    if (!Array.isArray(images) || images.length === 0) {
+    // Kiểm tra images kỹ hơn: nếu không phải mảng hoặc rỗng, hiển thị placeholder
+    const validImages = Array.isArray(images) && images.length > 0 ? images : [];
+
+    if (!validImages.length) {
       return (
         <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
           <span className="text-gray-500 text-sm">No Image</span>
@@ -100,30 +104,35 @@ const BlogList = () => {
     const prevImage = () => {
       setImageIndices((prev) => ({
         ...prev,
-        [blogId]: (currentIndex - 1 + images.length) % images.length,
+        [blogId]: (currentIndex - 1 + validImages.length) % validImages.length,
       }));
     };
 
     const nextImage = () => {
       setImageIndices((prev) => ({
         ...prev,
-        [blogId]: (currentIndex + 1) % images.length,
+        [blogId]: (currentIndex + 1) % validImages.length,
       }));
     };
+
+    // Đảm bảo imageSrc là chuỗi hợp lệ
+    const imageSrc = validImages[currentIndex];
+    const displaySrc =
+      typeof imageSrc === "string"
+        ? imageSrc.startsWith("http")
+          ? imageSrc
+          : `${baseUrl}/${imageSrc}`
+        : "/placeholder-image.jpg"; // Nếu không phải chuỗi, dùng placeholder
 
     return (
       <div className="relative w-40 h-40 mx-auto group">
         <img
-          src={
-            images[currentIndex].startsWith("http")
-              ? images[currentIndex]
-              : `${baseUrl}/${images[currentIndex]}`
-          }
+          src={displaySrc}
           alt={`Blog image ${currentIndex}`}
           className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
-          onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+          onError={(e) => (e.target.src = "/placeholder-image.jpg")} // Đảm bảo placeholder tồn tại
         />
-        {images.length > 1 && (
+        {validImages.length > 1 && (
           <>
             <button
               onClick={prevImage}
@@ -138,7 +147,7 @@ const BlogList = () => {
               <ChevronRight className="w-4 h-4" />
             </button>
             <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
-              {images.map((_, idx) => (
+              {validImages.map((_, idx) => (
                 <span
                   key={idx}
                   className={`w-1.5 h-1.5 rounded-full ${
@@ -182,7 +191,7 @@ const BlogList = () => {
                 type="text"
                 placeholder="Tìm kiếm theo tiêu đề"
                 onChange={(e) => debouncedSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm sm:text-base shadow-sm"
+                className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm sm:text-base shadow-sm"
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -191,7 +200,7 @@ const BlogList = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => dispatch(setStatusFilter(e.target.value))}
-                className={`w-full sm:w-auto px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm sm:text-base ${getFilterBgClass()} shadow-sm`}
+                className={`w-full sm:w-auto px-3 py-2 border rounded-lg text-sm sm:text-base ${getFilterBgClass()} shadow-sm`}
               >
                 <option value="2">Đã xuất bản</option>
                 <option value="1">Đang chờ</option>
@@ -339,25 +348,11 @@ const BlogList = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center mt-6 gap-4">
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <span className="px-4 py-2 text-gray-700">
-                  Trang {currentPage} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                setCurrentPage={setCurrentPage}
+              />
             )}
           </>
         )}

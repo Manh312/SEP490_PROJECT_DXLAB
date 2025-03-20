@@ -46,16 +46,16 @@ const FacilitiesDetail = () => {
               <td className="px-4 py-3">{facility.cost}</td>
             </tr>
             <tr className="border-b">
-              <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Ngày Hết Hạn</td>
-              <td className="px-4 py-3">{new Date(facility.expiredTime).toLocaleDateString("vi-VN")}</td>
+              <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Ngày Nhập</td>
+              <td className="px-4 py-3">{new Date(facility.importDate).toLocaleDateString("vi-VN")}</td>
             </tr>
             <tr className="border-b">
               <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Số Lượng</td>
               <td className="px-4 py-3">{facility.quantity}</td>
             </tr>
-            <tr>
-              <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Ngày Nhập</td>
-              <td className="px-4 py-3">{new Date(facility.importDate).toLocaleDateString("vi-VN")}</td>
+            <tr className="">
+              <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Ngày Hết Hạn</td>
+              <td className="px-4 py-3">{new Date(facility.expiredTime).toLocaleDateString("vi-VN")}</td>
             </tr>
           </tbody>
         </table>

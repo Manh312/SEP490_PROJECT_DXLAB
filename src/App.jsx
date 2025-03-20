@@ -22,7 +22,6 @@ import CreateAccount from './routes/account/CreateAccount';
 import UpdateAccount from "./routes/account/UpdateAccount";
 import DeleteAccount from './routes/account/DeleteAccount';
 import NotFound from './layouts/home/NotFound';
-import 'react-toastify/dist/ReactToastify.css';
 import ViewAreas from './routes/students/ViewAreas';
 import Payment from './routes/students/Payment';
 import ViewBookedSeats from './routes/students/ViewBookedSeats';

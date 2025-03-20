@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { PlusCircle, Filter, Search, CheckCircle, XCircle, Trash, ChevronLeft, ChevronRight } from "lucide-react";
-import { useTheme } from "../../hooks/use-theme";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -13,9 +12,9 @@ import {
   setAdminStatusFilter,
   deleteAdminBlog,
 } from "../../redux/slices/Blog";
+import Pagination from "../../hooks/use-pagination";
 
 const BlogListOfStaff = () => {
-  const { theme } = useTheme();
   const dispatch = useDispatch();
   const { pendingBlogs, approvedBlogs, adminLoading, adminStatusFilter } = useSelector(
     (state) => state.blogs
@@ -27,7 +26,7 @@ const BlogListOfStaff = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [blogIdToDelete, setBlogIdToDelete] = useState(null);
   const [blogTitle, setBlogTitle] = useState("");
-  const [imageIndices, setImageIndices] = useState({}); // Quản lý chỉ số ảnh
+  const [imageIndices, setImageIndices] = useState({});
   const blogsPerPage = 5;
   const baseUrl = "https://localhost:9999";
 
@@ -185,15 +184,14 @@ const BlogListOfStaff = () => {
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
-    const seconds = String(date.getSeconds()).padStart(2, "0");
-    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
   };
 
   const renderImages = (images, blogId) => {
     if (!Array.isArray(images) || images.length === 0) {
       return (
-        <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
-          <span className="text-gray-500 text-sm">No Image</span>
+        <div className="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
+          <span className="text-gray-500 text-xs">No Image</span>
         </div>
       );
     }
@@ -214,8 +212,9 @@ const BlogListOfStaff = () => {
       }));
     };
 
+
     return (
-      <div className="relative w-40 h-40 mx-auto group">
+      <div className="relative w-16 h-16 sm:w-20 sm:h-20 mx-auto group">
         <img
           src={
             images[currentIndex].startsWith("http")
@@ -232,21 +231,19 @@ const BlogListOfStaff = () => {
               onClick={prevImage}
               className="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3 h-3" />
             </button>
             <button
               onClick={nextImage}
               className="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3 h-3" />
             </button>
             <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
               {images.map((_, idx) => (
                 <span
                   key={idx}
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    idx === currentIndex ? "bg-white" : "bg-gray-400"
-                  }`}
+                  className={`w-1 h-1 rounded-full ${idx === currentIndex ? "bg-white" : "bg-gray-400"}`}
                 />
               ))}
             </div>
@@ -256,21 +253,38 @@ const BlogListOfStaff = () => {
     );
   };
 
+  const truncateDescription = (text) => {
+    if (typeof text !== "string") return "N/A";
+    return text.length > 20 ? `${text.slice(0, 20)}...` : text;
+  };
+
+  const formatTitle = (title) => {
+    if (typeof title !== "string") return "Untitled";
+    const words = title.split(" ");
+    if (words.length > 15) {
+      const firstLine = words.slice(0, 15).join(" ");
+      const secondLine = words.slice(15).join(" ");
+      return (
+        <>
+          {firstLine}
+          <br />
+          {secondLine}
+        </>
+      );
+    }
+    return title;
+  };
+
   return (
-    <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+    <div className="py-4 px-2 sm:px-4 lg:px-6 xl:px-8 mb-10">
       <div
-        className={`w-full border mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 ${
-          theme === "dark" ? "bg-black text-white" : "bg-white text-gray-800"
-        }`}
+        className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8"
       >
         {/* Header */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <PlusCircle className="h-6 w-6 text-orange-500" />
-            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
-              Danh Sách Blog (Admin)
-            </h2>
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Danh Sách Blog (Admin)</h2>
           </div>
         </div>
 
@@ -283,7 +297,7 @@ const BlogListOfStaff = () => {
                 type="text"
                 placeholder="Tìm kiếm theo tiêu đề"
                 onChange={(e) => debouncedSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm sm:text-base shadow-sm"
+                className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm sm:text-base shadow-sm"
               />
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -292,7 +306,7 @@ const BlogListOfStaff = () => {
               <select
                 value={adminStatusFilter}
                 onChange={(e) => dispatch(setAdminStatusFilter(e.target.value))}
-                className={`w-full sm:w-auto px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-sm sm:text-base ${getFilterBgClass()} shadow-sm`}
+                className={`w-full sm:w-auto px-3 py-2 border rounded-lg text-sm sm:text-base ${getFilterBgClass()} shadow-sm`}
               >
                 <option value="All">Tất cả</option>
                 <option value="Approved">Đã duyệt</option>
@@ -311,7 +325,7 @@ const BlogListOfStaff = () => {
         ) : filteredBlogs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <PlusCircle className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 text-lg">
+            <p className="text-gray-500 text-lg text-center">
               {searchTerm
                 ? `Không tìm thấy blog nào với trạng thái "${adminStatusFilter === "All" ? "Tất cả" : mapStatusToString(adminStatusFilter === "Approved" ? 2 : 1)}" khớp với tìm kiếm`
                 : `Không có blog nào với trạng thái "${adminStatusFilter === "All" ? "Tất cả" : mapStatusToString(adminStatusFilter === "Approved" ? 2 : 1)}"`}
@@ -320,18 +334,18 @@ const BlogListOfStaff = () => {
         ) : (
           <>
             {/* Desktop Table */}
-            <div className="hidden md:block border rounded-lg overflow-x-auto">
+            <div className="hidden lg:block border rounded-lg overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead className="border-b bg-gray-400">
                   <tr>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">#</th>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Ảnh</th>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Tiêu đề</th>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Nội dung</th>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Người tạo</th>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Ngày tạo</th>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
-                    <th className="px-4 py-3 font-bold text-lg uppercase tracking-wide text-center text-gray-700">Thao tác</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">#</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Ảnh</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Tiêu đề</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Nội dung</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Người tạo</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Ngày tạo</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -340,40 +354,40 @@ const BlogListOfStaff = () => {
                       key={blog.blogId}
                       className="border-b hover:bg-gray-500 transition-colors"
                     >
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-3 text-center text-lg">
                         {(currentPage - 1) * blogsPerPage + index + 1}
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-3 text-center">
                         {renderImages(blog.images, blog.blogId)}
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-3 text-center text-lg whitespace-pre-wrap break-words">
                         <Link
                           to={`/dashboard/blog/${blog.blogId}`}
                           className="hover:text-orange-400 transition-colors"
                         >
-                          {blog.blogTitle}
+                          {formatTitle(blog.blogTitle)}
                         </Link>
                       </td>
-                      <td className="px-4 py-4 text-center truncate max-w-xs">
-                        {blog.blogContent}
+                      <td className="px-4 py-3 text-center text-lg truncate max-w-xs">
+                        {truncateDescription(blog.blogContent)}
                       </td>
-                      <td className="px-4 py-4 text-center">{blog.userName}</td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-3 text-center text-lg">{blog.userName}</td>
+                      <td className="px-4 py-3 text-center text-lg">
                         {formatDate(blog.blogCreatedDate)}
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-3 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-sm ${getStatusClass(blog.status)}`}
+                          className={`inline-flex items-center text-lg px-2 py-1 rounded-full font-normal ${getStatusClass(blog.status)}`}
                         >
                           {blog.status}
                         </span>
                       </td>
-                      <td className="px-4 py-4 text-center space-x-2">
+                      <td className="px-4 py-3 text-center space-x-2">
                         {blog.status === "Đang chờ" && (
-                          <>
+                          <div className="flex items-center space-x-2">
                             <button
                               onClick={() => handleApprove(blog.blogId)}
-                              className="bg-green-100 text-green-700 hover:bg-green-200 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                              className="bg-green-100 text-green-700 hover:bg-green-200 p-2 rounded-lg transition-colors"
                               title="Phê duyệt"
                               disabled={localLoading}
                             >
@@ -381,22 +395,102 @@ const BlogListOfStaff = () => {
                             </button>
                             <button
                               onClick={() => handleCancel(blog.blogId)}
-                              className="bg-red-100 text-red-700 hover:bg-red-200 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                              className="bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors"
                               title="Hủy"
                               disabled={localLoading}
                             >
                               <XCircle className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                        {blog.status === "Đã duyệt" && (
+                          <button
+                            onClick={() => handleOpenDeleteModal(blog.blogId, blog.blogTitle)}
+                            className="bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors"
+                            title="Xóa"
+                            disabled={localLoading}
+                          >
+                            <Trash className="w-4 h-4" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Tablet View (Simplified Table) */}
+            <div className="hidden md:block lg:hidden border rounded-lg overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="border-b bg-gray-400">
+                  <tr>
+                    <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">#</th>
+                    <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">Ảnh</th>
+                    <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">Tiêu đề</th>
+                    <th className="px-3 py-2  font-bold text-xs uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
+                    <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayedBlogs.map((blog, index) => (
+                    <tr
+                      key={blog.blogId}
+                      className="border-b hover:bg-gray-500 transition-colors"
+                    >
+                      <td className="px-3 py-2 text-center text-xs">
+                        {(currentPage - 1) * blogsPerPage + index + 1}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        {renderImages(blog.images, blog.blogId)}
+                      </td>
+                      <td className="px-3 py-2 text-center text-xs">
+                        <Link
+                          to={`/dashboard/blog/${blog.blogId}`}
+                          className="hover:text-orange-400 transition-colors"
+                        >
+                          {formatTitle(blog.blogTitle)}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-center text-sm truncate max-w-xs">
+                        {truncateDescription(blog.blogContent)}
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-xs ${getStatusClass(blog.status)}`}
+                        >
+                          {blog.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-center space-x-1">
+                        {blog.status === "Đang chờ" && (
+                          <>
+                            <button
+                              onClick={() => handleApprove(blog.blogId)}
+                              className="bg-green-100 text-green-700 hover:bg-green-200 p-1 rounded-lg transition-colors"
+                              title="Phê duyệt"
+                              disabled={localLoading}
+                            >
+                              <CheckCircle className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => handleCancel(blog.blogId)}
+                              className="bg-red-100 text-red-700 hover:bg-red-200 p-1 rounded-lg transition-colors"
+                              title="Hủy"
+                              disabled={localLoading}
+                            >
+                              <XCircle className="w-3 h-3" />
                             </button>
                           </>
                         )}
                         {blog.status === "Đã duyệt" && (
                           <button
                             onClick={() => handleOpenDeleteModal(blog.blogId, blog.blogTitle)}
-                            className="bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors w-10 h-10 items-center justify-center inline-flex"
+                            className="bg-red-100 text-red-700 hover:bg-red-200 p-1 rounded-lg transition-colors"
                             title="Xóa"
                             disabled={localLoading}
                           >
-                            <Trash className="w-4 h-4" />
+                            <Trash className="w-3 h-3" />
                           </button>
                         )}
                       </td>
@@ -415,7 +509,7 @@ const BlogListOfStaff = () => {
                 >
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold text-sm text-gray-700">
+                      <span className="font-semibold text-xs text-gray-700">
                         #{(currentPage - 1) * blogsPerPage + index + 1}
                       </span>
                       <span
@@ -428,14 +522,15 @@ const BlogListOfStaff = () => {
                     <p className="text-sm text-gray-700">
                       <span className="font-medium">Tiêu đề:</span>{" "}
                       <Link
-                        to={`/manage/admin/blog/${blog.blogId}`}
+                        to={`/dashboard/blog/${blog.blogId}`}
                         className="text-orange-500 hover:text-orange-600"
                       >
-                        {blog.blogTitle}
+                        {formatTitle(blog.blogTitle)}
                       </Link>
                     </p>
                     <p className="text-sm text-gray-600 truncate">
-                      <span className="font-medium">Nội dung:</span> {blog.blogContent}
+                      <span className="font-medium">Nội dung:</span>{" "}
+                      {truncateDescription(blog.blogContent)}
                     </p>
                     <p className="text-sm text-gray-600 truncate">{blog.userName}</p>
                     <p className="text-sm text-gray-600">
@@ -447,7 +542,7 @@ const BlogListOfStaff = () => {
                         <>
                           <button
                             onClick={() => handleApprove(blog.blogId)}
-                            className="bg-green-200 text-green-700 hover:bg-green-300 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                            className="bg-green-200 text-green-700 hover:bg-green-300 p-2 rounded-lg flex items-center justify-center gap-2 text-xs"
                             disabled={localLoading}
                           >
                             <CheckCircle className="w-4 h-4" />
@@ -455,7 +550,7 @@ const BlogListOfStaff = () => {
                           </button>
                           <button
                             onClick={() => handleCancel(blog.blogId)}
-                            className="bg-red-200 text-red-700 hover:bg-red-300 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                            className="bg-red-200 text-red-700 hover:bg-red-300 p-2 rounded-lg flex items-center justify-center gap-2 text-xs"
                             disabled={localLoading}
                           >
                             <XCircle className="w-4 h-4" />
@@ -466,7 +561,7 @@ const BlogListOfStaff = () => {
                       {blog.status === "Đã duyệt" && (
                         <button
                           onClick={() => handleOpenDeleteModal(blog.blogId, blog.blogTitle)}
-                          className="bg-red-200 text-red-700 hover:bg-red-300 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                          className="bg-red-200 text-red-700 hover:bg-red-300 p-2 rounded-lg flex items-center justify-center gap-2 text-xs"
                           disabled={localLoading}
                         >
                           <Trash className="w-4 h-4" />
@@ -481,25 +576,11 @@ const BlogListOfStaff = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center mt-6 gap-4">
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <span className="px-4 py-2">
-                  Trang {currentPage} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                setCurrentPage={setCurrentPage}
+              />
             )}
           </>
         )}
@@ -516,8 +597,7 @@ const BlogListOfStaff = () => {
             >
               <h2 className="text-xl font-semibold text-red-600 mb-4">Xác nhận xóa</h2>
               <p className="text-gray-600 mb-6">
-                Bạn có chắc chắn muốn xóa blog <strong>"{blogTitle}"</strong> không? Hành
-                động này không thể hoàn tác.
+                Bạn có chắc chắn muốn xóa blog <strong>"{blogTitle}"</strong> không? Hành động này không thể hoàn tác.
               </p>
               <div className="flex justify-end gap-4">
                 <button

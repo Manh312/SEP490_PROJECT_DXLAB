@@ -14,6 +14,7 @@ const UpdateAccount = () => {
   const { selectedAccount, roles, loading } = useSelector((state) => state.accounts);
 
   const [role, setRole] = useState("");
+  
 
   // Fetch roles và account khi component mount
   useEffect(() => {
@@ -23,7 +24,7 @@ const UpdateAccount = () => {
 
   // Đồng bộ role khi selectedAccount thay đổi
   useEffect(() => {
-    if (selectedAccount && selectedAccount.userId === id) {
+    if (selectedAccount && selectedAccount.userId === parseInt(id)) {
       const roleNameFromServer = selectedAccount.roleName || "";
       if (roles.some((r) => r.roleName === roleNameFromServer)) {
         setRole(roleNameFromServer);
@@ -41,11 +42,6 @@ const UpdateAccount = () => {
 
   const handleUpdate = async () => {
     try {
-      if (!role || role.trim() === "") {
-        toast.error("Vui lòng chọn vai trò!");
-        return;
-      }
-
       const roleName = role;
       await dispatch(updateAccount({ id, roleName })).unwrap();
       toast.success("Cập nhật thành công!");
