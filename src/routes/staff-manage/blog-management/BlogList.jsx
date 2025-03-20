@@ -88,7 +88,10 @@ const BlogList = () => {
   };
 
   const renderImages = (images, blogId) => {
-    if (!Array.isArray(images) || images.length === 0) {
+    // Kiểm tra images kỹ hơn: nếu không phải mảng hoặc rỗng, hiển thị placeholder
+    const validImages = Array.isArray(images) && images.length > 0 ? images : [];
+
+    if (!validImages.length) {
       return (
         <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
           <span className="text-gray-500 text-sm">No Image</span>
@@ -101,30 +104,35 @@ const BlogList = () => {
     const prevImage = () => {
       setImageIndices((prev) => ({
         ...prev,
-        [blogId]: (currentIndex - 1 + images.length) % images.length,
+        [blogId]: (currentIndex - 1 + validImages.length) % validImages.length,
       }));
     };
 
     const nextImage = () => {
       setImageIndices((prev) => ({
         ...prev,
-        [blogId]: (currentIndex + 1) % images.length,
+        [blogId]: (currentIndex + 1) % validImages.length,
       }));
     };
+
+    // Đảm bảo imageSrc là chuỗi hợp lệ
+    const imageSrc = validImages[currentIndex];
+    const displaySrc =
+      typeof imageSrc === "string"
+        ? imageSrc.startsWith("http")
+          ? imageSrc
+          : `${baseUrl}/${imageSrc}`
+        : "/placeholder-image.jpg"; // Nếu không phải chuỗi, dùng placeholder
 
     return (
       <div className="relative w-40 h-40 mx-auto group">
         <img
-          src={
-            images[currentIndex].startsWith("http")
-              ? images[currentIndex]
-              : `${baseUrl}/${images[currentIndex]}`
-          }
+          src={displaySrc}
           alt={`Blog image ${currentIndex}`}
           className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
-          onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+          onError={(e) => (e.target.src = "/placeholder-image.jpg")} // Đảm bảo placeholder tồn tại
         />
-        {images.length > 1 && (
+        {validImages.length > 1 && (
           <>
             <button
               onClick={prevImage}
@@ -139,7 +147,7 @@ const BlogList = () => {
               <ChevronRight className="w-4 h-4" />
             </button>
             <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
-              {images.map((_, idx) => (
+              {validImages.map((_, idx) => (
                 <span
                   key={idx}
                   className={`w-1.5 h-1.5 rounded-full ${

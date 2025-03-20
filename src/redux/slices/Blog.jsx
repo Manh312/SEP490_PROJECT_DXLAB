@@ -56,17 +56,33 @@ export const createBlog = createAsyncThunk(
 // Update blog (for staff)
 export const updateBlog = createAsyncThunk(
   "blogs/update",
-  async ({ id, blogData }, { rejectWithValue }) => {
+  async ({ id, blogData, files }, { rejectWithValue }) => {
     try {
-      const response = await axios.put(`/blog/edit-cancelled/${id}`, blogData);
+      const formData = new FormData();
+
+      formData.append("BlogTitle", blogData.blogTitle);
+      formData.append("BlogContent", blogData.blogContent);
+      formData.append("BlogCreatedDate", blogData.blogCreatedDate);
+      formData.append("Status", blogData.status || 1);
+
+      // Gửi ảnh mới (nếu có)
+      if (files && files.length > 0) {
+        files.forEach((file) => {
+          formData.append("ImageFiles", file); // Backend sẽ thêm ảnh mới vào danh sách hiện có
+        });
+      }
+
+      const response = await axios.put(`/blog/edit-cancelled/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể cập nhật blog");
     }
   }
 );
-
-// Giữ nguyên các phần khác của file...
 
 // Admin-Specific Actions
 // Fetch pending approval blogs (for admin)
