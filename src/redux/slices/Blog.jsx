@@ -18,7 +18,7 @@ export const fetchBlogsByStatus = createAsyncThunk(
 export const fetchBlogById = createAsyncThunk(
   "blogs/fetchById",
   async (blogId, { rejectWithValue }) => {
-    try {      
+    try {
       const response = await axios.get(`/blog/${blogId}`);
       return response.data.data;
     } catch (error) {
@@ -44,7 +44,7 @@ export const createBlog = createAsyncThunk(
         });
       }
 
-      const response = await axios.post("/blog", formData); 
+      const response = await axios.post("/blog", formData);
 
       return response.data;
     } catch (error) {
@@ -174,7 +174,7 @@ const blogSlice = createSlice({
     statusFilter: "All",
 
     // State for admin (separate state to avoid conflict)
-    pendingBlogs: [], 
+    pendingBlogs: [],
     approvedBlogs: [],
     adminSelectedBlog: null,
     adminLoading: false,
@@ -221,6 +221,7 @@ const blogSlice = createSlice({
       .addCase(fetchBlogsByStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.blogs = [];
       })
       .addCase(fetchBlogById.pending, (state) => {
         state.loading = true;
@@ -335,6 +336,9 @@ const blogSlice = createSlice({
         const blogId = action.meta.arg;
         state.pendingBlogs = state.pendingBlogs.filter((b) => b.blogId !== blogId);
         state.approvedBlogs = state.approvedBlogs.filter((b) => b.blogId !== blogId);
+
+        state.blogs = state.blogs.filter((b) => b.blogId !== blogId);
+        state.adminLoading = false;
       })
       .addCase(deleteAdminBlog.rejected, (state, action) => {
         state.adminLoading = false;

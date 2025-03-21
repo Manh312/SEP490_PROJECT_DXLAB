@@ -11,7 +11,7 @@ import {
   cancelAdminBlog,
   setAdminStatusFilter,
   deleteAdminBlog,
-  fetchBlogsByStatus, // Thêm fetchBlogsByStatus
+  fetchBlogsByStatus,
 } from "../../redux/slices/Blog";
 import Pagination from "../../hooks/use-pagination";
 
@@ -98,7 +98,7 @@ const BlogListOfStaff = () => {
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
-        dispatch(fetchBlogsByStatus("2")), // Cập nhật danh sách "Đã xuất bản" trong BlogList
+        dispatch(fetchBlogsByStatus("2")), // Cập nhật danh sách "Đã xuất bản"
       ]);
     } catch (err) {
       toast.error(err.message || "Phê duyệt thất bại!");
@@ -119,7 +119,7 @@ const BlogListOfStaff = () => {
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
-        dispatch(fetchBlogsByStatus("0")), // Cập nhật danh sách "Bị hủy" trong BlogList
+        dispatch(fetchBlogsByStatus("0")), // Cập nhật danh sách "Bị hủy"
       ]);
     } catch (err) {
       toast.error(err.message || "Hủy thất bại!");
@@ -137,12 +137,13 @@ const BlogListOfStaff = () => {
     try {
       const response = await dispatch(deleteAdminBlog(blogIdToDelete)).unwrap();
       toast.success(response.message || "Bài blog đã được xóa!");
+      // Cập nhật lại tất cả danh sách blog của staff sau khi xóa
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
-        dispatch(fetchBlogsByStatus("0")), // Cập nhật danh sách "Bị hủy" trong BlogList
-        dispatch(fetchBlogsByStatus("1")), // Cập nhật danh sách "Đang chờ" trong BlogList
-        dispatch(fetchBlogsByStatus("2")), // Cập nhật danh sách "Đã xuất bản" trong BlogList
+        dispatch(fetchBlogsByStatus("0")), // Bị hủy
+        dispatch(fetchBlogsByStatus("1")), // Đang chờ
+        dispatch(fetchBlogsByStatus("2")), // Đã xuất bản
       ]);
     } catch (err) {
       toast.error(err.message || "Xóa thất bại!");
@@ -190,7 +191,8 @@ const BlogListOfStaff = () => {
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
   const renderImages = (images, blogId) => {
@@ -282,10 +284,7 @@ const BlogListOfStaff = () => {
 
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-6 xl:px-8 mb-10">
-      <div
-        className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8"
-      >
-        {/* Header */}
+      <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <PlusCircle className="h-6 w-6 text-orange-500" />
@@ -293,7 +292,6 @@ const BlogListOfStaff = () => {
           </div>
         </div>
 
-        {/* Filter and Search */}
         <div className="mb-6 p-4 rounded-lg shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div className="relative w-full sm:w-1/2 lg:w-1/3">
@@ -321,7 +319,6 @@ const BlogListOfStaff = () => {
           </div>
         </div>
 
-        {/* Loading State */}
         {(adminLoading || localLoading) ? (
           <div className="flex items-center justify-center py-6">
             <span className="animate-spin text-orange-500 w-6 h-6 mr-2">⏳</span>
@@ -338,7 +335,6 @@ const BlogListOfStaff = () => {
           </div>
         ) : (
           <>
-            {/* Desktop Table */}
             <div className="hidden lg:block border rounded-lg overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead className="border-b bg-gray-400">
@@ -355,10 +351,7 @@ const BlogListOfStaff = () => {
                 </thead>
                 <tbody>
                   {displayedBlogs.map((blog, index) => (
-                    <tr
-                      key={blog.blogId}
-                      className="border-b hover:bg-gray-500 transition-colors"
-                    >
+                    <tr key={blog.blogId} className="border-b hover:bg-gray-500 transition-colors">
                       <td className="px-4 py-3 text-center">
                         {(currentPage - 1) * blogsPerPage + index + 1}
                       </td>
@@ -366,10 +359,7 @@ const BlogListOfStaff = () => {
                         {renderImages(blog.images, blog.blogId)}
                       </td>
                       <td className="px-4 py-3 text-center whitespace-pre-wrap break-words">
-                        <Link
-                          to={`/dashboard/blog/${blog.blogId}`}
-                          className="hover:text-orange-400 transition-colors"
-                        >
+                        <Link to={`/dashboard/blog/${blog.blogId}`} className="hover:text-orange-400 transition-colors">
                           {formatTitle(blog.blogTitle)}
                         </Link>
                       </td>
@@ -381,9 +371,7 @@ const BlogListOfStaff = () => {
                         {formatDate(blog.blogCreatedDate)}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full font-normal ${getStatusClass(blog.status)}`}
-                        >
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full font-normal ${getStatusClass(blog.status)}`}>
                           {blog.status}
                         </span>
                       </td>
@@ -425,7 +413,6 @@ const BlogListOfStaff = () => {
               </table>
             </div>
 
-            {/* Tablet View (Simplified Table) */}
             <div className="hidden md:block lg:hidden border rounded-lg overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead className="border-b bg-gray-400">
@@ -433,16 +420,13 @@ const BlogListOfStaff = () => {
                     <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">#</th>
                     <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">Ảnh</th>
                     <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">Tiêu đề</th>
-                    <th className="px-3 py-2  font-bold text-xs uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
+                    <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
                     <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
                   {displayedBlogs.map((blog, index) => (
-                    <tr
-                      key={blog.blogId}
-                      className="border-b hover:bg-gray-500 transition-colors"
-                    >
+                    <tr key={blog.blogId} className="border-b hover:bg-gray-500 transition-colors">
                       <td className="px-3 py-2 text-center text-xs">
                         {(currentPage - 1) * blogsPerPage + index + 1}
                       </td>
@@ -450,20 +434,12 @@ const BlogListOfStaff = () => {
                         {renderImages(blog.images, blog.blogId)}
                       </td>
                       <td className="px-3 py-2 text-center text-xs">
-                        <Link
-                          to={`/dashboard/blog/${blog.blogId}`}
-                          className="hover:text-orange-400 transition-colors"
-                        >
+                        <Link to={`/dashboard/blog/${blog.blogId}`} className="hover:text-orange-400 transition-colors">
                           {formatTitle(blog.blogTitle)}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-center text-sm truncate max-w-xs">
-                        {truncateDescription(blog.blogContent)}
-                      </td>
                       <td className="px-3 py-2 text-center">
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-xs ${getStatusClass(blog.status)}`}
-                        >
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-xs ${getStatusClass(blog.status)}`}>
                           {blog.status}
                         </span>
                       </td>
@@ -505,31 +481,22 @@ const BlogListOfStaff = () => {
               </table>
             </div>
 
-            {/* Mobile View */}
             <div className="block md:hidden space-y-4">
               {displayedBlogs.map((blog, index) => (
-                <div
-                  key={blog.blogId}
-                  className="border rounded-lg p-4 shadow-sm hover:bg-gray-50 transition-colors"
-                >
+                <div key={blog.blogId} className="border rounded-lg p-4 shadow-sm hover:bg-gray-50 transition-colors">
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center">
                       <span className="font-semibold text-xs text-gray-700">
                         #{(currentPage - 1) * blogsPerPage + index + 1}
                       </span>
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(blog.status)}`}
-                      >
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(blog.status)}`}>
                         {blog.status}
                       </span>
                     </div>
                     {renderImages(blog.images, blog.blogId)}
                     <p className="text-sm text-gray-700">
                       <span className="font-medium">Tiêu đề:</span>{" "}
-                      <Link
-                        to={`/dashboard/blog/${blog.blogId}`}
-                        className="text-orange-500 hover:text-orange-600"
-                      >
+                      <Link to={`/dashboard/blog/${blog.blogId}`} className="text-orange-500 hover:text-orange-600">
                         {formatTitle(blog.blogTitle)}
                       </Link>
                     </p>
@@ -579,7 +546,6 @@ const BlogListOfStaff = () => {
               ))}
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <Pagination
                 currentPage={currentPage}
@@ -590,16 +556,9 @@ const BlogListOfStaff = () => {
           </>
         )}
 
-        {/* Delete Modal */}
         {isDeleteModalOpen && (
-          <div
-            className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50"
-            onClick={handleCloseDeleteModal}
-          >
-            <div
-              className="bg-gray-300 rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100"
-              onClick={(e) => e.stopPropagation()}
-            >
+          <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50" onClick={handleCloseDeleteModal}>
+            <div className="bg-gray-300 rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100" onClick={(e) => e.stopPropagation()}>
               <h2 className="text-xl font-semibold text-red-600 mb-4">Xác nhận xóa</h2>
               <p className="text-gray-600 mb-6">
                 Bạn có chắc chắn muốn xóa blog <strong>"{blogTitle}"</strong> không? Hành động này không thể hoàn tác.
@@ -627,4 +586,4 @@ const BlogListOfStaff = () => {
   );
 };
 
-export default BlogListOfStaff;
+export default BlogListOfStaff; 

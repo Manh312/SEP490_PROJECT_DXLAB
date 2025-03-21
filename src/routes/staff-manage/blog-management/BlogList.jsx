@@ -8,7 +8,7 @@ import Pagination from "../../../hooks/use-pagination";
 
 const BlogList = () => {
   const dispatch = useDispatch();
-  const { blogs, loading, statusFilter } = useSelector((state) => state.blogs);
+  const { blogs, loading, statusFilter, error } = useSelector((state) => state.blogs);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [imageIndices, setImageIndices] = useState({});
@@ -26,6 +26,9 @@ const BlogList = () => {
 
   const filteredBlogs = useMemo(() => {
     let result = blogs || [];
+    if (error) {
+      return []; // Nếu có lỗi (ví dụ: không tìm thấy blog), trả về mảng rỗng
+    }
     result = result.filter((blog) => String(blog.status) === String(statusFilter));
     if (searchTerm) {
       result = result.filter((blog) =>
@@ -33,7 +36,16 @@ const BlogList = () => {
       );
     }
     return result;
-  }, [blogs, searchTerm, statusFilter]);
+  }, [blogs, searchTerm, statusFilter, error]);
+
+  // Reset currentPage khi danh sách blog trống hoặc không hợp lệ
+  useEffect(() => {
+    if (filteredBlogs.length === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    } else if (currentPage > Math.ceil(filteredBlogs.length / blogsPerPage)) {
+      setCurrentPage(Math.max(1, Math.ceil(filteredBlogs.length / blogsPerPage)));
+    }
+  }, [filteredBlogs, currentPage, blogsPerPage]);
 
   const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
   const displayedBlogs = filteredBlogs.slice(
