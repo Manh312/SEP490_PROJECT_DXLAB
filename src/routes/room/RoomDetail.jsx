@@ -108,12 +108,6 @@ const RoomDetail = () => {
         >
           <PencilLine size={20} /> Chỉnh Sửa
         </button>
-        <button
-          className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-red-600 transition"
-          onClick={handleDelete}
-        >
-          <Trash size={20} /> Xóa Phòng
-        </button>
       </div>
     </div>
   );
