@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { PencilLine, Trash } from "lucide-react";
+import { PencilLine } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteRoom, getRoomById } from "../../redux/slices/Room";
+import {  getRoomById } from "../../redux/slices/Room";
 
 const RoomDetail = () => {
   const { id } = useParams();
@@ -16,19 +16,6 @@ const RoomDetail = () => {
   useEffect(() => {
     dispatch(getRoomById(id));
   }, [dispatch, id]);
-
-  // Xử lý xóa phòng
-  const handleDelete = async () => {
-    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa phòng này?");
-    if (confirmDelete) {
-      try {
-        await dispatch(deleteRoom(id)).unwrap();
-        navigate("/dashboard/room"); // Chuyển hướng sau khi xóa
-      } catch (error) {
-        console.error("Lỗi khi xóa phòng:", error);
-      }
-    }
-  };
 
   // Hiển thị trạng thái tải dữ liệu hoặc lỗi
   if (loading) return <p className="text-blue-500 text-center">Đang tải thông tin phòng...</p>;
