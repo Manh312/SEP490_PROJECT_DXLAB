@@ -8,7 +8,7 @@ const Page = () => {
 
   return (
     <div className="flex flex-col gap-y-4 mb-20">
-      <h1 className={`title ${theme === "dark" ? "text-white" : "text-black"}`}>Dashboard</h1>
+      <h1 className={`title ${theme === "dark" ? "text-white" : "text-black"}`}>Thống kê</h1>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mr-5">
 
         {/* Card 1 */}
@@ -17,7 +17,7 @@ const Page = () => {
             <div className={`w-fit rounded-lg p-2 transition-colors ${theme === "dark" ? "bg-blue-600/20 text-blue-400" : "bg-blue-500/20 text-blue-500"}`}>
               <Package size={26} />
             </div>
-            <p className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Total Products</p>
+            <p className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Số tiền phải chi</p>
           </div>
           <div className="card-body">
             <p className={`text-3xl font-bold transition-colors ${theme === "dark" ? "text-white" : "text-black"}`}>25,154</p>
@@ -34,7 +34,7 @@ const Page = () => {
             <div className={`w-fit rounded-lg p-2 transition-colors ${theme === "dark" ? "bg-blue-600/20 text-blue-400" : "bg-blue-500/20 text-blue-500"}`}>
               <DollarSign size={26} />
             </div>
-            <p className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Total Paid Orders</p>
+            <p className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Doanh thu theo tháng</p>
           </div>
           <div className="card-body">
             <p className={`text-3xl font-bold transition-colors ${theme === "dark" ? "text-white" : "text-black"}`}>25,154</p>
@@ -51,7 +51,7 @@ const Page = () => {
             <div className={`w-fit rounded-lg p-2 transition-colors ${theme === "dark" ? "bg-blue-600/20 text-blue-400" : "bg-blue-500/20 text-blue-500"}`}>
               <Users size={26} />
             </div>
-            <p className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Total Customers</p>
+            <p className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Hiệu suất của phòng</p>
           </div>
           <div className="card-body">
             <p className={`text-3xl font-bold transition-colors ${theme === "dark" ? "text-white" : "text-black"}`}>25,154</p>
@@ -68,7 +68,7 @@ const Page = () => {
             <div className={`w-fit rounded-lg p-2 transition-colors ${theme === "dark" ? "bg-blue-600/20 text-blue-400" : "bg-blue-500/20 text-blue-500"}`}>
               <CreditCard size={26} />
             </div>
-            <p className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Sales</p>
+            <p className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Tổng số người dùng</p>
           </div>
           <div className="card-body">
             <p className={`text-3xl font-bold transition-colors ${theme === "dark" ? "text-white" : "text-black"}`}>25,154</p>
@@ -81,7 +81,7 @@ const Page = () => {
       </div>
         <div className={`card mr-5 col-span-1 md:col-span-2 lg:col-span-4 ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>
           <div className="card-header">
-            <p className={` card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Overview</p>
+            <p className={` card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Tổng quát theo biểu đồ</p>
           </div>
           <div className="card-body p-0">
             <ResponsiveContainer width="100%" height={300}>
