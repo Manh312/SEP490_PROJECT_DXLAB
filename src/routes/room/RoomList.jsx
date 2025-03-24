@@ -27,12 +27,23 @@ const RoomList = () => {
  // Lọc và tìm kiếm danh sách phòng
  const filteredRooms = useMemo(() => {
   if (!Array.isArray(rooms)) return [];
-  
-  return rooms.filter((room) => {
-    const matchesStatus = statusFilter === "All" || (statusFilter === "Hoạt động" && !room.isDeleted) || (statusFilter === "Đã xóa" && room.isDeleted);
-    const matchesSearch = room.roomName.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
+
+  let result = rooms.filter((room) => {
+    if (!room || typeof room !== "object" || !room.roomId || !room.roomName) return false;
+    const matchesStatus =
+      statusFilter === "All" ||
+      (statusFilter === "Hoạt động" && !room.isDeleted) ||
+      (statusFilter === "Đã xóa" && room.isDeleted);
+    return matchesStatus;
   });
+
+  if (searchQuery) {
+    result = result.filter((room) =>
+      room.roomName?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+
+  return result;
 }, [rooms, statusFilter, searchQuery]);
 
   // const totalRooms = Math.ceil(filteredRooms.length / roomsPerPage);
