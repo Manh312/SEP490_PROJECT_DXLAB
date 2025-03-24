@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState, useMemo } from "react";
 import { fetchFacilities, addFacilityFromExcel, moveToStorage } from "../../redux/slices/Facilities";
 import { Link, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { FaPlus, FaFileExcel, FaFilter } from "react-icons/fa";
 import { Edit, Search, Trash2 } from "lucide-react";
 import { MdChair } from "react-icons/md";
@@ -139,13 +139,6 @@ const FacilitiesList = () => {
                 className="absolute inset-0 opacity-0 cursor-pointer"
               />
             </label>
-            <button
-              onClick={() => navigate("/dashboard/facilities/storage")}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
-            >
-              <Trash2 className="h-5 w-5" />
-              <span className="hidden sm:inline">Thùng rác</span>
-            </button>
             <button
               onClick={() => navigate("/dashboard/facilities/create")}
               className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"

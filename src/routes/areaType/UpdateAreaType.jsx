@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAreaTypeById, updateAreaType } from "../../redux/slices/AreaType";
 import { X } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 const UpdateAreaType = () => {
   const { id } = useParams();
@@ -150,7 +150,6 @@ const UpdateAreaType = () => {
 
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 rounded-lg shadow-lg">
-      <ToastContainer />
       <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">
         Chỉnh Sửa Loại Khu Vực {id}
       </h2>

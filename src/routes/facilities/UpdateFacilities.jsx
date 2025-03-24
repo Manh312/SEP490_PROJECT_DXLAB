@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchFacilityById, updateFacility } from "../../redux/slices/Facilities";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 const UpdateFacilities = () => {
   const { id } = useParams();
@@ -39,7 +39,6 @@ const UpdateFacilities = () => {
 
   return (
     <div className="p-6 shadow-xl rounded-lg bg-white max-w-lg mx-auto">
-      <ToastContainer />
       <h2 className="text-2xl font-semibold mb-4">✏️ Cập Nhật Cơ Sở Vật Chất</h2>
       {loading ? (
         <p>Đang tải...</p>

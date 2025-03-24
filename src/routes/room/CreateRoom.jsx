@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { createRoom } from "../../redux/slices/Room";
 import { X } from "lucide-react"; // Import dấu X
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { fetchAreaTypes } from "../../redux/slices/AreaType";
 
 const CreateRoom = () => {
@@ -140,7 +140,6 @@ const CreateRoom = () => {
   console.log(roomData.area_DTO.length);
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 rounded-lg shadow-lg">
-      <ToastContainer />
       <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">
         Thêm Phòng Mới
       </h2>

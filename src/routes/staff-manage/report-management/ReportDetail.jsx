@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTheme } from "../../../hooks/use-theme";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const ReportDetail = () => {
@@ -48,7 +48,6 @@ const ReportDetail = () => {
 
   return (
     <div className={`flex justify-center items-center min-h-screen p-6 ${theme === "dark" ? "bg-black text-white" : ""}`}>
-      <ToastContainer />
       <div className="w-full max-w-2xl border p-6 rounded-lg shadow-lg dark:bg-gray-900">
         
         {/* Header */}

@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBlogById } from "../../../redux/slices/Blog";
 import { useTheme } from "../../../hooks/use-theme";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { Edit, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 
 const ManageBlogDetail = () => {
@@ -217,7 +217,6 @@ const ManageBlogDetail = () => {
 
   return (
     <div className="py-12 px-8 sm:px-12 lg:px-20 min-h-screen ">
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} theme={theme} />
 
       {/* Card Container */}
       <div

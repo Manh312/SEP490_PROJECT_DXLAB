@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { createAreaType } from "../../redux/slices/AreaType";
 import { X } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 const CreateAreaType = () => {
   const navigate = useNavigate();
@@ -94,7 +94,6 @@ const CreateAreaType = () => {
 
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 rounded-lg shadow-lg">
-      <ToastContainer />
       <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">Thêm Loại Khu Vực</h2>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Tên loại khu vực */}

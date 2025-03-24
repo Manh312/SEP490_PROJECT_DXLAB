@@ -1,34 +1,32 @@
-import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useParams, useNavigate } from "react-router-dom";
 import { getRoomById, updateRoom } from "../../redux/slices/Room";
-// import { toast } from "react-toastify";
+import { toast } from "react-toastify";
+import { FaBuilding, FaFileAlt, FaUsers, FaImage, FaCheck, FaTag } from "react-icons/fa";
 import { X } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
 
 const UpdateRoom = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Lấy dữ liệu phòng từ Redux
   const { selectedRoom, loading } = useSelector((state) => state.rooms);
-
-  useEffect(() => {
-    dispatch(getRoomById(id));
-  }, [dispatch]);
 
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     capacity: "",
     isDeleted: "",
-    images: [], // Lưu danh sách ảnh
+    images: [],
   });
 
-  const [hasImageChange, setHasImageChange] = useState(false); // Kiểm tra có thay đổi ảnh không
+  const [hasImageChange, setHasImageChange] = useState(false);
 
-  // Cập nhật form khi Redux có dữ liệu
+  useEffect(() => {
+    dispatch(getRoomById(id));
+  }, [dispatch, id]);
+
   useEffect(() => {
     if (selectedRoom) {
       setFormData({
@@ -45,68 +43,41 @@ const UpdateRoom = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Xử lý thêm ảnh mới (Chỉ lấy tên file & kiểm tra trùng lặp)
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    const fileNames = files.map((file) => file.name); // Chỉ lấy tên file
+    const fileNames = files.map((file) => file.name);
 
-    // Kiểm tra trùng lặp
-    const duplicateFiles = fileNames.filter((name) =>
-      formData.images.includes(name)
-    );
+    const duplicateFiles = fileNames.filter((name) => formData.images.includes(name));
     if (duplicateFiles.length > 0) {
       toast.error(`Ảnh sau đã tồn tại: ${duplicateFiles.join(", ")}`);
       return;
     }
 
     setFormData({ ...formData, images: [...formData.images, ...fileNames] });
-    setHasImageChange(true); // Đánh dấu có thay đổi ảnh
+    setHasImageChange(true);
   };
 
-  // Xóa ảnh khỏi danh sách
   const removeImage = (index) => {
     const newImages = formData.images.filter((_, i) => i !== index);
     setFormData({ ...formData, images: newImages });
-    setHasImageChange(true); // Đánh dấu có thay đổi ảnh
+    setHasImageChange(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Mảng cập nhật JSON Patch
     const updates = [];
-
     if (formData.name !== selectedRoom.roomName) {
-      updates.push({
-        operationType: 0,
-        path: "roomName",
-        op: "replace",
-        value: formData.name,
-      });
+      updates.push({ operationType: 0, path: "roomName", op: "replace", value: formData.name });
     }
     if (formData.description !== selectedRoom.roomDescription) {
-      updates.push({
-        operationType: 0,
-        path: "roomDescription",
-        op: "replace",
-        value: formData.description,
-      });
+      updates.push({ operationType: 0, path: "roomDescription", op: "replace", value: formData.description });
     }
     if (formData.capacity !== selectedRoom.capacity) {
-      updates.push({
-        operationType: 0,
-        path: "capacity",
-        op: "replace",
-        value: formData.capacity,
-      });
+      updates.push({ operationType: 0, path: "capacity", op: "replace", value: formData.capacity });
     }
     if (formData.isDeleted !== selectedRoom.isDeleted) {
-      updates.push({
-        operationType: 0,
-        path: "isDeleted",
-        op: "replace",
-        value: formData.isDeleted,
-      });
+      updates.push({ operationType: 0, path: "isDeleted", op: "replace", value: formData.isDeleted });
     }
     if (hasImageChange) {
       updates.push({
@@ -121,157 +92,173 @@ const UpdateRoom = () => {
       toast.info("Không có thay đổi nào cần cập nhật!");
       return;
     }
-    console.log(updates);
 
     try {
       const res = await dispatch(updateRoom({ roomId: id, updates })).unwrap();
-      console.log(res.message);
+      toast.success("Cập nhật thành công!");
       navigate("/dashboard/room", { state: { successMessage: res.message } });
     } catch (error) {
-      toast.error(error.message);
+      const errorMessage = error.message || "Unknown error";
+      toast.error(`Lỗi khi cập nhật phòng: ${errorMessage}`);
+      console.error("Update error:", error);
     }
   };
 
-  return (
-    <div className="max-w-lg mx-auto mt-10 p-6 rounded-lg shadow-lg">
-      <ToastContainer />
-      <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">
-        Chỉnh Sửa Phòng {id}
-      </h2>
+  if (loading || !selectedRoom) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <p className="text-gray-600 text-lg animate-pulse">Đang tải dữ liệu...</p>
+      </div>
+    );
+  }
 
-      {loading ? (
-        <p className="text-center text-orange-500">Đang tải dữ liệu...</p>
-      ) : !selectedRoom ? (
-        <p className="text-red-500 text-center">
-          Không tìm thấy phòng có ID {id}!
-        </p>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block font-semibold mb-1">Tên Phòng</label>
+  return (
+    <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-lg rounded-xl border shadow-2xl p-8 space-y-8 transition-all duration-300 hover:shadow-3xl">
+        <div>
+          <h2 className="text-3xl font-bold text-center">Cập Nhật Phòng</h2>
+          <p className="mt-2 text-sm text-center">Chỉnh sửa thông tin phòng #{id}</p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Tên phòng */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              <span className="flex items-center">
+                <FaBuilding className="mr-2 text-orange-500" /> Tên Phòng
+              </span>
+            </label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full p-2 border rounded-lg"
+              className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out"
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block font-semibold mb-1">Mô Tả</label>
+          {/* Mô tả */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              <span className="flex items-center">
+                <FaFileAlt className="mr-2 text-orange-500" /> Mô Tả
+              </span>
+            </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
-              className="w-full p-2 border rounded-lg"
+              className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out"
             />
           </div>
-          <div className="mb-4">
-            <label className="block font-semibold mb-1">Sức Chứa</label>
+          {/* Sức chứa */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              <span className="flex items-center">
+                <FaUsers className="mr-2 text-orange-500" /> Sức Chứa
+              </span>
+            </label>
             <input
               type="number"
               name="capacity"
               value={formData.capacity}
               onChange={handleChange}
-              className="w-full p-2 border rounded-lg"
+              className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out"
             />
           </div>
-          <div className="mb-4">
-            <label className="block font-semibold mb-1">Trạng Thái Phòng</label>
+          {/* Trạng thái */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              <span className="flex items-center">
+                <FaTag className="mr-2 text-orange-500" /> Trạng Thái
+              </span>
+            </label>
             <select
               name="isDeleted"
-              value={String(formData.isDeleted)} // Chuyển boolean thành string để phù hợp với <option> value
+              value={String(formData.isDeleted)}
               onChange={handleChange}
-              className="w-full p-2 border rounded-lg bg-gray-100 text-gray-800"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 duration-150 ease-in-out"
             >
-              <option value="true">Xóa</option>
               <option value="false">Hoạt động</option>
+              <option value="true">Xóa</option>
             </select>
           </div>
-
-          {/* Hiển thị areaDTO chỉ đọc */}
-          <div className="mb-4">
-            <label className="block font-semibold mb-1">Khu Vực</label>
-            <div className="border p-3 rounded-lg bg-gray-100">
+          {/* Khu vực (chỉ đọc) */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              <span className="flex items-center">
+                <FaBuilding className="mr-2 text-orange-500" /> Khu Vực
+              </span>
+            </label>
+            <div className="w-full px-4 py-3 rounded-lg border bg-gray-100 text-gray-700">
               {selectedRoom.area_DTO && selectedRoom.area_DTO.length > 0 ? (
-                <ul className="list-disc pl-5">
-                  {selectedRoom.area_DTO.map((area, index) => (
-                    <li key={index} className="py-1">
-                      <span className="font-semibold">Loại:</span>{" "}
-                      {area.areaTypeId} -
-                      <span className="font-semibold"> Tên:</span>{" "}
-                      {area.areaName}
-                    </li>
-                  ))}
-                </ul>
+                selectedRoom.area_DTO.map((area, index) => (
+                  <div key={index} className="py-1">
+                    {area.areaName} - <span className="text-gray-600">Loại: {area.areaTypeId}</span>
+                  </div>
+                ))
               ) : (
                 <span className="text-gray-500">Không có khu vực</span>
               )}
             </div>
           </div>
-
-          {/* Upload ảnh mới */}
-          <div className="mb-4">
-            <label className="block font-semibold mb-1">
-              Cập Nhật Hình Ảnh
+          {/* Hình ảnh */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              <span className="flex items-center">
+                <FaImage className="mr-2 text-orange-500" /> Hình Ảnh
+              </span>
             </label>
             <input
               type="file"
               multiple
               accept="image/*"
               onChange={handleImageChange}
-              className="w-full p-2 border rounded-lg"
+              className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out"
             />
-          </div>
-
-          {/* Hiển thị danh sách ảnh (Chỉ hiện khi có ảnh) */}
-          {formData.images.length > 0 && (
-            <div className="mb-4">
-              <label className="block font-semibold mb-1">
-                {hasImageChange ? "Hình Ảnh Cập Nhật" : "Hình Ảnh Hiện Tại"}
-              </label>
-              <div className="flex flex-wrap gap-2">
+            {formData.images.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
                 {formData.images.map((img, index) => (
-                  <div
-                    key={index}
-                    className="relative w-20 h-20 rounded-lg shadow-md overflow-hidden flex items-center justify-center bg-gray-100"
-                  >
+                  <div key={index} className="relative w-20 h-20">
                     <img
                       src={`/assets/${img}`}
                       alt={`img-${index}`}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-lg border"
                     />
                     <button
                       type="button"
-                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 flex items-center justify-center"
                       onClick={() => removeImage(index)}
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
                     >
                       <X size={16} />
                     </button>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          <div className="flex justify-between">
-            <button
-              type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition cursor-pointer"
-            >
-              Lưu Thay Đổi
-            </button>
-            <button
-              type="button"
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition cursor-pointer"
-              onClick={() => navigate("/dashboard/room")}
-            >
-              Hủy
-            </button>
+            )}
           </div>
+          {/* Nút submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+          >
+            {loading ? (
+              <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            ) : (
+              <>
+                <FaCheck className="mr-2" /> Cập Nhật
+              </>
+            )}
+          </button>
         </form>
-      )}
+      </div>
     </div>
   );
 };

@@ -260,11 +260,6 @@ const BlogListOfStaff = () => {
     );
   };
 
-  const truncateDescription = (text) => {
-    if (typeof text !== "string") return "N/A";
-    return text.length > 20 ? `${text.slice(0, 20)}...` : text;
-  };
-
   const formatTitle = (title) => {
     if (typeof title !== "string") return "Untitled";
     const words = title.split(" ");
@@ -342,7 +337,6 @@ const BlogListOfStaff = () => {
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">#</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Ảnh</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Tiêu đề</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Nội dung</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Người tạo</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Ngày tạo</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
@@ -362,9 +356,6 @@ const BlogListOfStaff = () => {
                         <Link to={`/dashboard/blog/${blog.blogId}`} className="hover:text-orange-400 transition-colors">
                           {formatTitle(blog.blogTitle)}
                         </Link>
-                      </td>
-                      <td className="px-4 py-3 text-center truncate max-w-xs">
-                        {truncateDescription(blog.blogContent)}
                       </td>
                       <td className="px-4 py-3 text-center">{blog.userName}</td>
                       <td className="px-4 py-3 text-center">
@@ -499,10 +490,6 @@ const BlogListOfStaff = () => {
                       <Link to={`/dashboard/blog/${blog.blogId}`} className="text-orange-500 hover:text-orange-600">
                         {formatTitle(blog.blogTitle)}
                       </Link>
-                    </p>
-                    <p className="text-sm text-gray-600 truncate">
-                      <span className="font-medium">Nội dung:</span>{" "}
-                      {truncateDescription(blog.blogContent)}
                     </p>
                     <p className="text-sm text-gray-600 truncate">{blog.userName}</p>
                     <p className="text-sm text-gray-600">

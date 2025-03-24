@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Eye, CheckCircle, XCircle, Search } from "lucide-react";
 import { useTheme } from "../../../hooks/use-theme";
 import { NavLink } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const BookingList = () => {
@@ -208,7 +208,6 @@ const BookingList = () => {
         </button>
       </div>
 
-      <ToastContainer />
     </div>
   );
 };

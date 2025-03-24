@@ -7,7 +7,7 @@ import {
   fetchAccountsByRoleName,
   setRoleFilter,
 } from "../../redux/slices/Account";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaTrashRestore, FaTrashAlt, FaUsers, FaSpinner } from "react-icons/fa";
 import { Filter, Search } from "lucide-react";
@@ -141,7 +141,6 @@ const StorageListAccount = () => {
 
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
       <Tooltip id="action-tooltip" />
       <div className="w-full mx-auto border border-gray-600 rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 ">
         {/* Header Section */}

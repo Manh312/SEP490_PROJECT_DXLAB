@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PencilLine, ToggleLeft, ToggleRight } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAreaTypeById, updateAreaType } from "../../redux/slices/AreaType";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 const AreaTypeDetail = () => {
   const { id } = useParams();
@@ -54,7 +54,6 @@ const AreaTypeDetail = () => {
 
   return (
     <div className="max-w-lg mx-auto mt-10 p-6 rounded-lg shadow-lg">
-      <ToastContainer />
       <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">Chi Tiết Loại Khu Vực</h2>
       <table className="w-full border-collapse border border-gray-300">
         <tbody>

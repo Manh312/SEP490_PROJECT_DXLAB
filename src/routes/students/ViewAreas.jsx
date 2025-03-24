@@ -5,7 +5,7 @@ import { areas } from "../../constants";
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { XIcon, PlusCircleIcon } from 'lucide-react';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 
 const ViewAreas = () => {
   const dispatch = useDispatch();
@@ -113,7 +113,6 @@ const ViewAreas = () => {
 
   return (
     <div className="p-6 min-h-screen">
-      <ToastContainer/>
       <h1 className="text-3xl font-bold text-center mb-6">DXLAB Co-working Space</h1>
       <p className="text-center mb-8">Chọn khu vực phù hợp với nhu cầu làm việc của bạn</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">

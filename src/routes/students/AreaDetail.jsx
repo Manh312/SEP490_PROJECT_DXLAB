@@ -4,7 +4,7 @@ import { setSelectedTime, setPeopleCount, confirmBooking, setSelectedArea } from
 import { listSlots } from '../../redux/slices/Slot'; // Import listSlots từ slotSlice
 import { areas } from '../../constants';
 import { useEffect, useState } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { PlusCircleIcon, XIcon } from 'lucide-react';
 
 const AreaDetail = () => {
@@ -147,7 +147,6 @@ const AreaDetail = () => {
 
   return (
     <div className="p-6 min-h-screen flex flex-col md:flex-row gap-6 mt-15">
-      <ToastContainer/>
       <div className="md:w-1/2 mr-10">
         <h1 className="text-3xl font-bold text-center mb-6">{area.name}</h1>
         <img src={area.image} alt={area.name} className="w-full h-64 object-cover rounded-md mb-6" />

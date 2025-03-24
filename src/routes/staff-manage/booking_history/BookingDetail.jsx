@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useTheme } from "../../../hooks/use-theme";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 const BookingDetail = () => {
   const { id } = useParams(); // Lấy ID booking từ URL
@@ -214,7 +214,6 @@ const BookingDetail = () => {
         theme === "dark" ? "bg-black text-white" : ""
       }`}
     >
-      <ToastContainer />
       <div className="w-full max-w-2xl border p-6 rounded-lg shadow-lg dark:bg-gray-900">
         {/* Header */}
         <h2 className="text-2xl font-bold mb-4 text-center">

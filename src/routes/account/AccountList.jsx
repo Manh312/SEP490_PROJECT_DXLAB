@@ -8,7 +8,7 @@ import {
   softDeleteAccount,
 } from "../../redux/slices/Account";
 import { Link, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { Trash2, Edit, Users, Filter, Search } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaFileExcel, FaSpinner } from "react-icons/fa";
@@ -135,7 +135,6 @@ const AccountList = () => {
 
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
       <Tooltip id="action-tooltip" />
       <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
         {/* Header Section */}
