@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { fetchRooms } from "../../redux/slices/Room";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import {PencilLine, Hotel, Filter, Search } from "lucide-react";
+import {PencilLine, Hotel, Filter, Search, Home } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
 import Pagination from "../../hooks/use-pagination"; // Giả sử bạn có hook này
@@ -105,7 +105,7 @@ const RoomList = () => {
         {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <Hotel className="h-6 w-6 text-blue-500" />
+            <Home className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
               Danh Sách Phòng
             </h2>
@@ -172,6 +172,7 @@ const RoomList = () => {
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hình ảnh</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Phòng</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Sức Chứa</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Trạng Thái</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành Động</th>
                   </tr>
@@ -194,6 +195,9 @@ const RoomList = () => {
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         <Link to={`/dashboard/room/${room.roomId}`} className="">{room.roomName}</Link>
+                      </td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        {room.capacity} người
                       </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span

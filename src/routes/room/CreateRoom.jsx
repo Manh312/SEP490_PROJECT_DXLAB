@@ -2,82 +2,68 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { createRoom } from "../../redux/slices/Room";
-import { X } from "lucide-react"; // Import dấu X
-import { toast } from "react-toastify";
 import { fetchAreaTypes } from "../../redux/slices/AreaType";
+import { X } from "lucide-react";
+import { toast } from "react-toastify";
+import { FaBuilding, FaFileAlt, FaUsers, FaImage, FaCheck, FaMap } from "react-icons/fa";
 
 const CreateRoom = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { loading } = useSelector((state) => state.rooms);
-  const { areaTypes } = useSelector((state) => state.areaTypes); // Lấy danh sách areaTypes từ Redux
+  const { areaTypes } = useSelector((state) => state.areaTypes);
 
   useEffect(() => {
-    dispatch(fetchAreaTypes()); // Fetch danh sách areaTypes khi component mount
+    dispatch(fetchAreaTypes());
   }, [dispatch]);
 
   const [roomData, setRoomData] = useState({
     roomName: "",
     roomDescription: "",
-    capacity: "", // Giữ rỗng, nếu không nhập sẽ set thành 1
+    capacity: "",
     isDeleted: false,
     images: [],
-    area_DTO: [], // Danh sách khu vực
+    area_DTO: [{ areaTypeId: "", areaName: "" }],
   });
 
   const [errors, setErrors] = useState({});
 
-  // Kiểm tra tất cả các trường đã nhập chưa
   const validate = () => {
     let newErrors = {};
-    if (!roomData.roomName.trim())
-      newErrors.roomName = "Tên phòng không được để trống!";
-    if (!roomData.roomDescription.trim())
-      newErrors.roomDescription = "Mô tả phòng không được để trống!";
-    if (!roomData.capacity || roomData.capacity < 1)
-      newErrors.capacity = "Sức chứa phải lớn hơn 0!";
-    if (roomData.images.length === 0)
-      newErrors.images = "Vui lòng chọn ít nhất một hình ảnh!";
-    // if (roomData.area_DTO.length === 0)
-    //   newErrors.area_DTO = "Vui lòng chọn ít nhất một khu vực!";
+    if (!roomData.roomName.trim()) newErrors.roomName = "Tên phòng không được để trống!";
+    if (!roomData.roomDescription.trim()) newErrors.roomDescription = "Mô tả phòng không được để trống!";
+    if (!roomData.capacity || roomData.capacity < 1) newErrors.capacity = "Sức chứa phải lớn hơn 0!";
+    if (roomData.images.length === 0) newErrors.images = "Vui lòng chọn ít nhất một hình ảnh!";
+    if (roomData.area_DTO.some(area => !area.areaTypeId || !area.areaName.trim()))
+      newErrors.area_DTO = "Vui lòng điền đầy đủ thông tin cho tất cả khu vực!";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Xử lý thay đổi input text
   const handleChange = (e) => {
     const { name, value } = e.target;
     setRoomData({ ...roomData, [name]: value });
   };
 
-  // Xử lý thay đổi input số (capacity), nếu không nhập set mặc định là 1
   const handleNumberChange = (e) => {
     const value = e.target.value.trim();
-    setRoomData({ ...roomData, capacity: value === "" ? 1 : parseInt(value) });
+    setRoomData({ ...roomData, capacity: value === "" ? "" : parseInt(value) });
   };
 
-  // Xử lý chọn nhiều ảnh từ file input
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     const fileNames = files.map((file) => file.name);
-
-    // Lọc những ảnh chưa có trong danh sách
-    const newImages = fileNames.filter(
-      (name) => !roomData.images.includes(name)
-    );
-
+    const newImages = fileNames.filter((name) => !roomData.images.includes(name));
     if (newImages.length === 0) {
       toast.error("Ảnh đã tồn tại, vui lòng chọn ảnh khác!");
       return;
     }
-
     setRoomData((prevData) => ({
       ...prevData,
-      images: [...prevData.images, ...newImages], // Chỉ thêm ảnh mới
+      images: [...prevData.images, ...newImages],
     }));
   };
 
-  // Xóa ảnh khỏi danh sách
   const handleRemoveImage = (index) => {
     setRoomData((prevData) => ({
       ...prevData,
@@ -85,7 +71,6 @@ const CreateRoom = () => {
     }));
   };
 
-  // Thêm khu vực mới
   const addArea = () => {
     setRoomData((prevData) => ({
       ...prevData,
@@ -93,7 +78,6 @@ const CreateRoom = () => {
     }));
   };
 
-  // Cập nhật areaTypeId khi chọn dropdown
   const handleAreaTypeChange = (index, areaTypeId) => {
     setRoomData((prevData) => {
       const updatedAreaDTO = [...prevData.area_DTO];
@@ -102,7 +86,6 @@ const CreateRoom = () => {
     });
   };
 
-  // Cập nhật areaName khi nhập
   const handleAreaNameChange = (index, areaName) => {
     setRoomData((prevData) => {
       const updatedAreaDTO = [...prevData.area_DTO];
@@ -114,194 +97,197 @@ const CreateRoom = () => {
   const handleRemoveArea = (index) => {
     setRoomData((prevData) => {
       if (prevData.area_DTO.length === 1) {
-        toast.error("Phải có ít nhất một khu vực.");
+        toast.error("Phải có ít nhất một khu vực!");
         return prevData;
       }
-
       const updatedAreaDTO = prevData.area_DTO.filter((_, i) => i !== index);
       return { ...prevData, area_DTO: updatedAreaDTO };
     });
   };
 
-  // Xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     try {
       const res = await dispatch(createRoom(roomData)).unwrap();
-      console.log(res);
+      toast.success("Tạo phòng thành công!");
       navigate("/dashboard/room", { state: { successMessage: res.message } });
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "Lỗi khi tạo phòng!");
     }
   };
 
-  console.log(roomData.area_DTO.length);
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">
-        Thêm Phòng Mới
-      </h2>
-      <form onSubmit={handleSubmit}>
-        {/* Tên phòng */}
-        <div className="mb-4">
-          <label className="block font-medium mb-2">Tên Phòng</label>
-          <input
-            type="text"
-            name="roomName"
-            value={roomData.roomName}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            required
-          />
-          {errors.roomName && (
-            <p className="text-red-500 text-sm">{errors.roomName}</p>
-          )}
+    <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-4xl rounded-xl border shadow-2xl p-8 transition-all duration-300 hover:shadow-3xl">
+        <div>
+          <h2 className="text-3xl font-bold text-center text-orange-500">Thêm Phòng Mới</h2>
+          <p className="mt-2 text-sm text-center text-gray-600">Tạo mới một phòng cho hệ thống</p>
         </div>
-
-        {/* Mô tả phòng */}
-        <div className="mb-4">
-          <label className="block font-medium mb-2">Mô Tả Phòng</label>
-          <textarea
-            name="roomDescription"
-            value={roomData.roomDescription}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            required
-          />
-          {errors.roomDescription && (
-            <p className="text-red-500 text-sm">{errors.roomDescription}</p>
-          )}
-        </div>
-
-        {/* Số lượng người tối đa (Capacity) */}
-        <div className="mb-4">
-          <label className="block font-medium mb-2">Sức chứa (Capacity)</label>
-          <input
-            type="number"
-            name="capacity"
-            value={roomData.capacity}
-            onChange={handleNumberChange}
-            min="1"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          {errors.capacity && (
-            <p className="text-red-500 text-sm">{errors.capacity}</p>
-          )}
-        </div>
-
-        {/* Chọn areaType */}
-        <div className="mb-4">
-          <label className="block font-medium mb-2">Khu vực</label>
-          <div className="flex flex-col gap-2">
-            {roomData.area_DTO.map((area, index) => (
-              <div key={index} className="flex flex-wrap gap-2 items-center">
-                {/* Dropdown chọn loại khu vực */}
-                <select
-                  value={area.areaTypeId}
-                  onChange={(e) => handleAreaTypeChange(index, e.target.value)}
-                  className="border px-2 py-1 rounded w-full md:w-1/2"
-                >
-                  <option value="">-- Chọn loại --</option>
-                  {areaTypes.map((type) => (
-                    <option key={type.areaTypeId} value={type.areaTypeId}>
-                      {type.areaTypeName} (Size: {type.size})
-                    </option>
-                  ))}
-                </select>
-
-                {/* Input nhập tên khu vực */}
+        <form onSubmit={handleSubmit} className="mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Cột bên trái */}
+            <div className="space-y-6">
+              <div className="flex flex-col space-y-1">
+                <label className="text-sm font-medium flex items-center">
+                  <FaBuilding className="mr-2 text-orange-500" /> Tên Phòng
+                </label>
                 <input
                   type="text"
-                  placeholder="Tên khu vực"
-                  value={area.areaName}
-                  onChange={(e) => handleAreaNameChange(index, e.target.value)}
-                  className="border px-2 py-1 rounded w-full md:w-1/2"
+                  name="roomName"
+                  value={roomData.roomName}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 h-12 transition duration-150 ease-in-out"
+                  required
                 />
-
-                {/* Nút X để xóa khu vực */}
-                <button
-                  type="button"
-                  onClick={() => handleRemoveArea(index)}
-                  className="bg-red-500 text-white px-2 py-1 rounded flex items-center"
-                >
-                  <X size={16} />
-                </button>
+                {errors.roomName && <p className="text-red-500 text-sm">{errors.roomName}</p>}
               </div>
-            ))}
+              <div className="flex flex-col space-y-1">
+                <label className="text-sm font-medium flex items-center">
+                  <FaUsers className="mr-2 text-orange-500" /> Sức Chứa
+                </label>
+                <input
+                  type="number"
+                  name="capacity"
+                  value={roomData.capacity}
+                  min={1}
+                  onChange={handleNumberChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 h-12 transition duration-150 ease-in-out"
+                  required
+                />
+                {errors.capacity && <p className="text-red-500 text-sm">{errors.capacity}</p>}
+              </div>
+              <div className="flex flex-col space-y-1">
+                <label className="text-sm font-medium flex items-center">
+                  <FaMap className="mr-2 text-orange-500" /> Khu Vực
+                </label>
+                <div className="space-y-2">
+                  {roomData.area_DTO.map((area, index) => (
+                    <div key={index} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                      <select
+                        value={area.areaTypeId}
+                        onChange={(e) => handleAreaTypeChange(index, e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 h-12 transition duration-150 ease-in-out"
+                      >
+                        <option value="">-- Chọn loại --</option>
+                        {areaTypes.map((type) => (
+                          <option key={type.areaTypeId} value={type.areaTypeId}>
+                            {type.areaTypeName} (Size: {type.size})
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="text"
+                        placeholder="Tên khu vực"
+                        value={area.areaName}
+                        onChange={(e) => handleAreaNameChange(index, e.target.value)}
+                        className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 h-12 transition duration-150 ease-in-out"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveArea(index)}
+                        className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition duration-150 ease-in-out self-start sm:self-center"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addArea}
+                    className="w-full py-2 px-4 border border-orange-500 rounded-lg text-sm font-medium text-orange-500 hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out"
+                  >
+                    + Thêm khu vực
+                  </button>
+                </div>
+                {errors.area_DTO && <p className="text-red-500 text-sm">{errors.area_DTO}</p>}
+              </div>
+            </div>
+
+            {/* Cột bên phải */}
+            <div className="space-y-6">
+              <div className="flex flex-col space-y-1">
+                <label className="text-sm font-medium flex items-center">
+                  <FaFileAlt className="mr-2 text-orange-500" /> Mô Tả
+                </label>
+                <textarea
+                  name="roomDescription"
+                  value={roomData.roomDescription}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 min-h-[50px] transition duration-150 ease-in-out"
+                  required
+                />
+                {errors.roomDescription && <p className="text-red-500 text-sm">{errors.roomDescription}</p>}
+              </div>
+              <div className="flex flex-col space-y-1">
+                <label className="text-sm font-medium flex items-center">
+                  <FaImage className="mr-2 text-orange-500" /> Hình Ảnh
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 h-12 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 transition duration-150 ease-in-out"
+                  required
+                />
+                {errors.images && <p className="text-red-500 text-sm">{errors.images}</p>}
+                {roomData.images.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {roomData.images.map((img, index) => (
+                      <div key={index} className="relative w-20 h-20">
+                        <img
+                          src={`/assets/${img}`}
+                          alt={`room-img-${index}`}
+                          className="w-full h-full object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition duration-150 ease-in-out"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Nút thêm khu vực */}
-          <button
-            type="button"
-            onClick={addArea}
-            className="mt-2 bg-blue-500 text-white px-4 py-2 rounded w-full md:w-auto"
-          >
-            + Thêm khu vực
-          </button>
-          {errors.area_DTO && (
-            <p className="text-red-500 text-sm">{errors.area_DTO}</p>
-          )}
-        </div>
-
-        {/* Chọn nhiều hình ảnh */}
-        <div className="mb-4">
-          <label className="block font-medium mb-2">Hình Ảnh</label>
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          {errors.images && (
-            <p className="text-red-500 text-sm">{errors.images}</p>
-          )}
-
-          {/* Hiển thị ảnh đã chọn */}
-          <div className="flex flex-wrap gap-2 mt-2">
-            {roomData.images.map((img, index) => (
-              <div key={index} className="relative">
-                <img
-                  src={`/assets/${img}`}
-                  alt={`room-img-${index}`}
-                  className="w-20 h-20 object-cover rounded-md shadow-md"
-                />
-                <button
-                  type="button"
-                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 flex items-center justify-center"
-                  onClick={() => handleRemoveImage(index)}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            ))}
+          <div className="mt-8 flex justify-between gap-4">
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard/room")}
+              className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+            >
+              {loading ? (
+                <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              ) : (
+                <>
+                  <FaCheck className="mr-2" /> Thêm Phòng
+                </>
+              )}
+            </button>
           </div>
-        </div>
-
-        {/* {error && <p className="text-red-500">{error}</p>} */}
-
-        {/* Nút hành động */}
-        <div className="flex justify-between">
-          <button
-            type="button"
-            className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition"
-            onClick={() => navigate("/dashboard/room")}
-          >
-            Hủy
-          </button>
-          <button
-            type="submit"
-            className={`bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            disabled={loading}
-          >
-            {loading ? "Đang tạo..." : "Thêm Phòng"}
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 };

@@ -95,7 +95,6 @@ const UpdateRoom = () => {
 
     try {
       const res = await dispatch(updateRoom({ roomId: id, updates })).unwrap();
-      toast.success("Cập nhật thành công!");
       navigate("/dashboard/room", { state: { successMessage: res.message } });
     } catch (error) {
       const errorMessage = error.message || "Unknown error";

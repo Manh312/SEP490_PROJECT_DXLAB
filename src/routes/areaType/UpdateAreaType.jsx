@@ -1,50 +1,44 @@
-import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useParams, useNavigate } from "react-router-dom";
 import { fetchAreaTypeById, updateAreaType } from "../../redux/slices/AreaType";
-import { X } from "lucide-react";
 import { toast } from "react-toastify";
+import { FaBuilding, FaFileAlt, FaUsers, FaImage, FaCheck, FaTag } from "react-icons/fa";
+import { X } from "lucide-react";
 
 const UpdateAreaType = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Lấy dữ liệu từ Redux
   const { selectedAreaType, loading } = useSelector((state) => state.areaTypes);
-
-  useEffect(() => {
-    dispatch(fetchAreaTypeById(id));
-  }, [dispatch]);
 
   const [formData, setFormData] = useState({
     areaTypeName: "",
     areaDescription: "",
     price: "",
-    images: [],
-    areaCategory: 1,
+    areaCategory: "",
     size: "",
     isDeleted: false,
+    images: [],
   });
 
   const [hasImageChange, setHasImageChange] = useState(false);
 
-  // Cập nhật form khi Redux có dữ liệu
+  useEffect(() => {
+    dispatch(fetchAreaTypeById(id));
+  }, [dispatch, id]);
+
   useEffect(() => {
     if (selectedAreaType) {
       setFormData({
         areaTypeName: selectedAreaType.areaTypeName || "",
         areaDescription: selectedAreaType.areaDescription || "",
-        price:
-          selectedAreaType.price !== undefined
-            ? String(selectedAreaType.price)
-            : "",
-        images: Array.isArray(selectedAreaType.images)
-          ? selectedAreaType.images
-          : [],
-        areaCategory: selectedAreaType.areaCategory || 1, // Chỉ hiển thị
-        size: selectedAreaType.size || "", // Chỉ hiển thị
-        isDeleted: selectedAreaType.isDeleted,
+        price: selectedAreaType.price !== undefined ? String(selectedAreaType.price) : "",
+        areaCategory: selectedAreaType.areaCategory || 1,
+        size: selectedAreaType.size || "",
+        isDeleted: selectedAreaType.isDeleted || false,
+        images: Array.isArray(selectedAreaType.images) ? selectedAreaType.images : [],
       });
     }
   }, [selectedAreaType]);
@@ -53,20 +47,11 @@ const UpdateAreaType = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Xử lý toggle trạng thái `isDeleted`
-  const handleToggleDelete = () => {
-    setFormData((prev) => ({ ...prev, isDeleted: !prev.isDeleted }));
-  };
-
-  // Xử lý thêm ảnh mới (Chỉ lấy tên file & kiểm tra trùng lặp)
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     const fileNames = files.map((file) => file.name);
 
-    // Kiểm tra trùng lặp
-    const duplicateFiles = fileNames.filter((name) =>
-      formData.images.includes(name)
-    );
+    const duplicateFiles = fileNames.filter((name) => formData.images.includes(name));
     if (duplicateFiles.length > 0) {
       toast.error(`Ảnh sau đã tồn tại: ${duplicateFiles.join(", ")}`);
       return;
@@ -76,7 +61,6 @@ const UpdateAreaType = () => {
     setHasImageChange(true);
   };
 
-  // Xóa ảnh khỏi danh sách
   const removeImage = (index) => {
     const newImages = formData.images.filter((_, i) => i !== index);
     setFormData({ ...formData, images: newImages });
@@ -86,32 +70,24 @@ const UpdateAreaType = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Mảng cập nhật JSON Patch
     const updates = [];
-
     if (formData.areaTypeName !== selectedAreaType.areaTypeName) {
-      updates.push({
-        operationType: 0,
-        path: "areaTypeName",
-        op: "replace",
-        value: formData.areaTypeName,
-      });
+      updates.push({ operationType: 0, path: "areaTypeName", op: "replace", value: formData.areaTypeName });
     }
     if (formData.areaDescription !== selectedAreaType.areaDescription) {
-      updates.push({
-        operationType: 0,
-        path: "areaDescription",
-        op: "replace",
-        value: formData.areaDescription,
-      });
+      updates.push({ operationType: 0, path: "areaDescription", op: "replace", value: formData.areaDescription });
     }
     if (formData.price !== String(selectedAreaType.price)) {
-      updates.push({
-        operationType: 0,
-        path: "price",
-        op: "replace",
-        value: String(formData.price), // ✅ Chuyển về string trước khi gửi
-      });
+      updates.push({ operationType: 0, path: "price", op: "replace", value: formData.price });
+    }
+    if (formData.areaCategory !== selectedAreaType.areaCategory) {
+      updates.push({ operationType: 0, path: "areaCategory", op: "replace", value: Number(formData.areaCategory) });
+    }
+    if (formData.size !== selectedAreaType.size) {
+      updates.push({ operationType: 0, path: "size", op: "replace", value: formData.size });
+    }
+    if (formData.isDeleted !== selectedAreaType.isDeleted) {
+      updates.push({ operationType: 0, path: "isDeleted", op: "replace", value: formData.isDeleted });
     }
     if (hasImageChange) {
       updates.push({
@@ -122,184 +98,202 @@ const UpdateAreaType = () => {
       });
     }
 
-    if (formData.isDeleted !== selectedAreaType.isDeleted) {
-      updates.push({
-        operationType: 0,
-        path: "isDeleted",
-        op: "replace",
-        value: formData.isDeleted, // ✅ Cập nhật trạng thái
-      });
-    }
-
     if (updates.length === 0) {
       toast.info("Không có thay đổi nào cần cập nhật!");
       return;
     }
 
     try {
-      const res = await dispatch(
-        updateAreaType({ areaTypeId: id, updatedData: updates })
-      ).unwrap();
-      navigate("/dashboard/areaType", {
-        state: { successMessage: res.message },
-      });
+      const res = await dispatch(updateAreaType({ areaTypeId: id, updatedData: updates })).unwrap();
+      toast.success("Cập nhật thành công!");
+      navigate("/dashboard/areaType", { state: { successMessage: res.message } });
     } catch (error) {
-      toast.error(error.message);
+      const errorMessage = error.message || "Unknown error";
+      toast.error(`Lỗi khi cập nhật loại khu vực: ${errorMessage}`);
+      console.error("Update error:", error);
     }
   };
 
+  if (loading || !selectedAreaType) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <p className="text-gray-600 text-lg animate-pulse">Đang tải dữ liệu...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-lg mx-auto mt-10 p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold text-center mb-4 text-blue-600">
-        Chỉnh Sửa Loại Khu Vực {id}
-      </h2>
-
-      {loading ? (
-        <p className="text-center text-orange-500">Đang tải dữ liệu...</p>
-      ) : !selectedAreaType ? (
-        <p className="text-red-500 text-center">
-          Không tìm thấy loại khu vực có ID {id}!
-        </p>
-      ) : (
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block font-semibold mb-1">Tên Loại Khu Vực</label>
-            <input
-              type="text"
-              name="areaTypeName"
-              value={formData.areaTypeName}
-              onChange={handleChange}
-              className="w-full p-2 border rounded-lg"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block font-semibold mb-1">Mô Tả</label>
-            <textarea
-              name="areaDescription"
-              value={formData.areaDescription}
-              onChange={handleChange}
-              className="w-full p-2 border rounded-lg"
-              required
-            />
-          </div>
-
-          {/* Các trường chỉ hiển thị */}
-          <div className="mb-4">
-            <label className="block font-semibold mb-1">Danh Mục</label>
-            <input
-              type="text"
-              value={
-                formData.areaCategory === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"
-              }
-              className="w-full p-2 border rounded-lg bg-gray-100"
-              readOnly
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block font-semibold mb-1">Số Ghế</label>
-            <input
-              type="text"
-              value={formData.size}
-              className="w-full p-2 border rounded-lg bg-gray-100"
-              readOnly
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block font-semibold mb-1">Giá</label>
-            <div className="relative w-full">
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                className="w-full p-2 pr-12 border rounded-lg" // 🟢 Thêm padding phải để không bị chữ VND che
-                required
-              />
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600">
-                VND
-              </span>
-            </div>
-          </div>
-
-          {/* Checkbox cập nhật trạng thái */}
-          <div className="mb-4 flex items-center">
-            <input
-              type="checkbox"
-              id="isDeleted"
-              checked={formData.isDeleted}
-              onChange={handleToggleDelete}
-              className="w-4 h-4 text-red-500 focus:ring-red-400"
-            />
-            <label htmlFor="isDeleted" className="ml-2 font-medium">
-              Đánh dấu đã xóa
-            </label>
-          </div>
-
-          {/* Upload ảnh mới */}
-          <div className="mb-4">
-            <label className="block font-semibold mb-1">
-              Cập Nhật Hình Ảnh
-            </label>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleImageChange}
-              className="w-full p-2 border rounded-lg"
-            />
-          </div>
-
-          {/* Hiển thị danh sách ảnh */}
-          {formData.images.length > 0 && (
-            <div className="mb-4">
-              <label className="block font-semibold mb-1">
-                {hasImageChange ? "Hình Ảnh Cập Nhật" : "Hình Ảnh Hiện Tại"}
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {formData.images.map((img, index) => (
-                  <div
-                    key={index}
-                    className="relative w-20 h-20 rounded-lg shadow-md overflow-hidden flex items-center justify-center bg-gray-100"
-                  >
-                    <img
-                      src={`/assets/${img}`}
-                      alt={`img-${index}`}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      type="button"
-                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-                      onClick={() => removeImage(index)}
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                ))}
+    <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-4xl rounded-xl border shadow-2xl p-8 transition-all duration-300 hover:shadow-3xl">
+        <div>
+          <h2 className="text-3xl font-bold text-center">Cập Nhật Loại Khu Vực</h2>
+          <p className="mt-2 text-sm text-center">Chỉnh sửa thông tin loại khu vực #{id}</p>
+        </div>
+        <form onSubmit={handleSubmit} className="mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Cột bên trái */}
+            <div className="space-y-6">
+              {/* Tên loại khu vực */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaBuilding className="mr-2 text-orange-500" /> Tên Loại Khu Vực
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  name="areaTypeName"
+                  value={formData.areaTypeName}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out"
+                  required
+                />
+              </div>
+              {/* Số ghế */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaUsers className="mr-2 text-orange-500" /> Số Ghế
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  name="size"
+                  value={formData.size}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out"
+                />
+              </div>
+              {/* Giá */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaTag className="mr-2 text-orange-500" /> Giá
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out"
+                />
+              </div>
+              {/* Trạng thái */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaTag className="mr-2 text-orange-500" /> Trạng Thái
+                  </span>
+                </label>
+                <select
+                  name="isDeleted"
+                  value={String(formData.isDeleted)}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 duration-150 ease-in-out"
+                >
+                  <option value="false">Hoạt động</option>
+                  <option value="true">Xóa</option>
+                </select>
               </div>
             </div>
-          )}
 
-          <div className="flex justify-between">
+            {/* Cột bên phải */}
+            <div className="space-y-6">
+              {/* Mô tả */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaFileAlt className="mr-2 text-orange-500" /> Mô Tả
+                  </span>
+                </label>
+                <textarea
+                  name="areaDescription"
+                  value={formData.areaDescription}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-24"
+                />
+              </div>
+              {/* Danh mục */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaTag className="mr-2 text-orange-500" /> Danh Mục
+                  </span>
+                </label>
+                <select
+                  name="areaCategory"
+                  value={String(formData.areaCategory)}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 duration-150 ease-in-out"
+                >
+                  <option value="1">Khu vực cá nhân</option>
+                  <option value="2">Khu vực nhóm</option>
+                </select>
+              </div>
+              {/* Hình ảnh */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaImage className="mr-2 text-orange-500" /> Hình Ảnh
+                  </span>
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out"
+                />
+                {formData.images.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {formData.images.map((img, index) => (
+                      <div key={index} className="relative w-20 h-20">
+                        <img
+                          src={`/assets/${img}`}
+                          alt={`img-${index}`}
+                          className="w-full h-full object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Nút submit */}
+          <div className="mt-8">
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+              disabled={loading}
+              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 disabled:cursor-not-allowed transition duration-150 ease-in-out"
             >
-              Lưu Thay Đổi
-            </button>
-            <button
-              type="button"
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition"
-              onClick={() => navigate("/dashboard/areaType")}
-            >
-              Hủy
+              {loading ? (
+                <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              ) : (
+                <>
+                  <FaCheck className="mr-2" /> Cập Nhật
+                </>
+              )}
             </button>
           </div>
         </form>
-      )}
+      </div>
     </div>
   );
 };
