@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { createRoom } from "../../redux/slices/Room";
@@ -12,6 +12,8 @@ const CreateRoom = () => {
   const dispatch = useDispatch();
   const { loading } = useSelector((state) => state.rooms);
   const { areaTypes } = useSelector((state) => state.areaTypes);
+
+  const textareaRef = useRef(null);
 
   useEffect(() => {
     dispatch(fetchAreaTypes());
@@ -27,6 +29,17 @@ const CreateRoom = () => {
   });
 
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      if (!roomData.roomDescription.trim()) {
+        textareaRef.current.style.height = "50px";
+      } else {
+        textareaRef.current.style.height = "50px";
+        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      }
+    }
+  }, [roomData.roomDescription]);
 
   const validate = () => {
     let newErrors = {};
@@ -212,6 +225,7 @@ const CreateRoom = () => {
                   <FaFileAlt className="mr-2 text-orange-500" /> Mô Tả
                 </label>
                 <textarea
+                  ref={textareaRef}
                   name="roomDescription"
                   value={roomData.roomDescription}
                   onChange={handleChange}
@@ -229,7 +243,7 @@ const CreateRoom = () => {
                   multiple
                   accept="image/*"
                   onChange={handleImageUpload}
-                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 h-12 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 transition duration-150 ease-in-out"
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
                   required
                 />
                 {errors.images && <p className="text-red-500 text-sm">{errors.images}</p>}
