@@ -68,7 +68,7 @@ const AreaTypeList = () => {
   );
 
   useEffect(() => {
-    dispatch(fetchAreaTypes());
+    dispatch(fetchAreaTypes("0"));
   }, [dispatch]);
 
   // Xử lý xóa loại khu vực
@@ -226,7 +226,7 @@ const AreaTypeList = () => {
                         )}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {type.price ? `${type.price} VNĐ` : "N/A"}
+                        {`${type.price} VNĐ`}
                       </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span

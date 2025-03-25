@@ -74,7 +74,7 @@ const RoomDetail = () => {
                   area_DTO.map((area, index) => (
                     <div key={index} className="py-1">
                       <span>Tên khu vực: </span>{area.areaName} 
-                      <p className="text-gray-600">Loại: {area.areaTypeId}</p>
+                      <p className="text-gray-600">Loại: {area.areaTypeName}</p>
                     </div>
                   ))
                 ) : (
