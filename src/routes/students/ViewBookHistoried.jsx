@@ -45,7 +45,7 @@ const ViewBookingHistory = () => {
     : filteredTransactions;
 
   return (
-    <div className="p-4 mt-10 mb-20">
+    <div className="p-4 mt-10 mb-20 max-w-7xl mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">Lịch sử giao dịch</h2>
 
       {/* Khu vực bộ lọc */}

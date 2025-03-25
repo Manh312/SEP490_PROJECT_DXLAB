@@ -21,7 +21,6 @@ const CreateAreaType = () => {
     images: [],
   });
 
-  const [errors, setErrors] = useState({});
   const textareaRef = useRef(null);
 
   useEffect(() => {
@@ -34,17 +33,6 @@ const CreateAreaType = () => {
       }
     }
   }, [areaTypeData.areaDescription]);
-
-  const validate = () => {
-    let newErrors = {};
-    if (!areaTypeData.areaTypeName.trim()) newErrors.areaTypeName = "Tên loại khu vực không được để trống!";
-    if (!areaTypeData.areaDescription.trim()) newErrors.areaDescription = "Mô tả không được để trống!";
-    if (!areaTypeData.size || areaTypenewErrors.size <= 0) newErrors.size = "Số ghế phải lớn hơn 0!";
-    if (!areaTypeData.price || areaTypeData.price < 0) newErrors.price = "Giá phải lớn hơn hoặc bằng 0!";
-    if (areaTypeData.images.length === 0) newErrors.images = "Vui lòng chọn ít nhất một hình ảnh!";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -85,12 +73,11 @@ const CreateAreaType = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
 
     try {
-      const res = await dispatch(createAreaType(areaTypeData)).unwrap();
+      await dispatch(createAreaType(areaTypeData)).unwrap();
       toast.success("Tạo loại khu vực thành công!");
-      navigate("/dashboard/areaType", { state: { successMessage: res.message } });
+      navigate("/dashboard/areaType");
     } catch (error) {
       toast.error(error.message || "Lỗi khi tạo loại khu vực!");
     }
@@ -121,7 +108,6 @@ const CreateAreaType = () => {
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
                   required
                 />
-                {errors.areaTypeName && <p className="text-red-500 text-sm mt-1">{errors.areaTypeName}</p>}
               </div>
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
@@ -138,7 +124,6 @@ const CreateAreaType = () => {
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
                   required
                 />
-                {errors.size && <p className="text-red-500 text-sm mt-1">{errors.size}</p>}
               </div>
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
@@ -159,7 +144,6 @@ const CreateAreaType = () => {
                   />
                   <span className="absolute right-3 text-gray-600">VND</span>
                 </div>
-                {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
               </div>
             </div>
 
@@ -179,7 +163,6 @@ const CreateAreaType = () => {
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out min-h-[50px]"
                   required
                 />
-                {errors.areaDescription && <p className="text-red-500 text-sm mt-1">{errors.areaDescription}</p>}
               </div>
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
@@ -211,7 +194,6 @@ const CreateAreaType = () => {
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
                   required
                 />
-                {errors.images && <p className="text-red-500 text-sm mt-1">{errors.images}</p>}
                 {areaTypeData.images.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {areaTypeData.images.map((file, index) => (

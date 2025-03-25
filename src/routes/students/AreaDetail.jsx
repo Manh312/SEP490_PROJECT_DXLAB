@@ -146,7 +146,7 @@ const AreaDetail = () => {
   if (!area) return <p className="text-center mt-10 text-red-500">Không tìm thấy khu vực.</p>;
 
   return (
-    <div className="p-6 min-h-screen flex flex-col md:flex-row gap-6 mt-15">
+    <div className="p-6 min-h-screen flex flex-col md:flex-row gap-6 mt-15 max-w-7xl mx-auto">
       <div className="md:w-1/2 mr-10">
         <h1 className="text-3xl font-bold text-center mb-6">{area.name}</h1>
         <img src={area.image} alt={area.name} className="w-full h-64 object-cover rounded-md mb-6" />

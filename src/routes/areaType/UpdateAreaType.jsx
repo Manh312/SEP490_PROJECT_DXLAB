@@ -104,9 +104,9 @@ const UpdateAreaType = () => {
     }
 
     try {
-      const res = await dispatch(updateAreaType({ areaTypeId: id, updatedData: updates })).unwrap();
+      await dispatch(updateAreaType({ areaTypeId: id, updatedData: updates })).unwrap();
       toast.success("Cập nhật thành công!");
-      navigate("/dashboard/areaType", { state: { successMessage: res.message } });
+      navigate("/dashboard/areaType");
     } catch (error) {
       const errorMessage = error.message || "Unknown error";
       toast.error(`Lỗi khi cập nhật loại khu vực: ${errorMessage}`);

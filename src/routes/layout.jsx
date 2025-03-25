@@ -48,7 +48,7 @@ const Layout = () => {
   return (
     <div>
       <Navbar className={isDashboard || isManage ? "w-[200px]" : "w-full"} />
-      <div className={`w-full ${isDashboard || isManage ? "" : "max-w-7xl"} mx-auto`}>
+      <div className={`w-full ${isDashboard || isManage ? "" : ""} mx-auto`}>
 
         <div className="flex w-full">
           {(isDashboard || isManage) && address && (

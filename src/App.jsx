@@ -65,10 +65,13 @@ export function HomeContent() {
   return (
     <>
       <Banner />
+      <div className="max-w-7xl mx-auto">
       <HeroSection />
-      <Services />
+      <Services /> 
       <FeatureSection />
       <Pricing />
+      </div>
+      
     </>
   );
 }
