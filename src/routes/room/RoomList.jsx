@@ -154,8 +154,8 @@ const RoomList = () => {
         {/* Loading or Empty State */}
         {loading ? (
           <div className="flex items-center justify-center py-6">
-            <FaSpinner className="animate-spin text-blue-500 w-6 h-6 mr-2" />
-            <p className="text-blue-500 font-medium">Đang tải dữ liệu...</p>
+            <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+            <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
           </div>
         ) : filteredRooms.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">

@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { openModal, closeModal, setSelectedTime, setPeopleCount, confirmBooking } from '../../redux/slices/Booking';
 import { listSlots } from '../../redux/slices/Slot'; 
-import { fetchRooms } from '../../redux/slices/Room'; // Fetch rooms
+import { fetchRooms } from '../../redux/slices/Room';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { XIcon, PlusCircleIcon } from 'lucide-react';
@@ -13,19 +13,17 @@ const ViewAreas = () => {
 
   const { isModalOpen, selectedArea, selectedTime } = useSelector((state) => state.booking);
   const { slots, loading: slotsLoading, error: slotsError } = useSelector((state) => state.slots); 
-  const { rooms, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms); // Fetch rooms from Redux
+  const { rooms, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms);
 
   const [tempPeopleCount, setTempPeopleCount] = useState(1);
   const [step, setStep] = useState('selectPeople');
   const [bookingDates, setBookingDates] = useState([{ date: '', slots: [] }]);
 
-  // Fetch rooms and slots on mount
   useEffect(() => {
-    dispatch(fetchRooms());
     dispatch(listSlots());
+    dispatch(fetchRooms());
   }, [dispatch]);
 
-  // Sync bookingDates with selectedTime
   useEffect(() => {
     if (Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
       setBookingDates(selectedTime);
@@ -128,25 +126,24 @@ const ViewAreas = () => {
           <p>Không có khu vực nào để hiển thị</p>
         ) : (
           rooms.map((room) => (
-            // Only display rooms with a valid area_DTO and areaTypeId
-            room.area_DTO && room.area_DTO.areaTypeId && (
+            // Only display rooms with a non-empty area_DTO array
+            room.area_DTO && room.area_DTO.length > 0 && (
               <div key={room.roomId} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
                 <img 
                   src={room.images && room.images.length > 0 ? room.images[0] : 'default-image.jpg'} 
                   alt={room.roomName} 
                   className="w-full h-48 object-cover rounded-md mb-4" 
                 />
-                <h2 className="text-2xl font-semibold mb-2">{room.roomName}</h2>
-                <p>{room.roomDesc?.slice(0, 100) || 'No description available'}...</p>
+                <h2 className="text-2xl font-semibold mb-2">{room.area_DTO[0].areaName}</h2>
                 <div>
                   <button
                     className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
                     onClick={() => {
                       dispatch(openModal({ 
-                        ...rooms, 
+                        ...room, 
                         name: room.roomName, // Map roomName to name for consistency
-                        description: room.roomDescription, // Map roomDesc to description
-                        type: room.area_DTO.areaTypeId === 1 ? 'group' : 'individual' // Map areaTypeId to type
+                        description: room.roomDesc, // Map roomDesc to description
+                        type: room.area_DTO[0].areaTypeId === 2 ? `${room.area_DTO[0].areaTypeName}` : 'group' 
                       }));
                       setTempPeopleCount(1);
                       setStep('selectPeople');

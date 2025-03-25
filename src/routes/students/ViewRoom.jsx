@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { fetchRooms } from "../../redux/slices/Room";
+import { AreaChartIcon, MapPin } from "lucide-react";
+import { FaSpinner } from "react-icons/fa";
 
 const ViewRoom = () => {
   const dispatch = useDispatch();
@@ -20,39 +22,43 @@ const ViewRoom = () => {
         </span>
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl">
-        {loading ? (
-          <p>Đang tải slots...</p>
-        ) : error ? (
-          <p className="text-red-500">Lỗi: {error}</p>
-        ) : rooms.length === 0 ? (
-          <p>Không có phòng nào để hiển thị</p>
-        ) : (
-          rooms.map((room) => (
-            <div
-              key={room.id}
-              className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105"
-            >
-              <img
-                src={room.images}
-                alt={''}
-                className="w-full h-56 object-cover transition-transform duration-300 hover:scale-110"
-              />
-              <div className="p-6 text-left">
-                <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-                  {room.roomName}
-                </h3>
-                <p className="text-gray-600 text-sm">{room.roomDescription}</p>
-                <Link to={`/room/${room.roomId}`}>
-                  <button className="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-lg font-semibold transition duration-300">
-                    Xem chi tiết
-                  </button>
-                </Link>
-              </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-6">
+          <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+          <p className="text-orange-500 font-medium">Đang tải danh sách phòng...</p>
+        </div>
+      ) : error ? (
+        <p className="text-red-500">Lỗi: {error}</p>
+      ) : rooms.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <AreaChartIcon className="h-12 w-12 text-gray-400 mb-4" />
+          <p className="text-gray-500 text-lg">Không tìm thấy phòng tồn tại trên DXLAB</p>
+        </div>
+      ) : (
+        rooms.map((room) => (
+          <div
+            key={room.roomId}
+            className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105"
+          >
+            <img
+              src={room.images}
+              alt={''}
+              className="w-full h-56 object-cover transition-transform duration-300 hover:scale-110"
+            />
+            <div className="p-6 text-left">
+              <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+                {room.roomName}
+              </h3>
+              <p className="text-gray-600 text-sm">{room.roomDescription}</p>
+              <Link to={`/room/${room.roomId}`}>
+                <button className="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-lg font-semibold transition duration-300">
+                  Xem chi tiết
+                </button>
+              </Link>
             </div>
-          ))
-        )}
-      </div>
+          </div>
+        ))
+      )}
     </div>
   );
 };
