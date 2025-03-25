@@ -16,6 +16,9 @@ const SlotList = () => {
     dispatch(listSlots());
   }, [dispatch]);
 
+  console.log("Slots data:", JSON.stringify(slots, null, 2));
+  console.log("Error:", error);
+
   const handleAddSlot = () => {
     navigate("/dashboard/slot/create");
   };
@@ -23,7 +26,6 @@ const SlotList = () => {
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
       <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
-        {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <Clock10Icon className="h-6 w-6 text-orange-500" />
@@ -41,7 +43,6 @@ const SlotList = () => {
           </div>
         </div>
 
-        {/* Loading or Error State */}
         {loading ? (
           <div className="flex items-center justify-center py-6">
             <p className="text-orange-500 font-medium">Đang tải danh sách slot...</p>
@@ -66,7 +67,10 @@ const SlotList = () => {
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
-                      Tên Slot
+                      Slot ID
+                    </th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
+                      Số Slot
                     </th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
                       Giờ Bắt Đầu
@@ -79,14 +83,15 @@ const SlotList = () => {
                 <tbody>
                   {slots.map((slot, index) => (
                     <tr
-                      key={slot.id}
+                      key={slot.slotId}
                       className={`border-b hover:bg-gray-400 transition-colors ${
                         theme === "dark" ? "hover:bg-gray-300" : ""
                       }`}
                     >
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{index + 1}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{slot.slotId}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {slot.slot_name || `Slot ${index + 1}`}
+                        {slot.slotNumber ? `Slot ${slot.slotNumber}` : "N/A"}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{slot.startTime}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{slot.endTime}</td>
@@ -100,7 +105,7 @@ const SlotList = () => {
             <div className="block md:hidden space-y-4">
               {slots.map((slot, index) => (
                 <div
-                  key={slot.id}
+                  key={slot.slotId}
                   className={`border rounded-lg p-3 sm:p-4 shadow-sm hover:bg-gray-500 transition-colors ${
                     theme === "dark" ? "hover:bg-gray-300" : ""
                   }`}
@@ -110,8 +115,11 @@ const SlotList = () => {
                       <span className="font-semibold text-sm">#{index + 1}</span>
                     </div>
                     <p className="text-sm">
-                      <span className="font-medium">Tên Slot:</span>{" "}
-                      {slot.slot_name || `Slot ${index + 1}`}
+                      <span className="font-medium">Slot ID:</span> {slot.slotId}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Số Slot:</span>{" "}
+                      {slot.slotNumber ? `Slot ${slot.slotNumber}` : "N/A"}
                     </p>
                     <p className="text-sm">
                       <span className="font-medium">Giờ Bắt Đầu:</span> {slot.startTime}

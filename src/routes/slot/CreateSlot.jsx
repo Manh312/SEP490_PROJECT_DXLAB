@@ -11,6 +11,7 @@ const CreateSlot = () => {
   const { loading } = useSelector((state) => state.slots);
 
   const [slot, setSlot] = useState({
+    timeSlot: "", // Thêm trường timeSlot
     start_time: "",
     end_time: "",
     break_time: "",
@@ -29,13 +30,14 @@ const CreateSlot = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!slot.start_time || !slot.end_time) {
-      toast.error("Vui lòng nhập đầy đủ giờ bắt đầu và kết thúc.");
+    if (!slot.start_time || !slot.end_time || !slot.timeSlot) {
+      toast.error("Vui lòng nhập đầy đủ time slot, giờ bắt đầu và kết thúc.");
       return;
     }
 
     const formattedSlot = {
-      StartTime: slot.start_time, // Đã có dạng "HH:mm:ss"
+      TimeSlot: slot.timeSlot, // Thêm TimeSlot vào payload
+      StartTime: slot.start_time,
       EndTime: slot.end_time,
       BreakTime: parseInt(slot.break_time, 10) || 10,
     };
@@ -62,6 +64,8 @@ const CreateSlot = () => {
       {loading && <p>Đang tạo slot...</p>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        
+
         {/* Start Time */}
         <div>
           <label className="block font-medium">Giờ Bắt Đầu</label>
@@ -84,6 +88,18 @@ const CreateSlot = () => {
             value={slot.end_time}
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded-lg hover:bg-gray-400"
+            required
+          />
+        </div>
+        {/* Time Slot */}
+        <div>
+          <label className="block font-medium">Time Slot</label>
+          <input
+            type="text" // Có thể đổi thành "number" nếu timeSlot là số
+            name="timeSlot"
+            value={slot.timeSlot}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border rounded-lg"
             required
           />
         </div>
