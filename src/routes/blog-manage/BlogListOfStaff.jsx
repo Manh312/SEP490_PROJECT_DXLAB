@@ -39,7 +39,16 @@ const BlogListOfStaff = () => {
   useEffect(() => {
     dispatch(fetchAdminPendingBlogs());
     dispatch(fetchAdminApprovedBlogs());
+    console.log("Initial fetch - Pending Blogs:", pendingBlogs);
+    console.log("Initial fetch - Approved Blogs:", approvedBlogs);
   }, [dispatch]);
+
+  const handleRefresh = () => {
+    dispatch(fetchAdminPendingBlogs());
+    dispatch(fetchAdminApprovedBlogs());
+    console.log("After refresh - Pending Blogs:", pendingBlogs);
+    console.log("After refresh - Approved Blogs:", approvedBlogs);
+  };
 
   const mapStatusToString = (status) => {
     switch (status) {
@@ -98,7 +107,7 @@ const BlogListOfStaff = () => {
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
-        dispatch(fetchBlogsByStatus("2")), // Cập nhật danh sách "Đã xuất bản"
+        dispatch(fetchBlogsByStatus("2")),
       ]);
     } catch (err) {
       toast.error(err.message || "Phê duyệt thất bại!");
@@ -119,7 +128,7 @@ const BlogListOfStaff = () => {
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
-        dispatch(fetchBlogsByStatus("0")), // Cập nhật danh sách "Bị hủy"
+        dispatch(fetchBlogsByStatus("0")),
       ]);
     } catch (err) {
       toast.error(err.message || "Hủy thất bại!");
@@ -137,13 +146,12 @@ const BlogListOfStaff = () => {
     try {
       const response = await dispatch(deleteAdminBlog(blogIdToDelete)).unwrap();
       toast.success(response.message || "Bài blog đã được xóa!");
-      // Cập nhật lại tất cả danh sách blog của staff sau khi xóa
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
-        dispatch(fetchBlogsByStatus("0")), // Bị hủy
-        dispatch(fetchBlogsByStatus("1")), // Đang chờ
-        dispatch(fetchBlogsByStatus("2")), // Đã xuất bản
+        dispatch(fetchBlogsByStatus("0")),
+        dispatch(fetchBlogsByStatus("1")),
+        dispatch(fetchBlogsByStatus("2")),
       ]);
     } catch (err) {
       toast.error(err.message || "Xóa thất bại!");
@@ -277,6 +285,8 @@ const BlogListOfStaff = () => {
     return title;
   };
 
+  console.log("Filtered Blogs:", filteredBlogs); // Debug filteredBlogs
+
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-6 xl:px-8 mb-10">
       <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
@@ -284,6 +294,14 @@ const BlogListOfStaff = () => {
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <PlusCircle className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Danh Sách Blog (Admin)</h2>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-blue-600 transition"
+              onClick={handleRefresh}
+            >
+              Làm mới
+            </button>
           </div>
         </div>
 
@@ -573,4 +591,4 @@ const BlogListOfStaff = () => {
   );
 };
 
-export default BlogListOfStaff; 
+export default BlogListOfStaff;
