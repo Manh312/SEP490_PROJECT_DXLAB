@@ -93,7 +93,7 @@ const router = createBrowserRouter([
 
       { path: "rooms", element: <ProtectedRoute allowedRoles={["Student"]}><ViewRoom /></ProtectedRoute> },
       { path: "room/:id", element: <ProtectedRoute allowedRoles={["Student"]}><ViewAreas /></ProtectedRoute> },
-      { path: "area/:typeName", element: <ProtectedRoute allowedRoles={["Student"]}><AreaDetail /></ProtectedRoute> },
+      { path: "area/:id", element: <ProtectedRoute allowedRoles={["Student"]}><AreaDetail /></ProtectedRoute> },
       { path: "confirm-payment", element: <ProtectedRoute allowedRoles={["Student"]}><Payment /></ProtectedRoute> },
       { path: "booked-seats", element: <ProtectedRoute allowedRoles={["Student"]}><ViewBookedSeats /></ProtectedRoute> },
       { path: "booked-history", element: <ProtectedRoute allowedRoles={["Student"]}><ViewBookingHistory /></ProtectedRoute> },

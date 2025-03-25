@@ -1,14 +1,20 @@
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { createBooking, confirmBooking } from '../../redux/slices/Booking';
+import { useEffect } from 'react';
 
 const Payment = () => {
-  const { selectedArea, selectedTime, peopleCount } = useSelector((state) => state.booking);
-  const { slots, loading, error } = useSelector((state) => state.slots);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { selectedArea, selectedTime, peopleCount, bookingLoading, bookingError, bookingSuccess } = useSelector((state) => state.booking);
+  const { slots, loading: slotsLoading, error: slotsError } = useSelector((state) => state.slots);
 
   console.log('Selected Time in Payment:', selectedTime);
   console.log('Slots in Payment:', slots);
 
+  // Calculate total price
   const calculateTotalPrice = () => {
     let total = 0;
     if (!Array.isArray(selectedTime)) return total;
@@ -16,9 +22,9 @@ const Payment = () => {
     selectedTime.forEach((booking) => {
       if (Array.isArray(booking.slots)) {
         booking.slots.forEach((slotId) => {
-          const slot = slots.find((s) => s.slotId === slotId); // Sử dụng slotId thay vì id
+          const slot = slots.find((s) => s.slotId === slotId);
           if (slot) {
-            const price = slot.price || 10; // Giả định giá mặc định nếu không có price
+            const price = slot.price || 10;
             total += price * (selectedArea?.type === 'group' ? peopleCount : 1);
           }
         });
@@ -27,33 +33,70 @@ const Payment = () => {
     return total;
   };
 
-  // Hàm format ngày
+  // Format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
-    }); // Định dạng: DD/MM/YYYY
+    });
   };
 
-  // Hàm lấy tên slot từ slotId
+  // Get slot names from slotIds
   const getSlotNames = (slotIds) => {
     if (!Array.isArray(slotIds) || slotIds.length === 0) return 'Chưa chọn';
     return slotIds
       .map((slotId) => {
-        const slot = slots.find((s) => s.slotId === slotId); // Sử dụng slotId
+        const slot = slots.find((s) => s.slotId === slotId);
         return slot ? slot.name || `Slot ${slot.slotId}` : slotId;
       })
       .join(', ');
   };
 
-  if (loading) {
-    return <div className="p-6 text-center">Đang tải dữ liệu slots...</div>;
+  // Handle payment confirmation
+  const handleConfirmPayment = () => {
+    if (!selectedArea || !selectedArea.roomId || !selectedArea.areaTypeId) {
+      toast.error('Thông tin khu vực không hợp lệ!');
+      return;
+    }
+
+    if (!Array.isArray(selectedTime) || selectedTime.length === 0) {
+      toast.error('Vui lòng chọn thời gian và slot trước khi thanh toán!');
+      return;
+    }
+
+    const bookingData = {
+      roomId: selectedArea.roomId,
+      areaTypeId: selectedArea.areaTypeId,
+      bookingDates: selectedTime.map((booking) => ({
+        slotId: booking.slots, // Array of slotIds
+        date: booking.date,
+      })),
+    };
+
+    // Dispatch the createBooking thunk
+    dispatch(createBooking(bookingData));
+  };
+
+  // Handle API response
+  useEffect(() => {
+    if (bookingSuccess) {
+      toast.success('Thanh toán thành công!');
+      dispatch(confirmBooking()); // Reset booking state
+      navigate('/booked-seats');
+    }
+    if (bookingError) {
+      toast.error(`Lỗi: ${bookingError}`);
+    }
+  }, [bookingSuccess, bookingError, navigate, dispatch]);
+
+  if (slotsLoading) {
+    return <div className="p-6 text-center">Đang tải dữ liệu thông tin đặt...</div>;
   }
 
-  if (error) {
-    return <div className="p-6 text-center text-red-500">Lỗi: {error}</div>;
+  if (slotsError) {
+    return <div className="p-6 text-center text-red-500">Lỗi: {slotsError}</div>;
   }
 
   return (
@@ -94,13 +137,13 @@ const Payment = () => {
           </p>
         </div>
         <div className="flex flex-col gap-4 mt-6">
-          <Link
-            to={'/booked-seats'}
+          <button
+            onClick={handleConfirmPayment}
             className="w-full px-6 py-3 text-center bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-            onClick={() => toast.success('Thanh toán thành công')}
+            disabled={bookingLoading}
           >
-            Xác nhận Thanh Toán
-          </Link>
+            {bookingLoading ? 'Đang xử lý...' : 'Xác nhận Thanh Toán'}
+          </button>
           <Link
             to={'/rooms/'}
             className="w-full px-6 py-3 text-center bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"

@@ -30,6 +30,28 @@ const ViewAreas = () => {
     }
   }, [selectedTime, bookingDates]);
 
+  // Group rooms by areaTypeId to get unique areas
+  const uniqueAreas = rooms.reduce((acc, room) => {
+    if (room.area_DTO && room.area_DTO.length > 0) {
+      room.area_DTO.forEach((area) => {
+        const areaTypeId = area.areaTypeId;
+        if (!acc[areaTypeId]) {
+          acc[areaTypeId] = {
+            areaTypeId: area.areaTypeId,
+            areaTypeName: area.areaTypeName,
+            // Use the first room's image and description as a representative for this area type
+            image: room.images && room.images.length > 0 ? room.images[0] : 'default-image.jpg',
+            description: room.roomDescription || 'No description available',
+          };
+        }
+      });
+    }
+    return acc;
+  }, {});
+
+  // Convert the grouped areas object into an array for mapping
+  const areasArray = Object.values(uniqueAreas);
+
   const handleSlotChange = (bookingIndex, slotId) => {
     const slot = slots.find((s) => s.slotId === slotId);
     if (!slot) return;
@@ -122,42 +144,40 @@ const ViewAreas = () => {
           <p>Đang tải khu vực...</p>
         ) : roomsError ? (
           <p className="text-red-500">Lỗi: {roomsError}</p>
-        ) : rooms.length === 0 ? (
+        ) : areasArray.length === 0 ? (
           <p>Không có khu vực nào để hiển thị</p>
         ) : (
-          rooms.map((room) => (
-            // Only display rooms with a non-empty area_DTO array
-            room.area_DTO && room.area_DTO.length > 0 && (
-              <div key={room.roomId} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
-                <img 
-                  src={room.images && room.images.length > 0 ? room.images[0] : 'default-image.jpg'} 
-                  alt={room.roomName} 
-                  className="w-full h-48 object-cover rounded-md mb-4" 
-                />
-                <h2 className="text-2xl font-semibold mb-2">{room.area_DTO[0].areaName}</h2>
-                <div>
-                  <button
-                    className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-                    onClick={() => {
-                      dispatch(openModal({ 
-                        ...room, 
-                        name: room.roomName, // Map roomName to name for consistency
-                        description: room.roomDesc, // Map roomDesc to description
-                        type: room.area_DTO[0].areaTypeId === 2 ? `${room.area_DTO[0].areaTypeName}` : 'group' 
-                      }));
-                      setTempPeopleCount(1);
-                      setStep('selectPeople');
-                      setBookingDates([{ date: '', slots: [] }]);
-                    }}
-                  >
-                    Chọn
-                  </button>{" "}
-                  <Link to={`/area/${room.roomId}`} className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition">
-                    Chi tiết
-                  </Link>
-                </div>
+          areasArray.map((area) => (
+            <div key={area.areaTypeId} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
+              <img 
+                src={area.image} 
+                alt={area.areaTypeName} 
+                className="w-full h-48 object-cover rounded-md mb-4" 
+              />
+              <h2 className="text-2xl font-semibold mb-2">{area.areaTypeName}</h2>
+              <p>{area.description.slice(0, 100)}...</p>
+              <div>
+                <button
+                  className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+                  onClick={() => {
+                    dispatch(openModal({ 
+                      ...area, 
+                      name: area.areaTypeName, // Use areaTypeName as the name
+                      description: area.description,
+                      type: area.areaTypeId === 1 ? 'group' : 'individual' // Map areaTypeId to type
+                    }));
+                    setTempPeopleCount(1);
+                    setStep('selectPeople');
+                    setBookingDates([{ date: '', slots: [] }]);
+                  }}
+                >
+                  Chọn
+                </button>{" "}
+                <Link to={`/area/${area.areaTypeId}`} className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition">
+                  Chi tiết
+                </Link>
               </div>
-            )
+            </div>
           ))
         )}
       </div>

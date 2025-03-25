@@ -1,27 +1,29 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedTime, setPeopleCount, confirmBooking, setSelectedArea } from '../../redux/slices/Booking';
-import { listSlots } from '../../redux/slices/Slot'; // Import listSlots từ slotSlice
-import { areas } from '../../constants';
+import { listSlots } from '../../redux/slices/Slot';
+import { fetchRooms } from '../../redux/slices/Room'; // Import fetchRooms to get room data
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { PlusCircleIcon, XIcon } from 'lucide-react';
 
 const AreaDetail = () => {
-  const { typeName } = useParams();
+  const { id } = useParams(); // This will be the areaTypeId (e.g., "1" or "2")
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // Lấy dữ liệu từ Redux store
   const { selectedTime, peopleCount, selectedArea: area } = useSelector((state) => state.booking);
-  const { slots, loading, error } = useSelector((state) => state.slots); // Truy cập từ slotSlice
+  const { slots, loading: slotsLoading, error: slotsError } = useSelector((state) => state.slots);
+  const { rooms, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms);
 
   // State cục bộ
   const [bookingDates, setBookingDates] = useState([{ date: '', slots: [] }]);
 
-  // Lấy danh sách slots khi component mount
+  // Lấy danh sách slots và rooms khi component mount
   useEffect(() => {
     dispatch(listSlots());
+    dispatch(fetchRooms());
   }, [dispatch]);
 
   // Đồng bộ bookingDates với selectedTime
@@ -35,9 +37,28 @@ const AreaDetail = () => {
     }
   }, [selectedTime, bookingDates]);
 
-  // Cập nhật selectedArea dựa trên typeName
+  // Tìm area dựa trên typeName (areaTypeId) từ rooms
   useEffect(() => {
-    const foundArea = areas.find((area) => area.type === typeName);
+    if (rooms.length === 0) return; // Chờ rooms được tải
+
+    // Tìm area dựa trên areaTypeId
+    let foundArea = null;
+    for (const room of rooms) {
+      if (room.area_DTO && room.area_DTO.length > 0) {
+        const matchingArea = room.area_DTO.find((area) => area.areaTypeId.toString() === id);
+        if (matchingArea) {
+          foundArea = {
+            areaTypeId: matchingArea.areaTypeId,
+            name: matchingArea.areaTypeName, // Use areaTypeName as the display name
+            description: room.roomDescription || 'No description available',
+            image: room.images && room.images.length > 0 ? room.images[0] : 'default-image.jpg',
+            type: matchingArea.areaTypeId === 1 ? 'group' : 'individual', // Map areaTypeId to type
+          };
+          break;
+        }
+      }
+    }
+
     if (foundArea) {
       dispatch(setSelectedArea(foundArea));
       if (foundArea.type === 'group' && peopleCount < 1) {
@@ -46,7 +67,7 @@ const AreaDetail = () => {
     } else {
       toast.error('Khu vực không tồn tại!');
     }
-  }, [typeName, dispatch, peopleCount]);
+  }, [id, rooms, dispatch, peopleCount]);
 
   const addBookingDate = () => {
     const newBooking = { date: '', slots: [] };
@@ -73,12 +94,10 @@ const AreaDetail = () => {
   };
 
   const handleSlotChange = (index, slotId) => {
-    const slot = slots.find((s) => s.slotId === slotId); // Sử dụng slotId thay vì id
+    const slot = slots.find((s) => s.slotId === slotId);
     if (!slot) return;
 
-    // Kiểm tra slot có khả dụng không (tùy thuộc vào dữ liệu từ API)
-    // Giả sử API trả về isAvailable và remainingSeats
-    if (slot.isAvailable === false || (area.type === 'group' && slot.remainingSeats <= peopleCount)) {
+    if (slot.isAvailable === false || (area?.type === 'group' && slot.remainingSeats <= peopleCount)) {
       toast.error(`Slot ${slot.name || slot.slotId} không khả dụng!`);
       return;
     }
@@ -128,9 +147,9 @@ const AreaDetail = () => {
     bookingDates.forEach((booking) => {
       if (Array.isArray(booking.slots)) {
         booking.slots.forEach((slotId) => {
-          const slot = slots.find((s) => s.slotId === slotId); 
+          const slot = slots.find((s) => s.slotId === slotId);
           if (slot) {
-            const price = slot.price || 10; 
+            const price = slot.price || 10;
             total += price * (area?.type === 'group' ? peopleCount : 1);
           }
         });
@@ -143,6 +162,8 @@ const AreaDetail = () => {
     return slot.isAvailable === false || (area?.type === 'group' && slot.remainingSeats <= peopleCount);
   };
 
+  if (roomsLoading) return <p className="text-center mt-10">Đang tải khu vực...</p>;
+  if (roomsError) return <p className="text-center mt-10 text-red-500">Lỗi: {roomsError}</p>;
   if (!area) return <p className="text-center mt-10 text-red-500">Không tìm thấy khu vực.</p>;
 
   return (
@@ -173,10 +194,10 @@ const AreaDetail = () => {
           </div>
         )}
         <div className="max-h-96 overflow-y-auto">
-          {loading ? (
+          {slotsLoading ? (
             <p>Đang tải slots...</p>
-          ) : error ? (
-            <p className="text-red-500">Lỗi: {error}</p>
+          ) : slotsError ? (
+            <p className="text-red-500">Lỗi: {slotsError}</p>
           ) : (
             bookingDates.map((booking, index) => (
               <div key={index} className="mb-4">
