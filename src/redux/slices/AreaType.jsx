@@ -3,12 +3,16 @@ import axiosInstance from "../../utils/axios";
 
 const API_URL = "/AreaType";
 
-// Fetch danh sách loại khu vực
+// Fetch danh sách loại khu vực với filter tùy chọn
 export const fetchAreaTypes = createAsyncThunk(
   "areaTypes/fetchAreaTypes",
-  async (_, { rejectWithValue }) => {
+  async (fil = "", {rejectWithValue}) => {
     try {
-      const response = await axiosInstance.get(API_URL);
+      console.log(fil);
+      // Nếu filterString rỗng thì gọi API lấy tất cả, ngược lại thêm query param
+      const response = await axiosInstance.get(
+        fil ? `${API_URL}?fil=${fil}` : API_URL
+      );
       return response.data.data; // Lấy danh sách từ API response
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi khi lấy dữ liệu");

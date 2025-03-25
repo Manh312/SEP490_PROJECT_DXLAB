@@ -1,8 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useMemo, useState } from "react";
 import { fetchRooms } from "../../redux/slices/Room";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { Link, useNavigate } from "react-router-dom";
 import {PencilLine, Hotel, Filter, Search, Home } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
@@ -65,14 +64,6 @@ const RoomList = () => {
   useEffect(() => {
     dispatch(fetchRooms());
   }, [dispatch]);
-
-  const location = useLocation();
-  useEffect(() => {
-    if (location.state?.successMessage) {
-      toast.success(location.state.successMessage);
-      window.history.replaceState({}, document.title);
-    }
-  }, [location]);
 
   const getEmptyStateMessage = () => {
     if (statusFilter === "All") {
