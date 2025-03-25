@@ -16,7 +16,7 @@ const CreateRoom = () => {
   const textareaRef = useRef(null);
 
   useEffect(() => {
-    dispatch(fetchAreaTypes());
+    dispatch(fetchAreaTypes("1"));
   }, [dispatch]);
 
   const [roomData, setRoomData] = useState({
@@ -186,7 +186,7 @@ const CreateRoom = () => {
                         <option value="">-- Chọn loại --</option>
                         {areaTypes.map((type) => (
                           <option key={type.areaTypeId} value={type.areaTypeId}>
-                            {type.areaTypeName} (Size: {type.size})
+                            {type.areaTypeName} (Size: {type.size}, Loại: {type.areaCategory === 1 ? "Cá nhân":"Nhóm"})
                           </option>
                         ))}
                       </select>

@@ -199,7 +199,7 @@ const UpdateRoom = () => {
                   {selectedRoom.area_DTO && selectedRoom.area_DTO.length > 0 ? (
                     selectedRoom.area_DTO.map((area, index) => (
                       <span key={index} className="truncate">
-                        {area.areaName} - <span className="text-gray-600">Loại: {area.areaTypeId}</span>
+                        {area.areaName} - <span className="text-gray-600">Loại: {area.areaTypeName}</span>
                         {index < selectedRoom.area_DTO.length - 1 && ", "}
                       </span>
                     ))
