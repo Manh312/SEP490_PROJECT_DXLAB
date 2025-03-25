@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { openModal, closeModal, setSelectedTime, setPeopleCount, confirmBooking } from '../../redux/slices/Booking';
 import { listSlots } from '../../redux/slices/Slot'; 
-import { areas } from "../../constants";
+import { fetchRooms } from '../../redux/slices/Room'; // Fetch rooms
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { XIcon, PlusCircleIcon } from 'lucide-react';
@@ -12,16 +12,20 @@ const ViewAreas = () => {
   const navigate = useNavigate();
 
   const { isModalOpen, selectedArea, selectedTime } = useSelector((state) => state.booking);
-  const { slots, loading, error } = useSelector((state) => state.slots); 
+  const { slots, loading: slotsLoading, error: slotsError } = useSelector((state) => state.slots); 
+  const { rooms, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms); // Fetch rooms from Redux
 
   const [tempPeopleCount, setTempPeopleCount] = useState(1);
   const [step, setStep] = useState('selectPeople');
   const [bookingDates, setBookingDates] = useState([{ date: '', slots: [] }]);
 
+  // Fetch rooms and slots on mount
   useEffect(() => {
+    dispatch(fetchRooms());
     dispatch(listSlots());
   }, [dispatch]);
 
+  // Sync bookingDates with selectedTime
   useEffect(() => {
     if (Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
       setBookingDates(selectedTime);
@@ -116,29 +120,49 @@ const ViewAreas = () => {
       <h1 className="text-3xl font-bold text-center mb-6">DXLAB Co-working Space</h1>
       <p className="text-center mb-8">Chọn khu vực phù hợp với nhu cầu làm việc của bạn</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-        {areas.map((area) => (
-          <div key={area.id} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
-            <img src={area.image} alt={area.name} className="w-full h-48 object-cover rounded-md mb-4" />
-            <h2 className="text-2xl font-semibold mb-2">{area.name}</h2>
-            <p>{area.description?.slice(0, 100) || 'No description available'}...</p>
-            <div>
-              <button
-                className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-                onClick={() => {
-                  dispatch(openModal(area));
-                  setTempPeopleCount(1);
-                  setStep('selectPeople');
-                  setBookingDates([{ date: '', slots: [] }]);
-                }}
-              >
-                Chọn
-              </button>{" "}
-              <Link to={`/area/${area.type}`} className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition">
-                Chi tiết
-              </Link>
-            </div>
-          </div>
-        ))}
+        {roomsLoading ? (
+          <p>Đang tải khu vực...</p>
+        ) : roomsError ? (
+          <p className="text-red-500">Lỗi: {roomsError}</p>
+        ) : rooms.length === 0 ? (
+          <p>Không có khu vực nào để hiển thị</p>
+        ) : (
+          rooms.map((room) => (
+            // Only display rooms with a valid area_DTO and areaTypeId
+            room.area_DTO && room.area_DTO.areaTypeId && (
+              <div key={room.roomId} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                <img 
+                  src={room.images && room.images.length > 0 ? room.images[0] : 'default-image.jpg'} 
+                  alt={room.roomName} 
+                  className="w-full h-48 object-cover rounded-md mb-4" 
+                />
+                <h2 className="text-2xl font-semibold mb-2">{room.roomName}</h2>
+                <p>{room.roomDesc?.slice(0, 100) || 'No description available'}...</p>
+                <div>
+                  <button
+                    className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+                    onClick={() => {
+                      dispatch(openModal({ 
+                        ...rooms, 
+                        name: room.roomName, // Map roomName to name for consistency
+                        description: room.roomDescription, // Map roomDesc to description
+                        type: room.area_DTO.areaTypeId === 1 ? 'group' : 'individual' // Map areaTypeId to type
+                      }));
+                      setTempPeopleCount(1);
+                      setStep('selectPeople');
+                      setBookingDates([{ date: '', slots: [] }]);
+                    }}
+                  >
+                    Chọn
+                  </button>{" "}
+                  <Link to={`/area/${room.roomId}`} className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition">
+                    Chi tiết
+                  </Link>
+                </div>
+              </div>
+            )
+          ))
+        )}
       </div>
 
       {isModalOpen && (
@@ -183,10 +207,10 @@ const ViewAreas = () => {
                   </p>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
-                  {loading ? (
+                  {slotsLoading ? (
                     <p>Đang tải slots...</p>
-                  ) : error ? (
-                    <p className="text-red-500">Lỗi: {error}</p>
+                  ) : slotsError ? (
+                    <p className="text-red-500">Lỗi: {slotsError}</p>
                   ) : (
                     bookingDates.map((booking, index) => (
                       <div key={index} className="mb-4">
@@ -214,7 +238,7 @@ const ViewAreas = () => {
                                   checked={Array.isArray(booking.slots) && booking.slots.includes(slot.slotId)}
                                   onChange={() => handleSlotChange(index, slot.slotId)}
                                 />
-                                {slot.name || `Slot ${slot.slotId}`} {/* Hiển thị tên slot nếu có */}
+                                {slot.name || `Slot ${slot.slotId}`}
                               </label>
                             ))
                           ) : (
