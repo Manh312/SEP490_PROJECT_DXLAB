@@ -368,7 +368,7 @@ const BlogListOfStaff = () => {
                       </td>
                       <td className="px-4 py-3 text-center space-x-2">
                         {blog.status === "Đang chờ" && (
-                          <div className="flex items-center space-x-2">
+                          <div className="flex justify-center items-center space-x-2">
                             <button
                               onClick={() => handleApprove(blog.blogId)}
                               className="bg-green-100 text-green-700 hover:bg-green-200 p-2 rounded-lg transition-colors"
@@ -436,7 +436,7 @@ const BlogListOfStaff = () => {
                       </td>
                       <td className="px-3 py-2 text-center space-x-1">
                         {blog.status === "Đang chờ" && (
-                          <>
+                          <div className="flex items-center justify-center space-x-1">
                             <button
                               onClick={() => handleApprove(blog.blogId)}
                               className="bg-green-100 text-green-700 hover:bg-green-200 p-1 rounded-lg transition-colors"
@@ -453,7 +453,7 @@ const BlogListOfStaff = () => {
                             >
                               <XCircle className="w-3 h-3" />
                             </button>
-                          </>
+                          </div>
                         )}
                         {blog.status === "Đã duyệt" && (
                           <button

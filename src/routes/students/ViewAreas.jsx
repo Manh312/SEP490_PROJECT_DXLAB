@@ -151,10 +151,10 @@ const ViewAreas = () => {
             <div key={area.areaTypeId} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
               <img 
                 src={area.image} 
-                alt={area.areaTypeName} 
+                alt={''} 
                 className="w-full h-48 object-cover rounded-md mb-4" 
               />
-              <h2 className="text-2xl font-semibold mb-2">{area.areaTypeName}</h2>
+              <h2 className="text-2xl font-semibold mb-2">{area.areaTypeName} ({area.areaName})</h2>
               <p>{area.description.slice(0, 100)}...</p>
               <div>
                 <button

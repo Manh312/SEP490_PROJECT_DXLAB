@@ -5,6 +5,7 @@ import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBlogsByStatus, setStatusFilter } from "../../../redux/slices/Blog";
 import Pagination from "../../../hooks/use-pagination";
+import { FaSpinner } from "react-icons/fa";
 
 const BlogList = () => {
   const dispatch = useDispatch();
@@ -218,7 +219,7 @@ const BlogList = () => {
         {/* Loading State */}
         {loading ? (
           <div className="flex items-center justify-center py-6">
-            <span className="animate-spin text-orange-500 w-6 h-6 mr-2">⏳</span>
+            <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2"/>
             <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
           </div>
         ) : filteredBlogs.length === 0 ? (

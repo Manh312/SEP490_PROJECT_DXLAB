@@ -1,18 +1,30 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { createBooking, confirmBooking } from '../../redux/slices/Booking';
+import { createBooking, confirmBooking, resetBookingStatus } from '../../redux/slices/Booking';
 import { useEffect } from 'react';
 
 const Payment = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { selectedArea, selectedTime, peopleCount, bookingLoading, bookingError, bookingSuccess } = useSelector((state) => state.booking);
+  const { selectedArea, selectedTime, peopleCount, bookingLoading } = useSelector((state) => state.booking);
   const { slots, loading: slotsLoading, error: slotsError } = useSelector((state) => state.slots);
+  const { rooms, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms);
 
   console.log('Selected Time in Payment:', selectedTime);
   console.log('Slots in Payment:', slots);
+  console.log('Rooms in Payment:', rooms);
+
+  // Reset booking status when the component mounts
+  useEffect(() => {
+    dispatch(resetBookingStatus());
+  }, [dispatch]);
+
+  // Find the room based on the roomId in selectedArea
+  const selectedRoom = selectedArea?.roomId
+    ? rooms.find((room) => room.roomId === selectedArea.roomId)
+    : null;
 
   // Calculate total price
   const calculateTotalPrice = () => {
@@ -33,7 +45,7 @@ const Payment = () => {
     return total;
   };
 
-  // Format date
+  // Format date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', {
@@ -55,8 +67,14 @@ const Payment = () => {
   };
 
   // Handle payment confirmation
-  const handleConfirmPayment = () => {
-    if (!selectedArea || !selectedArea.roomId || !selectedArea.areaTypeId) {
+  const handleConfirmPayment = async () => {
+    // Validate selectedRoom and selectedArea
+    if (!selectedRoom || !selectedRoom.roomId) {
+      toast.error('Thông tin phòng không hợp lệ!');
+      return;
+    }
+
+    if (!selectedArea || !selectedArea.areaTypeId) {
       toast.error('Thông tin khu vực không hợp lệ!');
       return;
     }
@@ -66,33 +84,33 @@ const Payment = () => {
       return;
     }
 
+    // Construct the request body for the API
     const bookingData = {
-      roomId: selectedArea.roomId,
+      roomID: selectedRoom.roomId, // Use selectedRoom.roomId from rooms
       areaTypeId: selectedArea.areaTypeId,
-      bookingDates: selectedTime.map((booking) => ({
-        slotId: booking.slots, // Array of slotIds
-        date: booking.date,
+      bookingTimes: selectedTime.map((booking) => ({
+        bookingDate: new Date(booking.date).toISOString(), // Convert YYYY-MM-DD to ISO timestamp
+        slotId: Array.isArray(booking.slots) ? booking.slots : [], // Ensure slotId is an array
       })),
     };
 
-    // Dispatch the createBooking thunk
-    dispatch(createBooking(bookingData));
+    try {
+      // Dispatch the createBooking thunk and wait for the response
+      await dispatch(createBooking(bookingData)).unwrap();
+      toast.success('Thanh toán thành công!');
+      dispatch(confirmBooking([])); // Reset booking state
+      navigate('/booked-seats');
+    } catch (error) {
+      toast.error(`Lỗi: ${error}`);
+    }
   };
 
-  // Handle API response
-  useEffect(() => {
-    if (bookingSuccess) {
-      toast.success('Thanh toán thành công!');
-      dispatch(confirmBooking()); // Reset booking state
-      navigate('/booked-seats');
-    }
-    if (bookingError) {
-      toast.error(`Lỗi: ${bookingError}`);
-    }
-  }, [bookingSuccess, bookingError, navigate, dispatch]);
+  if (roomsLoading || slotsLoading) {
+    return <div className="p-6 text-center">Đang tải dữ liệu...</div>;
+  }
 
-  if (slotsLoading) {
-    return <div className="p-6 text-center">Đang tải dữ liệu thông tin đặt...</div>;
+  if (roomsError) {
+    return <div className="p-6 text-center text-red-500">Lỗi: {roomsError}</div>;
   }
 
   if (slotsError) {
@@ -105,6 +123,9 @@ const Payment = () => {
       <div className="max-w-lg w-full shadow-xl border rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-4 border-b pb-2">Thông tin đặt chỗ</h2>
         <div className="space-y-3">
+          <p>
+            <strong>Phòng:</strong> {selectedRoom?.roomName || 'Chưa chọn'}
+          </p>
           <p>
             <strong>Khu vực:</strong> {selectedArea?.name || 'Chưa chọn'}
           </p>
@@ -145,7 +166,7 @@ const Payment = () => {
             {bookingLoading ? 'Đang xử lý...' : 'Xác nhận Thanh Toán'}
           </button>
           <Link
-            to={'/rooms/'}
+            to={`/area/${selectedArea?.areaTypeId}`}
             className="w-full px-6 py-3 text-center bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
           >
             Quay lại Khu Vực chọn

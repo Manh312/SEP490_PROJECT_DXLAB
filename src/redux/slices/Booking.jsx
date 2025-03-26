@@ -15,12 +15,12 @@ export const createBooking = createAsyncThunk(
 
 const initialState = {
   isModalOpen: false,
-  selectedArea: null, // Changed to null for consistency with closeModal
+  selectedArea: null,
   selectedTime: [],
   peopleCount: 1,
-  bookingLoading: false, // Track loading state for booking API
-  bookingError: null, // Track error state for booking API
-  bookingSuccess: false, // Track success state for booking API
+  bookingLoading: false,
+  bookingError: null,
+  bookingSuccess: false,
 };
 
 const bookingSlice = createSlice({
@@ -51,17 +51,18 @@ const bookingSlice = createSlice({
     setSelectedArea: (state, action) => {
       state.selectedArea = action.payload;
     },
-    confirmBooking: (state) => {
-      // Reset state after a successful booking
+    confirmBooking: (state, action) => {
       state.isModalOpen = false;
-      state.selectedTime = [];
-      state.peopleCount = 1;
-      state.bookingSuccess = true;
+      state.selectedTime = [...action.payload];
+    },
+    resetBookingStatus: (state) => {
+      state.bookingLoading = false;
+      state.bookingError = null;
+      state.bookingSuccess = false;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Handle createBooking
       .addCase(createBooking.pending, (state) => {
         state.bookingLoading = true;
         state.bookingError = null;
@@ -70,7 +71,9 @@ const bookingSlice = createSlice({
       .addCase(createBooking.fulfilled, (state, action) => {
         state.bookingLoading = false;
         state.bookingSuccess = true;
-        state.selectedTime = []; // Clear selected time after successful booking
+        state.selectedTime = [];
+        state.peopleCount = 1;
+        state.selectedArea = null;
       })
       .addCase(createBooking.rejected, (state, action) => {
         state.bookingLoading = false;
@@ -88,6 +91,7 @@ export const {
   setSelectedArea,
   setMonthRange,
   confirmBooking,
+  resetBookingStatus,
 } = bookingSlice.actions;
 
 export default bookingSlice.reducer;

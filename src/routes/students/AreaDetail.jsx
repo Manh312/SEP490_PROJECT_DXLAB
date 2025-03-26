@@ -53,6 +53,7 @@ const AreaDetail = () => {
             description: room.roomDescription || 'No description available',
             image: room.images && room.images.length > 0 ? room.images[0] : 'default-image.jpg',
             type: matchingArea.areaTypeId === 1 ? 'group' : 'individual', // Map areaTypeId to type
+            roomId: room.roomId,
           };
           break;
         }
