@@ -45,7 +45,6 @@ export const createBlog = createAsyncThunk(
       }
 
       const response = await axios.post("/blog", formData);
-
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể tạo blog");
@@ -65,10 +64,9 @@ export const updateBlog = createAsyncThunk(
       formData.append("BlogCreatedDate", blogData.blogCreatedDate);
       formData.append("Status", blogData.status || 1);
 
-      // Gửi ảnh mới (nếu có)
       if (files && files.length > 0) {
         files.forEach((file) => {
-          formData.append("ImageFiles", file); // Backend sẽ thêm ảnh mới vào danh sách hiện có
+          formData.append("ImageFiles", file);
         });
       }
 
@@ -85,12 +83,12 @@ export const updateBlog = createAsyncThunk(
 );
 
 // Admin-Specific Actions
-// Fetch pending approval blogs (for admin)
 export const fetchAdminPendingBlogs = createAsyncThunk(
   "adminBlogs/fetchPending",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get("/approvalblog/pending");
+      console.log("API Pending Blogs:", response.data.data); // Debug API response
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy danh sách blog chờ duyệt");
@@ -98,12 +96,12 @@ export const fetchAdminPendingBlogs = createAsyncThunk(
   }
 );
 
-// Fetch approved blogs (for admin)
 export const fetchAdminApprovedBlogs = createAsyncThunk(
   "adminBlogs/fetchApproved",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get("/approvalblog/approved");
+      console.log("API Approved Blogs:", response.data.data); // Debug API response
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy danh sách blog đã duyệt");
@@ -111,7 +109,6 @@ export const fetchAdminApprovedBlogs = createAsyncThunk(
   }
 );
 
-// Fetch blog detail by ID (for admin)
 export const fetchAdminBlogById = createAsyncThunk(
   "adminBlogs/fetchById",
   async (id, { rejectWithValue }) => {
@@ -124,7 +121,6 @@ export const fetchAdminBlogById = createAsyncThunk(
   }
 );
 
-// Approve a blog (for admin)
 export const approveAdminBlog = createAsyncThunk(
   "adminBlogs/approve",
   async (id, { rejectWithValue }) => {
@@ -137,7 +133,6 @@ export const approveAdminBlog = createAsyncThunk(
   }
 );
 
-// Cancel a blog (for admin)
 export const cancelAdminBlog = createAsyncThunk(
   "adminBlogs/cancel",
   async (id, { rejectWithValue }) => {
@@ -150,7 +145,6 @@ export const cancelAdminBlog = createAsyncThunk(
   }
 );
 
-//Delete a blog (for admin)
 export const deleteAdminBlog = createAsyncThunk(
   "adminBlogs/delete",
   async (id, { rejectWithValue }) => {
@@ -166,50 +160,40 @@ export const deleteAdminBlog = createAsyncThunk(
 const blogSlice = createSlice({
   name: "blogs",
   initialState: {
-    // State for staff
     blogs: [],
     selectedBlog: null,
     loading: false,
     error: null,
     statusFilter: "All",
-
-    // State for admin (separate state to avoid conflict)
     pendingBlogs: [],
     approvedBlogs: [],
     adminSelectedBlog: null,
     adminLoading: false,
     adminError: null,
-    adminStatusFilter: "All", // Có thể dùng để lọc giữa pending/approved nếu cần
+    adminStatusFilter: "All",
   },
   reducers: {
-    // Set status filter for staff blogs
     setStatusFilter: (state, action) => {
       state.statusFilter = action.payload;
     },
-    // Set status filter for admin blogs
     setAdminStatusFilter: (state, action) => {
       state.adminStatusFilter = action.payload;
     },
-    // Reset error state for staff
     resetError: (state) => {
       state.error = null;
     },
-    // Reset error state for admin
     resetAdminError: (state) => {
       state.adminError = null;
     },
-    // Reset selected blog for staff
     resetSelectedBlog: (state) => {
       state.selectedBlog = null;
     },
-    // Reset selected blog for admin
     resetAdminSelectedBlog: (state) => {
       state.adminSelectedBlog = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Staff Actions
       .addCase(fetchBlogsByStatus.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -264,19 +248,19 @@ const blogSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
-      // Admin Actions
       .addCase(fetchAdminPendingBlogs.pending, (state) => {
         state.adminLoading = true;
         state.adminError = null;
       })
       .addCase(fetchAdminPendingBlogs.fulfilled, (state, action) => {
         state.adminLoading = false;
-        state.pendingBlogs = action.payload;
+        state.pendingBlogs = action.payload || []; // Đảm bảo luôn là mảng
+        console.log("Updated pendingBlogs in store:", state.pendingBlogs); // Debug store
       })
       .addCase(fetchAdminPendingBlogs.rejected, (state, action) => {
         state.adminLoading = false;
         state.adminError = action.payload;
+        state.pendingBlogs = [];
       })
       .addCase(fetchAdminApprovedBlogs.pending, (state) => {
         state.adminLoading = true;
@@ -284,11 +268,13 @@ const blogSlice = createSlice({
       })
       .addCase(fetchAdminApprovedBlogs.fulfilled, (state, action) => {
         state.adminLoading = false;
-        state.approvedBlogs = action.payload;
+        state.approvedBlogs = action.payload || []; // Đảm bảo luôn là mảng
+        console.log("Updated approvedBlogs in store:", state.approvedBlogs); // Debug store
       })
       .addCase(fetchAdminApprovedBlogs.rejected, (state, action) => {
         state.adminLoading = false;
         state.adminError = action.payload;
+        state.approvedBlogs = [];
       })
       .addCase(fetchAdminBlogById.pending, (state) => {
         state.adminLoading = true;
@@ -307,6 +293,7 @@ const blogSlice = createSlice({
         state.adminError = null;
       })
       .addCase(approveAdminBlog.fulfilled, (state, action) => {
+        state.adminLoading = false;
         const blogId = action.meta.arg;
         state.pendingBlogs = state.pendingBlogs.filter((b) => b.blogId !== blogId);
         state.approvedBlogs = [...state.approvedBlogs, action.payload];
@@ -320,6 +307,7 @@ const blogSlice = createSlice({
         state.adminError = null;
       })
       .addCase(cancelAdminBlog.fulfilled, (state, action) => {
+        state.adminLoading = false;
         const blogId = action.meta.arg;
         state.pendingBlogs = state.pendingBlogs.filter((b) => b.blogId !== blogId);
         state.approvedBlogs = state.approvedBlogs.filter((b) => b.blogId !== blogId);
@@ -333,21 +321,19 @@ const blogSlice = createSlice({
         state.adminError = null;
       })
       .addCase(deleteAdminBlog.fulfilled, (state, action) => {
+        state.adminLoading = false;
         const blogId = action.meta.arg;
         state.pendingBlogs = state.pendingBlogs.filter((b) => b.blogId !== blogId);
         state.approvedBlogs = state.approvedBlogs.filter((b) => b.blogId !== blogId);
-
         state.blogs = state.blogs.filter((b) => b.blogId !== blogId);
-        state.adminLoading = false;
       })
       .addCase(deleteAdminBlog.rejected, (state, action) => {
         state.adminLoading = false;
         state.adminError = action.payload;
-      })
+      });
   },
 });
 
-// Export actions
 export const {
   setStatusFilter,
   setAdminStatusFilter,
@@ -357,5 +343,4 @@ export const {
   resetAdminSelectedBlog,
 } = blogSlice.actions;
 
-// Export reducer
 export default blogSlice.reducer;

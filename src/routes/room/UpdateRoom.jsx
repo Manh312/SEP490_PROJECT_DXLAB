@@ -198,10 +198,10 @@ const UpdateRoom = () => {
                 <div className="w-full px-4 py-3 rounded-lg border bg-gray-100 text-gray-700 h-12 flex items-center">
                   {selectedRoom.area_DTO && selectedRoom.area_DTO.length > 0 ? (
                     selectedRoom.area_DTO.map((area, index) => (
-                      <span key={index} className="truncate">
-                        {area.areaName} - <span className="text-gray-600">Loại: {area.areaTypeName}</span>
+                      <p key={index} className="truncate">
+                        {area.areaName} - <span className="text-gray-600">Loại: {area.areaTypeName}</span> 
                         {index < selectedRoom.area_DTO.length - 1 && ", "}
-                      </span>
+                      </p>
                     ))
                   ) : (
                     <span className="text-gray-500">Không có khu vực</span>
