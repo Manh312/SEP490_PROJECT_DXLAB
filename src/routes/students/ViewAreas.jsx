@@ -12,8 +12,9 @@ const ViewAreas = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const { isModalOpen, selectedArea, selectedTime, categoryInRoom, categoryLoading, categoryError, availableSlots } = useSelector((state) => state.booking);
+  const { isModalOpen, selectedArea, selectedTime } = useSelector((state) => state.booking);
   const { slotsLoading, slotsError } = useSelector((state) => state.booking);
+  const { categoryInRoom, categoryLoading, categoryError } = useSelector((state) => state.booking);
   const { rooms, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms);
 
   const [bookingDates, setBookingDates] = useState([{ date: new Date().toISOString().split('T')[0], slots: [] }]);
@@ -208,7 +209,7 @@ const ViewAreas = () => {
                       areaTypeId: area.value.areaTypeId,
                       name: area.value.areaTypeName,
                       description: area.value.areaDescription,
-                      type: area.value.areaCategory === 1 ? 'individual' : 'group', // Use areaTypeId to determine type
+                      type: area.value.areaTypeId === 1 ? 'individual' : 'group', // Fix: Use areaTypeId instead of areaCategory
                     }));
                     setBookingDates([{ date: new Date().toISOString().split('T')[0], slots: [] }]);
                   }}
@@ -234,7 +235,7 @@ const ViewAreas = () => {
               <h2 className="text-2xl font-bold mb-4 text-center">Đặt Lịch Tới DXLAB</h2>
               <div className="flex justify-between">
                 <p className="break-words text-base">
-                  Bạn đã chọn khu vực: <strong> {selectedArea?.type === 'individual' ? 'Cá nhân' : 'Nhóm'}</strong>
+                  Bạn đã chọn khu vực: <strong>{selectedArea?.name} ({selectedArea?.type === 'individual' ? 'Cá nhân' : 'Nhóm'})</strong>
                 </p>
               </div>
               <div className="max-h-96 overflow-y-auto">
@@ -246,7 +247,6 @@ const ViewAreas = () => {
                         className="flex-1 p-2 border rounded-md dark:bg-gray-800 dark:text-white"
                         value={booking.date}
                         onChange={(e) => handleDateChange(index, e.target.value)}
-                        min={new Date().toISOString().split('T')[0]}
                       />
                       <button
                         onClick={() => removeBookingDate(index)}
@@ -265,7 +265,7 @@ const ViewAreas = () => {
                     {!slotsLoading && !slotsError && booking.date ? (
                       <div className="grid grid-cols-2 gap-2">
                         {fetchedSlots[booking.date] && fetchedSlots[booking.date].length > 0 ? (
-                          availableSlots.map((slot) => (
+                          fetchedSlots[booking.date].map((slot) => ( // Fix: Use fetchedSlots[booking.date] instead of availableSlots
                             <div
                               key={slot.slotId}
                               className={`group relative flex items-center space-x-2 p-2 rounded-md transition-all duration-200 ${
