@@ -66,9 +66,7 @@ const SlotList = () => {
                 <thead className="border-b items-center bg-gray-400">
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
-                      Slot ID
-                    </th>
+
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
                       Số Slot
                     </th>
@@ -84,12 +82,10 @@ const SlotList = () => {
                   {slots.map((slot, index) => (
                     <tr
                       key={slot.slotId}
-                      className={`border-b hover:bg-gray-400 transition-colors ${
-                        theme === "dark" ? "hover:bg-gray-300" : ""
-                      }`}
+                      className={`border-b hover:bg-gray-400 transition-colors ${theme === "dark" ? "hover:bg-gray-300" : ""
+                        }`}
                     >
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{index + 1}</td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{slot.slotId}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {slot.slotNumber ? `Slot ${slot.slotNumber}` : "N/A"}
                       </td>
@@ -106,9 +102,8 @@ const SlotList = () => {
               {slots.map((slot, index) => (
                 <div
                   key={slot.slotId}
-                  className={`border rounded-lg p-3 sm:p-4 shadow-sm hover:bg-gray-500 transition-colors ${
-                    theme === "dark" ? "hover:bg-gray-300" : ""
-                  }`}
+                  className={`border rounded-lg p-3 sm:p-4 shadow-sm hover:bg-gray-500 transition-colors ${theme === "dark" ? "hover:bg-gray-300" : ""
+                    }`}
                 >
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between">
