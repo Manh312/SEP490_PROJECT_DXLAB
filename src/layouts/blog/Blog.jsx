@@ -14,40 +14,39 @@ const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const postsPerPage = 6;
 
-  // Gọi API để lấy danh sách approved blogs khi component được mount
+  console.log("approvedBlogs in component:", approvedBlogs);
+  console.log("adminError in component:", adminError);
+
   useEffect(() => {
     dispatch(fetchAdminApprovedBlogs());
   }, [dispatch]);
 
-  // Xử lý approvedBlogs để đảm bảo là mảng
   const blogList = useMemo(() => {
-    let result = approvedBlogs;
-    if (!result) return [];
-    if (Array.isArray(result)) return result;
-    return Array.isArray(result.data) ? result.data : [];
+    if (!approvedBlogs) return [];
+    if (Array.isArray(approvedBlogs)) return approvedBlogs;
+    if (approvedBlogs.data && Array.isArray(approvedBlogs.data)) return approvedBlogs.data;
+    console.warn('Unexpected approvedBlogs structure:', approvedBlogs);
+    return [];
   }, [approvedBlogs]);
 
-  // Lọc blog theo searchTerm
   const filteredPosts = useMemo(() => {
-    let result = blogList;
-    result = result.filter((blog) => blog && typeof blog === 'object' && blog.blogTitle);
-
+    const validBlogs = blogList.filter(
+      (blog) => blog && typeof blog === 'object' && blog.blogTitle && blog.blogId
+    );
     if (searchTerm) {
-      result = result.filter((blog) =>
-        blog.blogTitle?.toLowerCase().includes(searchTerm.toLowerCase())
+      return validBlogs.filter((blog) =>
+        blog.blogTitle.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    return result;
+    return validBlogs;
   }, [blogList, searchTerm]);
 
-  // Phân trang
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
   const currentPosts = filteredPosts.slice(
     (currentPage - 1) * postsPerPage,
     currentPage * postsPerPage
   );
 
-  // Định nghĩa animation variants cho card
   const cardVariants = {
     rest: {
       scale: 1,
@@ -68,7 +67,10 @@ const Blog = () => {
   }
 
   if (adminError) {
-    return <p className="text-center text-red-500">Lỗi: {adminError}</p>;
+    const errorMessage = typeof adminError === 'string' 
+      ? adminError 
+      : 'Đã xảy ra lỗi không xác định';
+    return <p className="text-center text-red-500">Lỗi: {errorMessage}</p>;
   }
 
   return (
@@ -98,15 +100,19 @@ const Blog = () => {
                 whileHover="hover"
               >
                 <img
-                  src={`https://localhost:9999${post.images?.[0]}`}
+                  src={`https://localhost:9999${post.images?.[0] || '/default-image.jpg'}`}
                   alt={post.blogTitle}
                   className="rounded-t-lg mb-4 w-full h-48 object-cover"
+                  onError={(e) => (e.target.src = '/default-image.jpg')}
                 />
                 <div className="p-5">
                   <h1 className="text-sm text-orange-500 mb-2">DXLAB Blog</h1>
                   <h2 className="text-xl font-semibold mb-2">{post.blogTitle}</h2>
                   <p className="text-sm text-gray-400">
-                    Ngày đăng: {new Date(post.blogCreatedDate).toLocaleString() || 'Không xác định'}
+                    Ngày đăng:{' '}
+                    {post.blogCreatedDate
+                      ? new Date(post.blogCreatedDate).toLocaleString()
+                      : 'Không xác định'}
                   </p>
                   <p className="mt-2 mb-4">
                     {post.blogContent?.slice(0, 100) || 'Nội dung không có'}...

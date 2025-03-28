@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAdminBlogById } from '../../redux/slices/Blog';
 import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const BlogDetail = () => {
   const { id } = useParams();
@@ -13,17 +15,38 @@ const BlogDetail = () => {
     dispatch(fetchAdminBlogById(id));
   }, [dispatch, id]);
 
+  // Animation variants cho ảnh khi hover
+  const imageVariants = {
+    rest: {
+      scale: 1,
+      opacity: 1,
+      transition: { duration: 0.3, ease: 'easeOut' },
+    },
+    hover: {
+      scale: 1.05, // Phóng to nhẹ khi hover
+      opacity: 0.9, // Giảm opacity một chút
+      transition: { duration: 0.3, ease: 'easeOut' },
+    },
+  };
+
   if (adminLoading) {
     return <div className="text-center text-xl mt-10">Đang tải...</div>;
   }
 
   if (adminError) {
-    return <div className="text-center text-xl mt-10 text-red-500">Lỗi: {adminError}</div>;
+    const errorMessage = typeof adminError === 'string' 
+      ? adminError 
+      : 'Đã xảy ra lỗi không xác định';
+    return <div className="text-center text-xl mt-10 text-red-500">Lỗi: {errorMessage}</div>;
   }
 
   const post = adminSelectedBlog;
 
-  // Chia nội dung thành các đoạn khoảng 4 dòng (~320 ký tự), không ngắt từ
+  if (!post) {
+    return <div className="text-center text-xl mt-10 text-gray-500">Không tìm thấy bài viết.</div>;
+  }
+
+  // Chia nội dung thành các đoạn (~365 ký tự), không ngắt từ
   const splitContent = (content, chunkSize = 365) => {
     if (!content) return [];
     const chunks = [];
@@ -36,11 +59,10 @@ const BlogDetail = () => {
         break;
       }
 
-      // Tìm khoảng trắng gần nhất trước khi cắt để không ngắt từ
       while (end > start && content[end] !== ' ') {
         end--;
       }
-      if (end === start) end = start + chunkSize; // Nếu không tìm thấy khoảng trắng, cắt luôn
+      if (end === start) end = start + chunkSize;
 
       chunks.push(content.slice(start, end).trim());
       start = end + 1;
@@ -56,62 +78,74 @@ const BlogDetail = () => {
   console.log("Content Chunks:", contentChunks);
   console.log("Images:", images);
 
-  // Hiệu ứng animation cho ảnh
-  const imageVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeInOut' } },
-  };
-
   return (
-    <div className="min-h-screen p-6 flex justify-center">
-      <div className="max-w-4xl w-full p-6">
-        <h1 className="text-sm text-orange-500 mb-4">DXLAB Blog</h1>
-        <h1 className="text-3xl font-bold mb-4">{post.blogTitle}</h1>
-        <p className="text-gray-500 mb-6">
-          Ngày đăng: {new Date(post.blogCreatedDate).toLocaleString() || 'Không xác định'}
-        </p>
-
-        {/* Hiển thị ảnh trước, sau đó là nội dung */}
-        {contentChunks.length > 0 || images.length > 0 ? (
-          contentChunks.map((chunk, index) => (
-            <div key={index} className="mb-6">
-              {/* Hiển thị ảnh trước với animation */}
-              {images[index] && (
-                <motion.img
-                  src={`https://localhost:9999/${images[index]}`}
-                  alt={`Image ${index + 1} for ${post.blogTitle}`}
-                  className="w-full rounded-lg shadow-lg mb-6 object-cover"
-                  onError={(e) => (e.target.src = '/placeholder-image.jpg')}
-                  variants={imageVariants}
-                  initial="hidden"
-                  animate="visible"
-                />
-              )}
-              {/* Hiển thị nội dung sau ảnh */}
-              <p className="text-lg text-justify">{chunk}</p>
-            </div>
-          ))
-        ) : (
-          <p className="text-lg text-gray-500">Không có nội dung hoặc ảnh để hiển thị.</p>
+    <div className="min-h-screen p-6 flex justify-center bg-gray-100 dark:bg-black">
+      <div className="max-w-4xl w-full border rounded-lg shadow-lg bg-white dark:bg-gray-800">
+        {/* Ảnh đầu tiên */}
+        {images.length > 0 && (
+          <motion.img
+            src={`https://localhost:9999${images[0]}`}
+            alt={post.blogTitle}
+            className="rounded-t-lg mb-4 w-full h-48 object-cover cursor-pointer"
+            onError={(e) => (e.target.src = '/placeholder-image.jpg')}
+            variants={imageVariants}
+            initial="rest"
+            whileHover="hover" // Hiệu ứng khi di chuột vào
+          />
         )}
 
-        {/* Hiển thị ảnh còn lại nếu có */}
-        {images.length > contentChunks.length && (
-          <div className="mb-6">
-            {images.slice(contentChunks.length).map((image, index) => (
-              <motion.img
-                key={index}
-                src={`https://localhost:9999/${image}`}
-                alt={`Additional Image ${index + contentChunks.length + 1} for ${post.blogTitle}`}
-                className="w-full rounded-lg shadow-lg mb-6 object-cover"
-                onError={(e) => (e.target.src = '/placeholder-image.jpg')}
-                variants={imageVariants}
-                initial="hidden"
-                animate="visible"
+        <div className="p-5">
+          <h1 className="text-sm text-orange-500 mb-2">DXLAB Blog</h1>
+          <h2 className="text-xl font-semibold mb-2">{post.blogTitle}</h2>
+          <p className="text-sm text-gray-400 mb-4">
+            Ngày đăng:{' '}
+            {post.blogCreatedDate
+              ? new Date(post.blogCreatedDate).toLocaleString()
+              : 'Không xác định'}
+          </p>
+
+          {/* Nội dung và ảnh */}
+          {contentChunks.length > 0 ? (
+            contentChunks.map((chunk, index) => (
+              <div key={index} className="mb-6">
+                <p className="text-lg text-justify">{chunk}</p>
+                {/* Hiển thị ảnh tương ứng nếu có */}
+                {images[index + 1] && (
+                  <motion.img
+                    src={`https://localhost:9999${images[index + 1]}`}
+                    alt={`Image ${index + 2} for ${post.blogTitle}`}
+                    className="w-full rounded-lg shadow-lg mt-4 object-cover cursor-pointer"
+                    onError={(e) => (e.target.src = '/placeholder-image.jpg')}
+                    variants={imageVariants}
+                    initial="rest"
+                    whileHover="hover" // Hiệu ứng khi di chuột vào
+                  />
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="text-lg text-gray-500">Không có nội dung để hiển thị.</p>
+          )}
+
+          {/* Nút quay lại */}
+          <Link
+            to="/blog"
+            className="flex items-center text-orange-500 px-4 py-2 rounded-lg group mt-6"
+          >
+            <span className="relative group-hover:text-orange-600">Quay lại danh sách</span>
+            <motion.div
+              className="ml-2"
+              initial={{ x: 0 }}
+              whileHover={{ x: 5 }}
+              transition={{ type: 'tween', duration: 0.2 }}
+            >
+              <ArrowRight
+                size={20}
+                className="group-hover:translate-x-1 transition-transform duration-200"
               />
-            ))}
-          </div>
-        )}
+            </motion.div>
+          </Link>
+        </div>
       </div>
     </div>
   );
