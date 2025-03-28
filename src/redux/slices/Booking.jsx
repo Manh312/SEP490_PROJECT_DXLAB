@@ -6,7 +6,7 @@ export const createBooking = createAsyncThunk(
   'booking/createBooking',
   async (bookingData, { rejectWithValue }) => {
     try {
-      const response = await axios.post('/Booking', bookingData);
+      const response = await axios.post('/booking', bookingData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Không thể tạo đặt chỗ');
@@ -14,15 +14,26 @@ export const createBooking = createAsyncThunk(
   }
 );
 
-// Async thunk to fetch available slots with all three parameters
 export const fetchAvailableSlots = createAsyncThunk(
   'booking/fetchAvailableSlots',
   async ({ roomId, areaTypeId, bookingDate }, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`/Booking/AvailiblePos?RoomId=${roomId}&AreaTypeId=${areaTypeId}&BookingDate=${bookingDate}`);
+      const response = await axios.get(`/booking/availiblepos?RoomId=${roomId}&AreaTypeId=${areaTypeId}&BookingDate=${bookingDate}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Không thể lấy danh sách slot');
+    }
+  }
+);
+
+export const fetchCategoryInRoom = createAsyncThunk(
+  'booking/fetchCategoryInRoom',
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`/booking/categoryinroom?id=${id}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Không thể lấy danh sách khu vực trong phòng');
     }
   }
 );
@@ -31,7 +42,6 @@ const initialState = {
   isModalOpen: false,
   selectedArea: null,
   selectedTime: [],
-  peopleCount: 1,
   bookingDate: null, // New state to store the selected booking date
   bookingLoading: false,
   bookingError: null,
@@ -39,6 +49,10 @@ const initialState = {
   availableSlots: [],
   slotsLoading: false,
   slotsError: null,
+  categoryInRoom: null,
+  categoryLoading: false,
+  categoryError: null,
+  bookings: [],
 };
 
 const bookingSlice = createSlice({
@@ -53,17 +67,16 @@ const bookingSlice = createSlice({
       state.isModalOpen = false;
       state.selectedArea = null;
       state.selectedTime = [];
-      state.peopleCount = 1;
       state.bookingDate = null; // Reset booking date
       state.bookingError = null;
       state.bookingSuccess = false;
       state.slotsError = null;
+      state.categoryInRoom = null;
+      state.categoryLoading = false;
+      state.categoryError = null;
     },
     setSelectedTime: (state, action) => {
       state.selectedTime = [...action.payload];
-    },
-    setPeopleCount: (state, action) => {
-      state.peopleCount = action.payload;
     },
     setBookingDate: (state, action) => {
       state.bookingDate = action.payload; // New reducer to set booking date
@@ -84,6 +97,8 @@ const bookingSlice = createSlice({
       state.bookingSuccess = false;
       state.slotsLoading = false;
       state.slotsError = null;
+      state.categoryLoading = false;
+      state.categoryError = null;
     },
   },
   extraReducers: (builder) => {
@@ -98,7 +113,6 @@ const bookingSlice = createSlice({
         state.bookingLoading = false;
         state.bookingSuccess = true;
         state.selectedTime = [];
-        state.peopleCount = 1;
         state.selectedArea = null;
         state.bookingDate = null;
       })
@@ -119,7 +133,19 @@ const bookingSlice = createSlice({
       .addCase(fetchAvailableSlots.rejected, (state, action) => {
         state.slotsLoading = false;
         state.slotsError = action.payload;
-      });
+      })
+      .addCase(fetchCategoryInRoom.pending, (state) => {
+        state.categoryLoading = true;
+        state.categoryError = null;
+      })
+      .addCase(fetchCategoryInRoom.fulfilled, (state, action) => {
+        state.categoryLoading = false;
+        state.categoryInRoom = action.payload;
+      })
+      .addCase(fetchCategoryInRoom.rejected, (state, action) => {
+        state.categoryLoading = false;
+        state.categoryError = action.payload;
+      })
   },
 });
 
@@ -127,7 +153,6 @@ export const {
   openModal,
   closeModal,
   setSelectedTime,
-  setPeopleCount,
   setBookingDate, // Export the new reducer
   setMonthRange,
   setSelectedArea,
