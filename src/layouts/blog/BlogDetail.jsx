@@ -15,7 +15,7 @@ const BlogDetail = () => {
     dispatch(fetchAdminBlogById(id));
   }, [dispatch, id]);
 
-  // Animation variants cho ảnh khi hover
+  // Animation variants for image hover
   const imageVariants = {
     rest: {
       scale: 1,
@@ -23,8 +23,8 @@ const BlogDetail = () => {
       transition: { duration: 0.3, ease: 'easeOut' },
     },
     hover: {
-      scale: 1.05, // Phóng to nhẹ khi hover
-      opacity: 0.9, // Giảm opacity một chút
+      scale: 1.05,
+      opacity: 0.9,
       transition: { duration: 0.3, ease: 'easeOut' },
     },
   };
@@ -34,9 +34,7 @@ const BlogDetail = () => {
   }
 
   if (adminError) {
-    const errorMessage = typeof adminError === 'string' 
-      ? adminError 
-      : 'Đã xảy ra lỗi không xác định';
+    const errorMessage = typeof adminError === 'string' ? adminError : 'Đã xảy ra lỗi không xác định';
     return <div className="text-center text-xl mt-10 text-red-500">Lỗi: {errorMessage}</div>;
   }
 
@@ -46,25 +44,46 @@ const BlogDetail = () => {
     return <div className="text-center text-xl mt-10 text-gray-500">Không tìm thấy bài viết.</div>;
   }
 
-  // Chia nội dung thành các đoạn (~365 ký tự), không ngắt từ
-  const splitContent = (content, chunkSize = 365) => {
+  // Function to format date as DD/MM/YYYY HH:mm:ss
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Không xác định';
+
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn(`Invalid date string: ${dateString}`);
+      return 'Không xác định';
+    }
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+  };
+
+  // Split content into chunks (~385 characters), without breaking words
+  const splitContent = (content, chunkSize = 385) => {
     if (!content) return [];
+    const cleanedContent = content.replace(/\n+/g, ' ').trim();
     const chunks = [];
     let start = 0;
 
-    while (start < content.length) {
+    while (start < cleanedContent.length) {
       let end = start + chunkSize;
-      if (end >= content.length) {
-        chunks.push(content.slice(start));
+      if (end >= cleanedContent.length) {
+        chunks.push(cleanedContent.slice(start));
         break;
       }
 
-      while (end > start && content[end] !== ' ') {
+      while (end > start && cleanedContent[end] !== ' ') {
         end--;
       }
       if (end === start) end = start + chunkSize;
 
-      chunks.push(content.slice(start, end).trim());
+      chunks.push(cleanedContent.slice(start, end).trim());
       start = end + 1;
     }
     return chunks;
@@ -73,78 +92,85 @@ const BlogDetail = () => {
   const contentChunks = splitContent(post.blogContent);
   const images = Array.isArray(post.images) ? post.images : [];
 
-  // Debug dữ liệu
-  console.log("Blog Detail Data:", post);
-  console.log("Content Chunks:", contentChunks);
-  console.log("Images:", images);
-
   return (
-    <div className="min-h-screen p-6 flex justify-center bg-gray-100 dark:bg-black">
-      <div className="max-w-4xl w-full border rounded-lg shadow-lg bg-white dark:bg-gray-800">
-        {/* Ảnh đầu tiên */}
-        {images.length > 0 && (
-          <motion.img
-            src={`https://localhost:9999${images[0]}`}
-            alt={post.blogTitle}
-            className="rounded-t-lg mb-4 w-full h-48 object-cover cursor-pointer"
-            onError={(e) => (e.target.src = '/placeholder-image.jpg')}
-            variants={imageVariants}
-            initial="rest"
-            whileHover="hover" // Hiệu ứng khi di chuột vào
-          />
-        )}
-
-        <div className="p-5">
-          <h1 className="text-sm text-orange-500 mb-2">DXLAB Blog</h1>
-          <h2 className="text-xl font-semibold mb-2">{post.blogTitle}</h2>
-          <p className="text-sm text-gray-400 mb-4">
-            Ngày đăng:{' '}
-            {post.blogCreatedDate
-              ? new Date(post.blogCreatedDate).toLocaleString()
-              : 'Không xác định'}
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+        {/* Header Section */}
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white">
+          <h1 className="text-sm font-medium uppercase tracking-wider">DXLAB Blog</h1>
+          <h2 className="text-3xl font-bold mt-2">{post.blogTitle}</h2>
+          <p className="text-sm opacity-80 mt-1">
+            Ngày đăng: {formatDate(post.blogCreatedDate)}
           </p>
+        </div>
+        <div className="mt-10">
+            <Link
+              to="/blog"
+              className="inline-flex items-center text-orange-500 hover:text-orange-600 font-medium px-4 py-2 rounded-lg transition-colors duration-200 whitespace-nowrap"
+            >
+              <motion.div
+                initial={{ x: 0 }}
+                whileHover={{ x: -5 }}
+                transition={{ type: 'tween', duration: 0.2 }}
+              >
+                <ArrowRight size={20} className="mr-2" />
+              </motion.div>
+              Quay lại danh sách
+            </Link>
+          </div>
 
-          {/* Nội dung và ảnh */}
+        {/* Content Section */}
+        <div className="p-8 min-w-[320px]">
+          {/* Display first image (if available) */}
+          {images.length > 0 && (
+            <motion.img
+              src={`https://localhost:9999${images[0]}`}
+              alt={`Featured image for ${post.blogTitle}`}
+              className="w-full h-96 object-cover rounded-lg shadow-md mb-8"
+              onError={(e) => (e.target.src = '/placeholder-image.jpg')}
+              variants={imageVariants}
+              initial="rest"
+              whileHover="hover"
+            />
+          )}
+
+          {/* Content and images interleaved */}
           {contentChunks.length > 0 ? (
-            contentChunks.map((chunk, index) => (
-              <div key={index} className="mb-6">
-                <p className="text-lg text-justify">{chunk}</p>
-                {/* Hiển thị ảnh tương ứng nếu có */}
-                {images[index + 1] && (
-                  <motion.img
-                    src={`https://localhost:9999${images[index + 1]}`}
-                    alt={`Image ${index + 2} for ${post.blogTitle}`}
-                    className="w-full rounded-lg shadow-lg mt-4 object-cover cursor-pointer"
-                    onError={(e) => (e.target.src = '/placeholder-image.jpg')}
-                    variants={imageVariants}
-                    initial="rest"
-                    whileHover="hover" // Hiệu ứng khi di chuột vào
-                  />
-                )}
+            <>
+              {contentChunks.map((chunk, index) => {
+                if (index < images.length - 1) {
+                  // Render chunks with images until images run out
+                  return (
+                    <div key={index} className="mb-8">
+                      <p className="text-lg text-gray-700 leading-relaxed">{chunk}</p>
+                      {images[index + 1] && (
+                        <motion.img
+                          src={`https://localhost:9999${images[index + 1]}`}
+                          alt={`Image ${index + 2} for ${post.blogTitle}`}
+                          className="w-full h-64 object-cover rounded-lg shadow-md mt-6"
+                          onError={(e) => (e.target.src = '/placeholder-image.jpg')}
+                          variants={imageVariants}
+                          initial="rest"
+                          whileHover="hover"
+                        />
+                      )}
+                    </div>
+                  );
+                }
+                return null; 
+              })}
+              <div className="mb-8">
+                {contentChunks.slice(images.length - 1).map((chunk, index) => (
+                  <p key={index} className="text-lg text-gray-700 leading-relaxed">
+                    {chunk}
+                  </p>
+                ))}
               </div>
-            ))
+            </>
           ) : (
             <p className="text-lg text-gray-500">Không có nội dung để hiển thị.</p>
           )}
-
-          {/* Nút quay lại */}
-          <Link
-            to="/blog"
-            className="flex items-center text-orange-500 px-4 py-2 rounded-lg group mt-6"
-          >
-            <span className="relative group-hover:text-orange-600">Quay lại danh sách</span>
-            <motion.div
-              className="ml-2"
-              initial={{ x: 0 }}
-              whileHover={{ x: 5 }}
-              transition={{ type: 'tween', duration: 0.2 }}
-            >
-              <ArrowRight
-                size={20}
-                className="group-hover:translate-x-1 transition-transform duration-200"
-              />
-            </motion.div>
-          </Link>
+          
         </div>
       </div>
     </div>
