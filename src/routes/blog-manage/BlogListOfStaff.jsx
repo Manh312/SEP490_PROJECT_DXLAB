@@ -34,7 +34,7 @@ const BlogListOfStaff = () => {
   const debouncedSearch = debounce((value) => {
     setSearchTerm(value);
     setCurrentPage(1);
-  }, 300);
+  }, 300);  
 
   useEffect(() => {
     dispatch(fetchAdminPendingBlogs());
