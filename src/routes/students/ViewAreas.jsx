@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { openModal, closeModal, setSelectedTime, confirmBooking } from '../../redux/slices/Booking';
+import { openModal, closeModal, setSelectedTime, confirmBooking, setSelectedArea } from '../../redux/slices/Booking';
 import { fetchAvailableSlots, fetchCategoryInRoom } from '../../redux/slices/Booking';
 import { fetchRooms } from '../../redux/slices/Room';
 import { useEffect, useState } from 'react';
@@ -15,8 +15,7 @@ const ViewAreas = () => {
   const { isModalOpen, selectedArea, selectedTime } = useSelector((state) => state.booking);
   const { slotsLoading, slotsError } = useSelector((state) => state.booking);
   const { categoryInRoom} = useSelector((state) => state.booking);
-  const { rooms} = useSelector((state) => state.rooms);
-
+  const { selectedRoom } = useSelector((state) => state.rooms);
   const [bookingDates, setBookingDates] = useState([{ date: new Date().toISOString().split('T')[0], slots: [] }]);
   const [fetchedSlots, setFetchedSlots] = useState({});
 
@@ -25,24 +24,31 @@ const ViewAreas = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (rooms.length > 0) {
-      const findRoom = rooms.find((room) => room.roomId === parseInt(id));
+    if (Array.isArray(selectedRoom) && selectedRoom.length > 0) { // Kiểm tra selectedRooms có phải là mảng
+      const findRoom = selectedRoom.find((room) => room.roomId === parseInt(id));
       if (findRoom) {
         dispatch(fetchCategoryInRoom({ id: findRoom.roomId }));
       }
     }
-  }, [rooms, dispatch, id]);
+  }, [selectedRoom, dispatch, id]);
+
+  const handleDetailClick = (area) => {
+    dispatch(setSelectedArea(area));
+    navigate(`/area/${area.value[0].areaTypeId}`);
+  };
 
   useEffect(() => {
     bookingDates.forEach((booking) => {
       if (booking.date && selectedArea) {
         let roomId = null;
-        for (const room of rooms) {
-          if (room.area_DTO && room.area_DTO.length > 0) {
-            const matchingArea = room.area_DTO.find((area) => area.areaTypeId === selectedArea.value[0].areaTypeId);
-            if (matchingArea) {
-              roomId = room.roomId;
-              break;
+        if (Array.isArray(selectedRoom)) { // Kiểm tra selectedRooms có phải là mảng
+          for (const room of selectedRoom) {
+            if (room.area_DTO && room.area_DTO.length > 0) {
+              const matchingArea = room.area_DTO.find((area) => area.areaTypeId === selectedArea.value[0].areaTypeId);
+              if (matchingArea) {
+                roomId = room.roomId;
+                break;
+              }
             }
           }
         }
@@ -65,7 +71,7 @@ const ViewAreas = () => {
         }
       }
     });
-  }, [bookingDates, selectedArea, rooms, dispatch]);
+  }, [bookingDates, selectedArea, selectedRoom, dispatch]);
 
   useEffect(() => {
     if (Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
@@ -201,7 +207,7 @@ const ViewAreas = () => {
               >
                 Chọn
               </button>{" "}
-              <Link to={`/area/${area.value.areaTypeId}`} className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition">
+              <Link className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition" onClick={() => handleDetailClick(area)}>
                 Chi tiết
               </Link>
             </div>

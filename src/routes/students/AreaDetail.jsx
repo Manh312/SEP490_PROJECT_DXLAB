@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { setSelectedTime, confirmBooking, setSelectedArea, fetchAvailableSlots, fetchCategoryInRoom } from '../../redux/slices/Booking';
-import { fetchRooms } from '../../redux/slices/Room';
+import { setSelectedTime, confirmBooking, fetchAvailableSlots, fetchCategoryInRoom } from '../../redux/slices/Booking';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { PlusCircleIcon, XIcon } from 'lucide-react';
@@ -11,32 +10,46 @@ const AreaDetail = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { selectedTime, selectedArea: area } = useSelector((state) => state.booking);
-  const { slotsLoading, slotsError } = useSelector((state) => state.booking);
-  const { rooms, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms);
+  const { selectedTime, selectedArea, slotsLoading, slotsError, categoryInRoom } = useSelector((state) => state.booking);
 
   const [bookingDates, setBookingDates] = useState([{ date: new Date().toISOString().split('T')[0], slots: [] }]);
   const [fetchedSlots, setFetchedSlots] = useState({});
 
-  useEffect(() => {
-    dispatch(fetchRooms());
-  }, [dispatch]);
+  console.log(id);
+  
 
   useEffect(() => {
-      if (rooms.length > 0) {
-        const findRoom = rooms.find((room) => room.roomId === parseInt(id));
-        if (findRoom) {
-          dispatch(fetchCategoryInRoom({ id: findRoom.roomId }));
-        }
+    if (!selectedArea) {
+      dispatch(fetchCategoryInRoom({ id: parseInt(id) }));
+    }
+  }, [dispatch, id, selectedArea]);
+
+  useEffect(() => {
+    if (categoryInRoom?.data && categoryInRoom.data.length > 0 && !selectedArea) {
+      const area = categoryInRoom.data.find((item) => item.value[0].areaTypeId.toString() === id);
+      if (area) {
+        dispatch({
+          type: 'booking/openModal',
+          payload: {
+            ...area,
+            name: area.value.areaTypeName,
+            description: area.value.areaDescription,
+            type: area.value.areaCategory === 1 ? 'individual' : 'group',
+          },
+        });
+      } else {
+        toast.error('Không tìm thấy khu vực!');
+        navigate(`/room/${id}`);
       }
-    }, [rooms, dispatch, id]);
+    }
+  }, [categoryInRoom, id, dispatch, navigate, selectedArea]);
 
   useEffect(() => {
     bookingDates.forEach((booking) => {
-      if (booking.date && area) {
+      if (booking.date && selectedArea) {
         dispatch(fetchAvailableSlots({
-          roomId: area.roomId,
-          areaTypeId: area.value[0].areaTypeId,
+          roomId: parseInt(id),
+          areaTypeId: selectedArea.value[0].areaTypeId,
           bookingDate: booking.date,
         })).then((action) => {
           if (action.meta.requestStatus === 'fulfilled') {
@@ -50,7 +63,7 @@ const AreaDetail = () => {
         });
       }
     });
-  }, [bookingDates, area, dispatch]);
+  }, [bookingDates, selectedArea, dispatch, id]);
 
   useEffect(() => {
     if (Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
@@ -157,23 +170,23 @@ const AreaDetail = () => {
     return matchingSlot.availableSlot === 0;
   };
 
-  if (roomsLoading) return <p className="text-center mt-10">Đang tải khu vực...</p>;
-  if (roomsError) return <p className="text-center mt-10 text-orange-500">Lỗi: {roomsError}</p>;
-  if (!area) return <p className="text-center mt-10 text-orange-500">Không tìm thấy khu vực.</p>;
+  if (slotsLoading) return <p className="text-center mt-10">Đang tải slots...</p>;
+  if (slotsError) return <p className="text-center mt-10 text-orange-500">Lỗi: {slotsError.message || slotsError}</p>;
+  if (!selectedArea) return <p className="text-center mt-10 text-orange-500">Không tìm thấy khu vực.</p>;
 
   return (
     <div className="p-6 min-h-screen flex flex-col md:flex-row gap-6 mt-15 max-w-7xl mx-auto">
       <div className="md:w-1/2 mr-10">
-        <h1 className="text-3xl font-bold text-center mb-6">{area.name}</h1>
-        <img src={area.image} alt={area.name} className="w-full h-64 object-cover rounded-md mb-6" />
-        <p className="text-center mb-4">{area.description}</p>
+        <h1 className="text-3xl font-bold text-center mb-6">{selectedArea.key.title}</h1>
+        <img src={`https://localhost:9999${selectedArea.key.image}`} alt={selectedArea.name} className="w-full h-64 object-cover rounded-md mb-6" />
+        <p className="text-center mb-4">{selectedArea.key.categoryDescription}</p>
       </div>
 
       <div className="md:w-1/2 p-6 rounded-lg border shadow-md mt-15 mb-60 ml-10">
         <h2 className="text-xl font-bold mb-4">Đăng ký đặt chỗ</h2>
         <div className="mb-4">
           <p className="break-words text-base">
-            Bạn đã chọn khu vực: <strong>{area.key.title}</strong>
+            Bạn đã chọn khu vực: <strong>{selectedArea.key.title}</strong>
           </p>
         </div>
         <div className="max-h-96 overflow-y-auto">

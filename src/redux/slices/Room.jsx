@@ -92,6 +92,7 @@ const roomSlice = createSlice({
       .addCase(fetchRooms.fulfilled, (state, action) => {
         state.loading = false;
         state.rooms = Array.isArray(action.payload) ? action.payload : []; // Đảm bảo rooms luôn là mảng
+        state.selectedRoom = action.payload;
       })
       .addCase(fetchRooms.rejected, (state, action) => {
         state.loading = false;
