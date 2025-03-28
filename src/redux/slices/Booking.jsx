@@ -71,7 +71,6 @@ const bookingSlice = createSlice({
       state.bookingError = null;
       state.bookingSuccess = false;
       state.slotsError = null;
-      state.categoryInRoom = null;
       state.categoryLoading = false;
       state.categoryError = null;
     },

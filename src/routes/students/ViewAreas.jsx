@@ -14,8 +14,8 @@ const ViewAreas = () => {
 
   const { isModalOpen, selectedArea, selectedTime } = useSelector((state) => state.booking);
   const { slotsLoading, slotsError } = useSelector((state) => state.booking);
-  const { categoryInRoom, categoryLoading, categoryError } = useSelector((state) => state.booking);
-  const { rooms, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms);
+  const { categoryInRoom} = useSelector((state) => state.booking);
+  const { rooms} = useSelector((state) => state.rooms);
 
   const [bookingDates, setBookingDates] = useState([{ date: new Date().toISOString().split('T')[0], slots: [] }]);
   const [fetchedSlots, setFetchedSlots] = useState({});
@@ -39,7 +39,7 @@ const ViewAreas = () => {
         let roomId = null;
         for (const room of rooms) {
           if (room.area_DTO && room.area_DTO.length > 0) {
-            const matchingArea = room.area_DTO.find((area) => area.areaTypeId === selectedArea.areaTypeId);
+            const matchingArea = room.area_DTO.find((area) => area.areaTypeId === selectedArea.value[0].areaTypeId);
             if (matchingArea) {
               roomId = room.roomId;
               break;
@@ -48,20 +48,18 @@ const ViewAreas = () => {
         }
 
         if (roomId) {
-          console.log('Fetching slots with:', { roomId, areaTypeId: selectedArea.areaTypeId, bookingDate: booking.date });
           dispatch(fetchAvailableSlots({
             roomId: roomId,
-            areaTypeId: selectedArea.areaTypeId,
+            areaTypeId: selectedArea.value[0].areaTypeId,
             bookingDate: booking.date,
           })).then((action) => {
             if (action.meta.requestStatus === 'fulfilled') {
-              console.log('Fetched slots:', action.payload.data);
               setFetchedSlots((prev) => ({
                 ...prev,
                 [booking.date]: action.payload.data,
               }));
             } else {
-              console.log('Failed to fetch slots:', action.payload);
+              toast.error(slotsError.message);
             }
           });
         }
@@ -179,50 +177,36 @@ const ViewAreas = () => {
       <h1 className="text-3xl font-bold text-center mb-6">DXLAB Co-working Space</h1>
       <p className="text-center mb-8">Chọn khu vực phù hợp với nhu cầu làm việc của bạn</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-        {roomsLoading || categoryLoading ? (
-          <p>Đang tải khu vực...</p>
-        ) : roomsError ? (
-          <p className="text-red-500">
-            Lỗi: {typeof roomsError === 'object' ? roomsError.message || 'Không thể tải danh sách phòng' : roomsError}
-          </p>
-        ) : categoryError ? (
-          <p className="text-red-500">
-            Lỗi: {typeof categoryError === 'object' ? categoryError.message || 'Không thể tải danh sách khu vực' : categoryError}
-          </p>
-        ) : !categoryInRoom || !categoryInRoom.data || categoryInRoom.data.length === 0 ? (
-          <p>Không có khu vực nào để hiển thị</p>
-        ) : (
-          categoryInRoom.data.map((area, index) => (
-            <div key={index} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
-              <img
-                src={`https://localhost:9999${area.key.image}`}
-                alt={area.value.areaTypeName}
-                className="w-full h-48 object-cover rounded-md mb-4"
-              />
-              <h2 className="text-2xl font-semibold mb-2">{area.key.title}</h2>
-              <p>{area.key.categoryDescription.slice(0, 100)}...</p>
-              <div>
-                <button
-                  className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-                  onClick={() => {
-                    dispatch(openModal({
-                      areaTypeId: area.value.areaTypeId,
-                      name: area.value.areaTypeName,
-                      description: area.value.areaDescription,
-                      type: area.value.areaTypeId === 1 ? 'individual' : 'group', // Fix: Use areaTypeId instead of areaCategory
-                    }));
-                    setBookingDates([{ date: new Date().toISOString().split('T')[0], slots: [] }]);
-                  }}
-                >
-                  Chọn
-                </button>{" "}
-                <Link to={`/area/${area.value.areaTypeId}`} className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition">
-                  Chi tiết
-                </Link>
-              </div>
+        {categoryInRoom?.data?.map((area, index) => (
+          <div key={index} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
+            <img
+              src={`https://localhost:9999${area.key.image}`}
+              alt={area.value.areaTypeName}
+              className="w-full h-48 object-cover rounded-md mb-4"
+            />
+            <h2 className="text-2xl font-semibold mb-2">{area.key.title}</h2>
+            <p>{area.key.categoryDescription.slice(0, 100)}...</p>
+            <div>
+              <button
+                className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+                onClick={() => {
+                  dispatch(openModal({
+                    ...area,
+                    name: area.value.areaTypeName,
+                    description: area.value.areaDescription,
+                    type: area.value.areaCategory === 1 ? 'individual' : 'group'
+                  }));
+                  setBookingDates([{ date: new Date().toISOString().split('T')[0], slots: [] }]);
+                }}
+              >
+                Chọn
+              </button>{" "}
+              <Link to={`/area/${area.value.areaTypeId}`} className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition">
+                Chi tiết
+              </Link>
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
 
       {isModalOpen && (
@@ -235,7 +219,7 @@ const ViewAreas = () => {
               <h2 className="text-2xl font-bold mb-4 text-center">Đặt Lịch Tới DXLAB</h2>
               <div className="flex justify-between">
                 <p className="break-words text-base">
-                  Bạn đã chọn khu vực: <strong>{selectedArea?.name} ({selectedArea?.type === 'individual' ? 'Cá nhân' : 'Nhóm'})</strong>
+                  Bạn đã chọn khu vực: <strong>{selectedArea?.key.title}</strong>
                 </p>
               </div>
               <div className="max-h-96 overflow-y-auto">
@@ -256,16 +240,10 @@ const ViewAreas = () => {
                       </button>
                     </div>
                     <label className="block font-medium mb-2 mt-2">Chọn Slot:</label>
-                    {slotsLoading && <p>Đang tải slots...</p>}
-                    {slotsError && (
-                      <p className="text-red-500">
-                        Lỗi: {typeof slotsError === 'object' ? slotsError.message || 'Không thể tải danh sách slot' : slotsError}
-                      </p>
-                    )}
                     {!slotsLoading && !slotsError && booking.date ? (
                       <div className="grid grid-cols-2 gap-2">
                         {fetchedSlots[booking.date] && fetchedSlots[booking.date].length > 0 ? (
-                          fetchedSlots[booking.date].map((slot) => ( // Fix: Use fetchedSlots[booking.date] instead of availableSlots
+                          fetchedSlots[booking.date].map((slot) => (
                             <div
                               key={slot.slotId}
                               className={`group relative flex items-center space-x-2 p-2 rounded-md transition-all duration-200 ${

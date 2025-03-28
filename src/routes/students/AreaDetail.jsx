@@ -1,7 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { setSelectedTime, confirmBooking, setSelectedArea } from '../../redux/slices/Booking';
-import { fetchAvailableSlots } from '../../redux/slices/Booking';
+import { setSelectedTime, confirmBooking, setSelectedArea, fetchAvailableSlots, fetchCategoryInRoom } from '../../redux/slices/Booking';
 import { fetchRooms } from '../../redux/slices/Room';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -12,67 +11,32 @@ const AreaDetail = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Lấy dữ liệu từ Redux store
   const { selectedTime, selectedArea: area } = useSelector((state) => state.booking);
   const { slotsLoading, slotsError } = useSelector((state) => state.booking);
   const { rooms, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms);
 
-  // State cục bộ
-  const [bookingDates, setBookingDates] = useState([{ date: '', slots: [] }]);
+  const [bookingDates, setBookingDates] = useState([{ date: new Date().toISOString().split('T')[0], slots: [] }]);
   const [fetchedSlots, setFetchedSlots] = useState({});
 
-  // Lấy danh sách rooms khi component mount
   useEffect(() => {
     dispatch(fetchRooms());
   }, [dispatch]);
 
-  // Đồng bộ bookingDates với selectedTime
   useEffect(() => {
-    if (Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
-      const normalizedSelectedTime = selectedTime.map((booking) => ({
-        ...booking,
-        slots: Array.isArray(booking.slots) ? booking.slots : [],
-      }));
-      setBookingDates(normalizedSelectedTime);
-    }
-  }, [selectedTime, bookingDates]);
-
-  // Tìm area dựa trên typeName (areaTypeId) từ rooms
-  useEffect(() => {
-    if (rooms.length === 0) return;
-
-    let foundArea = null;
-    for (const room of rooms) {
-      if (room.area_DTO && room.area_DTO.length > 0) {
-        const matchingArea = room.area_DTO.find((area) => area.areaTypeId.toString() === id);
-        if (matchingArea) {
-          foundArea = {
-            areaTypeId: matchingArea.areaTypeId,
-            name: matchingArea.areaTypeName,
-            description: room.roomDescription || 'No description available',
-            image: room.images && room.images.length > 0 ? room.images[0] : 'default-image.jpg',
-            type: matchingArea.areaTypeId === 1 ? 'group' : 'individual',
-            roomId: room.roomId,
-          };
-          break;
+      if (rooms.length > 0) {
+        const findRoom = rooms.find((room) => room.roomId === parseInt(id));
+        if (findRoom) {
+          dispatch(fetchCategoryInRoom({ id: findRoom.roomId }));
         }
       }
-    }
+    }, [rooms, dispatch, id]);
 
-    if (foundArea) {
-      dispatch(setSelectedArea(foundArea));
-    } else {
-      toast.error('Khu vực không tồn tại!');
-    }
-  }, [id, rooms, dispatch, ]);
-
-  // Fetch available slots whenever the date changes
   useEffect(() => {
     bookingDates.forEach((booking) => {
       if (booking.date && area) {
         dispatch(fetchAvailableSlots({
           roomId: area.roomId,
-          areaTypeId: area.areaTypeId,
+          areaTypeId: area.value[0].areaTypeId,
           bookingDate: booking.date,
         })).then((action) => {
           if (action.meta.requestStatus === 'fulfilled') {
@@ -80,25 +44,43 @@ const AreaDetail = () => {
               ...prev,
               [booking.date]: action.payload.data,
             }));
+          } else {
+            toast.error(slotsError.message);
           }
         });
       }
     });
   }, [bookingDates, area, dispatch]);
 
-  const addBookingDate = () => {
-    const newBooking = { date: '', slots: [] };
-    const updatedDates = [...bookingDates, newBooking];
-    setBookingDates(updatedDates);
-    dispatch(setSelectedTime(updatedDates));
-  };
+  useEffect(() => {
+    if (Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
+      setBookingDates(selectedTime);
+    }
+  }, [selectedTime, bookingDates]);
 
-  const removeBookingDate = (index) => {
-    if (bookingDates.length === 1) {
-      toast.error('Phải có ít nhất một ngày đặt chỗ!');
+  const handleSlotChange = (bookingIndex, slotId) => {
+    const date = bookingDates[bookingIndex].date;
+    const slotsForDate = fetchedSlots[date] || [];
+    const slot = slotsForDate.find((s) => s.slotId === slotId);
+    if (!slot) return;
+
+    if (slot.availableSlot === 0) {
+      toast.error(`Slot ${slot.slotId} không khả dụng!`);
       return;
     }
-    const updatedDates = bookingDates.filter((_, i) => i !== index);
+
+    const updatedDates = [...bookingDates];
+    const currentBooking = updatedDates[bookingIndex];
+    const currentSlots = Array.isArray(currentBooking.slots) ? currentBooking.slots : [];
+
+    let newSlots;
+    if (currentSlots.includes(slotId)) {
+      newSlots = currentSlots.filter((s) => s !== slotId);
+    } else {
+      newSlots = [...currentSlots, slotId];
+    }
+
+    updatedDates[bookingIndex] = { ...currentBooking, slots: newSlots };
     setBookingDates(updatedDates);
     dispatch(setSelectedTime(updatedDates));
   };
@@ -110,29 +92,19 @@ const AreaDetail = () => {
     dispatch(setSelectedTime(updatedDates));
   };
 
-  const handleSlotChange = (index, slotId) => {
-    const date = bookingDates[index].date;
-    const slotsForDate = fetchedSlots[date] || [];
-    const slot = slotsForDate.find((s) => s.slotId === slotId);
-    if (!slot) return;
+  const addBookingDate = () => {
+    const newBooking = { date: new Date().toISOString().split('T')[0], slots: [] };
+    const updatedDates = [...bookingDates, newBooking];
+    setBookingDates(updatedDates);
+    dispatch(setSelectedTime(updatedDates));
+  };
 
-    if (slot.availableSlots === 0 ) {
-      toast.error(`Slot ${slot.slotId} không khả dụng!`);
+  const removeBookingDate = (index) => {
+    if (bookingDates.length === 1) {
+      toast.error('Phải có ít nhất một ngày đặt chỗ!');
       return;
     }
-
-    const updatedDates = [...bookingDates];
-    const currentBooking = updatedDates[index];
-    const currentSlots = Array.isArray(currentBooking.slots) ? currentBooking.slots : [];
-
-    let newSlots;
-    if (currentSlots.includes(slotId)) {
-      newSlots = currentSlots.filter((s) => s !== slotId);
-    } else {
-      newSlots = [...currentSlots, slotId];
-    }
-
-    updatedDates[index] = { ...currentBooking, slots: newSlots };
+    const updatedDates = bookingDates.filter((_, i) => i !== index);
     setBookingDates(updatedDates);
     dispatch(setSelectedTime(updatedDates));
   };
@@ -170,7 +142,7 @@ const AreaDetail = () => {
           const slot = slotsForDate.find((s) => s.slotId === slotId);
           if (slot) {
             const price = slot.price || 10;
-            total += price * setSelectedArea?.type
+            total += price;
           }
         });
       }
@@ -182,7 +154,7 @@ const AreaDetail = () => {
     const slotsForDate = fetchedSlots[date] || [];
     const matchingSlot = slotsForDate.find((s) => s.slotId === slot.slotId);
     if (!matchingSlot) return true;
-    return matchingSlot.availableSlot === 0 ;
+    return matchingSlot.availableSlot === 0;
   };
 
   if (roomsLoading) return <p className="text-center mt-10">Đang tải khu vực...</p>;
@@ -201,7 +173,7 @@ const AreaDetail = () => {
         <h2 className="text-xl font-bold mb-4">Đăng ký đặt chỗ</h2>
         <div className="mb-4">
           <p className="break-words text-base">
-            Bạn đã chọn khu vực: <strong>{area.name}</strong>
+            Bạn đã chọn khu vực: <strong>{area.key.title}</strong>
           </p>
         </div>
         <div className="max-h-96 overflow-y-auto">
