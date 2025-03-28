@@ -94,7 +94,7 @@ const bookingSlice = createSlice({
         state.bookingError = null;
         state.bookingSuccess = false;
       })
-      .addCase(createBooking.fulfilled, (state, action) => {
+      .addCase(createBooking.fulfilled, (state) => {
         state.bookingLoading = false;
         state.bookingSuccess = true;
         state.selectedTime = [];
