@@ -65,7 +65,7 @@ const BlogDetail = () => {
   };
 
   // Split content into chunks (~385 characters), without breaking words
-  const splitContent = (content, chunkSize = 385) => {
+  const splitContent = (content, chunkSize = 450) => {
     if (!content) return [];
     const cleanedContent = content.replace(/\n+/g, ' ').trim();
     const chunks = [];

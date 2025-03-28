@@ -1,28 +1,28 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedTime, setPeopleCount, confirmBooking, setSelectedArea } from '../../redux/slices/Booking';
-import { listSlots } from '../../redux/slices/Slot';
-import { fetchRooms } from '../../redux/slices/Room'; // Import fetchRooms to get room data
+import { fetchAvailableSlots } from '../../redux/slices/Booking';
+import { fetchRooms } from '../../redux/slices/Room';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { PlusCircleIcon, XIcon } from 'lucide-react';
 
 const AreaDetail = () => {
-  const { id } = useParams(); // This will be the areaTypeId (e.g., "1" or "2")
+  const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   // Lấy dữ liệu từ Redux store
   const { selectedTime, peopleCount, selectedArea: area } = useSelector((state) => state.booking);
-  const { slots, loading: slotsLoading, error: slotsError } = useSelector((state) => state.slots);
+  const { slotsLoading, slotsError } = useSelector((state) => state.booking);
   const { rooms, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms);
 
   // State cục bộ
   const [bookingDates, setBookingDates] = useState([{ date: '', slots: [] }]);
+  const [fetchedSlots, setFetchedSlots] = useState({});
 
-  // Lấy danh sách slots và rooms khi component mount
+  // Lấy danh sách rooms khi component mount
   useEffect(() => {
-    dispatch(listSlots());
     dispatch(fetchRooms());
   }, [dispatch]);
 
@@ -39,9 +39,8 @@ const AreaDetail = () => {
 
   // Tìm area dựa trên typeName (areaTypeId) từ rooms
   useEffect(() => {
-    if (rooms.length === 0) return; // Chờ rooms được tải
+    if (rooms.length === 0) return;
 
-    // Tìm area dựa trên areaTypeId
     let foundArea = null;
     for (const room of rooms) {
       if (room.area_DTO && room.area_DTO.length > 0) {
@@ -49,10 +48,10 @@ const AreaDetail = () => {
         if (matchingArea) {
           foundArea = {
             areaTypeId: matchingArea.areaTypeId,
-            name: matchingArea.areaTypeName, // Use areaTypeName as the display name
+            name: matchingArea.areaTypeName,
             description: room.roomDescription || 'No description available',
             image: room.images && room.images.length > 0 ? room.images[0] : 'default-image.jpg',
-            type: matchingArea.areaTypeId === 1 ? 'group' : 'individual', // Map areaTypeId to type
+            type: matchingArea.areaTypeId === 1 ? 'group' : 'individual',
             roomId: room.roomId,
           };
           break;
@@ -69,6 +68,26 @@ const AreaDetail = () => {
       toast.error('Khu vực không tồn tại!');
     }
   }, [id, rooms, dispatch, peopleCount]);
+
+  // Fetch available slots whenever the date changes
+  useEffect(() => {
+    bookingDates.forEach((booking) => {
+      if (booking.date && area) {
+        dispatch(fetchAvailableSlots({
+          roomId: area.roomId,
+          areaTypeId: area.areaTypeId,
+          bookingDate: booking.date,
+        })).then((action) => {
+          if (action.meta.requestStatus === 'fulfilled') {
+            setFetchedSlots((prev) => ({
+              ...prev,
+              [booking.date]: action.payload.data,
+            }));
+          }
+        });
+      }
+    });
+  }, [bookingDates, area, dispatch]);
 
   const addBookingDate = () => {
     const newBooking = { date: '', slots: [] };
@@ -89,17 +108,19 @@ const AreaDetail = () => {
 
   const handleDateChange = (index, value) => {
     const updatedDates = [...bookingDates];
-    updatedDates[index] = { ...updatedDates[index], date: value, slots: updatedDates[index].slots || [] };
+    updatedDates[index] = { ...updatedDates[index], date: value, slots: [] };
     setBookingDates(updatedDates);
     dispatch(setSelectedTime(updatedDates));
   };
 
   const handleSlotChange = (index, slotId) => {
-    const slot = slots.find((s) => s.slotId === slotId);
+    const date = bookingDates[index].date;
+    const slotsForDate = fetchedSlots[date] || [];
+    const slot = slotsForDate.find((s) => s.slotId === slotId);
     if (!slot) return;
 
-    if (slot.isAvailable === false || (area?.type === 'group' && slot.remainingSeats <= peopleCount)) {
-      toast.error(`Slot ${slot.name || slot.slotId} không khả dụng!`);
+    if (slot.availableSlots === 0 || (area?.type === 'group' && slot.availableSlots < peopleCount)) {
+      toast.error(`Slot ${slot.slotId} không khả dụng!`);
       return;
     }
 
@@ -147,8 +168,9 @@ const AreaDetail = () => {
     let total = 0;
     bookingDates.forEach((booking) => {
       if (Array.isArray(booking.slots)) {
+        const slotsForDate = fetchedSlots[booking.date] || [];
         booking.slots.forEach((slotId) => {
-          const slot = slots.find((s) => s.slotId === slotId);
+          const slot = slotsForDate.find((s) => s.slotId === slotId);
           if (slot) {
             const price = slot.price || 10;
             total += price * (area?.type === 'group' ? peopleCount : 1);
@@ -159,13 +181,16 @@ const AreaDetail = () => {
     return total;
   };
 
-  const isSlotDisabled = (slot) => {
-    return slot.isAvailable === false || (area?.type === 'group' && slot.remainingSeats <= peopleCount);
+  const isSlotDisabled = (slot, date) => {
+    const slotsForDate = fetchedSlots[date] || [];
+    const matchingSlot = slotsForDate.find((s) => s.slotId === slot.slotId);
+    if (!matchingSlot) return true;
+    return matchingSlot.availableSlot === 0 || (area?.type === 'group' && matchingSlot.availableSlot < peopleCount);
   };
 
   if (roomsLoading) return <p className="text-center mt-10">Đang tải khu vực...</p>;
-  if (roomsError) return <p className="text-center mt-10 text-red-500">Lỗi: {roomsError}</p>;
-  if (!area) return <p className="text-center mt-10 text-red-500">Không tìm thấy khu vực.</p>;
+  if (roomsError) return <p className="text-center mt-10 text-orange-500">Lỗi: {roomsError}</p>;
+  if (!area) return <p className="text-center mt-10 text-orange-500">Không tìm thấy khu vực.</p>;
 
   return (
     <div className="p-6 min-h-screen flex flex-col md:flex-row gap-6 mt-15 max-w-7xl mx-auto">
@@ -187,7 +212,7 @@ const AreaDetail = () => {
             <label className="block font-medium mb-2">Số lượng người</label>
             <input
               type="number"
-              className="w-full p-2 border rounded-md mb-4"
+              className="w-full p-2 border rounded-md"
               min="1"
               value={peopleCount}
               onChange={(e) => dispatch(setPeopleCount(Number(e.target.value)))}
@@ -195,50 +220,68 @@ const AreaDetail = () => {
           </div>
         )}
         <div className="max-h-96 overflow-y-auto">
-          {slotsLoading ? (
-            <p>Đang tải slots...</p>
-          ) : slotsError ? (
-            <p className="text-red-500">Lỗi: {slotsError}</p>
-          ) : (
-            bookingDates.map((booking, index) => (
-              <div key={index} className="mb-4">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="date"
-                    className="flex-1 p-2 border rounded-md dark:bg-gray-700 dark:text-white"
-                    value={booking.date}
-                    onChange={(e) => handleDateChange(index, e.target.value)}
-                  />
-                  <button
-                    onClick={() => removeBookingDate(index)}
-                    className="p-1 text-red-500 hover:text-red-700"
-                  >
-                    <XIcon className="h-5 w-5" />
-                  </button>
-                </div>
-                <label className="block font-medium mb-2 mt-2">Chọn Slot:</label>
+          {bookingDates.map((booking, index) => (
+            <div key={index} className="mb-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  className="flex-1 p-2 border rounded-md dark:bg-gray-700 dark:text-white"
+                  value={booking.date}
+                  onChange={(e) => handleDateChange(index, e.target.value)}
+                />
+                <button
+                  onClick={() => removeBookingDate(index)}
+                  className="p-1 text-red-500 hover:text-red-700"
+                >
+                  <XIcon className="h-5 w-5" />
+                </button>
+              </div>
+              <label className="block font-medium mb-2 mt-2">Chọn Slot:</label>
+              {slotsLoading && <p>Đang tải slots...</p>}
+              {slotsError && <p className="text-red-500">Lỗi: {slotsError.message || slotsError}</p>}
+              {!slotsLoading && !slotsError && booking.date && (
                 <div className="grid grid-cols-2 gap-2">
-                  {Array.isArray(slots) && slots.length > 0 ? (
-                    slots.map((slot) => (
-                      <label key={slot.slotId} className="flex items-center space-x-2">
+                  {fetchedSlots[booking.date] && fetchedSlots[booking.date].length > 0 ? (
+                    fetchedSlots[booking.date].map((slot) => (
+                      <div
+                        key={slot.slotId}
+                        className={`group relative flex items-center space-x-2 p-2 rounded-md transition-all duration-200 ${
+                          slot.availableSlot === 0
+                            ? 'bg-gray-100 text-orange-500 cursor-not-allowed'
+                            : 'bg-white hover:bg-gray-50'
+                        }`}
+                      >
                         <input
                           type="checkbox"
                           value={slot.slotId}
                           checked={Array.isArray(booking.slots) && booking.slots.includes(slot.slotId)}
                           onChange={() => handleSlotChange(index, slot.slotId)}
-                          disabled={isSlotDisabled(slot)}
-                          className={isSlotDisabled(slot) ? 'cursor-not-allowed opacity-50' : ''}
+                          disabled={isSlotDisabled(slot, booking.date)}
+                          className={`${
+                            slot.availableSlot === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                          }`}
                         />
-                        <span>{slot.name || `Slot ${slot.slotId}`}</span>
-                      </label>
+                        <span
+                          className={`${
+                            slot.availableSlot === 0 ? 'line-through' : ''
+                          }`}
+                        >
+                          Slot {slot.slotNumber} ({slot.availableSlot} chỗ trống)
+                        </span>
+                        {slot.availableSlot === 0 && (
+                          <span className="absolute left-1/2 transform -translate-x-1/2 -top-8 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2">
+                            Hết chỗ
+                          </span>
+                        )}
+                      </div>
                     ))
                   ) : (
-                    <p>Không có slot nào khả dụng</p>
+                    <p>Không có slot nào khả dụng cho ngày này</p>
                   )}
                 </div>
-              </div>
-            ))
-          )}
+              )}
+            </div>
+          ))}
         </div>
         <button className="flex items-center gap-2 text-orange-500 mt-2 mb-5" onClick={addBookingDate}>
           <PlusCircleIcon className="h-5 w-5" /> Thêm ngày
