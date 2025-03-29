@@ -56,13 +56,8 @@ const ViewAreas = () => {
   }, [isModalOpen, selectedArea, selectedRoom, bookingDates, fetchedSlots]);
 
   const fetchSlotsForDate = (date) => {
-    const today = new Date().toISOString().split('T')[0];
-    if (date < today) {
-      toast.error(`Ngày ${date} không hợp lệ! Vui lòng chọn ngày từ hôm nay trở đi.`);
-      return;
-    }
 
-    if (selectedArea && selectedRoom) {
+    if (selectedArea && selectedRoom && date) {
       dispatch(fetchAvailableSlots({
         roomId: selectedRoom.roomId,
         areaTypeId: selectedArea.value[0].areaTypeId,
@@ -74,7 +69,15 @@ const ViewAreas = () => {
             [date]: action.payload.data,
           }));
         } else {
-          toast.error(slotsError?.message || `Không thể tải slot cho ngày ${date}`);
+          const today = new Date().toISOString().split('T')[0];
+          if (date < today) {
+            setFetchedSlots((prev) => ({
+              ...prev,
+              [date]: [], // Set empty array if fetch fails to avoid undefined
+            }));
+            toast.error(slotsError?.message);
+            return;
+          }
         }
       });
     }
