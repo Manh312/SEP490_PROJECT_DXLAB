@@ -11,7 +11,7 @@ const AreaDetail = () => {
   const navigate = useNavigate();
 
   const { selectedTime } = useSelector((state) => state.booking);
-  const { slotsError, categoryInRoom } = useSelector((state) => state.booking);
+  const { categoryInRoom } = useSelector((state) => state.booking);
   const { selectedRoom, loading: roomLoading } = useSelector((state) => state.rooms);
   const [bookingDates, setBookingDates] = useState([{ date: new Date().toISOString().split('T')[0], slots: [] }]);
   const [fetchedSlots, setFetchedSlots] = useState({});
@@ -47,42 +47,52 @@ const AreaDetail = () => {
   }, [categoryInRoom, id, navigate]);
 
   // Sync bookingDates with selectedTime and fetch slots
-  useEffect(() => {
-    if (Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
-      setBookingDates(selectedTime);
-    }
-    // Fetch slots for all dates in bookingDates
-    if (selectedArea && selectedRoom) {
-      bookingDates.forEach((booking) => {
-        if (booking.date && !fetchedSlots[booking.date]) {
-          fetchSlotsForDate(booking.date);
-        }
-      });
-    }
-  }, [selectedTime, selectedArea, selectedRoom, bookingDates, fetchedSlots]);
+  // useEffect(() => {
+  //   if (Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
+  //     setBookingDates(selectedTime);
+  //   }
+  //   // Fetch slots for all dates in bookingDates
+  //   if (selectedArea && selectedRoom) {
+  //     bookingDates.forEach((booking) => {
+  //       if (booking.date && !fetchedSlots[booking.date]) {
+  //         fetchSlotsForDate(booking.date);
+  //       }
+  //     });
+  //   }
+  // }, [selectedTime, selectedArea, selectedRoom, bookingDates, fetchedSlots]);
+
+    // fetch slot lần đầu
+    useEffect(() => {
+      if (selectedArea) {
+        const today = new Date().toISOString().split('T')[0];
+        fetchSlotsForDate(today);
+      }
+    }, [selectedArea]);
 
   // Fetch available slots for a specific date
-  const fetchSlotsForDate = (date) => {
+  const fetchSlotsForDate = async (date) => {
     if (selectedArea && selectedRoom && date) {
-      dispatch(fetchAvailableSlots({
-        roomId: selectedRoom.roomId,
-        areaTypeId: selectedArea.value[0].areaTypeId,
-        bookingDate: date,
-      })).then((action) => {
-        if (action.meta.requestStatus === 'fulfilled' && action.payload?.data) {
-          setFetchedSlots((prev) => ({
-            ...prev,
-            [date]: action.payload.data,
-          }));
-        } 
-        else {
-            setFetchedSlots((prev) => ({
-              ...prev,
-              [date]: [], // Set empty array if fetch fails to avoid undefined
-            }));
-            toast.error(slotsError?.message);
-        }
-      })
+      try {
+        const res = await dispatch(fetchAvailableSlots({
+          roomId: selectedRoom.roomId,
+          areaTypeId: selectedArea.value[0].areaTypeId,
+          bookingDate: date,
+        })).unwrap();
+  
+        setFetchedSlots((prev) => ({
+          ...prev,
+          [date]: res.data,
+        }));
+  
+      } catch (error) {
+        setFetchedSlots((prev) => ({
+          ...prev,
+          [date]: [], // Set empty array if fetch fails to avoid undefined
+        }));
+  
+        // Hiện thông báo lỗi trả về từ backend hoặc lỗi mặc định
+        toast.error(error.message || 'Có lỗi xảy ra khi lấy dữ liệu slot.');
+      }
     }
   };
 

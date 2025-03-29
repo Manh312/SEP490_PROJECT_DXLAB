@@ -45,38 +45,37 @@ const ViewAreas = () => {
     }
   }, [selectedTime]);
 
-  // Tự động fetch slot khi modal mở
+  // fetch slot lần đầu
   useEffect(() => {
-    if (isModalOpen && selectedArea && selectedRoom) {
-      bookingDates.forEach((booking) => {
-        if (booking.date && !fetchedSlots[booking.date]) {
-          fetchSlotsForDate(booking.date);
-        }
-      });
+    if (selectedArea) {
+      const today = new Date().toISOString().split('T')[0];
+      fetchSlotsForDate(today);
     }
-  }, [isModalOpen, selectedArea, selectedRoom, bookingDates, fetchedSlots]);
+  }, [selectedArea]);
 
-  const fetchSlotsForDate = (date) => {
-
+  const fetchSlotsForDate = async (date) => {
     if (selectedArea && selectedRoom && date) {
-      dispatch(fetchAvailableSlots({
-        roomId: selectedRoom.roomId,
-        areaTypeId: selectedArea.value[0].areaTypeId,
-        bookingDate: date,
-      })).then((action) => {
-        if (action.meta.requestStatus === 'fulfilled') {
-          setFetchedSlots((prev) => ({
-            ...prev,
-            [date]: action.payload.data,
-          }));
-        } else {
-            setFetchedSlots((prev) => ({
-              ...prev,
-              [date]: [], // Set empty array if fetch fails to avoid undefined
-            }));
-            toast.error(slotsError?.message);
-        }
-      });
+      try {
+        const res = await dispatch(fetchAvailableSlots({
+          roomId: selectedRoom.roomId,
+          areaTypeId: selectedArea.value[0].areaTypeId,
+          bookingDate: date,
+        })).unwrap();
+  
+        setFetchedSlots((prev) => ({
+          ...prev,
+          [date]: res.data,
+        }));
+  
+      } catch (error) {
+        setFetchedSlots((prev) => ({
+          ...prev,
+          [date]: [], // Set empty array if fetch fails to avoid undefined
+        }));
+  
+        // Hiện thông báo lỗi trả về từ backend hoặc lỗi mặc định
+        toast.error(error.message || 'Có lỗi xảy ra khi lấy dữ liệu slot.');
+      }
     }
   };
 
@@ -228,7 +227,6 @@ const ViewAreas = () => {
                       type: area.value[0].areaCategory === 1 ? 'individual' : 'group',
                     }));
                     setBookingDates([{ date: new Date().toISOString().split('T')[0], slots: [] }]);
-                    fetchSlotsForDate(new Date().toISOString().split('T')[0]);
                   }}
                 >
                   Chọn
