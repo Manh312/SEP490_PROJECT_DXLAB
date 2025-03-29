@@ -75,11 +75,11 @@ const AreaDetail = () => {
             [date]: action.payload.data,
           }));
         } else {
-          setFetchedSlots((prev) => ({
-            ...prev,
-            [date]: [], // Set empty array if fetch fails to avoid undefined
-          }));
-          toast.error(slotsError?.message);
+            setFetchedSlots((prev) => ({
+              ...prev,
+              [date]: [], // Set empty array if fetch fails to avoid undefined
+            }));
+            toast.error(slotsError?.message);
         }
       });
     }

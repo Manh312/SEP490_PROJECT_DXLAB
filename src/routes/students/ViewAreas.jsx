@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { XIcon, PlusCircleIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { FaSpinner } from 'react-icons/fa';
 
 const ViewAreas = () => {
   const dispatch = useDispatch();
@@ -69,15 +70,11 @@ const ViewAreas = () => {
             [date]: action.payload.data,
           }));
         } else {
-          const today = new Date().toISOString().split('T')[0];
-          if (date < today) {
             setFetchedSlots((prev) => ({
               ...prev,
               [date]: [], // Set empty array if fetch fails to avoid undefined
             }));
             toast.error(slotsError?.message);
-            return;
-          }
         }
       });
     }
@@ -203,7 +200,10 @@ const ViewAreas = () => {
       <h1 className="text-3xl font-bold text-center mb-6">DXLAB Co-working Space</h1>
       <p className="text-center mb-8">Chọn khu vực phù hợp với nhu cầu làm việc của bạn</p>
       {roomLoading ? (
-        <p>Đang tải thông tin phòng...</p>
+        <div className="flex items-center justify-center py-6">
+          <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+          <p className="text-orange-500 font-medium">Đang tải thông tin chi tiết phòng...</p>
+        </div>
       ) : !selectedRoom ? (
         <p>Không tìm thấy phòng với ID: {id}</p>
       ) : (
@@ -297,9 +297,8 @@ const ViewAreas = () => {
                         fetchedSlots[booking.date].map((slot) => (
                           <div
                             key={slot.slotId}
-                            className={`group relative flex items-center space-x-2 p-2 rounded-md transition-all duration-200 ${
-                              slot.availableSlot === 0 ? 'text-orange-500 cursor-not-allowed' : ''
-                            }`}
+                            className={`group relative flex items-center space-x-2 p-2 rounded-md transition-all duration-200 ${slot.availableSlot === 0 ? 'text-orange-500 cursor-not-allowed' : ''
+                              }`}
                           >
                             <input
                               type="checkbox"
