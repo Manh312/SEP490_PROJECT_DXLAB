@@ -74,14 +74,15 @@ const AreaDetail = () => {
             ...prev,
             [date]: action.payload.data,
           }));
-        } else {
+        } 
+        else {
             setFetchedSlots((prev) => ({
               ...prev,
               [date]: [], // Set empty array if fetch fails to avoid undefined
             }));
             toast.error(slotsError?.message);
         }
-      });
+      })
     }
   };
 

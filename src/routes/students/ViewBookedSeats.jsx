@@ -113,6 +113,8 @@ const ViewBookedSeats = () => {
           >
             <option value={1}>Slot 1</option>
             <option value={2}>Slot 2</option>
+            <option value={3}>Slot 3</option>
+            <option value={4}>Slot 4</option>
           </select>
         </div>
       </div>
