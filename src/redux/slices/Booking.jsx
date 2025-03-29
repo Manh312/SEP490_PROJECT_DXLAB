@@ -108,9 +108,10 @@ const bookingSlice = createSlice({
         state.bookingError = null;
         state.bookingSuccess = false;
       })
-      .addCase(createBooking.fulfilled, (state) => {
+      .addCase(createBooking.fulfilled, (state, action) => {
         state.bookingLoading = false;
         state.bookingSuccess = true;
+        state.bookings = [...state.bookings, action.payload];
         state.selectedTime = [];
         state.selectedArea = null;
         state.bookingDate = null;
