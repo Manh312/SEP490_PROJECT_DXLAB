@@ -8,38 +8,29 @@ const Payment = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { selectedArea, selectedTime, peopleCount, bookingLoading } = useSelector((state) => state.booking);
-  const { slots, loading: slotsLoading, error: slotsError } = useSelector((state) => state.slots);
-  const { rooms, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms);
+  const { selectedArea, selectedTime, bookingLoading } = useSelector((state) => state.booking);
+  const { selectedRoom, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms);
 
-  console.log('Selected Time in Payment:', selectedTime);
-  console.log('Slots in Payment:', slots);
-  console.log('Rooms in Payment:', rooms);
-
-  // Reset booking status when the component mounts
   useEffect(() => {
     dispatch(resetBookingStatus());
   }, [dispatch]);
 
-  // Find the room based on the roomId in selectedArea
-  const selectedRoom = selectedArea?.roomId
-    ? rooms.find((room) => room.roomId === selectedArea.roomId)
-    : null;
 
-  // Calculate total price
+  const fetchedSlots = selectedArea?.fetchedSlots || {};
+
   const calculateTotalPrice = () => {
     let total = 0;
-    if (!Array.isArray(selectedTime)) return total;
+    if (!Array.isArray(selectedTime) || selectedTime.length === 0) {
+      console.log('No selectedTime available');
+      return total;
+    }
+
+    const pricePerSlot = selectedArea?.value?.[0]?.price || 10; // Fallback về 10 nếu không có giá
 
     selectedTime.forEach((booking) => {
-      if (Array.isArray(booking.slots)) {
-        booking.slots.forEach((slotId) => {
-          const slot = slots.find((s) => s.slotId === slotId);
-          if (slot) {
-            const price = slot.price || 10;
-            total += price * (selectedArea?.type === 'group' ? peopleCount : 1);
-          }
-        });
+      if (Array.isArray(booking.slots) && booking.slots.length > 0) {
+        console.log(`Processing date: ${booking.date}, slots: ${booking.slots}`);
+        total += booking.slots.length * pricePerSlot; // Tính tổng dựa trên số slot
       }
     });
     return total;
@@ -56,25 +47,26 @@ const Payment = () => {
   };
 
   // Get slot names from slotIds
-  const getSlotNames = (slotIds) => {
+  const getSlotNames = (slotIds, date) => {
     if (!Array.isArray(slotIds) || slotIds.length === 0) return 'Chưa chọn';
+    const slotsForDate = fetchedSlots[date] || [];
     return slotIds
       .map((slotId) => {
-        const slot = slots.find((s) => s.slotId === slotId);
-        return slot ? slot.name || `Slot ${slot.slotId}` : slotId;
+        const slot = slotsForDate.find((s) => s.slotId === slotId);
+        return slot ? `Slot ${slot.slotNumber}` : `Slot ${slotId}`;
       })
       .join(', ');
   };
 
   // Handle payment confirmation
   const handleConfirmPayment = async () => {
-    // Validate selectedRoom and selectedArea
     if (!selectedRoom || !selectedRoom.roomId) {
       toast.error('Thông tin phòng không hợp lệ!');
       return;
     }
 
-    if (!selectedArea || !selectedArea.areaTypeId) {
+    const areaTypeId = selectedArea?.value?.[0]?.areaTypeId || selectedArea?.areaTypeId;
+    if (!areaTypeId) {
       toast.error('Thông tin khu vực không hợp lệ!');
       return;
     }
@@ -84,18 +76,16 @@ const Payment = () => {
       return;
     }
 
-    // Construct the request body for the API
     const bookingData = {
-      roomID: selectedRoom.roomId, // Use selectedRoom.roomId from rooms
-      areaTypeId: selectedArea.areaTypeId,
+      roomID: selectedRoom.roomId,
+      areaTypeId: areaTypeId,
       bookingTimes: selectedTime.map((booking) => ({
-        bookingDate: new Date(booking.date).toISOString(), // Convert YYYY-MM-DD to ISO timestamp
-        slotId: Array.isArray(booking.slots) ? booking.slots : [], // Ensure slotId is an array
+        bookingDate: new Date(booking.date).toISOString(),
+        slotId: Array.isArray(booking.slots) ? booking.slots : [],
       })),
     };
 
     try {
-      // Dispatch the createBooking thunk and wait for the response
       await dispatch(createBooking(bookingData)).unwrap();
       toast.success('Thanh toán thành công!');
       dispatch(confirmBooking([])); // Reset booking state
@@ -105,16 +95,12 @@ const Payment = () => {
     }
   };
 
-  if (roomsLoading || slotsLoading) {
+  if (roomsLoading) {
     return <div className="p-6 text-center">Đang tải dữ liệu...</div>;
   }
 
   if (roomsError) {
     return <div className="p-6 text-center text-red-500">Lỗi: {roomsError}</div>;
-  }
-
-  if (slotsError) {
-    return <div className="p-6 text-center text-red-500">Lỗi: {slotsError}</div>;
   }
 
   return (
@@ -127,13 +113,12 @@ const Payment = () => {
             <strong>Phòng:</strong> {selectedRoom?.roomName || 'Chưa chọn'}
           </p>
           <p>
-            <strong>Khu vực:</strong> {selectedArea?.name || 'Chưa chọn'}
+            <strong>Loại khu vực:</strong> {selectedArea?.key?.categoryId === 2 ? "Khu vực nhóm" : "Khu vực cá nhân"}
           </p>
-          {selectedArea?.type === 'group' && (
-            <p>
-              <strong>Số người:</strong> {peopleCount}
-            </p>
-          )}
+          <p>
+            <strong>Khu vực:</strong> {selectedArea?.name || selectedArea?.value?.[0]?.areaTypeName || 'Chưa chọn'}
+          </p>
+
           {Array.isArray(selectedTime) && selectedTime.length > 0 ? (
             <div>
               <p>
@@ -142,7 +127,7 @@ const Payment = () => {
               <ul className="list-disc pl-5">
                 {selectedTime.map((item, index) => (
                   <li key={index}>
-                    {formatDate(item.date)} - {getSlotNames(item.slots)}
+                    {formatDate(item.date)} - {getSlotNames(item.slots, item.date)}
                   </li>
                 ))}
               </ul>
@@ -166,7 +151,7 @@ const Payment = () => {
             {bookingLoading ? 'Đang xử lý...' : 'Xác nhận Thanh Toán'}
           </button>
           <Link
-            to={`/area/${selectedArea?.areaTypeId}`}
+            to={`/area/${selectedArea?.value?.[0]?.areaTypeId || selectedArea?.areaTypeId}`}
             className="w-full px-6 py-3 text-center bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition"
           >
             Quay lại Khu Vực chọn

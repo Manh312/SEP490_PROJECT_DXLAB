@@ -194,8 +194,9 @@ const AreaTypeList = () => {
                 <thead className="border-b items-center bg-gray-400">
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Loại</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hình Ảnh</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Khu Vực</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Phân Loại</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Giá</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Trạng Thái</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành Động</th>
@@ -206,9 +207,6 @@ const AreaTypeList = () => {
                     <tr key={type.areaTypeId} className="border-b hover:bg-gray-400 transition-colors">
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {(currentPage - 1) * areaTypesPerPage + index + 1}
-                      </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        <Link to={`/dashboard/areaType/${type.areaTypeId}`}>{type.areaTypeName || "N/A"}</Link>
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center flex justify-center gap-2">
                         {type.images?.slice(0, 3).map((img, imgIndex) => (
@@ -224,6 +222,12 @@ const AreaTypeList = () => {
                             + {type.images.length - 3} ảnh
                           </span>
                         )}
+                      </td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        <Link to={`/dashboard/areaType/${type.areaTypeId}`}>{type.areaTypeName || "N/A"}</Link>
+                      </td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        {`${type.areaCategory === 1 ? "Khu vực cá nhân": "Khu vực nhóm"}`}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {`${type.price} VNĐ`}

@@ -92,7 +92,6 @@ const roomSlice = createSlice({
       .addCase(fetchRooms.fulfilled, (state, action) => {
         state.loading = false;
         state.rooms = Array.isArray(action.payload) ? action.payload : []; // Đảm bảo rooms luôn là mảng
-        state.selectedRoom = action.payload;
       })
       .addCase(fetchRooms.rejected, (state, action) => {
         state.loading = false;
@@ -139,6 +138,9 @@ const roomSlice = createSlice({
         state.rooms = state.rooms.map((room) =>
           room.roomId === action.payload.roomId ? action.payload : room
         );
+        if (state.selectedRoom?.roomId === action.payload.roomId) {
+          state.selectedRoom = action.payload; // Cập nhật selectedRoom nếu nó bị ảnh hưởng
+        }
       })
       .addCase(updateRoom.rejected, (state, action) => {
         state.loading = false;
@@ -153,6 +155,9 @@ const roomSlice = createSlice({
       .addCase(deleteRoom.fulfilled, (state, action) => {
         state.loading = false;
         state.rooms = state.rooms.filter((room) => room.roomId !== action.payload);
+        if (state.selectedRoom?.roomId === action.payload) {
+          state.selectedRoom = null; // Xóa selectedRoom nếu nó bị xóa
+        }
       })
       .addCase(deleteRoom.rejected, (state, action) => {
         state.loading = false;
