@@ -1,11 +1,11 @@
 import { ArmchairIcon } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import table_images from '../../assets/table.png';
-import { useState } from 'react'; // Thêm useState để quản lý slot và ngày
+import { useState, useEffect } from 'react'; // Thêm useEffect để đồng bộ selectedDate
 
 const individualSeats = {
-  table1: ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'], // Bàn 6 ghế
-  table2: ['B1', 'B2', 'B3', 'B4'], // Bàn 4 ghế
+  table1: ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'],
+  table2: ['B1', 'B2', 'B3', 'B4'],
 };
 
 const groupSeats = {
@@ -16,7 +16,6 @@ const groupSeats = {
   "6-seats-2": [['I7', 'I8', 'I9', 'I10', 'I11', 'I12']],
 };
 
-// Bảng ánh xạ positionId với mã ghế
 const positionIdToSeatMap = {
   9: { seat: 'A1', area: 'individual' },
   10: { seat: 'A2', area: 'individual' },
@@ -61,22 +60,25 @@ const positionIdToSeatMap = {
 };
 
 const ViewBookedSeats = () => {
-  const { bookings } = useSelector((state) => state.booking);
+  const { bookings, bookingDate } = useSelector((state) => state.booking);
 
-  // State để quản lý slot và ngày được chọn
   const [selectedSlot, setSelectedSlot] = useState(1); // Mặc định slot 1
-  const [selectedDate, setSelectedDate] = useState('2025-03-29'); // Mặc định ngày 2025-03-29
+  const [selectedDate, setSelectedDate] = useState(bookingDate || ''); // Sử dụng bookingDate từ Redux
+
+  // Đồng bộ selectedDate với bookingDate khi component mount
+  useEffect(() => {
+    if (bookingDate) {
+      setSelectedDate(bookingDate);
+    }
+  }, [bookingDate]);
 
   console.log("Bookings:", bookings);
 
-  // Lấy danh sách ghế đã đặt, lọc theo slot và ngày
   const bookedSeats = bookings
     .map(booking =>
       booking.data.details
         .filter(detail => {
-          // Lấy ngày từ checkInTime (bỏ phần thời gian)
           const bookingDate = detail.checkinTime.split('T')[0];
-          // Lọc theo slot và ngày
           return detail.slotId === selectedSlot && bookingDate === selectedDate;
         })
         .map(detail => {
@@ -93,7 +95,6 @@ const ViewBookedSeats = () => {
     <div className="p-6 min-h-screen flex flex-col items-center">
       <h1 className="text-3xl font-bold text-center mb-6">Bảng hiển thị vị trí ghế ngồi tại DXLAB</h1>
 
-      {/* Giao diện chọn slot và ngày */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4">
         <div>
           <label className="mr-2 font-semibold">Chọn ngày:</label>
@@ -120,10 +121,8 @@ const ViewBookedSeats = () => {
       </div>
 
       <div className="w-full max-w-5xl space-y-6 border rounded-lg p-6">
-        {/* Chỗ ngồi cá nhân */}
         <h2 className="text-2xl font-bold text-center mb-4">Chỗ ngồi cá nhân</h2>
         <div className="flex flex-wrap justify-center gap-12">
-          {/* Bàn 6 ghế */}
           <div className="relative flex justify-center items-center border-4 border-gray-600 p-6 rounded-lg shadow-md" style={{ width: '300px', height: '280px' }}>
             <img
               src={table_images}
@@ -148,7 +147,6 @@ const ViewBookedSeats = () => {
             })}
           </div>
 
-          {/* Bàn 4 ghế */}
           <div className="relative flex justify-center items-center border-4 border-gray-600 p-6 rounded-lg shadow-md" style={{ width: '300px', height: '290px' }}>
             <img
               src={table_images}
@@ -174,7 +172,6 @@ const ViewBookedSeats = () => {
           </div>
         </div>
 
-        {/* Khu vực nhóm */}
         <div className="p-4 rounded-lg shadow-md">
           <h2 className="text-2xl font-bold text-center mb-4">Khu vực Nhóm</h2>
           <div className="flex flex-wrap justify-center gap-4">

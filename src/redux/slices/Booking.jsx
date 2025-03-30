@@ -38,6 +38,30 @@ export const fetchCategoryInRoom = createAsyncThunk(
   }
 );
 
+export const fetchBookingHistory = createAsyncThunk(
+  'booking/fetchBookingHistory',
+  async ({ rejectWithValue }) => {
+    try {
+      const response = await axios.get(`/studentbookinghistory`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
+export const fetchBookingHistoryDetail = createAsyncThunk(
+  'booking/fetchBookingHistoryDetail',
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`/studentbookinghistory/${id}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
 const initialState = {
   isModalOpen: false,
   selectedArea: null,
@@ -53,6 +77,9 @@ const initialState = {
   categoryLoading: false,
   categoryError: null,
   bookings: [],
+  bookingDetail: null,
+  historyDetailLoading: false,
+  historyDetailError: null,
 };
 
 const bookingSlice = createSlice({
@@ -98,6 +125,8 @@ const bookingSlice = createSlice({
       state.slotsError = null;
       state.categoryLoading = false;
       state.categoryError = null;
+      state.historyDetailLoading = false;
+      state.historyDetailError = null;
     },
   },
   extraReducers: (builder) => {
@@ -146,6 +175,30 @@ const bookingSlice = createSlice({
         state.categoryLoading = false;
         state.categoryError = action.payload;
       })
+      .addCase(fetchBookingHistory.pending, (state) => {
+        state.bookingLoading = true; // Có thể dùng một state riêng như historyLoading nếu muốn
+        state.bookingError = null;
+      })
+      .addCase(fetchBookingHistory.fulfilled, (state, action) => {
+        state.bookingLoading = false;
+        state.bookings = action.payload; // Lưu dữ liệu lịch sử vào bookings
+      })
+      .addCase(fetchBookingHistory.rejected, (state, action) => {
+        state.bookingLoading = false;
+        state.bookingError = action.payload;
+      })
+      .addCase(fetchBookingHistoryDetail.pending, (state) => {
+        state.historyDetailLoading = true;
+        state.historyDetailError = null;
+      })
+      .addCase(fetchBookingHistoryDetail.fulfilled, (state, action) => {
+        state.historyDetailLoading = false;
+        state.bookingDetail = action.payload; // Lưu chi tiết vào bookingDetail
+      })
+      .addCase(fetchBookingHistoryDetail.rejected, (state, action) => {
+        state.historyDetailLoading = false;
+        state.historyDetailError = action.payload;
+      });
   },
 });
 
