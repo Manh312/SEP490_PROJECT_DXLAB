@@ -1,7 +1,8 @@
 import { ArmchairIcon } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import table_images from '../../assets/table.png';
-import { useState, useEffect } from 'react'; // Thêm useEffect để đồng bộ selectedDate
+import { useState, useEffect } from 'react';
+import { fetchBookingHistory } from '../../redux/slices/Booking';
 
 const individualSeats = {
   table1: ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'],
@@ -60,35 +61,41 @@ const positionIdToSeatMap = {
 };
 
 const ViewBookedSeats = () => {
-  const { bookings, bookingDate } = useSelector((state) => state.booking);
+  const dispatch = useDispatch();
+  const { bookings, bookingDate, bookingLoading, bookingError } = useSelector((state) => state.booking);
 
-  const [selectedSlot, setSelectedSlot] = useState(1); // Mặc định slot 1
-  const [selectedDate, setSelectedDate] = useState(bookingDate || ''); // Sử dụng bookingDate từ Redux
+  const [selectedSlot, setSelectedSlot] = useState(1);
+  const [selectedDate, setSelectedDate] = useState(bookingDate || '');
 
-  // Đồng bộ selectedDate với bookingDate khi component mount
+  useEffect(() => {
+    dispatch(fetchBookingHistory());
+  }, [dispatch]);
+
   useEffect(() => {
     if (bookingDate) {
       setSelectedDate(bookingDate);
     }
   }, [bookingDate]);
 
+  // Sửa lại logic bookedSeats để xử lý bookings không có details
+  const bookedSeats = bookingLoading || !bookings || !Array.isArray(bookings.data)
+    ? []
+    : bookings.data
+        .filter((booking) => {
+          if (!booking || !booking.bookingCreatedDate) return false;
+          const bookingDate = booking.bookingCreatedDate.split('T')[0];
+          return bookingDate === selectedDate;
+        })
+        .flatMap((booking) => {
+          if (!booking || !booking.totalBookingDetail) return [];
+          
+          // Giả sử totalBookingDetail là số lượng ghế đã đặt
+          const seatIds = Object.keys(positionIdToSeatMap).slice(0, booking.totalBookingDetail);
+          return seatIds.map(seatId => positionIdToSeatMap[seatId].seat);
+        })
+        .filter(seat => seat !== null);
+
   console.log("Bookings:", bookings);
-
-  const bookedSeats = bookings
-    .map(booking =>
-      booking.data.details
-        .filter(detail => {
-          const bookingDate = detail.checkinTime.split('T')[0];
-          return detail.slotId === selectedSlot && bookingDate === selectedDate;
-        })
-        .map(detail => {
-          const position = positionIdToSeatMap[detail.positionId];
-          return position ? position.seat : null;
-        })
-        .filter(seat => seat !== null)
-    )
-    .flat();
-
   console.log("Booked Seats for slot", selectedSlot, "and date", selectedDate, ":", bookedSeats);
 
   return (
@@ -120,103 +127,124 @@ const ViewBookedSeats = () => {
         </div>
       </div>
 
-      <div className="w-full max-w-5xl space-y-6 border rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-center mb-4">Chỗ ngồi cá nhân</h2>
-        <div className="flex flex-wrap justify-center gap-12">
-          <div className="relative flex justify-center items-center border-4 border-gray-600 p-6 rounded-lg shadow-md" style={{ width: '300px', height: '280px' }}>
-            <img
-              src={table_images}
-              alt="Table"
-              className="absolute w-32 h-32 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-            />
-            {individualSeats.table1.map((seat, index) => {
-              const angle = (360 / individualSeats.table1.length) * index;
-              const radius = 120;
-              const x = Math.cos(angle * (Math.PI / 180)) * radius;
-              const y = Math.sin(angle * (Math.PI / 180)) * radius;
-              return (
-                <span
-                  key={seat}
-                  className={`absolute w-10 h-10 flex items-center justify-center p-1 rounded
-                    ${bookedSeats.includes(seat) ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'}`}
-                  style={{ transform: `translate(${x}px, ${y}px)` }}
-                >
-                  <ArmchairIcon className="w-5 h-5" />
-                </span>
-              );
-            })}
+      {bookingLoading && (
+        <p className="text-center text-orange-500">Đang tải dữ liệu ghế ngồi...</p>
+      )}
+      {bookingError && (
+        <p className="text-center text-red-500">Lỗi: {bookingError}</p>
+      )}
+
+      {!bookingLoading && !bookingError && (
+        <div className="w-full max-w-5xl space-y-6 border rounded-lg p-6">
+          <h2 className="text-2xl font-bold text-center mb-4">Chỗ ngồi cá nhân</h2>
+          <div className="flex flex-wrap justify-center gap-12">
+            <div
+              className="relative flex justify-center items-center border-4 border-gray-600 p-6 rounded-lg shadow-md"
+              style={{ width: '300px', height: '280px' }}
+            >
+              <img
+                src={table_images}
+                alt="Table"
+                className="absolute w-32 h-32 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+              />
+              {individualSeats.table1.map((seat, index) => {
+                const angle = (360 / individualSeats.table1.length) * index;
+                const radius = 120;
+                const x = Math.cos(angle * (Math.PI / 180)) * radius;
+                const y = Math.sin(angle * (Math.PI / 180)) * radius;
+                return (
+                  <span
+                    key={seat}
+                    className={`absolute w-10 h-10 flex items-center justify-center p-1 rounded ${
+                      bookedSeats.includes(seat) ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
+                    }`}
+                    style={{ transform: `translate(${x}px, ${y}px)` }}
+                  >
+                    <ArmchairIcon className="w-5 h-5" />
+                  </span>
+                );
+              })}
+            </div>
+
+            <div
+              className="relative flex justify-center items-center border-4 border-gray-600 p-6 rounded-lg shadow-md"
+              style={{ width: '300px', height: '290px' }}
+            >
+              <img
+                src={table_images}
+                alt="Table"
+                className="absolute w-28 h-28 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+              />
+              {individualSeats.table2.map((seat, index) => {
+                const angle = (360 / individualSeats.table2.length) * index;
+                const radius = 100;
+                const x = Math.cos(angle * (Math.PI / 180)) * radius;
+                const y = Math.sin(angle * (Math.PI / 180)) * radius;
+                return (
+                  <span
+                    key={seat}
+                    className={`absolute w-10 h-10 flex items-center justify-center p-1 rounded ${
+                      bookedSeats.includes(seat) ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
+                    }`}
+                    style={{ transform: `translate(${x}px, ${y}px)` }}
+                  >
+                    <ArmchairIcon className="w-5 h-5" />
+                  </span>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="relative flex justify-center items-center border-4 border-gray-600 p-6 rounded-lg shadow-md" style={{ width: '300px', height: '290px' }}>
-            <img
-              src={table_images}
-              alt="Table"
-              className="absolute w-28 h-28 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-            />
-            {individualSeats.table2.map((seat, index) => {
-              const angle = (360 / individualSeats.table2.length) * index;
-              const radius = 100;
-              const x = Math.cos(angle * (Math.PI / 180)) * radius;
-              const y = Math.sin(angle * (Math.PI / 180)) * radius;
-              return (
-                <span
-                  key={seat}
-                  className={`absolute w-10 h-10 flex items-center justify-center p-1 rounded
-                    ${bookedSeats.includes(seat) ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'}`}
-                  style={{ transform: `translate(${x}px, ${y}px)` }}
-                >
-                  <ArmchairIcon className="w-5 h-5" />
-                </span>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="p-4 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-center mb-4">Khu vực Nhóm</h2>
-          <div className="flex flex-wrap justify-center gap-4">
-            {Object.entries(groupSeats).map(([groupType, seats]) => (
-              <div key={groupType} className="border-4 border-gray-600 p-4 rounded-md text-center w-full max-w-xs mx-auto">
-                <strong className="text-sm md:text-base block mb-2">{groupType}</strong>
+          <div className="p-4 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold text-center mb-4">Khu vực Nhóm</h2>
+            <div className="flex flex-wrap justify-center gap-4">
+              {Object.entries(groupSeats).map(([groupType, seats]) => (
                 <div
-                  className="relative flex flex-wrap justify-center items-center"
-                  style={{ width: '100%', height: '200px' }}
+                  key={groupType}
+                  className="border-4 border-gray-600 p-4 rounded-md text-center w-full max-w-xs mx-auto"
                 >
-                  {groupType === "6-seats-1" || groupType === "6-seats-2" ? (
-                    <img
-                      src={table_images}
-                      alt="Table"
-                      className="absolute w-16 h-16 sm:w-20 sm:h-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                    />
-                  ) : (
-                    <img
-                      src={table_images}
-                      alt="Table"
-                      className="absolute w-20 h-20 sm:w-24 sm:h-24 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                    />
-                  )}
-                  {seats[0].map((seat, index) => {
-                    const angle = (360 / seats[0].length) * index;
-                    const radius = 80;
-                    const x = Math.cos(angle * (Math.PI / 180)) * radius;
-                    const y = Math.sin(angle * (Math.PI / 180)) * radius;
-                    return (
-                      <span
-                        key={seat}
-                        className={`absolute w-10 h-10 flex items-center justify-center p-1 rounded
-                          ${bookedSeats.includes(seat) ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'}`}
-                        style={{ transform: `translate(${x}px, ${y}px)` }}
-                      >
-                        <ArmchairIcon className="w-4 h-4" />
-                      </span>
-                    );
-                  })}
+                  <strong className="text-sm md:text-base block mb-2">{groupType}</strong>
+                  <div
+                    className="relative flex flex-wrap justify-center items-center"
+                    style={{ width: '100%', height: '200px' }}
+                  >
+                    {groupType === "6-seats-1" || groupType === "6-seats-2" ? (
+                      <img
+                        src={table_images}
+                        alt="Table"
+                        className="absolute w-16 h-16 sm:w-20 sm:h-20 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                      />
+                    ) : (
+                      <img
+                        src={table_images}
+                        alt="Table"
+                        className="absolute w-20 h-20 sm:w-24 sm:h-24 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+                      />
+                    )}
+                    {seats[0].map((seat, index) => {
+                      const angle = (360 / seats[0].length) * index;
+                      const radius = 80;
+                      const x = Math.cos(angle * (Math.PI / 180)) * radius;
+                      const y = Math.sin(angle * (Math.PI / 180)) * radius;
+                      return (
+                        <span
+                          key={seat}
+                          className={`absolute w-10 h-10 flex items-center justify-center p-1 rounded ${
+                            bookedSeats.includes(seat) ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
+                          }`}
+                          style={{ transform: `translate(${x}px, ${y}px)` }}
+                        >
+                          <ArmchairIcon className="w-4 h-4" />
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

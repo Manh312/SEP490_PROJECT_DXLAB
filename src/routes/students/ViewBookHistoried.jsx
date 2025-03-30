@@ -16,13 +16,14 @@ const ViewBookingHistory = () => {
     }
   }, [dispatch, bookings]);
 
-  const transactions = bookings.map((booking) => ({
-    id: booking.data?.bookingId,
-    position: booking.data?.details[0]?.positionId,
-    date: booking.data?.bookingCreatedDate, 
-    amount: booking.data?.totalPrice, 
-    status: booking.statusCode === 200 ? "Thành công" : "Không thành công", 
+  const transactions = bookings.data.map((booking) => ({
+    id: booking.bookingId,
+    // position: booking.details.positionId,
+    date: booking.bookingCreatedDate, 
+    amount: booking.totalPrice, 
+    status: bookings.statusCode === 200 ? "Thành công" : "Không thành công", 
   }));
+  
 
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState("");
