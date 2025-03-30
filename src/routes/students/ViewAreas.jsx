@@ -74,7 +74,7 @@ const ViewAreas = () => {
         }));
   
         // Hiện thông báo lỗi trả về từ backend hoặc lỗi mặc định
-        toast.error(error.message || 'Có lỗi xảy ra khi lấy dữ liệu slot.');
+        toast.error(error);        
       }
     }
   };

@@ -15,7 +15,7 @@ import ProductImage from "../assets/product-image.jpg";
 import { FaHome, FaMoneyBillWave, FaShieldAlt, FaWifi } from "react-icons/fa";
 
 import images1 from "../assets/dxlab_images1.jpg";
-import images2 from "../assets/dxlab_images2.jpg";
+import images4 from "../assets/dxlab_images4.png";
 import images3 from "../assets/dxlab_images3.png";
 
 export const navItems = [
@@ -26,7 +26,7 @@ export const navItems = [
 
 export const banners = [
   { image: images1 },
-  { image: images2 },
+  { image: images4 },
   { image: images3 },
 ];
 
@@ -65,7 +65,7 @@ export const blogPosts = [
     id: "2",
     title: "Lợi ích của co-working space đối với freelancer",
     date: "18/02/2025",
-    image: images2,
+    image: images4,
     content: `Freelancer có thể tận hưởng môi trường làm việc chuyên nghiệp, kết nối với cộng đồng và 
     tăng năng suất khi làm việc tại DXLAB.
 
@@ -124,7 +124,7 @@ export const about = [
   },
   {
     title: "CHỖ NGỒI THEO NHÓM",
-    image: images2,
+    image: images4,
     description: "Dịch vụ chỗ ngồi theo nhóm tại DXLAB mang đến môi trường hợp tác lý tưởng cho các nhóm làm việc, sinh viên, startup. Không gian được trang bị bàn làm việc rộng rãi, bảng trắng, thiết bị trình chiếu, giúp các nhóm có thể trao đổi ý tưởng một cách hiệu quả. Ngoài ra, khu vực này còn có không gian chung để kết nối với các nhóm khác, tạo cơ hội học hỏi và phát triển dự án một cách linh hoạt và chuyên nghiệp."
   },
 ];
@@ -385,7 +385,7 @@ export const navbarLinks = [
 ];
 export const areas = [
   { id: 1, name: "Khu Vực Cá Nhân", type: "individual", image: images1, description: "Khu vực dành cho cá nhân cố định tại DXLAB cung cấp không gian làm việc riêng biệt với bàn làm việc hiện đại, ghế ergonomic giúp giảm đau lưng, cùng hệ thống internet tốc độ cao." },
-  { id: 2, name: "Khu Vực Nhóm", type: "group", image: images2, description: "Khu vực dành cho nhóm lý tăng cơ hội học hỏi và phát triển dự án một cách linh hoạt và chuyên nghiệp. Giá cả hợp lý, cơ sở vật chất hình đại, cung cấp không gian sạch sẽ, hệ thống internet tốc độ cao." },
+  { id: 2, name: "Khu Vực Nhóm", type: "group", image: images4, description: "Khu vực dành cho nhóm lý tăng cơ hội học hỏi và phát triển dự án một cách linh hoạt và chuyên nghiệp. Giá cả hợp lý, cơ sở vật chất hình đại, cung cấp không gian sạch sẽ, hệ thống internet tốc độ cao." },
 ];
 
 export const slots = [

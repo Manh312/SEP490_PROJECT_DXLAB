@@ -91,7 +91,7 @@ const Payment = () => {
       dispatch(confirmBooking([])); // Reset booking state
       navigate('/booked-seats');
     } catch (error) {
-      toast.error(`Lỗi: ${error}`);
+      toast.error(error.message);
     }
   };
 
