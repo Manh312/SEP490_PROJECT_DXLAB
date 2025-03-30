@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../utils/axios"; // Import axiosInstance
 
-const API_URL = "/Room"; // Đã có baseURL từ axiosInstance
+const API_URL = "/room"; // Đã có baseURL từ axiosInstance
 
 // **1. Lấy danh sách tất cả các phòng**
 export const fetchRooms = createAsyncThunk(
