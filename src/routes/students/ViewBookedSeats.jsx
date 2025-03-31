@@ -1,8 +1,9 @@
 import { ArmchairIcon } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import table_images from '../../assets/table.png';
-import { useState, useEffect } from 'react';
-import { fetchBookingHistory } from '../../redux/slices/Booking';
+import { useEffect, useMemo, useState } from 'react';
+import { fetchBookingHistory, fetchBookingHistoryDetail, setSelectedDate, setSelectedSlot } from '../../redux/slices/Booking';
+import { useParams } from 'react-router-dom';
 
 const individualSeats = {
   table1: ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'],
@@ -61,48 +62,75 @@ const positionIdToSeatMap = {
 };
 
 const ViewBookedSeats = () => {
+  const { id } = useParams();
   const dispatch = useDispatch();
-  const { bookings, bookingDate, bookingLoading, bookingError } = useSelector((state) => state.booking);
-
-  const [selectedSlot, setSelectedSlot] = useState(1);
-  const [selectedDate, setSelectedDate] = useState("2025-04-02"); // Đặt mặc định để khớp với dữ liệu
+  const { bookings, bookingDetail, bookingDate, bookingLoading, bookingError, selectedSlot, selectedDate } = useSelector((state) => state.booking);
+  
+  const [hasFetchedDetail, setHasFetchedDetail] = useState(false);
+  const [hasFetchedHistory, setHasFetchedHistory] = useState(false);
 
   useEffect(() => {
-    if (!bookings || bookings.data.length === 0) {
+    if (id && !hasFetchedDetail && !bookingDetail) {
+      dispatch(fetchBookingHistoryDetail({ id }));
+      setHasFetchedDetail(true);
+    } else if (!id && !hasFetchedHistory && (!bookings || !Array.isArray(bookings.data))) {
       dispatch(fetchBookingHistory());
+      setHasFetchedHistory(true);
     }
-  }, [dispatch, bookings]);
+  }, [dispatch, id, bookingDetail, bookings, hasFetchedDetail, hasFetchedHistory]);
 
   useEffect(() => {
-    if (bookingDate) {
-      setSelectedDate(bookingDate);
+    if (bookingDetail?.data) {
+      const bookingDate = bookingDetail.data.bookingCreatedDate.split("T")[0];
+      const slotNumber = bookingDetail.data.details[0]?.slotNumber;
+      dispatch(setSelectedDate(bookingDate));
+      dispatch(setSelectedSlot(slotNumber));
+    } else if (bookingDate && !id) {
+      dispatch(setSelectedDate(bookingDate));
     }
-  }, [bookingDate]);
+  }, [bookingDetail, bookingDate, dispatch]);
 
-  // Tính toán bookedSeats dựa trên positionId từ booking.details
-  const bookedSeats = bookingLoading || !bookings || !Array.isArray(bookings.data)
-    ? []
-    : bookings.data
-        .filter((booking) => {
-          if (!booking || !booking.bookingCreatedDate) return false;
-          const bookingDate = booking.bookingCreatedDate.split('T')[0];
-          return bookingDate === selectedDate;
+  const bookedSeats = useMemo(() => {
+    if (bookingLoading) return [];
+
+    if (id && bookingDetail?.data?.bookingId === id && Array.isArray(bookingDetail.data.details)) {
+      const seats = bookingDetail.data.details
+        .filter((detail) => Number(detail.slotId) === selectedSlot)
+        .map((detail) => {
+          const seatInfo = positionIdToSeatMap[detail.positionId];
+          return seatInfo ? seatInfo.seat : null;
         })
-        .flatMap((booking) => {
-          if (!booking || !booking.details || !Array.isArray(booking.details)) {
-            return [];
-          }
-          return booking.details
-            .filter((detail) => Number(detail.slotId) === selectedSlot)
-            .map((detail) => {
-              const seatInfo = positionIdToSeatMap[detail.positionId];
-              return seatInfo ? seatInfo.seat : null;
-            })
-            .filter((seat) => seat !== null);
-        });
+        .filter((seat) => seat !== null);
+      console.log("Seats from bookingDetail:", seats);
+      return seats;
+    }
 
-  console.log("Bookings:", bookings);
+    if (!bookings || !Array.isArray(bookings.data)) return [];
+    const seats = bookings.data
+      .filter((booking) => {
+        if (!booking || !booking.bookingCreatedDate) return false;
+        const bookingDate = booking.bookingCreatedDate.split('T')[0];
+        return bookingDate === selectedDate;
+      })
+      .flatMap((booking) => {
+        if (!booking || !Array.isArray(booking.details)) return [];
+        return booking.details
+          .filter((detail) => Number(detail.slotId) === selectedSlot)
+          .map((detail) => {
+            const seatInfo = positionIdToSeatMap[detail.positionId];
+            return seatInfo ? seatInfo.seat : null;
+          })
+          .filter((seat) => seat !== null);
+      });
+    console.log("Seats from bookings.data:", seats);
+    return seats;
+  }, [bookingLoading, bookings, bookingDetail, id, selectedDate, selectedSlot]);
+
+  console.log("Booking Detail:", bookingDetail);
+  console.log("Bookings data:", bookings?.data);
   console.log("Selected Date:", selectedDate, "Selected Slot:", selectedSlot);
+  console.log("Booking Loading:", bookingLoading);
+  console.log("Booking Error:", bookingError);
   console.log("Booked Seats:", bookedSeats);
 
   return (
@@ -115,7 +143,7 @@ const ViewBookedSeats = () => {
           <input
             type="date"
             value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
+            onChange={(e) => dispatch(setSelectedDate(e.target.value))}
             className="border rounded p-2"
           />
         </div>
@@ -123,7 +151,7 @@ const ViewBookedSeats = () => {
           <label className="mr-2 font-semibold">Chọn slot:</label>
           <select
             value={selectedSlot}
-            onChange={(e) => setSelectedSlot(Number(e.target.value))}
+            onChange={(e) => dispatch(setSelectedSlot(Number(e.target.value)))}
             className="border rounded p-2"
           >
             <option value={1}>Slot 1</option>

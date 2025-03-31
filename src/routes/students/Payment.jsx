@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { createBooking, confirmBooking, resetBookingStatus, fetchBookingHistory } from '../../redux/slices/Booking';
+import { createBooking, confirmBooking, resetBookingStatus } from '../../redux/slices/Booking';
 import { useEffect } from 'react';
 
 const Payment = () => {
@@ -62,23 +62,23 @@ const Payment = () => {
 
   const handleConfirmPayment = async () => {
     console.log('Before booking - selectedRoom:', selectedRoom, 'selectedArea:', selectedArea, 'selectedTime:', selectedTime);
-
+  
     if (!selectedRoom || !selectedRoom.roomId) {
       toast.error('Thông tin phòng không hợp lệ!');
       return;
     }
-
+  
     const areaTypeId = selectedArea?.value?.[0]?.areaTypeId || selectedArea?.areaTypeId;
     if (!areaTypeId) {
       toast.error('Thông tin khu vực không hợp lệ!');
       return;
     }
-
+  
     if (!Array.isArray(selectedTime) || selectedTime.length === 0) {
       toast.error('Vui lòng chọn thời gian và slot trước khi thanh toán!');
       return;
     }
-
+  
     const bookingData = {
       roomID: selectedRoom.roomId,
       areaTypeId: areaTypeId,
@@ -87,14 +87,19 @@ const Payment = () => {
         slotId: Array.isArray(booking.slots) ? booking.slots : [],
       })),
     };
-
+  
     try {
-      const result = await dispatch(createBooking(bookingData)).unwrap(); // Use .unwrap() for cleaner promise handling
+      const result = await dispatch(createBooking(bookingData)).unwrap();
       console.log('createBooking result:', result);
+      const bookingId = result.data?.bookingId; // Giả định API trả về bookingId trong result.data
+      if (!bookingId) {
+        throw new Error('Không tìm thấy bookingId trong kết quả');
+      }
+      // Cập nhật bookings.data ngay lập tức (không cần gọi API lại)
       // await dispatch(fetchBookingHistory()).unwrap();
       toast.success('Thanh toán thành công!');
       dispatch(confirmBooking([])); // Reset selectedTime
-      navigate('/booked-seats');
+      navigate(`/booked-seats/${bookingId}`); // Chuyển hướng với bookingId
     } catch (error) {
       console.error('Booking error:', error);
       toast.error(error.message || 'Có lỗi xảy ra khi thanh toán!');

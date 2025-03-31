@@ -24,6 +24,7 @@ import axiosInstance from "./utils/axios.js";
 const activeChain = "sepolia";
 
 const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) => {
+
   try {
     const userEmail =
       walletType === "embeddedWallet"
@@ -38,6 +39,8 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       status: true,
       roleId: 3,
     };
+
+    // Removed useNavigate from here as it is passed as an argument
 
     const response = await axiosInstance.post('/user/createuser', payload);
     const result = response.data;
@@ -61,6 +64,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
           : "Đăng nhập ví thành công!",
       { toastId: `login-${walletType}` }
     );
+    
   } catch (error) {
     console.error("Backend error:", error.message);
     toast.error(
@@ -91,7 +95,7 @@ const AppWithWallet = React.memo(() => {
       return;
     }
 
-    if (walletType === "embeddedWallet" && (!userEmail || !userEmail.endsWith("@fpt.edu.vn"))) {
+    if (walletType === "embeddedWallet" && (!userEmail)) {
       disconnect();
       dispatch(clearAuthData());
       setIsValidUser(false);
@@ -136,8 +140,8 @@ const RootApp = () => {
             auth: { options: ["google"] },
             onAuthSuccess: async (user) => {
               const userEmail = user.email || user.storedToken?.authDetails?.email;
-              if (!userEmail || !userEmail.endsWith("@fpt.edu.vn")) {
-                toast.error("Bạn cần sử dụng email @fpt.edu.vn để đăng nhập.", {
+              if (!userEmail) {
+                toast.error("Bạn cần sử dụng email được cấp quyền để đăng nhập.", {
                   toastId: "invalid-email",
                 });
                 throw new Error("Email không hợp lệ");

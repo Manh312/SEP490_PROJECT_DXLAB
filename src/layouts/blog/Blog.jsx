@@ -8,13 +8,10 @@ import { format, parseISO } from 'date-fns'; // Import date-fns utilities
 
 const Blog = () => {
   const dispatch = useDispatch();
-  const { approvedBlogs, adminLoading, adminError } = useSelector((state) => state.blogs);
+  const { approvedBlogs, adminLoading } = useSelector((state) => state.blogs);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const postsPerPage = 6;
-
-  console.log("approvedBlogs in component:", approvedBlogs);
-  console.log("adminError in component:", adminError);
 
   useEffect(() => {
     dispatch(fetchAdminApprovedBlogs());
@@ -78,12 +75,7 @@ const Blog = () => {
     return <p className="text-center">Đang tải...</p>;
   }
 
-  if (adminError) {
-    const errorMessage = typeof adminError === 'string' 
-      ? adminError 
-      : 'Đã xảy ra lỗi không xác định';
-    return <p className="text-center text-red-500">Lỗi: {errorMessage}</p>;
-  }
+
 
   return (
     <div className={`min-h-screen p-6`}>
@@ -153,7 +145,7 @@ const Blog = () => {
             })}
           </div>
         ) : (
-          <p className="text-center text-xl text-gray-500">Không tìm thấy bài viết.</p>
+          <p className="text-center text-xl text-orange-500">Hiện chưa có bài viết nào.</p>
         )}
 
         {totalPages > 1 && (

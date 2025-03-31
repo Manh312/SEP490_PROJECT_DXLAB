@@ -1,20 +1,28 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
-import { fetchBookingHistoryDetail } from "../../redux/slices/Booking";
+import { fetchBookingHistoryDetail, setSelectedDate, setSelectedSlot } from "../../redux/slices/Booking";
 import { ArrowLeftIcon } from "lucide-react";
 
 const BookHistoriedDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-
   const { bookingDetail, historyDetailLoading, historyDetailError } = useSelector(
     (state) => state.booking
   );
 
   useEffect(() => {
-      dispatch(fetchBookingHistoryDetail({ id }));
+    dispatch(fetchBookingHistoryDetail({ id }));
   }, [dispatch, id]);
+
+  useEffect(() => {
+    if (bookingDetail?.data) {
+      const bookingDate = bookingDetail.data.bookingCreatedDate.split("T")[0];
+      const slotNumber = bookingDetail.data.details[0]?.slotNumber;
+      dispatch(setSelectedDate(bookingDate));
+      dispatch(setSelectedSlot(slotNumber));
+    }
+  }, [bookingDetail, dispatch]);
 
 
   if (historyDetailLoading) {
@@ -80,12 +88,12 @@ const BookHistoriedDetail = () => {
 
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-2 gap-4">
-          <div className="font-medium">Phòng</div>
-          <div className="font-medium">{bookingDetail.data?.details[0]?.roomName}</div>
-          <div className="font-medium">Tên khu vực</div>
-          <div className="font-medium">{bookingDetail.data?.details[0]?.areaName}</div>
-          <div className="font-medium">Slot đã đặt</div>
-          <div className="font-medium">Slot {bookingDetail.data?.details[0]?.slotNumber}</div>
+            <div className="font-medium">Phòng</div>
+            <div className="font-medium">{bookingDetail.data?.details[0]?.roomName}</div>
+            <div className="font-medium">Tên khu vực</div>
+            <div className="font-medium">{bookingDetail.data?.details[0]?.areaName}</div>
+            <div className="font-medium">Slot đã đặt</div>
+            <div className="font-medium">Slot {bookingDetail.data?.details[0]?.slotNumber}</div>
             <div className="font-medium">Vị trí</div>
             <div className="font-medium">
               {bookingDetail.data?.details[0]?.position || "Không xác định"}
@@ -95,13 +103,13 @@ const BookHistoriedDetail = () => {
             <div className="font-medium">
               {bookingDetail.data?.details[0]?.checkinTime
                 ? new Date(bookingDetail.data.details[0].checkinTime).toLocaleString("vi-VN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })
                 : "Không xác định"}
             </div>
 
@@ -109,13 +117,13 @@ const BookHistoriedDetail = () => {
             <div className="font-medium">
               {bookingDetail.data?.details[0]?.checkoutTime
                 ? new Date(bookingDetail.data.details[0].checkoutTime).toLocaleString("vi-VN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })
                 : "Không xác định"}
             </div>
 
@@ -128,11 +136,10 @@ const BookHistoriedDetail = () => {
             <div className="font-medium">Trạng thái</div>
             <div>
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${
-                  bookingDetail.data?.details[0]?.status === 0
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${bookingDetail.data?.details[0]?.status === 0
                     ? "bg-green-100 text-green-800"
                     : "bg-red-100 text-red-800"
-                }`}
+                  }`}
               >
                 {bookingDetail.data?.details[0]?.status === 0 ? "Thành công" : "Không thành công"}
               </span>
@@ -141,7 +148,7 @@ const BookHistoriedDetail = () => {
 
           <div className="border-t pt-4">
             <Link
-              to="/booked-seats"
+              to={`/booked-seats/${id}`}
               className="inline-flex items-center justify-center w-full px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors duration-200"
             >
               Xem vị trí của bạn

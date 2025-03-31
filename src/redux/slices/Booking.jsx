@@ -86,6 +86,8 @@ const initialState = {
   bookingDetail: null,
   historyDetailLoading: false,
   historyDetailError: null,
+  selectedSlot: 1, // Thêm vào initialState
+  selectedDate: new Date().toISOString().split('T')[0],
 };
 
 const bookingSlice = createSlice({
@@ -133,6 +135,12 @@ const bookingSlice = createSlice({
       state.categoryError = null;
       state.historyDetailLoading = false;
       state.historyDetailError = null;
+    },
+    setSelectedSlot: (state, action) => {
+      state.selectedSlot = action.payload;
+    },
+    setSelectedDate: (state, action) => {
+      state.selectedDate = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -209,6 +217,11 @@ const bookingSlice = createSlice({
       .addCase(fetchBookingHistoryDetail.fulfilled, (state, action) => {
         state.historyDetailLoading = false;
         state.bookingDetail = action.payload;
+        // Cập nhật bookings.data nếu booking chưa tồn tại
+        const newBooking = action.payload.data;
+        if (newBooking && !state.bookings.data.some(b => b.bookingId === newBooking.bookingId)) {
+          state.bookings.data = [...state.bookings.data, newBooking];
+        }
       })
       .addCase(fetchBookingHistoryDetail.rejected, (state, action) => {
         state.historyDetailLoading = false;
@@ -226,6 +239,8 @@ export const {
   setSelectedArea,
   confirmBooking,
   resetBookingStatus,
+  setSelectedSlot,
+  setSelectedDate,
 } = bookingSlice.actions;
 
 export default bookingSlice.reducer;
