@@ -60,15 +60,24 @@ const ViewAreas = () => {
 
   // Fetch slot cho tất cả ngày khi selectedArea thay đổi hoặc bookingDates thay đổi
   useEffect(() => {
-    if (selectedArea && selectedRoom && bookingDates.length > 0) {
+    if (
+      selectedArea?.value?.[0]?.areaTypeId &&
+      selectedArea?.roomId === selectedRoom?.roomId &&  // CHỈ fetch nếu cùng phòng
+      bookingDates.length > 0
+    ) {
       fetchAllSlots();
     }
-  }, [selectedArea, bookingDates, selectedRoom]);
+  }, [selectedArea, bookingDates, selectedRoom]);  
 
   // Hàm fetch slot cho tất cả ngày trong bookingDates
   const fetchAllSlots = async () => {
     const datesToFetch = bookingDates
-      .filter((booking) => booking.date >= today && !fetchedSlots[booking.date]) // Chỉ fetch ngày hợp lệ và chưa có dữ liệu
+      .filter(
+        (booking) =>
+          booking.date &&
+          booking.date >= today &&
+          !fetchedSlots[booking.date]
+      )
       .map((booking) => booking.date);
 
     if (datesToFetch.length === 0) return;
@@ -91,6 +100,7 @@ const ViewAreas = () => {
         return updatedSlots;
       });
     } catch (error) {
+      console.error("Lỗi khi fetch slots:", error);
       toast.error('Không thể tải danh sách slot!');
       datesToFetch.forEach((date) => {
         setFetchedSlots((prev) => ({ ...prev, [date]: [] }));
@@ -258,6 +268,7 @@ const ViewAreas = () => {
                       name: area.value[0].areaTypeName,
                       description: area.value[0].areaDescription,
                       type: area.value[0].areaCategory === 1 ? 'individual' : 'group',
+                      roomId: selectedRoom.roomId,
                     }));
                     setBookingDates([{ date: getCurrentDate(), slots: [] }]);
                   }}
@@ -279,7 +290,12 @@ const ViewAreas = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center">
           <div className="bg-gray-300 text-black p-6 rounded-lg shadow-lg lg:w-[600px] md:w-[600px] sm:w-[500px] w-xs relative">
-            <button className="absolute top-2 right-2" onClick={() => dispatch(closeModal())}>
+            <button className="absolute top-2 right-2" 
+            onClick={() => {
+              dispatch(closeModal());
+              setFetchedSlots({});
+              setBookingDates([{ date: getCurrentDate(), slots: [] }]);
+            }}>
               <XIcon className="h-6 w-6 text-black" />
             </button>
             <h2 className="text-2xl font-bold mb-4 text-center">Đặt Lịch Tới DXLAB</h2>
