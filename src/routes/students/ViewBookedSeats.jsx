@@ -65,10 +65,10 @@ const ViewBookedSeats = () => {
   const { bookings, bookingDate, bookingLoading, bookingError } = useSelector((state) => state.booking);
 
   const [selectedSlot, setSelectedSlot] = useState(1);
-  const [selectedDate, setSelectedDate] = useState(bookingDate || '');
+  const [selectedDate, setSelectedDate] = useState("2025-04-02"); // Đặt mặc định để khớp với dữ liệu
 
   useEffect(() => {
-    if (!bookings || bookings.length === 0) {
+    if (!bookings || bookings.data.length === 0) {
       dispatch(fetchBookingHistory());
     }
   }, [dispatch, bookings]);
@@ -79,21 +79,21 @@ const ViewBookedSeats = () => {
     }
   }, [bookingDate]);
 
-  // Tính toán bookedSeats dựa trên positionId từ booking.data.details
-  const bookedSeats = bookingLoading || !bookings || !Array.isArray(bookings)
+  // Tính toán bookedSeats dựa trên positionId từ booking.details
+  const bookedSeats = bookingLoading || !bookings || !Array.isArray(bookings.data)
     ? []
-    : bookings
+    : bookings.data
         .filter((booking) => {
-          if (!booking || !booking.data || !booking.data.bookingCreatedDate) return false;
-          const bookingDate = booking.data.bookingCreatedDate.split('T')[0];
+          if (!booking || !booking.bookingCreatedDate) return false;
+          const bookingDate = booking.bookingCreatedDate.split('T')[0];
           return bookingDate === selectedDate;
         })
         .flatMap((booking) => {
-          if (!booking || !booking.data || !booking.data.details || !Array.isArray(booking.data.details)) {
+          if (!booking || !booking.details || !Array.isArray(booking.details)) {
             return [];
           }
-          return booking.data.details
-            .filter((detail) => detail.slotId === selectedSlot) // Lọc theo slot
+          return booking.details
+            .filter((detail) => Number(detail.slotId) === selectedSlot)
             .map((detail) => {
               const seatInfo = positionIdToSeatMap[detail.positionId];
               return seatInfo ? seatInfo.seat : null;
@@ -116,7 +116,7 @@ const ViewBookedSeats = () => {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="border rounded p-2 bg-gray-400"
+            className="border rounded p-2"
           />
         </div>
         <div>
@@ -124,7 +124,7 @@ const ViewBookedSeats = () => {
           <select
             value={selectedSlot}
             onChange={(e) => setSelectedSlot(Number(e.target.value))}
-            className="border rounded p-2 bg-gray-400"
+            className="border rounded p-2"
           >
             <option value={1}>Slot 1</option>
             <option value={2}>Slot 2</option>

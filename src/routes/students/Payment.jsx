@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { createBooking, confirmBooking, resetBookingStatus } from '../../redux/slices/Booking';
+import { createBooking, confirmBooking, resetBookingStatus, fetchBookingHistory } from '../../redux/slices/Booking';
 import { useEffect } from 'react';
 
 const Payment = () => {
@@ -91,6 +91,7 @@ const Payment = () => {
     try {
       const result = await dispatch(createBooking(bookingData)).unwrap(); // Use .unwrap() for cleaner promise handling
       console.log('createBooking result:', result);
+      // await dispatch(fetchBookingHistory()).unwrap();
       toast.success('Thanh toán thành công!');
       dispatch(confirmBooking([])); // Reset selectedTime
       navigate('/booked-seats');

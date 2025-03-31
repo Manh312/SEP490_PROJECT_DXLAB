@@ -7,6 +7,9 @@ export const createBooking = createAsyncThunk(
   async (bookingData, { rejectWithValue }) => {
     try {
       const response = await axios.post('/booking', bookingData);
+      if (!response.data || !response.data.data) {
+        throw new Error('Dữ liệu trả về từ API không hợp lệ');
+      }
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Không thể tạo đặt chỗ');
@@ -43,6 +46,9 @@ export const fetchBookingHistory = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`/studentbookinghistory`);
+      if (!response.data || !response.data.data) {
+        throw new Error('Dữ liệu lịch sử booking không hợp lệ');
+      }
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Lỗi khi lấy lịch sử');
@@ -66,7 +72,7 @@ const initialState = {
   isModalOpen: false,
   selectedArea: null,
   selectedTime: [],
-  bookingDate: null, // New state to store the selected booking date
+  bookingDate: null,
   bookingLoading: false,
   bookingError: null,
   bookingSuccess: false,
@@ -76,7 +82,7 @@ const initialState = {
   categoryInRoom: null,
   categoryLoading: false,
   categoryError: null,
-  bookings: [],
+  bookings: { data: [], message: '', statusCode: null },
   bookingDetail: null,
   historyDetailLoading: false,
   historyDetailError: null,
@@ -94,7 +100,7 @@ const bookingSlice = createSlice({
       state.isModalOpen = false;
       state.selectedArea = null;
       state.selectedTime = [];
-      state.bookingDate = null; // Reset booking date
+      state.bookingDate = null;
       state.bookingError = null;
       state.bookingSuccess = false;
       state.slotsError = null;
@@ -105,7 +111,7 @@ const bookingSlice = createSlice({
       state.selectedTime = [...action.payload];
     },
     setBookingDate: (state, action) => {
-      state.bookingDate = action.payload; // New reducer to set booking date
+      state.bookingDate = action.payload;
     },
     setMonthRange: (state, action) => {
       state.monthRange = action.payload;
@@ -139,11 +145,16 @@ const bookingSlice = createSlice({
       })
       .addCase(createBooking.fulfilled, (state, action) => {
         state.bookingLoading = false;
-        state.bookingSuccess = true;
-        state.bookings = [...state.bookings, action.payload];
-        state.selectedTime = [];
-        state.selectedArea = null;
-        state.bookingDate = null;
+        const newBooking = action.payload.data || action.payload;
+        if (newBooking && newBooking.bookingId) { // Kiểm tra dữ liệu hợp lệ
+          state.bookingSuccess = true;
+          state.bookings.data = Array.isArray(state.bookings.data)
+            ? [...state.bookings.data, newBooking]
+            : [newBooking];
+        } else {
+          state.bookingError = 'Dữ liệu booking không hợp lệ';
+          state.bookingSuccess = false;
+        }
       })
       .addCase(createBooking.rejected, (state, action) => {
         state.bookingLoading = false;
@@ -176,12 +187,16 @@ const bookingSlice = createSlice({
         state.categoryError = action.payload;
       })
       .addCase(fetchBookingHistory.pending, (state) => {
-        state.bookingLoading = true; // Có thể dùng một state riêng như historyLoading nếu muốn
+        state.bookingLoading = true;
         state.bookingError = null;
       })
       .addCase(fetchBookingHistory.fulfilled, (state, action) => {
         state.bookingLoading = false;
-        state.bookings = action.payload; // Lưu dữ liệu lịch sử vào bookings
+        state.bookings = {
+          data: action.payload.data || [],
+          message: action.payload.message || '',
+          statusCode: action.payload.statusCode || null,
+        };
       })
       .addCase(fetchBookingHistory.rejected, (state, action) => {
         state.bookingLoading = false;
@@ -193,7 +208,7 @@ const bookingSlice = createSlice({
       })
       .addCase(fetchBookingHistoryDetail.fulfilled, (state, action) => {
         state.historyDetailLoading = false;
-        state.bookingDetail = action.payload; // Lưu chi tiết vào bookingDetail
+        state.bookingDetail = action.payload;
       })
       .addCase(fetchBookingHistoryDetail.rejected, (state, action) => {
         state.historyDetailLoading = false;
@@ -206,7 +221,7 @@ export const {
   openModal,
   closeModal,
   setSelectedTime,
-  setBookingDate, // Export the new reducer
+  setBookingDate,
   setMonthRange,
   setSelectedArea,
   confirmBooking,
