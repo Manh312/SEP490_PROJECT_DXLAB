@@ -8,6 +8,7 @@ import accountReducer from "./slices/Account";
 import facilitiesReducer from "./slices/Facilities";
 import blogsReducer from "./slices/Blog";
 import areaTypesReducer from "./slices/AreaType"
+import statisticsReducer from "./slices/Statistics"
 
 
 
@@ -23,6 +24,7 @@ const rootPersistConfig = {
 const rootReducer = combineReducers({
   booking: bookingReducer,
   slots: slotReducer,
+  statistics: statisticsReducer,
   rooms: roomReducer,
   areaTypes: areaTypesReducer,
   auth: authReducer,
