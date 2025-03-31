@@ -1,9 +1,9 @@
-// UpdateFacilities.jsx
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { fetchFacilityById, updateFacility } from "../../redux/slices/Facilities";
 import { toast } from "react-toastify";
+import { ArrowLeft } from "lucide-react";
 
 const UpdateFacilities = () => {
   const { id } = useParams();
@@ -46,16 +46,48 @@ const UpdateFacilities = () => {
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block font-medium">Tên Sản Phẩm</label>
-            <input type="text" name="name" value={formData.name} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg" required />
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded-lg"
+              required
+            />
           </div>
           <div className="mb-4">
             <label className="block font-medium">Số Lượng</label>
-            <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} className="w-full px-3 py-2 border rounded-lg" required />
+            <input
+              type="number"
+              name="quantity"
+              value={formData.quantity}
+              onChange={handleChange} // Sửa lỗi từ ABOVEhandleChange thành handleChange
+              className="w-full px-3 py-2 border rounded-lg"
+              required
+            />
           </div>
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Lưu</button>
+          <div className="flex justify-between">
+            <button
+              type="button"
+              className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 hover:bg-gray-600 transition"
+              onClick={() => {
+                console.log("Navigating to /dashboard/facilities");
+                navigate("/dashboard/facilities");
+              }}
+            >
+              <ArrowLeft size={20} /> Quay Lại
+            </button>
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Lưu
+            </button>
+          </div>
         </form>
       )}
     </div>
   );
 };
+
 export default UpdateFacilities;

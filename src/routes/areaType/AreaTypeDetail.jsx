@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { PencilLine, ToggleLeft, ToggleRight } from "lucide-react";
+import { PencilLine, ToggleLeft, ToggleRight, ArrowLeft } from "lucide-react"; // Thêm ArrowLeft
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAreaTypeById, updateAreaType } from "../../redux/slices/AreaType";
 import { toast } from "react-toastify";
@@ -126,23 +126,34 @@ const AreaTypeDetail = () => {
         </table>
       </div>
 
-      {/* Nút Chỉnh sửa & Toggle Trạng thái */}
-      <div className="flex justify-end mt-4 gap-4">
+      {/* Nút Quay lại, Chỉnh sửa & Toggle Trạng thái */}
+      <div className="flex justify-between mt-4 gap-4">
         <button
-          className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 hover:bg-orange-600 transition"
-          onClick={() => navigate(`/dashboard/areaType/update/${areaTypeId}`)}
+          className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 hover:bg-gray-600 transition"
+          onClick={() => {
+            console.log("Navigating to /dashboard/areaType");
+            navigate("/dashboard/areaType");
+          }}
         >
-          <PencilLine size={20} /> Chỉnh Sửa
+          <ArrowLeft size={20} /> Quay Lại
         </button>
-        <button
-          className={`px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md transition ${
-            isDeleted ? "bg-green-500 text-white hover:bg-green-600" : "bg-red-500 text-white hover:bg-red-600"
-          }`}
-          onClick={handleToggleStatus}
-        >
-          {isDeleted ? <ToggleLeft size={20} /> : <ToggleRight size={20} />}
-          {isDeleted ? "Kích hoạt" : "Vô hiệu hóa"}
-        </button>
+        <div className="flex gap-4">
+          <button
+            className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 hover:bg-orange-600 transition"
+            onClick={() => navigate(`/dashboard/areaType/update/${areaTypeId}`)}
+          >
+            <PencilLine size={20} /> Chỉnh Sửa
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md transition ${
+              isDeleted ? "bg-green-500 text-white hover:bg-green-600" : "bg-red-500 text-white hover:bg-red-600"
+            }`}
+            onClick={handleToggleStatus}
+          >
+            {isDeleted ? <ToggleLeft size={20} /> : <ToggleRight size={20} />}
+            {isDeleted ? "Kích hoạt" : "Vô hiệu hóa"}
+          </button>
+        </div>
       </div>
     </div>
   );
