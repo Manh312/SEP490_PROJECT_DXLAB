@@ -20,8 +20,8 @@ export const fetchAvailableSlots = createAsyncThunk(
     try {
       const response = await axios.get(`/booking/availiblepos?RoomId=${roomId}&AreaTypeId=${areaTypeId}&BookingDate=${bookingDate}`);
       return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data || 'Không thể lấy danh sách slot');
+    } catch (error) {      
+      return rejectWithValue(error.message);
     }
   }
 );

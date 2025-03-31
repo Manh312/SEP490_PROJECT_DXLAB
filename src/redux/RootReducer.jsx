@@ -7,7 +7,8 @@ import authReducer from "./slices/Authentication";
 import accountReducer from "./slices/Account";
 import facilitiesReducer from "./slices/Facilities";
 import blogsReducer from "./slices/Blog";
-import areaTypesReducer from "./slices/AreaType"
+import areaTypesReducer from "./slices/AreaType";
+import bookingHistoryReducer from "./slices/BookingHistory"
 
 
 
@@ -29,6 +30,7 @@ const rootReducer = combineReducers({
   accounts: accountReducer,
   facilities: facilitiesReducer,
   blogs: blogsReducer,
+  bookingHistory: bookingHistoryReducer,
 
 });
 

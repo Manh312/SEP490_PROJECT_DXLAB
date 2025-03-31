@@ -169,8 +169,8 @@ const BlogList = () => {
   };
 
   return (
-    <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
-      <div className="w-full border mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
+    <div className="py-4 px-2 sm:px-4 lg:px-6 xl:px-8 mb-10">
+      <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
@@ -179,6 +179,7 @@ const BlogList = () => {
               Danh Sách Blog
             </h2>
           </div>
+          <div className="flex flex-col sm:flex-row gap-3">
           <NavLink
             to="create"
             className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-md"
@@ -186,6 +187,7 @@ const BlogList = () => {
             <PlusCircle className="h-5 w-5" />
             <span className="hidden sm:inline">Tạo Blog</span>
           </NavLink>
+          </div>
         </div>
 
         {/* Filter and Search */}

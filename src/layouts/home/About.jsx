@@ -1,5 +1,5 @@
 import { about } from "../../constants";
-import images2 from "../../assets/dxlab_images2.jpg";
+import images3 from "../../assets/dxlab_images3.png";
 import images1 from "../../assets/dxlab_images1.jpg"
 
 const About = () => {
@@ -33,7 +33,7 @@ const About = () => {
             Chúng tôi cam kết mang đến không gian học tập và làm việc lý tưởng, hỗ trợ tối đa cho quá trình nghiên cứu, phát triển dự án và sáng tạo của sinh viên.
           </p>
         </div>
-        <img src={images2} alt="About Us" className="rounded-lg shadow-xl" />
+        <img src={images3} alt="About Us" className="rounded-lg shadow-xl" />
       </div>
 
       {/* Dịch Vụ */}

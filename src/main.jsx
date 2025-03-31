@@ -19,12 +19,10 @@ import { toast, ToastContainer } from "react-toastify";
 import { clearAuthData, fetchRoleByID, setAuthData } from "./redux/slices/Authentication.jsx";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import 'react-toastify/dist/ReactToastify.css';
+import axiosInstance from "./utils/axios.js";
 
-
-// Cấu hình chain cố định
 const activeChain = "sepolia";
 
-// Hàm gửi dữ liệu người dùng về backend
 const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) => {
   try {
     const userEmail =
@@ -41,22 +39,8 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       roleId: 3,
     };
 
-    const response = await fetch("https://localhost:9999/api/user/createuser", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error("API request failed:", response.status, errorData);
-      throw new Error(response.status === 404 ? "Backend API not found." : `API failed: ${errorData}`);
-    }
-
-    const contentType = response.headers.get("Content-Type");
-    const result = contentType?.includes("application/json")
-      ? await response.json()
-      : { token: await response.text() };
+    const response = await axiosInstance.post('/user/createuser', payload);
+    const result = response.data;
 
     if (!result.data?.token) {
       throw new Error("Invalid or missing token from backend.");
@@ -89,7 +73,6 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
   }
 };
 
-// Thành phần AppWithWallet tối ưu hóa
 const AppWithWallet = React.memo(() => {
   const walletAddress = useAddress();
   const disconnect = useDisconnect();
@@ -97,10 +80,8 @@ const AppWithWallet = React.memo(() => {
   const wallet = useWallet();
   const [isValidUser, setIsValidUser] = useState(false);
 
-  // Memoize walletType để tránh tính toán lại
   const walletType = useMemo(() => wallet?.walletId, [wallet]);
 
-  // Callback để kiểm tra user hợp lệ
   const validateUser = useCallback(() => {
     const user = store.getState().auth.user;
     const userEmail = user?.storedToken?.authDetails?.email || user?.email;
@@ -128,7 +109,6 @@ const AppWithWallet = React.memo(() => {
 
 AppWithWallet.displayName = "AppWithWallet";
 
-// Thành phần RootApp
 const RootApp = () => {
   const dispatch = useDispatch();
 
@@ -148,7 +128,7 @@ const RootApp = () => {
         activeChain={activeChain}
         clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID}
         supportedWallets={[
-          metamaskWallet({ recommended: true }), // Đánh dấu ví ưu tiên
+          metamaskWallet({ recommended: true }),
           walletConnect(),
           coinbaseWallet(),
           trustWallet(),
@@ -166,7 +146,7 @@ const RootApp = () => {
             },
           }),
         ]}
-        autoConnect={true} // Tự động kết nối ví đã dùng trước đó
+        autoConnect={true}
       >
         <PersistGate loading={null} persistor={persistor}>
           <AppWithWallet />
@@ -176,7 +156,6 @@ const RootApp = () => {
   );
 };
 
-// Render ứng dụng
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <RootApp />

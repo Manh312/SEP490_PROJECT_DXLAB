@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../utils/axios";
 
-const API_URL = "/AreaType";
+const API_URL = "/areatype";
 
 // Fetch danh sách loại khu vực với filter tùy chọn
 export const fetchAreaTypes = createAsyncThunk(
@@ -13,6 +13,7 @@ export const fetchAreaTypes = createAsyncThunk(
       const response = await axiosInstance.get(
         fil ? `${API_URL}?fil=${fil}` : API_URL
       );
+      console.log(response.data);
       return response.data.data; // Lấy danh sách từ API response
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi khi lấy dữ liệu");
@@ -25,7 +26,7 @@ export const fetchAreaTypeById = createAsyncThunk(
     "areaTypes/fetchAreaTypeById",
     async (id, { rejectWithValue }) => {
       try {
-        const response = await axiosInstance.get(`/AreaType/${id}`);
+        const response = await axiosInstance.get(`/areatype/${id}`);
         return response.data.data; // ✅ Trả về dữ liệu chi tiết
       } catch (error) {
         return rejectWithValue(error.response?.data || "Lỗi khi lấy chi tiết loại khu vực");

@@ -2,8 +2,8 @@ import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import { useDispatch as useAppDispatch, useSelector as useAppSelector } from 'react-redux';
 import { rootPersistConfig, rootReducer } from './RootReducer';
-import { thunk } from 'redux-thunk';
- // Middleware hỗ trợ async actions
+import { thunk } from 'redux-thunk'; // Middleware hỗ trợ async actions
+import { configureAxios } from '../utils/axios'; // Import configureAxios
 
 // Kết hợp Redux Persist với rootReducer
 const persistedReducer = persistReducer(rootPersistConfig, rootReducer);
@@ -16,6 +16,9 @@ const store = configureStore({
       serializableCheck: false, // Giúp tránh lỗi khi lưu Redux Persist
     }).concat(thunk), // Thêm middleware thunk để hỗ trợ call API async
 });
+
+// Cấu hình axios với store sau khi store được tạo
+configureAxios(store);
 
 // Khởi tạo persistor
 const persistor = persistStore(store);
