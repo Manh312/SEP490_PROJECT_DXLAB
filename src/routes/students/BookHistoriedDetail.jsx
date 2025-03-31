@@ -20,9 +20,10 @@ const BookHistoriedDetail = () => {
       const bookingDate = bookingDetail.data.bookingCreatedDate.split("T")[0];
       const slotNumber = bookingDetail.data.details[0]?.slotNumber;
       dispatch(setSelectedDate(bookingDate));
-      dispatch(setSelectedSlot(Number(slotNumber))); // Ensure slotNumber is a number
+      dispatch(setSelectedSlot(slotNumber));
     }
   }, [bookingDetail, dispatch]);
+
 
   if (historyDetailLoading) {
     return (
@@ -81,7 +82,7 @@ const BookHistoriedDetail = () => {
         <div className="bg-gradient-to-r from-orange-500 to-orange-700 p-6">
           <h2 className="text-2xl font-bold text-white text-center">Chi tiết giao dịch</h2>
           <p className="text-blue-100 text-center mt-1 text-sm">
-            Mã giao dịch: {bookingDetail.data?.bookingID} {/* Fix: Use bookingID */}
+            Mã giao dịch: {bookingDetail.data?.bookingId}
           </p>
         </div>
 
@@ -102,13 +103,13 @@ const BookHistoriedDetail = () => {
             <div className="font-medium">
               {bookingDetail.data?.details[0]?.checkinTime
                 ? new Date(bookingDetail.data.details[0].checkinTime).toLocaleString("vi-VN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })
                 : "Không xác định"}
             </div>
 
@@ -116,13 +117,13 @@ const BookHistoriedDetail = () => {
             <div className="font-medium">
               {bookingDetail.data?.details[0]?.checkoutTime
                 ? new Date(bookingDetail.data.details[0].checkoutTime).toLocaleString("vi-VN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                })
                 : "Không xác định"}
             </div>
 
@@ -135,11 +136,10 @@ const BookHistoriedDetail = () => {
             <div className="font-medium">Trạng thái</div>
             <div>
               <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${
-                  bookingDetail.data?.details[0]?.status === 0
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${bookingDetail.data?.details[0]?.status === 0
                     ? "bg-green-100 text-green-800"
                     : "bg-red-100 text-red-800"
-                }`}
+                  }`}
               >
                 {bookingDetail.data?.details[0]?.status === 0 ? "Thành công" : "Không thành công"}
               </span>

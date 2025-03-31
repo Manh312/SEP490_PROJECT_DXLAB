@@ -13,10 +13,8 @@ const ViewBookingHistory = () => {
 
   // Fetch data only once when component mounts if bookings is empty
   useEffect(() => {
-    if (!bookings?.data) {
       dispatch(fetchBookingHistory());
-    }
-  }, [dispatch, bookings]);
+  }, [dispatch]);
 
   // Use useMemo to memoize transactions and prevent unnecessary recalculations
   const transactions = useMemo(() => {
@@ -25,13 +23,13 @@ const ViewBookingHistory = () => {
     }
   
     return bookings.data.map((booking) => ({
-      id: booking.bookingId, // Fix: Use bookingID
+      id: booking.bookingId,
       date: booking.bookingCreatedDate,
       amount: booking.totalPrice,
-      status: bookings.statusCode === 200 ? "Thành công" : "Không thành công", // Fix: Use booking status
-      totalDetail: booking.totalBookingDetail, // This might not exist in the response; verify with backend
+      status: bookings.statusCode === 200 ? "Thành công" : "Không thành công",
     }));
   }, [bookings]);
+  
 
   console.log("Transactions:", transactions);
 
@@ -51,8 +49,7 @@ const ViewBookingHistory = () => {
       const txDate = new Date(tx.date);
       const isAfterStart = start ? txDate >= start : true;
       const isBeforeEnd = end ? txDate <= end : true;
-      const matchesSearch = search ? String(tx.id).includes(search) : true; // Fix: Filter by id
-      return isAfterStart && isBeforeEnd && matchesSearch;
+      return isAfterStart && isBeforeEnd;
     });
 
     setFilteredTransactions(filtered);

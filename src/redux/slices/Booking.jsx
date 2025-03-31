@@ -82,11 +82,11 @@ const initialState = {
   categoryInRoom: null,
   categoryLoading: false,
   categoryError: null,
-  bookings: { data: [], message: '', statusCode: null }, // Initialize bookings as an object with data array
+  bookings: { data: [], message: '', statusCode: null },
   bookingDetail: null,
   historyDetailLoading: false,
   historyDetailError: null,
-  selectedSlot: 1,
+  selectedSlot: 1, // Thêm vào initialState
   selectedDate: new Date().toISOString().split('T')[0],
 };
 
@@ -135,7 +135,6 @@ const bookingSlice = createSlice({
       state.categoryError = null;
       state.historyDetailLoading = false;
       state.historyDetailError = null;
-      // Do NOT reset bookingDetail, selectedDate, or selectedSlot
     },
     setSelectedSlot: (state, action) => {
       state.selectedSlot = action.payload;
@@ -155,7 +154,7 @@ const bookingSlice = createSlice({
       .addCase(createBooking.fulfilled, (state, action) => {
         state.bookingLoading = false;
         const newBooking = action.payload.data || action.payload;
-        if (newBooking && newBooking.bookingID) { // Fix: Use bookingID
+        if (newBooking && newBooking.bookingId) { // Kiểm tra dữ liệu hợp lệ
           state.bookingSuccess = true;
           state.bookings.data = Array.isArray(state.bookings.data)
             ? [...state.bookings.data, newBooking]
@@ -183,7 +182,6 @@ const bookingSlice = createSlice({
         state.slotsLoading = false;
         state.slotsError = action.payload;
       })
-      // Handle fetchCategoryInRoom
       .addCase(fetchCategoryInRoom.pending, (state) => {
         state.categoryLoading = true;
         state.categoryError = null;
@@ -196,7 +194,6 @@ const bookingSlice = createSlice({
         state.categoryLoading = false;
         state.categoryError = action.payload;
       })
-      // Handle fetchBookingHistory
       .addCase(fetchBookingHistory.pending, (state) => {
         state.bookingLoading = true;
         state.bookingError = null;
@@ -208,13 +205,11 @@ const bookingSlice = createSlice({
           message: action.payload.message || '',
           statusCode: action.payload.statusCode || null,
         };
-        console.log('Updated bookings:', state.bookings);
       })
       .addCase(fetchBookingHistory.rejected, (state, action) => {
         state.bookingLoading = false;
         state.bookingError = action.payload;
       })
-      // Handle fetchBookingHistoryDetail
       .addCase(fetchBookingHistoryDetail.pending, (state) => {
         state.historyDetailLoading = true;
         state.historyDetailError = null;
@@ -222,7 +217,11 @@ const bookingSlice = createSlice({
       .addCase(fetchBookingHistoryDetail.fulfilled, (state, action) => {
         state.historyDetailLoading = false;
         state.bookingDetail = action.payload;
-        console.log('Updated bookingDetail:', state.bookingDetail);
+        // Cập nhật bookings.data nếu booking chưa tồn tại
+        const newBooking = action.payload.data;
+        if (newBooking && !state.bookings.data.some(b => b.bookingId === newBooking.bookingId)) {
+          state.bookings.data = [...state.bookings.data, newBooking];
+        }
       })
       .addCase(fetchBookingHistoryDetail.rejected, (state, action) => {
         state.historyDetailLoading = false;
