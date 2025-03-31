@@ -13,30 +13,23 @@ const ViewBookingHistory = () => {
 
   // Fetch data only once when component mounts if bookings is empty
   useEffect(() => {
-    if (!bookings || bookings.length === 0) {
       dispatch(fetchBookingHistory());
-    }
-  }, [dispatch, bookings]);
+  }, [dispatch]);
 
   // Use useMemo to memoize transactions and prevent unnecessary recalculations
   const transactions = useMemo(() => {
-    if (!bookings || !Array.isArray(bookings)) {
+    if (!bookings || !Array.isArray(bookings.data)) {
       return [];
     }
-    return bookings
-      .map((booking) => {
-        if (!booking.data) {
-          return null;
-        }
-        return {
-          id: booking.data.bookingId,
-          date: booking.data.bookingCreatedDate,
-          amount: booking.data.totalPrice,
-          status: booking.statusCode === 200 ? "Thành công" : "Không thành công",
-        };
-      })
-      .filter((item) => item !== null);
+  
+    return bookings.data.map((booking) => ({
+      id: booking.bookingId,
+      date: booking.bookingCreatedDate,
+      amount: booking.totalPrice,
+      status: bookings.statusCode === 200 ? "Thành công" : "Không thành công",
+    }));
   }, [bookings]);
+  
 
   console.log("Transactions:", transactions);
 

@@ -40,12 +40,12 @@ export const fetchCategoryInRoom = createAsyncThunk(
 
 export const fetchBookingHistory = createAsyncThunk(
   'booking/fetchBookingHistory',
-  async ({ rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`/studentbookinghistory`);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data);
+      return rejectWithValue(error.response?.data || 'Lỗi khi lấy lịch sử');
     }
   }
 );
