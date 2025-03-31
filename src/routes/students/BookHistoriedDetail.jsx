@@ -13,10 +13,9 @@ const BookHistoriedDetail = () => {
   );
 
   useEffect(() => {
-    if (id && !bookingDetail) {
       dispatch(fetchBookingHistoryDetail({ id }));
-    }
-  }, [dispatch, id, bookingDetail]);
+  }, [dispatch, id]);
+
 
   if (historyDetailLoading) {
     return (

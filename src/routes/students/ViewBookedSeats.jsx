@@ -68,8 +68,10 @@ const ViewBookedSeats = () => {
   const [selectedDate, setSelectedDate] = useState(bookingDate || '');
 
   useEffect(() => {
-    dispatch(fetchBookingHistory());
-  }, [dispatch]);
+    if (!bookings || bookings.length === 0) {
+      dispatch(fetchBookingHistory());
+    }
+  }, [dispatch, bookings]);
 
   useEffect(() => {
     if (bookingDate) {
@@ -77,26 +79,31 @@ const ViewBookedSeats = () => {
     }
   }, [bookingDate]);
 
-  // Sửa lại logic bookedSeats để xử lý bookings không có details
-  const bookedSeats = bookingLoading || !bookings || !Array.isArray(bookings.data)
+  // Tính toán bookedSeats dựa trên positionId từ booking.data.details
+  const bookedSeats = bookingLoading || !bookings || !Array.isArray(bookings)
     ? []
-    : bookings.data
+    : bookings
         .filter((booking) => {
-          if (!booking || !booking.bookingCreatedDate) return false;
-          const bookingDate = booking.bookingCreatedDate.split('T')[0];
+          if (!booking || !booking.data || !booking.data.bookingCreatedDate) return false;
+          const bookingDate = booking.data.bookingCreatedDate.split('T')[0];
           return bookingDate === selectedDate;
         })
         .flatMap((booking) => {
-          if (!booking || !booking.totalBookingDetail) return [];
-          
-          // Giả sử totalBookingDetail là số lượng ghế đã đặt
-          const seatIds = Object.keys(positionIdToSeatMap).slice(0, booking.totalBookingDetail);
-          return seatIds.map(seatId => positionIdToSeatMap[seatId].seat);
-        })
-        .filter(seat => seat !== null);
+          if (!booking || !booking.data || !booking.data.details || !Array.isArray(booking.data.details)) {
+            return [];
+          }
+          return booking.data.details
+            .filter((detail) => detail.slotId === selectedSlot) // Lọc theo slot
+            .map((detail) => {
+              const seatInfo = positionIdToSeatMap[detail.positionId];
+              return seatInfo ? seatInfo.seat : null;
+            })
+            .filter((seat) => seat !== null);
+        });
 
   console.log("Bookings:", bookings);
-  console.log("Booked Seats for slot", selectedSlot, "and date", selectedDate, ":", bookedSeats);
+  console.log("Selected Date:", selectedDate, "Selected Slot:", selectedSlot);
+  console.log("Booked Seats:", bookedSeats);
 
   return (
     <div className="p-6 min-h-screen flex flex-col items-center">
@@ -109,7 +116,7 @@ const ViewBookedSeats = () => {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="border rounded p-2"
+            className="border rounded p-2 bg-gray-400"
           />
         </div>
         <div>
@@ -117,7 +124,7 @@ const ViewBookedSeats = () => {
           <select
             value={selectedSlot}
             onChange={(e) => setSelectedSlot(Number(e.target.value))}
-            className="border rounded p-2"
+            className="border rounded p-2 bg-gray-400"
           >
             <option value={1}>Slot 1</option>
             <option value={2}>Slot 2</option>
