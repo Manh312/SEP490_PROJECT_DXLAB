@@ -15,8 +15,10 @@ import ProductImage from "../assets/product-image.jpg";
 import { FaHome, FaMoneyBillWave, FaShieldAlt, FaWifi } from "react-icons/fa";
 
 import images1 from "../assets/dxlab_images1.jpg";
-import images4 from "../assets/dxlab_images4.png";
-import images3 from "../assets/dxlab_images3.png";
+import images2 from "../assets/dxlab_images2.jpg";
+import images3 from "../assets/dxlab_images3.jpg";
+import images4 from "../assets/dxlab_images4.jpg";
+
 
 export const navItems = [
   { label: "Trang chủ", href: "/" },
@@ -25,9 +27,10 @@ export const navItems = [
 ];
 
 export const banners = [
-  { image: images1 },
-  { image: images4 },
+  // { image: images1 },
+  { image: images2 },
   { image: images3 },
+  { image: images4 },
 ];
 
 export const services = [

@@ -1,20 +1,15 @@
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { useTheme } from "../../../hooks/use-theme";
 import { fetchBookingDetailById } from "../../../redux/slices/BookingHistory";
 
 const BookingDetail = () => {
   const { id } = useParams();
-  const theme = useTheme();
   const dispatch = useDispatch();
   const { bookingDetail: booking, loading, error } = useSelector((state) => state.bookingHistory);
 
   useEffect(() => {
     dispatch(fetchBookingDetailById(id));
-    // return () => {
-    //   dispatch(clearBookingDetail());
-    // };
   }, [dispatch, id]);
 
   const formatDateTime = (dateString) => {
@@ -30,45 +25,114 @@ const BookingDetail = () => {
     });
   };
 
-  if (loading) return <p className="text-center text-gray-500">Đang tải dữ liệu...</p>;
-  if (error) return <p className="text-red-500 text-center">Lỗi: {error}</p>;
-  if (!booking) return <p className="text-red-500 text-center">Không tìm thấy chi tiết đặt chỗ!</p>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-6 min-h-screen">
+        <p className="text-orange-500 font-medium text-lg">Đang tải dữ liệu...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-6 min-h-screen">
+        <p className="text-red-500 text-lg">Lỗi: {error}</p>
+      </div>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <div className="flex items-center justify-center py-6 min-h-screen">
+        <p className="text-red-500 text-lg">Không tìm thấy chi tiết đặt chỗ!</p>
+      </div>
+    );
+  }
 
   return (
-    <div className={`flex justify-center items-center min-h-screen p-6 ${theme === "dark" ? "bg-black text-white" : ""}`}>
-      <div className="w-full max-w-3xl border p-6 rounded-lg shadow-lg dark:bg-gray-900">
-        <h2 className="text-2xl font-bold mb-4 text-center">Chi tiết đặt chỗ</h2>
-
-        <div className="mb-6">
-          <p><strong>Mã Booking:</strong> {booking.bookingId}</p>
-          <p><strong>Tên người đặt:</strong> {booking.userName}</p>
-          <p><strong>Email:</strong> {booking.userEmail} </p>
-          <p><strong>Ngày đặt:</strong> {formatDateTime(booking.bookingCreatedDate)}</p>
-          <p><strong>Tổng tiền:</strong> ${booking.totalPrice}</p>
+    <div className={`py-6 px-4 sm:px-6 lg:px-8 min-h-screen`}>
+      <div className="max-w-3xl mx-auto border rounded-xl shadow-lg p-6 sm:p-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6 border-b pb-4">
+          <div className="flex items-center space-x-2">
+            <h2 className="text-2xl sm:text-3xl font-bold">Chi Tiết Đặt Chỗ #{booking.bookingId}</h2>
+          </div>
         </div>
 
-        <h3 className="text-lg font-bold mb-2">Chi tiết các slot:</h3>
-        <div className="space-y-4">
+        {/* Booking Overview */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-4 ">Thông Tin Đặt Chỗ</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-lg">
+            <div>
+              <p className="text-sm ">Tên Người Đặt</p>
+              <p className="text-lg font-medium">{booking.userName}</p>
+            </div>
+            <div>
+              <p className="text-sm">Email</p>
+              <p className="text-lg font-medium">{booking.userEmail}</p>
+            </div>
+            <div>
+              <p className="text-sm">Ngày Đặt</p>
+              <p className="text-lg font-medium">{formatDateTime(booking.bookingCreatedDate)}</p>
+            </div>
+            <div>
+              <p className="text-sm">Tổng Tiền</p>
+              <p className="text-lg font-medium text-green-500 dark:text-green-400">{booking.totalPrice} DXLAB Coin</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Booking Slots */}
+        <div>
+          <h3 className="text-xl font-semibold mb-4">Chi Tiết Slot</h3>
           {booking.details.map((detail) => (
-            <div key={detail.bookingDetailId} className="border p-4 rounded-lg bg-white dark:bg-gray-800">
-              <p><strong>Chi tiết ID:</strong> {detail.bookingDetailId}</p>
-              <p><strong>Slot:</strong> {detail.slotNumber}</p>
-              <p><strong>Thời gian cần Check-in:</strong> {formatDateTime(detail.checkinTime)}</p>
-              <p><strong>Thời gian cần Check-out:</strong> {formatDateTime(detail.checkoutTime)}</p>
-              <p><strong>Vị trí:</strong> {detail.position}</p>
-              <p><strong>Khu vực:</strong> {detail.areaName} - {detail.areaTypeName}</p>
-              <p><strong>Phòng:</strong> {detail.roomName}</p>
-              <p><strong>Trạng thái:</strong> {detail.status === 0 ? "Chưa xử lý" : "Đã xử lý"}</p>
+            <div
+              key={detail.bookingDetailId}
+              className="mb-6 p-4 rounded-lg shadow-sm border"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-lg font-medium">Slot #{detail.slotNumber}</h4>
+                <span
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-sm font-medium ${
+                    detail.status === 0 ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"
+                  }`}
+                >
+                  {detail.status === 0 ? "Chưa xử lý" : "Đã xử lý"}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm">Thời Gian Check-in</p>
+                  <p className="text-base font-medium">{formatDateTime(detail.checkinTime)}</p>
+                </div>
+                <div>
+                  <p className="text-sm">Thời Gian Check-out</p>
+                  <p className="text-base font-medium">{formatDateTime(detail.checkoutTime)}</p>
+                </div>
+                <div>
+                  <p className="text-sm">Vị Trí</p>
+                  <p className="text-base font-medium">{detail.position}</p>
+                </div>
+                <div>
+                  <p className="text-sm">Khu Vực</p>
+                  <p className="text-base font-medium">{detail.areaName} - {detail.areaTypeName}</p>
+                </div>
+                <div>
+                  <p className="text-sm">Phòng</p>
+                  <p className="text-base font-medium">{detail.roomName}</p>
+                </div>
+              </div>
             </div>
           ))}
         </div>
 
-        <div className="mt-6 text-center">
+        {/* Back Button */}
+        <div className="mt-8 flex justify-center">
           <Link
             to="/manage"
-            className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+            className="bg-orange-500 hover:bg-orange-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-all"
           >
-            Quay lại
+            <span>Quay Lại</span>
           </Link>
         </div>
       </div>

@@ -4,16 +4,23 @@ import { useTheme } from "../../../hooks/use-theme";
 import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBookingHistory } from "../../../redux/slices/BookingHistory";
+import { Tooltip } from "react-tooltip";
+import debounce from "lodash/debounce";
 
 const BookingList = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-
   const { data: bookings, loading, error } = useSelector((state) => state.bookingHistory);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 6; // Đồng bộ với AccountList
+
+  // Debounced search function
+  const debouncedSearch = debounce((value) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  }, 300);
 
   useEffect(() => {
     dispatch(fetchBookingHistory());
@@ -30,90 +37,168 @@ const BookingList = () => {
     currentPage * itemsPerPage
   );
 
-  if (loading) return <p className="text-center text-lg font-bold">Đang tải dữ liệu...</p>;
+  const getEmptyStateMessage = () => {
+    return searchTerm
+      ? "Không tìm thấy đặt chỗ nào khớp với tìm kiếm"
+      : "Hiện tại không có đặt chỗ nào";
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-6">
+        <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
+      </div>
+    );
+  }
+
   if (error) return <p className="text-red-500">Lỗi: {error}</p>;
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">Lịch sử đặt chỗ</h2>
-
-      <div className="mb-4 flex items-center border p-2 rounded-md shadow-sm">
-        <Search className="text-gray-500 mr-2" />
-        <input
-          type="text"
-          placeholder="Tìm kiếm theo ID hoặc người đặt..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-2 outline-none"
-        />
-      </div>
-
-      <div className={`card col-span-1 md:col-span-2 lg:col-span-3 mt-5 mb-10 ${theme === "dark" ? "bg-black text-white" : ""}`}>
-        <div className="card-body p-0">
-          <div className="relative max-h-[500px] overflow-auto rounded">
-            <table className="table min-w-full border-collapse">
-              <thead className="table-header">
-                <tr className="table-row text-white bg-blue-500">
-                  <th className="table-head sticky top-0 text-center align-middle">#</th>
-                  <th className="table-head sticky top-0 text-center align-middle">Booking ID</th>
-                  <th className="table-head sticky top-0 text-center align-middle">Người đặt</th>
-                  <th className="table-head sticky top-0 text-center align-middle">Ngày đặt</th>
-                  <th className="table-head sticky top-0 text-center align-middle">Tổng giá tiền</th>
-                  <th className="table-head sticky top-0 text-center align-middle">Chi tiết</th>
-                  <th className="table-head sticky top-0 text-center align-middle">Xem</th>
-                </tr>
-              </thead>
-              <tbody className="table-body">
-                {currentBookings.map((booking, index) => (
-                  <tr key={booking.bookingId} className="table-row">
-                    <td className="table-cell text-center align-middle">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                    <td className="table-cell text-center align-middle">{booking.bookingId}</td>
-                    <td className="table-cell text-center align-middle">{booking.userName}</td>
-                    <td className="table-cell text-center align-middle">
-                    {new Intl.DateTimeFormat("vi-VN").format(new Date(booking.bookingCreatedDate))}
-                    </td>
-                    <td className="table-cell text-center align-middle">{booking.totalPrice} đ</td>
-                    <td className="table-cell text-center align-middle">{booking.totalBookingDetail}</td>
-                    <td className="table-cell text-center align-middle">
-                      <div className="flex items-center justify-center">
-                        <NavLink to={`booking-history/${booking.bookingId}`} className="text-blue-500">
-                          <Eye size={20} />
-                        </NavLink>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
+      <Tooltip id="action-tooltip" />
+      <div className={`w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 ${theme === "dark" ? "bg-black text-white" : ""}`}>
+        {/* Header Section */}
+        <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
+          <div className="flex items-center space-x-2 mb-4 sm:mb-0">
+            <Eye className="h-6 w-6 text-orange-500" />
+            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">Lịch Sử Đặt Chỗ</h2>
           </div>
         </div>
-      </div>
 
-      {/* Pagination */}
-      <div className="flex justify-center space-x-2 mt-4">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
-          disabled={currentPage === 1}
-        >
-          &laquo;
-        </button>
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            className={`px-3 py-1 rounded ${currentPage === i + 1 ? "bg-blue-500 text-white" : "bg-gray-300"}`}
-          >
-            {i + 1}
-          </button>
-        ))}
-        <button
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-          className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
-          disabled={currentPage === totalPages}
-        >
-          &raquo;
-        </button>
+        {/* Search Section */}
+        <div className="mb-6 p-4 rounded-lg shadow-sm">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div className="relative w-full sm:w-1/2 lg:w-1/3">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm theo ID hoặc người đặt"
+                onChange={(e) => debouncedSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 text-sm sm:text-base shadow-sm"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Table or Empty State */}
+        {filteredBookings.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Eye className="h-12 w-12 text-gray-400 mb-4" />
+            <p className="text-gray-500 text-lg">{getEmptyStateMessage()}</p>
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block border rounded-lg overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="border-b items-center bg-gray-400">
+                  <tr>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Booking ID</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Người Đặt</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ngày Đặt</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tổng Giá</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tổng Chi Tiết Đơn</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành Động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentBookings.map((booking, index) => (
+                    <tr key={booking.bookingId} className="border-b hover:bg-gray-400 transition-colors">
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{booking.bookingId}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{booking.userName}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        {new Intl.DateTimeFormat("vi-VN").format(new Date(booking.bookingCreatedDate))}
+                      </td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{booking.totalPrice} DXLAB Coin</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{booking.totalBookingDetail}</td>
+                      <td className="px-2 py-3 md:px-4 md:py-4 flex justify-center gap-2">
+                        <NavLink
+                          to={`booking-history/${booking.bookingId}`}
+                          data-tooltip-id="action-tooltip"
+                          data-tooltip-content="Xem chi tiết"
+                          className="bg-blue-100 text-blue-700 hover:bg-blue-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </NavLink>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="block md:hidden space-y-4">
+              {currentBookings.map((booking, index) => (
+                <div
+                  key={booking.bookingId}
+                  className="border rounded-lg p-3 sm:p-4 shadow-sm hover:bg-gray-500 transition-colors"
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between">
+                      <span className="font-semibold text-sm">#{(currentPage - 1) * itemsPerPage + index + 1}</span>
+                    </div>
+                    <p className="text-sm">
+                      <span className="font-medium">Booking ID:</span> {booking.bookingId}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Người Đặt:</span> {booking.userName}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Ngày Đặt:</span>{" "}
+                      {new Intl.DateTimeFormat("vi-VN").format(new Date(booking.bookingCreatedDate))}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Tổng Giá:</span> {booking.totalPrice} DXLAB Coin
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Tổng Chi Tiết Đơn:</span> {booking.totalBookingDetail}
+                    </p>
+                    <div className="flex justify-center mt-2">
+                      <NavLink
+                        to={`booking-history/${booking.bookingId}`}
+                        className="bg-blue-100 text-blue-700 hover:bg-blue-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                      >
+                        <Eye className="w-4 h-4" /> Xem
+                      </NavLink>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center space-x-2 mt-4">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
+                  disabled={currentPage === 1}
+                >
+                  «
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`px-3 py-1 rounded ${currentPage === i + 1 ? "bg-blue-500 text-white" : "bg-gray-300"}`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
+                  disabled={currentPage === totalPages}
+                >
+                  »
+                </button>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

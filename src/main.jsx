@@ -42,7 +42,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
 
     // Removed useNavigate from here as it is passed as an argument
 
-    const response = await axiosInstance.post('/user/createuser', payload);
+    const response = await axiosInstance.post('/user/verifyuser', payload);
     const result = response.data;
 
     if (!result.data?.token) {
