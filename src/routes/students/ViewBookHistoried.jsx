@@ -160,7 +160,7 @@ const ViewBookingHistory = () => {
               currentItems.map((tx) => (
                 <tr key={tx.id}>
                   <td className="p-3 border-b">
-                    <Link to={`/booked-history/${tx.id}`} className="hover:text-orange-600">
+                    <Link to={`/booked-history/${tx.id}`} className="hover:text-orange-500">
                       {tx.id}
                     </Link>
                   </td>
