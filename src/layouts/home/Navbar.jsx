@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import logo from "../../assets/logo_images.png";
 import { navItems } from "../../constants";
 import { useTheme } from "../../hooks/use-theme";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ConnectWallet, useAddress, useDisconnect } from "@thirdweb-dev/react";
 import { useDispatch, useSelector } from "react-redux";
 import { clearAuthData, fetchRoleByID } from "../../redux/slices/Authentication";
@@ -21,7 +21,6 @@ const Navbar = () => {
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
   const { user } = useSelector((state) => state.auth); // Chỉ lấy user, không có role nữa
-  const navigate = useNavigate();
 
   // Lấy roleName từ roleId khi user thay đổi
   useEffect(() => {

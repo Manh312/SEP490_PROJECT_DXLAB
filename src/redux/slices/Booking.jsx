@@ -7,9 +7,6 @@ export const createBooking = createAsyncThunk(
   async (bookingData, { rejectWithValue }) => {
     try {
       const response = await axios.post('/booking', bookingData);
-      if (!response.data || !response.data.data) {
-        throw new Error('Dữ liệu trả về từ API không hợp lệ');
-      }
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Không thể tạo đặt chỗ');
@@ -44,11 +41,8 @@ export const fetchCategoryInRoom = createAsyncThunk(
 export const fetchBookingHistory = createAsyncThunk(
   'booking/fetchBookingHistory',
   async (_, { rejectWithValue }) => {
-    try {
+    try {      
       const response = await axios.get(`/studentbookinghistory`);
-      if (!response.data || !response.data.data) {
-        throw new Error('Dữ liệu lịch sử booking không hợp lệ');
-      }
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Lỗi khi lấy lịch sử');
@@ -87,7 +81,7 @@ const initialState = {
   historyDetailLoading: false,
   historyDetailError: null,
   selectedSlot: 1,
-  selectedDate: new Date().toISOString().split('T')[0],
+  selectedDate: Date
 };
 
 const bookingSlice = createSlice({
@@ -143,6 +137,13 @@ const bookingSlice = createSlice({
     setSelectedDate: (state, action) => {
       state.selectedDate = action.payload;
     },
+    clearBooking: (state) => {
+      state.bookings = { data: [], message: '', statusCode: null };
+      state.bookingDetail = null;
+      state.historyDetailLoading = false;
+      state.historyDetailError = null;
+      state.selectedDate = Date;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -155,7 +156,7 @@ const bookingSlice = createSlice({
       .addCase(createBooking.fulfilled, (state, action) => {
         state.bookingLoading = false;
         const newBooking = action.payload.data || action.payload;
-        if (newBooking && newBooking.bookingID) { // Fix: Use bookingID
+        if (newBooking && newBooking.bookingId) { // Fix: Use bookingID
           state.bookingSuccess = true;
           state.bookings.data = Array.isArray(state.bookings.data)
             ? [...state.bookings.data, newBooking]
@@ -163,7 +164,7 @@ const bookingSlice = createSlice({
         } else {
           state.bookingError = 'Dữ liệu booking không hợp lệ';
           state.bookingSuccess = false;
-        }
+        }        
       })
       .addCase(createBooking.rejected, (state, action) => {
         state.bookingLoading = false;
@@ -199,10 +200,11 @@ const bookingSlice = createSlice({
       // Handle fetchBookingHistory
       .addCase(fetchBookingHistory.pending, (state) => {
         state.bookingLoading = true;
-        state.bookingError = null;
+        state.bookingError = null;        
       })
       .addCase(fetchBookingHistory.fulfilled, (state, action) => {
         state.bookingLoading = false;
+        console.log("ABC", action.payload);
         state.bookings = {
           data: action.payload.data || [],
           message: action.payload.message || '',
@@ -242,6 +244,7 @@ export const {
   resetBookingStatus,
   setSelectedSlot,
   setSelectedDate,
+  clearBooking
 } = bookingSlice.actions;
 
 export default bookingSlice.reducer;

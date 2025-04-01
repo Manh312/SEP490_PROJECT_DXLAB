@@ -70,6 +70,9 @@ const ViewBookedSeats = () => {
   const dispatch = useDispatch();
   const { bookings, bookingDetail, bookingDate, bookingLoading, bookingError, selectedSlot, selectedDate, historyDetailError } = useSelector((state) => state.booking);
 
+  console.log('Bookings:', bookings);
+  
+
   const [hasFetchedDetail, setHasFetchedDetail] = useState(false);
   const [hasFetchedHistory, setHasFetchedHistory] = useState(false);
 
@@ -78,7 +81,7 @@ const ViewBookedSeats = () => {
   console.log('History Detail Error:', historyDetailError);
 
   useEffect(() => {
-    if (id && !hasFetchedDetail && (!bookingDetail || bookingDetail?.data?.bookingID !== Number(id))) {
+    if (id && !hasFetchedDetail && (!bookingDetail || bookingDetail?.data?.bookingId !== Number(id))) {
       console.log('Fetching booking detail for ID:', id);
       dispatch(fetchBookingHistoryDetail({ id }));
       setHasFetchedDetail(true);
@@ -108,7 +111,7 @@ const ViewBookedSeats = () => {
       return [];
     }
 
-    if (id && bookingDetail?.data?.bookingID === Number(id) && Array.isArray(bookingDetail.data.details)) {
+    if (id && bookingDetail?.data?.bookingId === Number(id) && Array.isArray(bookingDetail.data.details)) {
       const bookingDate = bookingDetail.data.bookingCreatedDate.split('T')[0];
       console.log('Booking Date:', bookingDate, 'Selected Date:', selectedDate);
       if (bookingDate !== selectedDate) {

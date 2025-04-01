@@ -18,6 +18,10 @@ const ViewBookingHistory = () => {
     }
   }, [dispatch, bookings]);
 
+  useEffect(() => {
+    dispatch(fetchBookingHistory());
+  }, [dispatch]);
+
   // Use useMemo to memoize transactions and prevent unnecessary recalculations
   const transactions = useMemo(() => {
     if (!bookings || !Array.isArray(bookings.data)) {
