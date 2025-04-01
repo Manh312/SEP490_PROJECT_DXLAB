@@ -38,11 +38,35 @@ export const fetchCategoryInRoom = createAsyncThunk(
   }
 );
 
+export const fetchBookingHistory = createAsyncThunk(
+  'booking/fetchBookingHistory',
+  async (_, { rejectWithValue }) => {
+    try {      
+      const response = await axios.get(`/studentbookinghistory`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Lỗi khi lấy lịch sử');
+    }
+  }
+);
+
+export const fetchBookingHistoryDetail = createAsyncThunk(
+  'booking/fetchBookingHistoryDetail',
+  async ({ id }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`/studentbookinghistory/${id}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data);
+    }
+  }
+);
+
 const initialState = {
   isModalOpen: false,
   selectedArea: null,
   selectedTime: [],
-  bookingDate: null, // New state to store the selected booking date
+  bookingDate: null,
   bookingLoading: false,
   bookingError: null,
   bookingSuccess: false,
@@ -52,7 +76,12 @@ const initialState = {
   categoryInRoom: null,
   categoryLoading: false,
   categoryError: null,
-  bookings: [],
+  bookings: { data: [], message: '', statusCode: null }, // Initialize bookings as an object with data array
+  bookingDetail: null,
+  historyDetailLoading: false,
+  historyDetailError: null,
+  selectedSlot: 1,
+  selectedDate: Date
 };
 
 const bookingSlice = createSlice({
@@ -67,7 +96,7 @@ const bookingSlice = createSlice({
       state.isModalOpen = false;
       state.selectedArea = null;
       state.selectedTime = [];
-      state.bookingDate = null; // Reset booking date
+      state.bookingDate = null;
       state.bookingError = null;
       state.bookingSuccess = false;
       state.slotsError = null;
@@ -78,7 +107,7 @@ const bookingSlice = createSlice({
       state.selectedTime = [...action.payload];
     },
     setBookingDate: (state, action) => {
-      state.bookingDate = action.payload; // New reducer to set booking date
+      state.bookingDate = action.payload;
     },
     setMonthRange: (state, action) => {
       state.monthRange = action.payload;
@@ -98,7 +127,23 @@ const bookingSlice = createSlice({
       state.slotsError = null;
       state.categoryLoading = false;
       state.categoryError = null;
+      state.historyDetailLoading = false;
+      state.historyDetailError = null;
+      // Do NOT reset bookingDetail, selectedDate, or selectedSlot
     },
+    setSelectedSlot: (state, action) => {
+      state.selectedSlot = action.payload;
+    },
+    setSelectedDate: (state, action) => {
+      state.selectedDate = action.payload;
+    },
+    clearBooking: (state) => {
+      state.bookings = { data: [], message: '', statusCode: null };
+      state.bookingDetail = null;
+      state.historyDetailLoading = false;
+      state.historyDetailError = null;
+      state.selectedDate = Date;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -110,11 +155,16 @@ const bookingSlice = createSlice({
       })
       .addCase(createBooking.fulfilled, (state, action) => {
         state.bookingLoading = false;
-        state.bookingSuccess = true;
-        state.bookings = [...state.bookings, action.payload];
-        state.selectedTime = [];
-        state.selectedArea = null;
-        state.bookingDate = null;
+        const newBooking = action.payload.data || action.payload;
+        if (newBooking && newBooking.bookingId) { // Fix: Use bookingID
+          state.bookingSuccess = true;
+          state.bookings.data = Array.isArray(state.bookings.data)
+            ? [...state.bookings.data, newBooking]
+            : [newBooking];
+        } else {
+          state.bookingError = 'Dữ liệu booking không hợp lệ';
+          state.bookingSuccess = false;
+        }        
       })
       .addCase(createBooking.rejected, (state, action) => {
         state.bookingLoading = false;
@@ -134,6 +184,7 @@ const bookingSlice = createSlice({
         state.slotsLoading = false;
         state.slotsError = action.payload;
       })
+      // Handle fetchCategoryInRoom
       .addCase(fetchCategoryInRoom.pending, (state) => {
         state.categoryLoading = true;
         state.categoryError = null;
@@ -146,6 +197,39 @@ const bookingSlice = createSlice({
         state.categoryLoading = false;
         state.categoryError = action.payload;
       })
+      // Handle fetchBookingHistory
+      .addCase(fetchBookingHistory.pending, (state) => {
+        state.bookingLoading = true;
+        state.bookingError = null;        
+      })
+      .addCase(fetchBookingHistory.fulfilled, (state, action) => {
+        state.bookingLoading = false;
+        console.log("ABC", action.payload);
+        state.bookings = {
+          data: action.payload.data || [],
+          message: action.payload.message || '',
+          statusCode: action.payload.statusCode || null,
+        };
+        console.log('Updated bookings:', state.bookings);
+      })
+      .addCase(fetchBookingHistory.rejected, (state, action) => {
+        state.bookingLoading = false;
+        state.bookingError = action.payload;
+      })
+      // Handle fetchBookingHistoryDetail
+      .addCase(fetchBookingHistoryDetail.pending, (state) => {
+        state.historyDetailLoading = true;
+        state.historyDetailError = null;
+      })
+      .addCase(fetchBookingHistoryDetail.fulfilled, (state, action) => {
+        state.historyDetailLoading = false;
+        state.bookingDetail = action.payload;
+        console.log('Updated bookingDetail:', state.bookingDetail);
+      })
+      .addCase(fetchBookingHistoryDetail.rejected, (state, action) => {
+        state.historyDetailLoading = false;
+        state.historyDetailError = action.payload;
+      });
   },
 });
 
@@ -153,11 +237,14 @@ export const {
   openModal,
   closeModal,
   setSelectedTime,
-  setBookingDate, // Export the new reducer
+  setBookingDate,
   setMonthRange,
   setSelectedArea,
   confirmBooking,
   resetBookingStatus,
+  setSelectedSlot,
+  setSelectedDate,
+  clearBooking
 } = bookingSlice.actions;
 
 export default bookingSlice.reducer;

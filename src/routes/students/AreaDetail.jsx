@@ -5,6 +5,13 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { PlusCircleIcon, XIcon } from 'lucide-react';
 
+// Hàm lấy ngày hiện tại theo múi giờ cục bộ
+const getCurrentDate = () => {
+  const date = new Date();
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().split('T')[0];
+};
+
 const AreaDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
@@ -13,10 +20,12 @@ const AreaDetail = () => {
   const { selectedTime } = useSelector((state) => state.booking);
   const { categoryInRoom } = useSelector((state) => state.booking);
   const { selectedRoom, loading: roomLoading } = useSelector((state) => state.rooms);
-  const [bookingDates, setBookingDates] = useState([{ date: new Date().toISOString().split('T')[0], slots: [] }]);
+
+  const [bookingDates, setBookingDates] = useState([{ date: getCurrentDate(), slots: [] }]);
   const [fetchedSlots, setFetchedSlots] = useState({});
   const [selectedArea, setSelectedArea] = useState(null);
   const [groupAreas, setGroupAreas] = useState([]);
+  const today = getCurrentDate();
 
   // Fetch category in room when selectedRoom changes
   useEffect(() => {
@@ -27,7 +36,7 @@ const AreaDetail = () => {
 
   // Set selectedArea and groupAreas when categoryInRoom changes
   useEffect(() => {
-    if (categoryInRoom?.data && categoryInRoom.data.length > 0) {
+    if (categoryInRoom?.data?.length > 0) {
       const groupAreasList = categoryInRoom.data.filter((item) => item.value[0].areaCategory === 2);
       setGroupAreas(groupAreasList);
 
@@ -46,55 +55,75 @@ const AreaDetail = () => {
     }
   }, [categoryInRoom, id, navigate]);
 
-  // Sync bookingDates with selectedTime and fetch slots
-  // useEffect(() => {
-  //   if (Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
-  //     setBookingDates(selectedTime);
-  //   }
-  //   // Fetch slots for all dates in bookingDates
-  //   if (selectedArea && selectedRoom) {
-  //     bookingDates.forEach((booking) => {
-  //       if (booking.date && !fetchedSlots[booking.date]) {
-  //         fetchSlotsForDate(booking.date);
-  //       }
-  //     });
-  //   }
-  // }, [selectedTime, selectedArea, selectedRoom, bookingDates, fetchedSlots]);
+  // Fetch slot cho tất cả ngày khi selectedArea thay đổi hoặc bookingDates thay đổi
+  useEffect(() => {
+    if (selectedArea && selectedRoom && bookingDates.length > 0) {
+      fetchAllSlots();
+    }
+  }, [selectedArea, bookingDates, selectedRoom]);
 
-    // fetch slot lần đầu
-    useEffect(() => {
-      if (selectedArea) {
-        const today = new Date().toISOString().split('T')[0];
-        fetchSlotsForDate(today);
-      }
-    }, [selectedArea]);
+  // Hàm fetch slot cho tất cả ngày trong bookingDates
+  const fetchAllSlots = async () => {
+    const datesToFetch = bookingDates
+      .filter((booking) => booking.date >= today && !fetchedSlots[booking.date]) // Chỉ fetch ngày hợp lệ và chưa có dữ liệu
+      .map((booking) => booking.date);
 
-  // Fetch available slots for a specific date
-  const fetchSlotsForDate = async (date) => {
-    if (selectedArea && selectedRoom && date) {
-      try {
-        const res = await dispatch(fetchAvailableSlots({
+    if (datesToFetch.length === 0) return;
+
+    try {
+      const promises = datesToFetch.map((date) =>
+        dispatch(fetchAvailableSlots({
           roomId: selectedRoom.roomId,
           areaTypeId: selectedArea.value[0].areaTypeId,
           bookingDate: date,
-        })).unwrap();
-  
-        setFetchedSlots((prev) => ({
-          ...prev,
-          [date]: res.data,
-        }));
-  
-      } catch (error) {
-        setFetchedSlots((prev) => ({
-          ...prev,
-          [date]: [], // Set empty array if fetch fails to avoid undefined
-        }));
-  
-        // Hiện thông báo lỗi trả về từ backend hoặc lỗi mặc định
-        toast.error(error);
-      }
+        })).unwrap()
+      );
+      const results = await Promise.all(promises);
+
+      setFetchedSlots((prev) => {
+        const updatedSlots = { ...prev };
+        datesToFetch.forEach((date, index) => {
+          updatedSlots[date] = results[index].data || [];
+        });
+        return updatedSlots;
+      });
+    } catch (error) {
+      toast.error('Không thể tải danh sách slot!');
+      datesToFetch.forEach((date) => {
+        setFetchedSlots((prev) => ({ ...prev, [date]: [] }));
+      });
     }
   };
+
+  // Fetch slot cho một ngày cụ thể
+  const fetchSlotsForDate = async (date) => {
+    if (!selectedArea || !selectedRoom || !date) return;
+
+    if (fetchedSlots[date]) return; // Không fetch lại nếu đã có dữ liệu
+
+    try {
+      const res = await dispatch(fetchAvailableSlots({
+        roomId: selectedRoom.roomId,
+        areaTypeId: selectedArea.value[0].areaTypeId,
+        bookingDate: date,
+      })).unwrap();
+
+      setFetchedSlots((prev) => ({
+        ...prev,
+        [date]: res.data || [],
+      }));
+    } catch (error) {
+      setFetchedSlots((prev) => ({ ...prev, [date]: [] }));
+      toast.error(error);
+    }
+  };
+
+  // Sync bookingDates với selectedTime từ Redux
+  useEffect(() => {
+    if (Array.isArray(selectedTime) && selectedTime.length > 0 && JSON.stringify(selectedTime) !== JSON.stringify(bookingDates)) {
+      setBookingDates(selectedTime);
+    }
+  }, [selectedTime]);
 
   const handleSlotChange = (bookingIndex, slotId) => {
     const date = bookingDates[bookingIndex].date;
@@ -111,7 +140,7 @@ const AreaDetail = () => {
     const currentBooking = updatedDates[bookingIndex];
     const currentSlots = Array.isArray(currentBooking.slots) ? currentBooking.slots : [];
 
-    let newSlots = currentSlots.includes(slotId)
+    const newSlots = currentSlots.includes(slotId)
       ? currentSlots.filter((s) => s !== slotId)
       : [...currentSlots, slotId];
 
@@ -126,12 +155,12 @@ const AreaDetail = () => {
     setBookingDates(updatedDates);
     dispatch(setSelectedTime(updatedDates));
     if (value) {
-      fetchSlotsForDate(value); // Fetch slots immediately when date changes
+      fetchSlotsForDate(value);
     }
   };
 
   const addBookingDate = () => {
-    const newBooking = { date: new Date().toISOString().split('T')[0], slots: [] };
+    const newBooking = { date: getCurrentDate(), slots: [] };
     const updatedDates = [...bookingDates, newBooking];
     setBookingDates(updatedDates);
     dispatch(setSelectedTime(updatedDates));
@@ -156,6 +185,11 @@ const AreaDetail = () => {
       return;
     }
 
+    if (bookingDates.some((item) => item.date < today)) {
+      toast.error('Có ngày đặt không hợp lệ! Vui lòng chọn lại ngày từ hôm nay trở đi.');
+      return;
+    }
+
     if (bookingDates.some((item) => !Array.isArray(item.slots) || item.slots.length === 0)) {
       toast.error('Vui lòng chọn ít nhất một slot trước khi xác nhận!');
       return;
@@ -167,20 +201,12 @@ const AreaDetail = () => {
   };
 
   const calculateTotalPrice = () => {
-    let total = 0;
-    bookingDates.forEach((booking) => {
-      if (Array.isArray(booking.slots)) {
-        const slotsForDate = fetchedSlots[booking.date] || [];
-        booking.slots.forEach((slotId) => {
-          const slot = slotsForDate.find((s) => s.slotId === slotId);
-          if (slot) {
-            const price = selectedArea?.value?.[0]?.price || 10;
-            total += price;
-          }
-        });
-      }
-    });
-    return total;
+    return bookingDates.reduce((total, booking) => {
+      if (!Array.isArray(booking.slots)) return total;
+      const slotsForDate = fetchedSlots[booking.date] || [];
+      const slotPrice = selectedArea?.value?.[0]?.price || 10;
+      return total + booking.slots.length * slotPrice;
+    }, 0);
   };
 
   const isSlotDisabled = (slot, date) => {
@@ -198,7 +224,7 @@ const AreaDetail = () => {
         description: selected.value[0].areaDescription,
         type: 'group',
       });
-      bookingDates.forEach((booking) => fetchSlotsForDate(booking.date));
+      fetchAllSlots(); // Fetch lại slot khi thay đổi khu vực nhóm
     }
   };
 
@@ -259,8 +285,8 @@ const AreaDetail = () => {
                 </button>
               </div>
               <label className="block font-medium mb-2 mt-2">Chọn Slot:</label>
-              {booking.date && fetchedSlots[booking.date] !== undefined ? (
-                  fetchedSlots[booking.date].length > 0 ? (
+              {booking.date ? (
+                  fetchedSlots[booking.date] && fetchedSlots[booking.date].length > 0 ? (
                     <div className="grid grid-cols-2 gap-2">
                       {fetchedSlots[booking.date].map((slot) => (
                         <div
@@ -289,7 +315,11 @@ const AreaDetail = () => {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-orange-500 w-full">Không có slot nào khả dụng cho ngày này</p>
+                    <p className="text-orange-500 w-full">
+                      {booking.date < today
+                        ? 'Chọn ngày hợp lệ để xem slot'
+                        : 'Không có slot nào khả dụng cho ngày này'}
+                    </p>
                   )
               ) : (
                 <p className="text-orange-500 w-full">Vui lòng chọn ngày để xem các slot khả dụng</p>
