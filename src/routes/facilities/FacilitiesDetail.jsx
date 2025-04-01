@@ -1,8 +1,10 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { ArrowLeft, Edit } from "lucide-react"; // Thêm Edit
 
 const FacilitiesDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { facilities, loading } = useSelector((state) => state.facilities);
 
   console.log(facilities);
@@ -59,6 +61,28 @@ const FacilitiesDetail = () => {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      {/* Nút Quay lại và Chỉnh sửa */}
+      <div className="flex justify-between mt-4">
+        <button
+          className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 hover:bg-gray-600 transition"
+          onClick={() => {
+            console.log("Navigating to /dashboard/facilities");
+            navigate("/dashboard/facilities");
+          }}
+        >
+          <ArrowLeft size={20} /> Quay Lại
+        </button>
+        <button
+          className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 hover:bg-orange-600 transition"
+          onClick={() => {
+            console.log("Navigating to /dashboard/facilities/update/", facility.facilityId);
+            navigate(`/dashboard/facilities/update/${facility.facilityId}`);
+          }}
+        >
+          <Edit size={20} /> Chỉnh Sửa
+        </button>
       </div>
     </div>
   );

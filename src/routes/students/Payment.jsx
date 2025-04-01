@@ -8,35 +8,38 @@ const Payment = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { selectedArea, selectedTime, bookingLoading } = useSelector((state) => state.booking);
+  const { selectedArea, selectedTime = [] } = useSelector((state) => {
+    console.log('Redux state.booking:', state.booking);
+    return state.booking || {};
+  });
   const { selectedRoom, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms);
 
   useEffect(() => {
     dispatch(resetBookingStatus());
   }, [dispatch]);
 
-
   const fetchedSlots = selectedArea?.fetchedSlots || {};
 
   const calculateTotalPrice = () => {
     let total = 0;
     if (!Array.isArray(selectedTime) || selectedTime.length === 0) {
-      console.log('No selectedTime available');
+      console.log('No selectedTime available:', selectedTime);
       return total;
     }
 
-    const pricePerSlot = selectedArea?.value?.[0]?.price || 10; // Fallback về 10 nếu không có giá
+    const pricePerSlot = selectedArea?.value?.[0]?.price || 10;
 
     selectedTime.forEach((booking) => {
-      if (Array.isArray(booking.slots) && booking.slots.length > 0) {
-        console.log(`Processing date: ${booking.date}, slots: ${booking.slots}`);
-        total += booking.slots.length * pricePerSlot; // Tính tổng dựa trên số slot
+      if (!booking || !Array.isArray(booking.slots) || booking.slots.length === 0) {
+        console.log('Invalid booking entry:', booking);
+        return;
       }
+      console.log(`Processing date: ${booking.date}, slots: ${booking.slots}`);
+      total += booking.slots.length * pricePerSlot;
     });
     return total;
   };
 
-  // Format date for display
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN', {
@@ -46,7 +49,6 @@ const Payment = () => {
     });
   };
 
-  // Get slot names from slotIds
   const getSlotNames = (slotIds, date) => {
     if (!Array.isArray(slotIds) || slotIds.length === 0) return 'Chưa chọn';
     const slotsForDate = fetchedSlots[date] || [];
@@ -58,24 +60,25 @@ const Payment = () => {
       .join(', ');
   };
 
-  // Handle payment confirmation
   const handleConfirmPayment = async () => {
+    console.log('Before booking - selectedRoom:', selectedRoom, 'selectedArea:', selectedArea, 'selectedTime:', selectedTime);
+  
     if (!selectedRoom || !selectedRoom.roomId) {
       toast.error('Thông tin phòng không hợp lệ!');
       return;
     }
-
+  
     const areaTypeId = selectedArea?.value?.[0]?.areaTypeId || selectedArea?.areaTypeId;
     if (!areaTypeId) {
       toast.error('Thông tin khu vực không hợp lệ!');
       return;
     }
-
+  
     if (!Array.isArray(selectedTime) || selectedTime.length === 0) {
       toast.error('Vui lòng chọn thời gian và slot trước khi thanh toán!');
       return;
     }
-
+  
     const bookingData = {
       roomID: selectedRoom.roomId,
       areaTypeId: areaTypeId,
@@ -84,14 +87,22 @@ const Payment = () => {
         slotId: Array.isArray(booking.slots) ? booking.slots : [],
       })),
     };
-
+  
     try {
-      await dispatch(createBooking(bookingData)).unwrap();
+      const result = await dispatch(createBooking(bookingData)).unwrap();
+      console.log('createBooking result:', result);
+      const bookingId = result.data?.bookingId; // Giả định API trả về bookingId trong result.data
+      if (!bookingId) {
+        throw new Error('Không tìm thấy bookingId trong kết quả');
+      }
+      // Cập nhật bookings.data ngay lập tức (không cần gọi API lại)
+      // await dispatch(fetchBookingHistory()).unwrap();
       toast.success('Thanh toán thành công!');
-      dispatch(confirmBooking([])); // Reset booking state
-      navigate('/booked-seats');
+      dispatch(confirmBooking([])); // Reset selectedTime
+      navigate(`/booked-seats/${bookingId}`); // Chuyển hướng với bookingId
     } catch (error) {
-      toast.error(error.message);
+      console.error('Booking error:', error);
+      toast.error(error.message || 'Có lỗi xảy ra khi thanh toán!');
     }
   };
 
@@ -113,10 +124,12 @@ const Payment = () => {
             <strong>Phòng:</strong> {selectedRoom?.roomName || 'Chưa chọn'}
           </p>
           <p>
-            <strong>Loại khu vực:</strong> {selectedArea?.key?.categoryId === 2 ? "Khu vực nhóm" : "Khu vực cá nhân"}
+            <strong>Loại khu vực:</strong>{' '}
+            {selectedArea?.key?.categoryId === 2 ? 'Khu vực nhóm' : 'Khu vực cá nhân'}
           </p>
           <p>
-            <strong>Khu vực:</strong> {selectedArea?.name || selectedArea?.value?.[0]?.areaTypeName || 'Chưa chọn'}
+            <strong>Khu vực:</strong>{' '}
+            {selectedArea?.name || selectedArea?.value?.[0]?.areaTypeName || 'Chưa chọn'}
           </p>
 
           {Array.isArray(selectedTime) && selectedTime.length > 0 ? (
@@ -146,9 +159,8 @@ const Payment = () => {
           <button
             onClick={handleConfirmPayment}
             className="w-full px-6 py-3 text-center bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-            disabled={bookingLoading}
           >
-            {bookingLoading ? 'Đang xử lý...' : 'Xác nhận Thanh Toán'}
+            Xác nhận Thanh Toán
           </button>
           <Link
             to={`/area/${selectedArea?.value?.[0]?.areaTypeId || selectedArea?.areaTypeId}`}

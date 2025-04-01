@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { PencilLine } from "lucide-react";
+import { PencilLine, ArrowLeft } from "lucide-react"; // Thêm ArrowLeft
 import { useDispatch, useSelector } from "react-redux";
 import { getRoomById } from "../../redux/slices/Room";
 
@@ -73,7 +73,7 @@ const RoomDetail = () => {
                 {area_DTO && area_DTO.length > 0 ? (
                   area_DTO.map((area, index) => (
                     <div key={index} className="py-1">
-                      <span>Tên khu vực: </span>{area.areaName} 
+                      <span>Tên khu vực: </span>{area.areaName}
                       <p className="text-gray-600">Loại: {area.areaTypeName}</p>
                     </div>
                   ))
@@ -104,8 +104,14 @@ const RoomDetail = () => {
         </table>
       </div>
 
-      {/* Nút Chỉnh sửa */}
-      <div className="flex justify-end mt-4">
+      {/* Nút Quay lại và Chỉnh sửa */}
+      <div className="flex justify-between mt-4">
+        <button
+          className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 hover:bg-gray-600 transition"
+          onClick={() => navigate("/dashboard/room")}
+        >
+          <ArrowLeft size={20} /> Quay Lại
+        </button>
         <button
           className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 hover:bg-orange-600 transition"
           onClick={() => navigate(`/dashboard/room/update/${roomId}`)}

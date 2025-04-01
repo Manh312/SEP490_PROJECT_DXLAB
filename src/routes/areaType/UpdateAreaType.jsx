@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { fetchAreaTypeById, updateAreaType } from "../../redux/slices/AreaType";
 import { toast } from "react-toastify";
 import { FaBuilding, FaFileAlt, FaUsers, FaImage, FaCheck, FaTag } from "react-icons/fa";
-import { X } from "lucide-react";
+import { X, ArrowLeft } from "lucide-react"; // Thêm ArrowLeft
 
 const UpdateAreaType = () => {
   const { id } = useParams();
@@ -269,12 +269,22 @@ const UpdateAreaType = () => {
             </div>
           </div>
 
-          {/* Nút submit */}
-          <div className="mt-8">
+          {/* Nút Quay lại và Cập nhật */}
+          <div className="mt-8 flex justify-between gap-4">
+            <button
+              type="button"
+              className="flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out"
+              onClick={() => {
+                console.log("Navigating to /dashboard/areaType");
+                navigate("/dashboard/areaType");
+              }}
+            >
+              <ArrowLeft className="mr-2" /> Quay Lại
+            </button>
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+              className="flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 disabled:cursor-not-allowed transition duration-150 ease-in-out"
             >
               {loading ? (
                 <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">

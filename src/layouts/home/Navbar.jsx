@@ -165,6 +165,7 @@ const Navbar = () => {
                 btnTitle={"Đăng nhập"}
                 auth={{ loginOptional: false }}
                 modalSize="wide"
+
               />
               <button
                 className="p-2 border rounded-md transition-colors ml-5"
