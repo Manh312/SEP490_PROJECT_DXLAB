@@ -1,13 +1,14 @@
 import {
-  ChartColumn,
   Home,
-  NotepadText,
-  Package,
   Users,
   Grid,
   Calendar,
   FileText,
   Settings,
+  Wrench,
+  Tag,
+  BarChart,
+  Map,
 } from "lucide-react";
 
 import ProfileImage from "../assets/profile-image.jpg";
@@ -297,8 +298,12 @@ export const features = [
 
 export const pricingOptions = [
   {
-    title: "Slot",
-    price: "$10",
+    title: "Đặt chỗ cá nhân lần đầu",
+    price: [
+      "150 -> 100 DXLABCoin /1Slot",
+      "200 -> 150 DXLABCoin /2Slot",
+      "300 -> 200 DXLABCoin /3Slot",
+    ],
     features: [
       "Thời gian linh hoạt",
       "Chỗ ngồi linh hoạt",
@@ -307,23 +312,17 @@ export const pricingOptions = [
     ],
   },
   {
-    title: "Month",
-    price: "$50",
+    title: "Đặt chỗ nhóm lần đầu",
+    price: [
+      "350 -> 250 DXLABCoin /4 chỗ",
+      "500 -> 350 DXLABCoin /6 chỗ",
+      "700 -> 450 DXLABCoin /8 chỗ",
+    ],
     features: [
       "Giá cả hợp lý",
       "Internet tốc độ cao",
       "Không gian sạch sẽ",
       "Cơ sở vật chất hiện đại",
-    ],
-  },
-  {
-    title: "Semester",
-    price: "$200",
-    features: [
-      "Tiện lợi",
-      "Internet tốc độ cao",
-      "Không gian sạch sẽ",
-      "Giảm giá khi đăng ký gói",
     ],
   },
 ];
@@ -337,32 +336,32 @@ export const navbarLinks = [
     children: [
       {
         label: "Thống kê",
-        icon: Home,
+        icon: BarChart, // Thay Home bằng BarChart
         path: "/dashboard",
       },
       {
         label: "Quản lý khu vực",
-        icon: ChartColumn,
+        icon: Map, // Thay ChartColumn bằng Map
         path: "/dashboard/area",
       },
       {
         label: "Quản lý loại khu vực",
-        icon: ChartColumn,
+        icon: Tag, // Thay ChartColumn bằng Tag
         path: "/dashboard/areaType",
       },
       {
         label: "Quản lý thiết bị",
-        icon: NotepadText,
+        icon: Wrench, // Thay NotepadText bằng Wrench
         path: "/dashboard/facilities",
       },
       {
-        label: "Quản lý phòng ",
-        icon: Home,
+        label: "Quản lý phòng",
+        icon: Home, // Giữ nguyên
         path: "/dashboard/room",
       },
       {
         label: "Quản lý slot",
-        icon: Grid,
+        icon: Grid, // Giữ nguyên
         path: "/dashboard/slot",
       },
     ],
@@ -372,17 +371,14 @@ export const navbarLinks = [
     children: [
       {
         label: "Quản lý tài khoản",
-        icon: Users,
+        icon: Users, // Giữ nguyên
         path: "/dashboard/account",
       },
-
       {
         label: "Quản lý duyệt Blog",
-        icon: Package,
+        icon: FileText, // Thay Package bằng FileText
         path: "/dashboard/blog",
       },
-    
-
     ],
   },
 ];

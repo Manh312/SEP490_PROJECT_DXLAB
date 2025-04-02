@@ -37,14 +37,14 @@ const BlogListOfStaffDetail = () => {
     }
   }, [selectedBlog]);
 
-  useEffect(() => {
-    if (error) {
-      toast.error(error || "Lỗi khi tải chi tiết blog!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
-  }, [error]);
+  // useEffect(() => {
+  //   if (error) {
+  //     toast.error(error || "Lỗi khi tải chi tiết blog!", {
+  //       position: "top-right",
+  //       autoClose: 3000,
+  //     });
+  //   }
+  // }, [error]);
 
   const getStatusDisplayName = (status) => {
     switch (Number(status)) {
