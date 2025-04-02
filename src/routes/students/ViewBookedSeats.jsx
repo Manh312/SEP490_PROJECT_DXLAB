@@ -132,7 +132,8 @@ const ViewBookedSeats = () => {
             type="date"
             value={selectedDate}
             onChange={(e) => dispatch(setSelectedDate(e.target.value))}
-            className="border rounded p-2"
+            className="border rounded p-2 bg-gray-400"
+            min={new Date().toISOString().split("T")[0]}
           />
         </div>
         <div>
@@ -140,7 +141,7 @@ const ViewBookedSeats = () => {
           <select
             value={selectedSlot}
             onChange={(e) => dispatch(setSelectedSlot(Number(e.target.value)))}
-            className="border rounded p-2"
+            className="border rounded p-2 bg-gray-400"
           >
             <option value={1}>Slot 1</option>
             <option value={2}>Slot 2</option>

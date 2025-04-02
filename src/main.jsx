@@ -64,7 +64,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
           : "Đăng nhập ví thành công!",
       { toastId: `login-${walletType}` }
     );
-    
+    // Call BLOCKCHAIN GET BALANCE
   } catch (error) {
     console.error("Backend error:", error.message);
     toast.error(
