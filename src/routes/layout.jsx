@@ -7,11 +7,11 @@ import { useClickOutside } from "../hooks/use-click-outside";
 import { useEffect, useRef, useState } from "react";
 import Header from "./dashboard/Header";
 import { useAddress } from "@thirdweb-dev/react";
-
+import PropTypes from "prop-types"; // Thêm import PropTypes
 
 const TIDIO_SCRIPT_URL = import.meta.env.VITE_TIDIO_SCRIPT_URL;
 
-const Layout = () => {
+const Layout = ({ walletAddress, tokenBalance }) => {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith("/dashboard");
   const isManage = location.pathname.startsWith("/manage");
@@ -44,12 +44,14 @@ const Layout = () => {
     }
   }, []);
 
-
   return (
     <div>
-      <Navbar className={isDashboard || isManage ? "w-[200px]" : "w-full"} />
+      <Navbar
+        className={isDashboard || isManage ? "w-[200px]" : "w-full"}
+        walletAddress={walletAddress}
+        tokenBalance={tokenBalance}
+      />
       <div className={`w-full ${isDashboard || isManage ? "" : ""} mx-auto`}>
-
         <div className="flex w-full">
           {(isDashboard || isManage) && address && (
             <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
@@ -67,6 +69,12 @@ const Layout = () => {
       <Footer className={isDashboard ? "w-[200px]" : "w-full"} />
     </div>
   );
+};
+
+// Thêm PropTypes để xác thực props
+Layout.propTypes = {
+  walletAddress: PropTypes.string, // walletAddress có thể là string hoặc null
+  tokenBalance: PropTypes.string,  // tokenBalance có thể là string hoặc null
 };
 
 export default Layout;
