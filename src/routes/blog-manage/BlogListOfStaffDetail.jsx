@@ -283,7 +283,7 @@ const BlogListOfStaffDetail = () => {
           </div>
           <Link
             to="/dashboard/blog"
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md hover:bg-blue-600 transition"
+            className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md hover:bg-orange-600 transition"
           >
             <ArrowLeft className="h-5 w-5" />
             <span className="font-semibold">Quay lại</span>
