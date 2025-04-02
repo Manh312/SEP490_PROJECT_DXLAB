@@ -43,13 +43,6 @@ const BlogListOfStaff = () => {
     console.log("Initial fetch - Approved Blogs:", approvedBlogs);
   }, [dispatch]);
 
-  const handleRefresh = () => {
-    dispatch(fetchAdminPendingBlogs());
-    dispatch(fetchAdminApprovedBlogs());
-    console.log("After refresh - Pending Blogs:", pendingBlogs);
-    console.log("After refresh - Approved Blogs:", approvedBlogs);
-  };
-
   const mapStatusToString = (status) => {
     switch (status) {
       case 1: return "Đang chờ";
