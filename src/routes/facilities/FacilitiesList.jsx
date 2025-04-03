@@ -90,7 +90,7 @@ const FacilitiesList = () => {
       dispatch(fetchFacilities());
       event.target.value = null;
     } catch (err) {
-      toast.error(err?.message || "Có lỗi xảy ra khi nhập file Excel!");
+      toast.error(err?.message);
     }
   };
 

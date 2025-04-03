@@ -53,9 +53,11 @@ export const addFacilityFromExcel = createAsyncThunk(
           "Content-Type": "multipart/form-data", // Ensure this header is set
         },
       });
+      console.log(response);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      console.log(error);
+      return rejectWithValue(error);
     }
   }
 );
