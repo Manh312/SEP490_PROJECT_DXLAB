@@ -12,10 +12,8 @@ import {
   XAxis,
   YAxis,
   Area,
- AreaChart
+  AreaChart,
 } from "recharts";
-
-import { overviewData } from "../../constants";
 
 const Page = () => {
   const { theme } = useTheme();
@@ -57,13 +55,27 @@ const Page = () => {
     { name: "Sinh viên tham gia", value: avgStudentPercentage },
     { name: "Không tham gia", value: 100 - avgStudentPercentage },
   ];
-  const COLORS = ["#2563eb", "#e2e8f0"];
+  const COLORS = ["#f97316", "#94a3b8"]; // Màu cam (#f97316) cho phần "Sinh viên tham gia"
+
+  // Tạo dữ liệu cho biểu đồ parabol (12 tháng)
+  const areaData = Array.from({ length: 12 }, (_, index) => {
+    const month = index + 1;
+    const stat = stats.find((item) => item.name === `Tháng ${month}`);
+    return {
+      name: `Tháng ${month}`,
+      total: (month === 3 || month === 9) && stat ? stat.totalRevenue || 0 : 0, // Hiển thị totalRevenue cho tháng 3 và 9, các tháng khác là 0
+    };
+  });
+
+  const yTicks = [0, 200, 400, 600, 800, 1000]; // Các mốc bạn muốn hiển thị
+  const maxY = 1000; // Giá trị tối đa trên trục Y
+  const minY = 0;
 
   return (
-    <div className="flex flex-col gap-y-4 mb-20">
-      <h1 className={`title ${theme === "dark" ? "text-white" : "text-black"}`}>
+    <div className="flex flex-col gap-y-4 mb-20 pl-5">
+      <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
         Thống kê
-      </h1>
+      </h2>
 
       {/* Hiển thị trạng thái loading và error */}
       {loading && (
@@ -87,8 +99,8 @@ const Page = () => {
               <div
                 className={`w-fit rounded-lg p-2 transition-colors ${
                   theme === "dark"
-                    ? "bg-blue-600/20 text-blue-400"
-                    : "bg-blue-500/20 text-blue-500"
+                    ? "bg-orange-600/20 text-orange-400"
+                    : "bg-orange-500/20 text-orange-500"
                 }`}
               >
                 <DollarSign size={26} />
@@ -112,8 +124,8 @@ const Page = () => {
               <span
                 className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
                   theme === "dark"
-                    ? "border-blue-400 text-blue-400"
-                    : "border-blue-500 text-blue-500"
+                    ? "border-orange-400 text-orange-400"
+                    : "border-orange-500 text-orange-500"
                 }`}
               >
                 <TrendingUp size={18} />
@@ -132,8 +144,8 @@ const Page = () => {
               <div
                 className={`w-fit rounded-lg p-2 transition-colors ${
                   theme === "dark"
-                    ? "bg-blue-600/20 text-blue-400"
-                    : "bg-blue-500/20 text-blue-500"
+                    ? "bg-orange-600/20 text-orange-400"
+                    : "bg-orange-500/20 text-orange-500"
                 }`}
               >
                 <Users size={26} />
@@ -157,8 +169,8 @@ const Page = () => {
               <span
                 className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
                   theme === "dark"
-                    ? "border-blue-400 text-blue-400"
-                    : "border-blue-500 text-blue-500"
+                    ? "border-orange-400 text-orange-400"
+                    : "border-orange-500 text-orange-500"
                 }`}
               >
                 <TrendingUp size={18} />
@@ -177,8 +189,8 @@ const Page = () => {
               <div
                 className={`w-fit rounded-lg p-2 transition-colors ${
                   theme === "dark"
-                    ? "bg-blue-600/20 text-blue-400"
-                    : "bg-blue-500/20 text-blue-500"
+                    ? "bg-orange-600/20 text-orange-400"
+                    : "bg-orange-500/20 text-orange-500"
                 }`}
               >
                 <Package size={26} />
@@ -202,8 +214,8 @@ const Page = () => {
               <span
                 className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
                   theme === "dark"
-                    ? "border-blue-400 text-blue-400"
-                    : "border-blue-500 text-blue-500"
+                    ? "border-orange-400 text-orange-400"
+                    : "border-orange-500 text-orange-500"
                 }`}
               >
                 <TrendingUp size={18} />
@@ -222,8 +234,8 @@ const Page = () => {
               <div
                 className={`w-fit rounded-lg p-2 transition-colors ${
                   theme === "dark"
-                    ? "bg-blue-600/20 text-blue-400"
-                    : "bg-blue-500/20 text-blue-500"
+                    ? "bg-orange-600/20 text-orange-400"
+                    : "bg-orange-500/20 text-orange-500"
                 }`}
               >
                 <CreditCard size={26} />
@@ -247,8 +259,8 @@ const Page = () => {
               <span
                 className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
                   theme === "dark"
-                    ? "border-blue-400 text-blue-400"
-                    : "border-blue-500 text-blue-500"
+                    ? "border-orange-400 text-orange-400"
+                    : "border-orange-500 text-orange-500"
                 }`}
               >
                 <TrendingUp size={18} />
@@ -270,9 +282,9 @@ const Page = () => {
             <p
               className={`card-title ${
                 theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-              }`}
+              } p-5`}
             >
-              Tỷ lệ sinh viên tham gia (Biểu đồ hình tròn)
+              Tỷ lệ sinh viên tham gia
             </p>
           </div>
           <div className="card-body p-0">
@@ -310,8 +322,8 @@ const Page = () => {
         </div>
       )}
 
-      {/* Biểu đồ đường parabol cho totalRevenue */}
-      {!loading && Array.isArray(stats) && stats.length > 0 && (
+      {/* Biểu đồ đường parabol tổng quát */}
+      {!loading && (
         <div
           className={`card mr-5 col-span-1 md:col-span-2 lg:col-span-4 ${
             theme === "dark" ? "bg-black text-white" : "bg-white text-black"
@@ -321,57 +333,62 @@ const Page = () => {
             <p
               className={`card-title ${
                 theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-              }`}
+              } p-5`}
             >
-              Dòng tiền Blockchain theo tháng (Biểu đồ đường Parabol)
+              Thống kê doanh thu
             </p>
           </div>
-          <div className={`card mr-5 col-span-1 md:col-span-2 lg:col-span-4 ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>
-        <div className="card-header">
-          <p className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}>Tổng quát theo biểu đồ (Đường Parabol)</p>
-        </div>
-        <div className="card-body p-0">
-        <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={overviewData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+          <div className="card-body p-0">
+            <ResponsiveContainer width="100%" height={500}>
+              <AreaChart
+                data={areaData} // Sử dụng areaData thay vì overviewData
+                margin={{ top: 30, right: 30, left: 50, bottom: 30 }}
+              >
                 <defs>
-                  <linearGradient id="colorTotal" x1={"0"} y1={"0"} x2={"0"} y2={"1"}>
-                    <stop offset={"5%"} stopColor="#2563eb" stopOpacity={0.8} />
-                    <stop offset={"95%"} stopColor="#2563eb" stopOpacity={0} />
+                  <linearGradient id="colorTotalOverview" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} /> {/* Màu cam */}
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <Tooltip
                   cursor={false}
-                  formatter={(value) => `$${value}`}
+                  formatter={(value) => `${value} DXLAB Coin`}
                   contentStyle={{
                     backgroundColor: theme === "dark" ? "black" : "white",
                     color: theme === "dark" ? "white" : "black",
                     borderRadius: "8px",
-                    border: `1px solid ${theme === "dark" ? "#334155" : "#cbd5e1"}`
+                    border: `1px solid ${theme === "dark" ? "#334155" : "#cbd5e1"}`,
                   }}
                 />
                 <XAxis
-                  dataKey={"name"}
+                  dataKey="name"
                   strokeWidth={0}
                   stroke={theme === "light" ? "#475569" : "#94a3b8"}
+                  angle={-45} // Xoay nhãn 45 độ để tránh đè lên nhau
+                  textAnchor="end"
+                  height={60}
+                  interval={0} // Hiển thị tất cả các nhãn
                 />
                 <YAxis
-                  dataKey={"total"}
+                  dataKey="total"
                   strokeWidth={0}
                   stroke={theme === "light" ? "#475569" : "#94a3b8"}
-                  tickFormatter={(value) => `$${value}`}
-                  tickMargin={6}
+                  tickFormatter={(value) => `${value} DXLABCoin`} // Sửa lỗi chính tả: DXLABCoin -> DXLAB Coin
+                  tickMargin={40}
+                  domain={[minY, maxY]} // Phạm vi từ 0 đến 20000
+                  ticks={yTicks} // Các mốc: 0, 1000, 5000, 10000, 15000, 20000
+                  width={100}
                 />
                 <Area
                   type="monotone"
                   dataKey="total"
-                  stroke="#2563eb"
+                  stroke="#f97316" // Màu cam
                   fillOpacity={1}
-                  fill="url(#colorTotal)"
+                  fill="url(#colorTotalOverview)"
                 />
               </AreaChart>
             </ResponsiveContainer>
-        </div>
-      </div>
+          </div>
         </div>
       )}
     </div>

@@ -164,7 +164,7 @@ const FacilitiesList = () => {
             </div>
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              className="flex items-center px-4 py-2 bg-orange-400 text-white rounded-lg hover:bg-orange-500 transition"
             >
               <FaFilter className="h-5 w-5 mr-2" /> {isFilterOpen ? "Ẩn" : "Hiện"} bộ lọc
             </button>

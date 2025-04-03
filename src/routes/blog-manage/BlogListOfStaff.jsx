@@ -43,13 +43,6 @@ const BlogListOfStaff = () => {
     console.log("Initial fetch - Approved Blogs:", approvedBlogs);
   }, [dispatch]);
 
-  const handleRefresh = () => {
-    dispatch(fetchAdminPendingBlogs());
-    dispatch(fetchAdminApprovedBlogs());
-    console.log("After refresh - Pending Blogs:", pendingBlogs);
-    console.log("After refresh - Approved Blogs:", approvedBlogs);
-  };
-
   const mapStatusToString = (status) => {
     switch (status) {
       case 1: return "Đang chờ";
@@ -295,14 +288,14 @@ const BlogListOfStaff = () => {
             <PlusCircle className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Danh Sách Blog (Admin)</h2>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
+          {/* <div className="flex flex-col sm:flex-row gap-3">
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-blue-600 transition"
               onClick={handleRefresh}
             >
               Làm mới
             </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="mb-6 p-4 rounded-lg shadow-sm">

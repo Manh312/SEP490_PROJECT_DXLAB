@@ -10,14 +10,15 @@ const individualSeats = {
   table2: ['B1', 'B2', 'B3', 'B4', 'B5', 'B6'],
 };
 
-const groupSeats = {
-  '8-seats': [['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7', 'J8']],
-  '6-seats-1': [['I1', 'I2', 'I3', 'I4', 'I5', 'I6']],
-  '6-seats-2': [['I7', 'I8', 'I9', 'I10', 'I11', 'I12']],
+// Ánh xạ areaName và areaTypeName với groupSeats
+const areaToGroupMap = {
+  'Khu vực số 3-Khu vực 6 người': '6-seats-1', // Giả sử "Khu vực số 3" là 6-seats-1
+  'Khu vực số 4-Khu vực 6 người': '6-seats-2', // Giả sử "Khu vực số 4" là 6-seats-2
+  'Khu vực số 5-Khu vực 8 người': '8-seats',   // Giả sử "Khu vực số 5" là 8-seats
 };
 
-const positionIdToSeatMap = { 
-  1: { seat: 'A1', area: 'individual' }, 
+const positionIdToSeatMap = {
+  1: { seat: 'A1', area: 'individual' },
   2: { seat: 'A2', area: 'individual' },
   3: { seat: 'A3', area: 'individual' },
   4: { seat: 'A4', area: 'individual' },
@@ -59,41 +60,65 @@ const ViewBookedSeats = () => {
   }, [bookingDetail, bookingDate, dispatch]);
 
   const bookedSeats = useMemo(() => {
-    if (bookingLoading) return [];
+    if (bookingLoading) return { individual: [], groups: [] };
+
+    const individual = [];
+    const groups = [];
 
     if (id && bookingDetail?.data?.bookingId === Number(id) && Array.isArray(bookingDetail.data.details)) {
       const bookingDate = bookingDetail.data.bookingCreatedDate.split('T')[0];
-      if (bookingDate !== selectedDate) return [];
+      if (bookingDate !== selectedDate) return { individual: [], groups: [] };
 
-      const seats = bookingDetail.data.details
+      bookingDetail.data.details
         .filter((detail) => Number(detail.slotNumber) === selectedSlot)
-        .map((detail) => {
+        .forEach((detail) => {
+          // Xử lý ghế cá nhân
           const seatInfo = positionIdToSeatMap[detail.position];
-          return seatInfo ? seatInfo.seat : null;
-        })
-        .filter((seat) => seat !== null);
-      return seats;
+          if (seatInfo && seatInfo.area === 'individual') {
+            individual.push(seatInfo.seat);
+          }
+
+          // Xử lý khu vực nhóm
+          const areaKey = `${detail.areaName}-${detail.areaTypeName}`;
+          const groupArea = areaToGroupMap[areaKey];
+          if (groupArea && !groups.includes(groupArea)) {
+            groups.push(groupArea);
+          }
+        });
+
+      return { individual, groups };
     }
 
-    if (!bookings || !Array.isArray(bookings.data)) return [];
+    if (!bookings || !Array.isArray(bookings.data)) return { individual: [], groups: [] };
 
-    const seats = bookings.data
+    bookings.data
       .filter((booking) => {
         if (!booking || !booking.bookingCreatedDate) return false;
         const bookingDate = booking.bookingCreatedDate.split('T')[0];
         return bookingDate === selectedDate;
       })
-      .flatMap((booking) => {
-        if (!booking || !Array.isArray(booking.details)) return [];
-        return booking.details
+      .forEach((booking) => {
+        if (!booking || !Array.isArray(booking.details)) return;
+
+        booking.details
           .filter((detail) => Number(detail.slotNumber) === selectedSlot)
-          .map((detail) => {
+          .forEach((detail) => {
+            // Xử lý ghế cá nhân
             const seatInfo = positionIdToSeatMap[detail.position];
-            return seatInfo ? seatInfo.seat : null;
-          })
-          .filter((seat) => seat !== null);
+            if (seatInfo && seatInfo.area === 'individual') {
+              individual.push(seatInfo.seat);
+            }
+
+            // Xử lý khu vực nhóm
+            const areaKey = `${detail.areaName}-${detail.areaTypeName}`;
+            const groupArea = areaToGroupMap[areaKey];
+            if (groupArea && !groups.includes(groupArea)) {
+              groups.push(groupArea);
+            }
+          });
       });
-    return seats;
+
+    return { individual, groups };
   }, [bookingLoading, bookings, bookingDetail, id, selectedDate, selectedSlot]);
 
   return (
@@ -156,7 +181,7 @@ const ViewBookedSeats = () => {
                     <span
                       key={seat}
                       className={`absolute w-10 h-10 flex items-center justify-center p-1 rounded ${
-                        bookedSeats.includes(seat) ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
+                        bookedSeats.individual.includes(seat) ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
                       }`}
                       style={{ transform: `translate(${x}px, ${y}px)` }}
                     >
@@ -184,7 +209,7 @@ const ViewBookedSeats = () => {
                     <span
                       key={seat}
                       className={`absolute w-10 h-10 flex items-center justify-center p-1 rounded ${
-                        bookedSeats.includes(seat) ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
+                        bookedSeats.individual.includes(seat) ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
                       }`}
                       style={{ transform: `translate(${x}px, ${y}px)` }}
                     >
@@ -202,36 +227,30 @@ const ViewBookedSeats = () => {
                 {/* 8-seats in the middle */}
                 <div
                   className={`border-4 border-gray-600 p-4 rounded-md text-center flex flex-col justify-center items-center w-full sm:w-[300px] mt-0 sm:mt-50 ${
-                    groupSeats['8-seats'][0].some((seat) => bookedSeats.includes(seat))
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gray-500 text-white'
+                    bookedSeats.groups.includes('8-seats') ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
                   }`}
                   style={{ height: '300px' }}
                 >
-                  <strong className="text-sm md:text-base mt-4">8-seats</strong>
+                  <strong className="text-sm md:text-base mt-4">Khu vực 8 người</strong>
                 </div>
 
                 {/* 6-seats-1 and 6-seats-2 in a vertical column */}
                 <div className="flex flex-col gap-6">
                   <div
                     className={`border-4 border-gray-600 p-4 rounded-md text-center flex justify-center items-center w-full sm:w-[300px] ${
-                      groupSeats['6-seats-1'][0].some((seat) => bookedSeats.includes(seat))
-                        ? 'bg-green-500 text-white'
-                        : 'bg-gray-500 text-white'
+                      bookedSeats.groups.includes('6-seats-1') ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
                     }`}
                     style={{ height: '300px' }}
                   >
-                    <strong className="text-sm md:text-base">6-seats-1</strong>
+                    <strong className="text-sm md:text-base">Khu vực số 3 (6 người)</strong>
                   </div>
                   <div
                     className={`border-4 border-gray-600 p-4 rounded-md text-center flex justify-center items-center w-full sm:w-[300px] ${
-                      groupSeats['6-seats-2'][0].some((seat) => bookedSeats.includes(seat))
-                        ? 'bg-green-500 text-white'
-                        : 'bg-gray-500 text-white'
+                      bookedSeats.groups.includes('6-seats-2') ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
                     }`}
                     style={{ height: '300px' }}
                   >
-                    <strong className="text-sm md:text-base">6-seats-2</strong>
+                    <strong className="text-sm md:text-base">Khu vực số 4 (6 người)</strong>
                   </div>
                 </div>
               </div>

@@ -78,7 +78,7 @@ const AreaList = () => {
         {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <MapPin className="h-6 w-6 text-blue-500" /> {/* Icon MapPin cho khu vực */}
+            <MapPin className="h-6 w-6 text-orange-500" /> {/* Icon MapPin cho khu vực */}
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
               Danh Sách Khu Vực
             </h2>
@@ -110,7 +110,7 @@ const AreaList = () => {
 
             {/* Filter Dropdown */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Filter className="h-5 w-5 text-blue-500" />
+              <Filter className="h-5 w-5 text-orange-500" />
               <span className="font-medium text-sm sm:text-base">Lọc theo trạng thái:</span>
               <select
                 value={statusFilter}

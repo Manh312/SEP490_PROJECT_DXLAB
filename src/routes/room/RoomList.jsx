@@ -127,7 +127,7 @@ const RoomList = () => {
 
             {/* Filter Dropdown */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Filter className="h-5 w-5 text-blue-500" />
+              <Filter className="h-5 w-5 text-orange-500" />
               <span className="font-medium text-sm sm:text-base">Lọc theo trạng thái:</span>
               <select
                 value={statusFilter}

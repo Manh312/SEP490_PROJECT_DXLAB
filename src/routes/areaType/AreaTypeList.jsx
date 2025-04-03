@@ -160,7 +160,7 @@ const AreaTypeList = () => {
 
             {/* Filter Dropdown */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Filter className="h-5 w-5 text-blue-500" />
+              <Filter className="h-5 w-5 text-orange-500" />
               <span className="font-medium text-sm sm:text-base">Lọc theo trạng thái:</span>
               <select
                 value={statusFilter}
@@ -178,8 +178,8 @@ const AreaTypeList = () => {
         {/* Loading or Empty State */}
         {loading ? (
           <div className="flex items-center justify-center py-6">
-            <FaSpinner className="animate-spin text-blue-500 w-6 h-6 mr-2" />
-            <p className="text-blue-500 font-medium">Đang tải dữ liệu...</p>
+            <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+            <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
           </div>
         ) : filteredAreaTypes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">

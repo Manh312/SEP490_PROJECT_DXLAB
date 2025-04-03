@@ -1,6 +1,8 @@
 import { about } from "../../constants";
-import images3 from "../../assets/dxlab_images3.png";
-import images1 from "../../assets/dxlab_images1.jpg"
+import images3 from "../../assets/dxlab_images3.jpg";
+// import images2 from "../../assets/dxlab_images2.jpg"
+import images4 from "../../assets/dxlab_images4.jpg"
+
 
 const About = () => {
   return (
@@ -9,7 +11,7 @@ const About = () => {
       <div className="max-w-6xl mx-auto py-16 flex flex-col md:flex-row items-center">
       <div className="md:w-1/2 px-4">
           <img
-            src= {images1}
+            src= {images4}
             alt="Không gian DXLAB"
             className="w-full rounded-lg shadow-lg"
           />

@@ -18,9 +18,9 @@ const ReportList = () => {
     const fetchData = async () => {
       try {
         const [reportRes, userRes, bookingRes] = await Promise.all([
-          fetch("http://localhost:5000/reports"),
-          fetch("http://localhost:5000/users"),
-          fetch("http://localhost:5000/bookings"),
+          // fetch("http://localhost:5000/reports"),
+          // fetch("http://localhost:5000/users"),
+          // fetch("http://localhost:5000/bookings"),
         ]);
 
         const [reportData, userData, bookingData] = await Promise.all([
