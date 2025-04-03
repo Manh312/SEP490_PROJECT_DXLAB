@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Eye, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useTheme } from "../../../hooks/use-theme";
 import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -34,7 +34,7 @@ const BookingList = () => {
   if (error) return <p className="text-red-500">Lỗi: {error}</p>;
 
   return (
-    <div>
+    <div className="mr-3">
       <h2 className="text-2xl font-bold mb-4">Lịch sử đặt chỗ</h2>
 
       <div className="mb-4 flex items-center border p-2 rounded-md shadow-sm">
@@ -60,27 +60,26 @@ const BookingList = () => {
                   <th className="table-head sticky top-0 text-center align-middle">Ngày đặt</th>
                   <th className="table-head sticky top-0 text-center align-middle">Tổng giá tiền</th>
                   <th className="table-head sticky top-0 text-center align-middle">Chi tiết</th>
-                  <th className="table-head sticky top-0 text-center align-middle">Xem</th>
                 </tr>
               </thead>
               <tbody className="table-body">
                 {currentBookings.map((booking, index) => (
                   <tr key={booking.bookingId} className="table-row">
                     <td className="table-cell text-center align-middle">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                    <td className="table-cell text-center align-middle">{booking.bookingId}</td>
+                    <td className="table-cell text-center align-middle">
+                      <div className="flex items-center justify-center hover:" >
+                        <NavLink to={`booking-history/${booking.bookingId}`}>
+                        {booking.bookingId}
+                        </NavLink>
+                      </div>
+                    </td>
                     <td className="table-cell text-center align-middle">{booking.userName}</td>
                     <td className="table-cell text-center align-middle">
                     {new Intl.DateTimeFormat("vi-VN").format(new Date(booking.bookingCreatedDate))}
                     </td>
                     <td className="table-cell text-center align-middle">{booking.totalPrice} đ</td>
                     <td className="table-cell text-center align-middle">{booking.totalBookingDetail}</td>
-                    <td className="table-cell text-center align-middle">
-                      <div className="flex items-center justify-center">
-                        <NavLink to={`booking-history/${booking.bookingId}`} className="text-blue-500">
-                          <Eye size={20} />
-                        </NavLink>
-                      </div>
-                    </td>
+
                   </tr>
                 ))}
               </tbody>
