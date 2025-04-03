@@ -21,8 +21,11 @@ const Navbar = () => {
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
   const { user } = useSelector((state) => state.auth); // Chỉ lấy user, không có role nữa
-  const {contract} = useContract("0x3F843d2C1759147eA54F325b1baB3D06AB69178B");
-  const {data: balance} = useTokenBalance(contract, address);
+  const { contract } = useContract("0x1745A6155d7A0eD49f87F6554560a6b19D431706");
+  const { data: balance } = useTokenBalance(contract, address);
+
+  console.log("Balance:", balance);
+  
 
   // Lấy roleName từ roleId khi user thay đổi
   useEffect(() => {
@@ -128,7 +131,7 @@ const Navbar = () => {
                       style={{ width: "100%" }}
                     />
                   </div>
-                  <span className="ml-2">Số dư: {balance?.displayValue} FPT</span>
+                  <span className="ml-2 mb-4">Số dư: {balance?.displayValue} FPT</span>
                   <ul className="space-y-2">
                     {roleName === "Student" && (
                       <li>
@@ -209,14 +212,22 @@ const Navbar = () => {
         <div className="flex-1 overflow-y-auto">
           <div className="p-4">
             {isLoggedIn ? (
-              <ConnectWallet
-                btnTitle="Manage Wallet"
-                modalSize="wide"
-                hideTestnetFaucet
-                hideBuyButton
-                hideDisconnect
-                style={{ width: "100%" }}
-              />
+              <div>
+                <div>
+                  <ConnectWallet
+                    btnTitle="Manage Wallet"
+                    modalSize="wide"
+                    hideTestnetFaucet
+                    hideBuyButton
+                    hideDisconnect
+                    style={{ width: "100%" }}
+                  />
+                </div>
+                <div className="mt-3 ml-1">
+                  <span className="">Số dư: {balance?.displayValue} FPT</span>
+                </div>
+              </div>
+
             ) : (
               <ConnectWallet
                 btnTitle="Đăng nhập"
