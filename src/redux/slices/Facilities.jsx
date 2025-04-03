@@ -37,7 +37,7 @@ export const addFacility = createAsyncThunk(
       console.log(response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Không thể thêm cơ sở vật chất");
+      return rejectWithValue(error);
     }
   }
 );
