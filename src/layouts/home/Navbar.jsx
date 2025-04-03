@@ -4,7 +4,7 @@ import logo from "../../assets/logo_images.png";
 import { navItems } from "../../constants";
 import { useTheme } from "../../hooks/use-theme";
 import { Link } from "react-router-dom";
-import { ConnectWallet, useAddress, useDisconnect } from "@thirdweb-dev/react";
+import { ConnectWallet, useAddress, useContract, useDisconnect, useTokenBalance } from "@thirdweb-dev/react";
 import { useDispatch, useSelector } from "react-redux";
 import { clearAuthData, fetchRoleByID } from "../../redux/slices/Authentication";
 import { FaUserCircle } from "react-icons/fa";
@@ -21,6 +21,8 @@ const Navbar = () => {
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
   const { user } = useSelector((state) => state.auth); // Chỉ lấy user, không có role nữa
+  const {contract} = useContract("0x3F843d2C1759147eA54F325b1baB3D06AB69178B");
+  const {data: balance} = useTokenBalance(contract, address);
 
   // Lấy roleName từ roleId khi user thay đổi
   useEffect(() => {
@@ -126,6 +128,7 @@ const Navbar = () => {
                       style={{ width: "100%" }}
                     />
                   </div>
+                  <span className="ml-2">Số dư: {balance?.displayValue} FPT</span>
                   <ul className="space-y-2">
                     {roleName === "Student" && (
                       <li>
