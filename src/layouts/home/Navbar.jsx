@@ -9,20 +9,20 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearAuthData, fetchRoleByID } from "../../redux/slices/Authentication";
 import { FaUserCircle } from "react-icons/fa";
 import { toast } from "react-toastify";
-import PropTypes from "prop-types";
 
-const Navbar = ({ walletAddress, tokenBalance }) => {
+const Navbar = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [roleName, setRoleName] = useState(null);
+  const [roleName, setRoleName] = useState(null); // State cục bộ để lưu roleName
   const { theme, setTheme } = useTheme();
   const address = useAddress();
   const dispatch = useDispatch();
   const disconnect = useDisconnect();
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth); // Chỉ lấy user, không có role nữa
 
+  // Lấy roleName từ roleId khi user thay đổi
   useEffect(() => {
     if (user?.roleId) {
       dispatch(fetchRoleByID(user.roleId))
@@ -35,20 +35,17 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
   useEffect(() => {
     if (!address) {
       setDropdownOpen(false);
-      setRoleName(null);
+      setRoleName(null); // Reset roleName khi đăng xuất
     }
   }, [address]);
 
-  useEffect(() => {
-    console.log("Navbar tokenBalance:", tokenBalance);
-  }, [tokenBalance]);
-
+  // Xử lý ngắt kết nối
   const handleDisconnect = async () => {
     try {
       await disconnect();
       dispatch(clearAuthData());
       setDropdownOpen(false);
-      setRoleName(null);
+      setRoleName(null); // Reset roleName khi đăng xuất
     } catch (error) {
       console.error("Disconnect error:", error);
       toast.error("Có lỗi khi đăng xuất.");
@@ -65,6 +62,7 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
     }
   };
 
+  // Xác định trạng thái đăng nhập hợp lệ
   const isLoggedIn = address && user && (user?.walletType !== "embeddedWallet" || (user?.storedToken?.authDetails?.email || user?.email)?.endsWith("@fpt.edu.vn"));
   const displayName = user?.storedToken?.authDetails?.email || user?.email || "Wallet User";
 
@@ -75,6 +73,7 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
           <img className="h-30 w-35" src={logo} alt="logo" />
         </div>
 
+        {/* Menu cho desktop */}
         <ul className="hidden lg:flex space-x-12 text-xl">
           {navItems.map((item, index) => (
             <li key={index}>
@@ -83,11 +82,13 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
           ))}
           {isLoggedIn && (
             <>
+              {/* Ẩn nút Dịch vụ nếu là Admin hoặc Staff */}
               {roleName !== "Admin" && roleName !== "Staff" && (
                 <li>
                   <Link to="/rooms">Dịch vụ</Link>
                 </li>
               )}
+              {/* Hiển thị nút Dashboard nếu là Admin */}
               {roleName === "Admin" && (
                 <li>
                   <Link to="/dashboard">Bảng điều khiển</Link>
@@ -102,6 +103,7 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
           )}
         </ul>
 
+        {/* Phần hiển thị cho desktop */}
         <div className="hidden lg:flex justify-center space-x-6 items-center relative z-10">
           {isLoggedIn ? (
             <div ref={profileRef} className="relative">
@@ -115,27 +117,13 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
                   className={`absolute right-0 top-12 w-80 ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} p-4 rounded-lg shadow-lg z-50`}
                 >
                   <span className="block mb-2">{displayName}</span>
-                  <span className="block mb-2">
-                    Số dư: {tokenBalance ? `${tokenBalance} FPT` : "Loading..."}
-                  </span>
                   <div className="mb-4">
                     <ConnectWallet
-                      displayBalanceToken={{
-                        address: "0x3F843d2C1759147eA54F325b1baB3D06AB69178",
-                        symbol: "FPT",
-                        decimals: 18,
-                        name: "FPT Currency",
-                      }}
                       modalSize="wide"
                       hideTestnetFaucet
                       hideBuyButton
                       hideDisconnect
                       style={{ width: "100%" }}
-                      detailsBtn={() => (
-                        <button className="w-full text-left p-2 bg-gray-700 text-white rounded">
-                          {tokenBalance ? `${tokenBalance} FPT` : "Loading..."}
-                        </button>
-                      )}
                     />
                   </div>
                   <ul className="space-y-2">
@@ -177,6 +165,7 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
                 btnTitle={"Đăng nhập"}
                 auth={{ loginOptional: false }}
                 modalSize="wide"
+
               />
               <button
                 className="p-2 border rounded-md transition-colors ml-5"
@@ -188,6 +177,7 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
           )}
         </div>
 
+        {/* Nút menu cho mobile */}
         <div className="lg:hidden flex">
           <button onClick={handleMobileDrawer} className="p-2 border rounded-md">
             {mobileDrawerOpen ? <X /> : <Menu />}
@@ -195,6 +185,7 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
         </div>
       </div>
 
+      {/* Drawer cho mobile */}
       <div
         className={`fixed top-0 left-0 h-screen z-20 transition-transform duration-300 w-4/5 max-w-sm flex flex-col ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} ${mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
@@ -215,29 +206,14 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
         <div className="flex-1 overflow-y-auto">
           <div className="p-4">
             {isLoggedIn ? (
-              <>
-                <span className="block mb-2">
-                  Số dư: {tokenBalance ? `${tokenBalance} FPT` : "Loading..."}
-                </span>
-                <ConnectWallet
-                  displayBalanceToken={{
-                    address: "0x3F843d2C1759147eA54F325b1baB3D06AB69178",
-                    symbol: "FPT",
-                    decimals: 18,
-                    name: "FPT Currency",
-                  }}
-                  modalSize="wide"
-                  hideTestnetFaucet
-                  hideBuyButton
-                  hideDisconnect
-                  style={{ width: "100%" }}
-                  detailsBtn={() => (
-                    <button className="w-full text-left p-2 bg-gray-700 text-white rounded">
-                      {tokenBalance ? `${tokenBalance} FPT` : "Loading..."}
-                    </button>
-                  )}
-                />
-              </>
+              <ConnectWallet
+                btnTitle="Manage Wallet"
+                modalSize="wide"
+                hideTestnetFaucet
+                hideBuyButton
+                hideDisconnect
+                style={{ width: "100%" }}
+              />
             ) : (
               <ConnectWallet
                 btnTitle="Đăng nhập"
@@ -334,11 +310,6 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
       </div>
     </nav>
   );
-};
-
-Navbar.propTypes = {
-  walletAddress: PropTypes.string,
-  tokenBalance: PropTypes.string,
 };
 
 export default Navbar;

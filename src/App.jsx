@@ -57,7 +57,6 @@ import CreateAreaType from "./routes/areaType/CreateAreaType";
 import UpdateAreaType from "./routes/areaType/UpdateAreaType";
 import BlogListOfStaffDetail from "./routes/blog-manage/BlogListOfStaffDetail";
 import ManageAreaDetail from "./routes/areas/ManageAreaDetail";
-import PropTypes from "prop-types";
 
 
 
@@ -78,11 +77,10 @@ export function HomeContent() {
 }
 
 
-const createRouter = (walletAddress, tokenBalance) =>
-createBrowserRouter([
+const router = createBrowserRouter([
   {
     path: "/",
-    element: <Layout walletAddress={walletAddress} tokenBalance={tokenBalance} />,
+    element: <Layout />,
     children: [
       { index: true, element: <HomeContent /> },
       { path: "blog", element: <Blog /> },
@@ -250,18 +248,12 @@ createBrowserRouter([
   },
 ]);
 
-function App({ walletAddress, tokenBalance }) {
-  const router = createRouter(walletAddress, tokenBalance);
+function App() {
   return (
     <ThemeProvider storageKey="theme">
       <RouterProvider router={router} />
     </ThemeProvider>
   );
-};
-
-App.propTypes = {
-  walletAddress: PropTypes.string,
-  tokenBalance: PropTypes.string,  
-};
+}
 
 export default App;

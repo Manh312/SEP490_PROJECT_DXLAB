@@ -11,8 +11,6 @@ import {
   useAddress,
   useDisconnect,
   useWallet,
-  useContract,
-  useContractRead,
 } from "@thirdweb-dev/react";
 import App from "./App.jsx";
 import { store, persistor } from "./redux/Store.jsx";
@@ -24,9 +22,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import axiosInstance from "./utils/axios.js";
 
 const activeChain = "sepolia";
-const TOKEN_CONTRACT_ADDRESS = "0x3F843d2C1759147eA54F325b1baB3D06AB69178B";
 
 const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) => {
+
   try {
     const userEmail =
       walletType === "embeddedWallet"
@@ -41,6 +39,8 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       status: true,
       roleId: 3,
     };
+
+    // Removed useNavigate from here as it is passed as an argument
 
     const response = await axiosInstance.post('/user/verifyuser', payload);
     const result = response.data;
@@ -59,11 +59,12 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
     toast.success(
       walletType === "metamask"
         ? "Đăng nhập MetaMask thành công!"
-        : walletType === "embeddedWallet" // Sửa lỗi typo "embeddedAWallet" thành "embeddedWallet"
+        : walletType === "embeddedWallet"
           ? "Đăng nhập Google thành công!"
           : "Đăng nhập ví thành công!",
       { toastId: `login-${walletType}` }
     );
+    // Call BLOCKCHAIN GET BALANCE
   } catch (error) {
     console.error("Backend error:", error.message);
     toast.error(
@@ -85,13 +86,6 @@ const AppWithWallet = React.memo(() => {
 
   const walletType = useMemo(() => wallet?.walletId, [wallet]);
 
-  const { contract } = useContract(TOKEN_CONTRACT_ADDRESS);
-  const { data: balance, isLoading: balanceLoading, error: balanceError } = useContractRead(
-    contract,
-    "balanceOf",
-    [walletAddress], // Đảm bảo walletAddress được truyền vào mỗi khi thay đổi
-  );
-
   const validateUser = useCallback(() => {
     const user = store.getState().auth.user;
     const userEmail = user?.storedToken?.authDetails?.email || user?.email;
@@ -101,7 +95,7 @@ const AppWithWallet = React.memo(() => {
       return;
     }
 
-    if (walletType === "embeddedWallet" && !userEmail) {
+    if (walletType === "embeddedWallet" && (!userEmail)) {
       disconnect();
       dispatch(clearAuthData());
       setIsValidUser(false);
@@ -114,26 +108,7 @@ const AppWithWallet = React.memo(() => {
     validateUser();
   }, [validateUser]);
 
-  const tokenBalance = useMemo(() => {
-    if (isValidUser && balance && !balanceLoading && !balanceError) {
-      const balanceValue = balance.toString() / 10 ** 18; // Giả sử token có 18 decimals
-      console.log("Calculated tokenBalance:", balanceValue.toFixed(2));
-      return balanceValue.toFixed(2);
-    }
-    console.log("tokenBalance is null - isValidUser:", isValidUser, "balance:", balance, "balanceLoading:", balanceLoading, "balanceError:", balanceError);
-    return null;
-  }, [isValidUser, balance, balanceLoading, balanceError]);
-
-  useEffect(() => {
-    if (tokenBalance) {
-      toast.info(`Số dư DXLAB Coin của bạn: ${tokenBalance}`, { toastId: "token-balance" });
-    } else if (balanceError) {
-      console.error("Lỗi khi lấy số dư token:", balanceError);
-      toast.error("Không thể lấy số dư DXLAB Coin.", { toastId: "token-balance-error" });
-    }
-  }, [tokenBalance, balanceError]);
-
-  return <App walletAddress={isValidUser ? walletAddress : null} tokenBalance={tokenBalance} />;
+  return <App walletAddress={isValidUser ? walletAddress : null} />;
 });
 
 AppWithWallet.displayName = "AppWithWallet";
@@ -152,8 +127,7 @@ const RootApp = () => {
         rtl={false}
         pauseOnFocusLoss
         draggable
-        pauseOnHover
-      />
+        pauseOnHover />
       <ThirdwebProvider
         activeChain={activeChain}
         clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID}
