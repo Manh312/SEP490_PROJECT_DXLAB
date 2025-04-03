@@ -34,7 +34,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       userId: 0,
       email: userEmail,
       fullName: "unknown",
-      walletAddress,
+      walletAddress: walletAddress,
       status: true,
       roleId: 3,
     };
