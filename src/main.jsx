@@ -124,6 +124,15 @@ const AppWithWallet = React.memo(() => {
     return null;
   }, [isValidUser, balance, balanceLoading, balanceError]);
 
+  useEffect(() => {
+    if (tokenBalance) {
+      toast.info(`Số dư DXLAB Coin của bạn: ${tokenBalance}`, { toastId: "token-balance" });
+    } else if (balanceError) {
+      console.error("Lỗi khi lấy số dư token:", balanceError);
+      toast.error("Không thể lấy số dư DXLAB Coin.", { toastId: "token-balance-error" });
+    }
+  }, [tokenBalance, balanceError]);
+
   return <App walletAddress={isValidUser ? walletAddress : null} tokenBalance={tokenBalance} />;
 });
 

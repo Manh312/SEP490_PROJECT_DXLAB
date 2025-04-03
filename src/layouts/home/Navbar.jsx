@@ -39,6 +39,10 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
     }
   }, [address]);
 
+  useEffect(() => {
+    console.log("Navbar tokenBalance:", tokenBalance);
+  }, [tokenBalance]);
+
   const handleDisconnect = async () => {
     try {
       await disconnect();
@@ -111,18 +115,29 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
                   className={`absolute right-0 top-12 w-80 ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} p-4 rounded-lg shadow-lg z-50`}
                 >
                   <span className="block mb-2">{displayName}</span>
+                  <span className="block mb-2">
+                    Số dư: {tokenBalance ? `${tokenBalance} FPT` : "Loading..."}
+                  </span>
                   <div className="mb-4">
                     <ConnectWallet
+                      displayBalanceToken={{
+                        address: "0x3F843d2C1759147eA54F325b1baB3D06AB69178",
+                        symbol: "FPT",
+                        decimals: 18,
+                        name: "FPT Currency",
+                      }}
                       modalSize="wide"
                       hideTestnetFaucet
                       hideBuyButton
                       hideDisconnect
                       style={{ width: "100%" }}
+                      detailsBtn={() => (
+                        <button className="w-full text-left p-2 bg-gray-700 text-white rounded">
+                          {tokenBalance ? `${tokenBalance} FPT` : "Loading..."}
+                        </button>
+                      )}
                     />
                   </div>
-                  <span className="block mb-2 ml-2">
-                    Số dư: {tokenBalance ? `${tokenBalance} FPT` : "Đang tải..."}
-                  </span>
                   <ul className="space-y-2">
                     {roleName === "Student" && (
                       <li>
@@ -201,16 +216,27 @@ const Navbar = ({ walletAddress, tokenBalance }) => {
           <div className="p-4">
             {isLoggedIn ? (
               <>
+                <span className="block mb-2">
+                  Số dư: {tokenBalance ? `${tokenBalance} FPT` : "Loading..."}
+                </span>
                 <ConnectWallet
+                  displayBalanceToken={{
+                    address: "0x3F843d2C1759147eA54F325b1baB3D06AB69178",
+                    symbol: "FPT",
+                    decimals: 18,
+                    name: "FPT Currency",
+                  }}
                   modalSize="wide"
                   hideTestnetFaucet
                   hideBuyButton
                   hideDisconnect
                   style={{ width: "100%" }}
+                  detailsBtn={() => (
+                    <button className="w-full text-left p-2 bg-gray-700 text-white rounded">
+                      {tokenBalance ? `${tokenBalance} FPT` : "Loading..."}
+                    </button>
+                  )}
                 />
-                <span className="block mb-2">
-                  Số dư: {tokenBalance ? `${tokenBalance} FPT` : "Loading..."}
-                </span>
               </>
             ) : (
               <ConnectWallet
