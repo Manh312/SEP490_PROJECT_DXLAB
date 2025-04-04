@@ -90,7 +90,7 @@ const FacilitiesList = () => {
       dispatch(fetchFacilities());
       event.target.value = null;
     } catch (err) {
-      toast.error(err?.message || "Có lỗi xảy ra khi nhập file Excel!");
+      toast.error(err?.message);
     }
   };
 
@@ -247,7 +247,7 @@ const FacilitiesList = () => {
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Số lô</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Mô tả</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tiêu đề</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Giá</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ngày nhập</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Số lượng</th>
@@ -269,7 +269,7 @@ const FacilitiesList = () => {
                           {facility.batchNumber}
                         </Link>
                       </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.facilityDescription}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.facilityTitle}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.cost}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {format(new Date(facility.importDate), "dd/MM/yyyy")}

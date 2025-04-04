@@ -12,7 +12,7 @@ const CreateFacilities = () => {
 
   const [facility, setFacility] = useState({
     batchNumber: "",
-    facilityDescription: "",
+    facilityTitle: "",
     cost: 0,
     expiredTime: "",
     quantity: 0,
@@ -31,8 +31,8 @@ const CreateFacilities = () => {
       toast.error("Số Lô không được để trống!");
       return;
     }
-    if (!facility.facilityDescription) {
-      toast.error("Mô Tả Cơ Sở Vật Chất không được để trống!");
+    if (!facility.facilityTitle) {
+      toast.error("Tiêu Đề Cơ Sở Vật Chất không được để trống!");
       return;
     }
     if (!facility.expiredTime) {
@@ -55,7 +55,7 @@ const CreateFacilities = () => {
     try {
       const facilityData = {
         batchNumber: facility.batchNumber,
-        facilityDescription: facility.facilityDescription,
+        facilityTitle: facility.facilityTitle,
         cost: parseFloat(facility.cost),
         expiredTime: new Date(facility.expiredTime).toISOString(),
         quantity: parseInt(facility.quantity, 10),
@@ -94,12 +94,12 @@ const CreateFacilities = () => {
         </div>
 
         <div>
-          <label className="block font-medium">Mô Tả Cơ Sở Vật Chất</label>
+          <label className="block font-medium">Tiêu Đề Cơ Sở Vật Chất</label>
           <input
             type="text"
-            name="facilityDescription"
+            name="facilityTitle"
             placeholder="Nhập mô tả cơ sở vật chất"
-            value={facility.facilityDescription}
+            value={facility.facilityTitle}
             onChange={handleChange}
             className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
           />

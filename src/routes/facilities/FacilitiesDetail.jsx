@@ -40,8 +40,8 @@ const FacilitiesDetail = () => {
               <td className="px-4 py-3 text-white">{facility.batchNumber}</td>
             </tr>
             <tr className="border-b">
-              <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Mô Tả Cơ Sở Vật Chất</td>
-              <td className="px-4 py-3">{facility.facilityDescription}</td>
+              <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Tiêu Đề Cơ Sở Vật Chất</td>
+              <td className="px-4 py-3">{facility.facilityTitle}</td>
             </tr>
             <tr className="border-b">
               <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Giá</td>
