@@ -4,6 +4,7 @@ import { Clock10Icon, PlusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { listSlots } from "../../redux/slices/Slot";
 import { useTheme } from "../../hooks/use-theme";
+import { FaSpinner } from "react-icons/fa";
 
 const SlotList = () => {
   const navigate = useNavigate();
@@ -44,8 +45,9 @@ const SlotList = () => {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-6">
-            <p className="text-orange-500 font-medium">Đang tải danh sách slot...</p>
+          <div className="flex items-center justify-center py-6 mb-200">
+            <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+            <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-12">

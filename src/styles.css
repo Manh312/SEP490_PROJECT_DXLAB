@@ -37,7 +37,7 @@ body {
   }
 
   .sidebar-item {
-    @apply flex h-[40px] w-full flex-shrink-0 items-center gap-x-3 rounded-lg p-3 text-base font-medium  text-slate-900 transition-colors hover:bg-blue-50 dark:text-slate-50 dark:hover:bg-orange-400;
+    @apply flex h-[40px] w-full flex-shrink-0 items-center gap-x-3 rounded-lg p-3 text-base font-medium  text-slate-900 transition-colors hover:bg-orange-50 dark:text-slate-50 dark:hover:bg-orange-400;
     &.active{
       @apply text-slate-50 ;
     }
@@ -52,7 +52,7 @@ body {
   }
 
   .input {
-    @apply hidden h-10 flex-shrink-0 items-center gap-x-2 rounded-lg border border-slate-300 px-0 text-base text-slate-900 transition-colors has-[input:focus]:border-blue-500 dark:border-slate-700 dark:text-slate-50 dark:focus:border-blue-600 md:flex md:w-auto lg:w-80;
+    @apply hidden h-10 flex-shrink-0 items-center gap-x-2 rounded-lg border border-slate-300 px-0 text-base text-slate-900 transition-colors has-[input:focus]:border-orange-500 dark:border-slate-700 dark:text-slate-50 dark:focus:border-orange-600 md:flex md:w-auto lg:w-80;
   }
 
   .card {
@@ -102,7 +102,7 @@ body {
 } */
 
 .recharts-tooltip-item {
-  @apply text-base font-medium !text-blue-500 dark:!text-blue-600
+  @apply text-base font-medium !text-orange-500 dark:!text-orange-600
 }
 
 /* Tạo lớp .mobile-only để chỉ hiển thị dưới 500px */

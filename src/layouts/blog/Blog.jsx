@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAdminApprovedBlogs } from '../../redux/slices/Blog';
 import { format, parseISO } from 'date-fns'; // Import date-fns utilities
+import { FaSpinner } from 'react-icons/fa';
 
 const Blog = () => {
   const dispatch = useDispatch();
@@ -72,7 +73,12 @@ const Blog = () => {
   };
 
   if (adminLoading) {
-    return <p className="text-center">Đang tải...</p>;
+    return (
+      <div className="flex items-center justify-center py-6 mt-100 mb-150">
+        <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+        <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
+      </div>
+    )
   }
 
 
@@ -154,9 +160,8 @@ const Blog = () => {
               <button
                 key={index}
                 onClick={() => setCurrentPage(index + 1)}
-                className={`mx-1 px-4 py-2 rounded-lg ${
-                  currentPage === index + 1 ? 'bg-orange-500 text-white' : 'bg-gray-200 text-black'
-                }`}
+                className={`mx-1 px-4 py-2 rounded-lg ${currentPage === index + 1 ? 'bg-orange-500 text-white' : 'bg-gray-200 text-black'
+                  }`}
               >
                 {index + 1}
               </button>

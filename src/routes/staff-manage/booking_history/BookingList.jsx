@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchBookingHistory } from "../../../redux/slices/BookingHistory";
 import { Tooltip } from "react-tooltip";
 import debounce from "lodash/debounce";
+import { FaSpinner } from "react-icons/fa";
 
 const BookingList = () => {
   const theme = useTheme();
@@ -14,7 +15,7 @@ const BookingList = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6; // Đồng bộ với AccountList
+  const itemsPerPage = 6;
 
   // Debounced search function
   const debouncedSearch = debounce((value) => {
@@ -26,7 +27,8 @@ const BookingList = () => {
     dispatch(fetchBookingHistory());
   }, [dispatch]);
 
-  const filteredBookings = bookings.filter((booking) =>
+  // Use an empty array as a fallback if bookings is null or undefined
+  const filteredBookings = (bookings || []).filter((booking) =>
     booking.bookingId.toString().includes(searchTerm.toLowerCase()) ||
     booking.userName.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -45,7 +47,8 @@ const BookingList = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-6">
+      <div className="flex items-center justify-center py-6 mt-50 mb-200">
+        <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
         <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
       </div>
     );

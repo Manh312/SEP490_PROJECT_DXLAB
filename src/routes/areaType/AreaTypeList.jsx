@@ -177,7 +177,7 @@ const AreaTypeList = () => {
 
         {/* Loading or Empty State */}
         {loading ? (
-          <div className="flex items-center justify-center py-6">
+          <div className="flex items-center justify-center py-6 mb-200">
             <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
             <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
           </div>

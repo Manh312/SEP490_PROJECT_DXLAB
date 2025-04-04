@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from "react";
 import { fetchFacilities, addFacilityFromExcel, moveToStorage } from "../../redux/slices/Facilities";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { FaPlus, FaFileExcel, FaFilter } from "react-icons/fa";
+import { FaPlus, FaFileExcel, FaFilter, FaSpinner } from "react-icons/fa";
 import { Edit, Search, Trash2 } from "lucide-react";
 import { MdChair } from "react-icons/md";
 import { format } from "date-fns";
@@ -226,7 +226,8 @@ const FacilitiesList = () => {
 
         {/* Loading or Empty State */}
         {loading ? (
-          <div className="flex items-center justify-center py-6">
+          <div className="flex items-center justify-center py-6 mb-200">
+            <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
             <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
           </div>
         ) : filteredFacilities.length === 0 ? (

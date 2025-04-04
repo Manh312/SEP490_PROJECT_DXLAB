@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Package } from "lucide-react";
+import { Package, X } from "lucide-react";
 import { addFacility, fetchFacilities } from "../../redux/slices/Facilities";
+import { FaTag, FaCalendarAlt, FaBox, FaDollarSign, FaFileAlt } from "react-icons/fa";
 
 const CreateFacilities = () => {
   const dispatch = useDispatch();
@@ -20,7 +21,13 @@ const CreateFacilities = () => {
   });
 
   const handleChange = (e) => {
-    setFacility({ ...facility, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFacility({ ...facility, [name]: value });
+  };
+
+  const handleNumberChange = (e) => {
+    const { name, value } = e.target;
+    setFacility({ ...facility, [name]: value === "" ? "" : parseFloat(value) });
   };
 
   const handleSubmit = async (e) => {
@@ -62,114 +69,160 @@ const CreateFacilities = () => {
         importDate: new Date(facility.importDate).toISOString(),
       };
       const res = await dispatch(addFacility(facilityData)).unwrap();
-      console.log("Phản hồi từ server:", res.message);
-
       toast.success(res.message);
       dispatch(fetchFacilities());
       navigate("/dashboard/facilities");
     } catch (err) {
-      console.error("Lỗi khi thêm facility:", err.message);
-      toast.error(err.message);
+      toast.error(err.message || "Lỗi khi thêm cơ sở vật chất!");
     }
   };
 
   return (
-    <div className="p-6 shadow-xl border rounded-lg max-w-lg mx-auto mt-10 mb-30">
-      <div className="text-2xl font-semibold mb-4 flex items-center">
-        <Package className="mr-2" />
-        <span>Thêm Cơ Sở Vật Chất</span>
+    <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-4xl rounded-xl border shadow-2xl p-8 transition-all duration-300 hover:shadow-3xl">
+        <div>
+          <h2 className="text-3xl font-bold text-center text-orange-500">Thêm Cơ Sở Vật Chất</h2>
+          <p className="mt-2 text-sm text-center text-gray-600">Tạo mới một cơ sở vật chất cho hệ thống</p>
+        </div>
+        <form onSubmit={handleSubmit} className="mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Cột bên trái */}
+            <div className="space-y-6">
+              <div className="flex flex-col">
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaBox className="mr-2 text-orange-500" /> Số Lô
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  name="batchNumber"
+                  value={facility.batchNumber}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                  required
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaTag className="mr-2 text-orange-500" /> Tiêu Đề Cơ Sở Vật Chất
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  name="facilityTitle"
+                  value={facility.facilityTitle}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                  required
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaDollarSign className="mr-2 text-orange-500" /> Giá
+                  </span>
+                </label>
+                <div className="relative flex items-center">
+                  <input
+                    type="number"
+                    name="cost"
+                    value={facility.cost}
+                    min={0}
+                    step="0.01"
+                    onChange={handleNumberChange}
+                    className="w-full px-4 py-3 pr-12 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                    required
+                  />
+                  <span className="absolute right-3 text-gray-600">DXLAB Coin</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Cột bên phải */}
+            <div className="space-y-6">
+              <div className="flex flex-col">
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaCalendarAlt className="mr-2 text-orange-500" /> Ngày Hết Hạn
+                  </span>
+                </label>
+                <input
+                  type="date"
+                  name="expiredTime"
+                  value={facility.expiredTime}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                  required
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaBox className="mr-2 text-orange-500" /> Số Lượng
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  name="quantity"
+                  value={facility.quantity}
+                  min={0}
+                  onChange={handleNumberChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                  required
+                />
+              </div>
+              <div className="flex flex-col">
+                <label className="block text-sm font-medium mb-1">
+                  <span className="flex items-center">
+                    <FaCalendarAlt className="mr-2 text-orange-500" /> Ngày Nhập
+                  </span>
+                </label>
+                <input
+                  type="date"
+                  name="importDate" // Fixed typo from "imporDate" to "importDate"
+                  value={facility.importDate}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 flex justify-between gap-4">
+            <button
+              type="button"
+              onClick={() => navigate("/dashboard/facilities")}
+              className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out"
+              disabled={loading}
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+            >
+              {loading ? (
+                <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              ) : (
+                <>
+                  <Package className="mr-2" /> Thêm Cơ Sở Vật Chất
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block font-medium">Số Lô</label>
-          <input
-            type="text"
-            name="batchNumber"
-            placeholder="Nhập số lô"
-            value={facility.batchNumber}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium">Tiêu Đề Cơ Sở Vật Chất</label>
-          <input
-            type="text"
-            name="facilityTitle"
-            placeholder="Nhập mô tả cơ sở vật chất"
-            value={facility.facilityTitle}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium">Giá</label>
-          <input
-            type="number"
-            name="cost"
-            value={facility.cost}
-            onChange={handleChange}
-            min="0"
-            step="0.01"
-            className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium">Ngày Hết Hạn</label>
-          <input
-            type="date"
-            name="expiredTime"
-            value={facility.expiredTime}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium">Số Lượng</label>
-          <input
-            type="number"
-            name="quantity"
-            value={facility.quantity}
-            onChange={handleChange}
-            min="0"
-            className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium">Ngày Nhập</label>
-          <input
-            type="date"
-            name="imporDate"
-            value={facility.importDate}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded-lg hover:bg-gray-100"
-          />
-        </div>
-
-        <div className="flex justify-between mt-4">
-          <button
-            type="button"
-            onClick={() => navigate("/dashboard/facilities")}
-            className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition"
-            disabled={loading}
-          >
-            Hủy
-          </button>
-          <button
-            type="submit"
-            className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition"
-            disabled={loading}
-          >
-            {loading ? "Đang thêm..." : "Thêm Cơ Sở Vật Chất"}
-          </button>
-        </div>
-      </form>
     </div>
   );
 };

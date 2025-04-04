@@ -56,6 +56,7 @@ import CreateAreaType from "./routes/areaType/CreateAreaType";
 import UpdateAreaType from "./routes/areaType/UpdateAreaType";
 import BlogListOfStaffDetail from "./routes/blog-manage/BlogListOfStaffDetail";
 import ManageAreaDetail from "./routes/areas/ManageAreaDetail";
+import AreaList from "./routes/areas/AreaList";
 
 
 
@@ -101,6 +102,10 @@ const router = createBrowserRouter([
       {
         path: "dashboard",
         element: <ProtectedRoute allowedRoles={["Admin"]}><DashboardPage /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/area",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><AreaList /></ProtectedRoute>,
       },
       {
         path: "dashboard/room/:roomId/:areaId",

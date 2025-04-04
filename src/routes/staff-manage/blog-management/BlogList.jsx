@@ -101,7 +101,7 @@ const BlogList = () => {
     if (!validImages.length) {
       return (
         <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
-          <span className="text-gray-500 text-sm">No Image</span>
+          <span className="text-gray-500 text-sm">Không có ảnh</span>
         </div>
       );
     }
@@ -220,7 +220,7 @@ const BlogList = () => {
 
         {/* Loading State */}
         {loading ? (
-          <div className="flex items-center justify-center py-6">
+          <div className="flex items-center justify-center py-6 mb-200">
             <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2"/>
             <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
           </div>

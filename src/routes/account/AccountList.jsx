@@ -85,8 +85,7 @@ const AccountList = () => {
       toast.success(res.message || "Nhập file Excel thành công! ✅");
       dispatch(fetchAccounts());
     } catch (err) {
-      console.error("Lỗi khi nhập file Excel:", err);
-      toast.error(err?.message || "Có lỗi xảy ra khi nhập file Excel! ❌");
+      toast.error(err?.message);
     }
   };
 
@@ -197,7 +196,7 @@ const AccountList = () => {
 
         {/* Loading or Empty State */}
         {loading ? (
-          <div className="flex items-center justify-center py-6">
+          <div className="flex items-center justify-center py-6 mb-200">
             <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
             <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
           </div>

@@ -14,6 +14,7 @@ import {
   fetchBlogsByStatus,
 } from "../../redux/slices/Blog";
 import Pagination from "../../hooks/use-pagination";
+import { FaSpinner } from "react-icons/fa";
 
 const BlogListOfStaff = () => {
   const dispatch = useDispatch();
@@ -34,7 +35,7 @@ const BlogListOfStaff = () => {
   const debouncedSearch = debounce((value) => {
     setSearchTerm(value);
     setCurrentPage(1);
-  }, 300);  
+  }, 300);
 
   useEffect(() => {
     dispatch(fetchAdminPendingBlogs());
@@ -326,8 +327,8 @@ const BlogListOfStaff = () => {
         </div>
 
         {(adminLoading || localLoading) ? (
-          <div className="flex items-center justify-center py-6">
-            <span className="animate-spin text-orange-500 w-6 h-6 mr-2">⏳</span>
+          <div className="flex items-center justify-center py-6 mb-200">
+            <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
             <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
           </div>
         ) : filteredBlogs.length === 0 ? (

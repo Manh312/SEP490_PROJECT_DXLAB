@@ -41,7 +41,7 @@ export const addAccount = createAsyncThunk(
       });
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Không thể thêm tài khoản");
+      return rejectWithValue(error);
     }
   }
 );

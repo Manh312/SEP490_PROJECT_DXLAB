@@ -14,6 +14,8 @@ import {
   Area,
   AreaChart,
 } from "recharts";
+import { FaSpinner } from "react-icons/fa";
+
 
 const Page = () => {
   const { theme } = useTheme();
@@ -79,7 +81,10 @@ const Page = () => {
 
       {/* Hiển thị trạng thái loading và error */}
       {loading && (
-        <div className="text-center text-orange-500">Đang tải dữ liệu...</div>
+         <div className="flex items-center justify-center py-6 mt-50 mb-200">
+         <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+         <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
+       </div>
       )}
       {error && (
         <div className="text-center text-red-500">
