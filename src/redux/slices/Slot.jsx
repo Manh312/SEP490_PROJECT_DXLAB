@@ -22,7 +22,7 @@ export const createSlot = createAsyncThunk(
       return response.data;
     } catch (error) {
       // console.log(error.response.data);
-      return rejectWithValue(error.response?.data || "Có lỗi xảy ra");
+      return rejectWithValue(error);
     }
   }
 );
