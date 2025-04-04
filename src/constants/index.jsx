@@ -29,9 +29,9 @@ export const navItems = [
 
 export const banners = [
   // { image: images1 },
-  { image: images2 },
-  { image: images3 },
+  { image: images1 },
   { image: images4 },
+  { image: images3 },
 ];
 
 export const services = [

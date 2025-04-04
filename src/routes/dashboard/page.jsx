@@ -2,7 +2,7 @@ import { CreditCard, DollarSign, Package, TrendingUp, Users } from "lucide-react
 import { useTheme } from "../../hooks/use-theme";
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { fetchStudentGroupStats, resetStats } from "../../redux/slices/Statistics";
+import { fetchStudentGroupStats, fetchJobsByYearAndDate, resetStats } from "../../redux/slices/Statistics";
 import {
   PieChart,
   Pie,
@@ -16,13 +16,12 @@ import {
 } from "recharts";
 import { FaSpinner } from "react-icons/fa";
 
-
 const Page = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
-  const { stats, loading, error } = useSelector((state) => state.statistics);
+  const { stats, jobs, loading, error } = useSelector((state) => state.statistics);
 
-  // Gọi API cho nhiều tháng (ví dụ: tháng 1, 2, 3, ..., 12)
+  // Gọi API cho student group stats (doanh thu và tỷ lệ sinh viên)
   useEffect(() => {
     dispatch(resetStats());
     const months = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
@@ -38,8 +37,14 @@ const Page = () => {
     });
   }, [dispatch]);
 
+  // Gọi API cho jobs (chi phí bỏ ra) theo năm 2025
+  useEffect(() => {
+    dispatch(fetchJobsByYearAndDate({ year: "2025", date: "2025-04-13" }));
+  }, [dispatch]);
+
   // Log để kiểm tra dữ liệu
   console.log("Stats:", stats);
+  console.log("Jobs:", jobs);
   console.log("Loading:", loading);
   console.log("Error:", error);
 
@@ -59,13 +64,28 @@ const Page = () => {
   ];
   const COLORS = ["#f97316", "#94a3b8"]; // Màu cam (#f97316) cho phần "Sinh viên tham gia"
 
-  // Tạo dữ liệu cho biểu đồ parabol (12 tháng)
+  // Tạo dữ liệu cho biểu đồ parabol (12 tháng) cho doanh thu
   const areaData = Array.from({ length: 12 }, (_, index) => {
     const month = index + 1;
     const stat = stats.find((item) => item.name === `Tháng ${month}`);
     return {
       name: `Tháng ${month}`,
       total: (month === 3 || month === 9) && stat ? stat.totalRevenue || 0 : 0, // Hiển thị totalRevenue cho tháng 3 và 9, các tháng khác là 0
+    };
+  });
+
+  // Tạo dữ liệu cho biểu đồ chi phí (cost) từ jobs
+  const costData = Array.from({ length: 12 }, (_, index) => {
+    const month = index + 1;
+    // Giả sử jobs là mảng các job, mỗi job có `date` (ngày) và `cost`
+    const monthlyJobs = jobs.filter((job) => {
+      const jobMonth = new Date(job.date).getMonth() + 1; // Lấy tháng từ date
+      return jobMonth === month;
+    });
+    const totalCost = monthlyJobs.reduce((sum, job) => sum + (job.cost || 0), 0);
+    return {
+      name: `Tháng ${month}`,
+      totalCost: totalCost, // Tổng chi phí cho tháng đó
     };
   });
 
@@ -81,10 +101,10 @@ const Page = () => {
 
       {/* Hiển thị trạng thái loading và error */}
       {loading && (
-         <div className="flex items-center justify-center py-6 mt-50 mb-200">
-         <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
-         <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
-       </div>
+        <div className="flex items-center justify-center py-6 mt-50 mb-200">
+          <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+          <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
+        </div>
       )}
       {error && (
         <div className="text-center text-red-500">
@@ -184,7 +204,7 @@ const Page = () => {
             </div>
           </div>
 
-          {/* Card 3: Placeholder */}
+          {/* Card 3: Tổng chi phí bỏ ra */}
           <div
             className={`card ${
               theme === "dark" ? "bg-black text-white" : "bg-white text-black"
@@ -205,7 +225,7 @@ const Page = () => {
                   theme === "dark" ? "bg-black text-white" : "bg-white text-black"
                 }`}
               >
-                Số tiền phải chi
+                Tổng chi phí bỏ ra
               </p>
             </div>
             <div className="card-body">
@@ -214,7 +234,7 @@ const Page = () => {
                   theme === "dark" ? "text-white" : "text-black"
                 }`}
               >
-                Chưa có dữ liệu
+                {jobs.reduce((sum, job) => sum + (job.cost || 0), 0)} DXLAB Coin
               </p>
               <span
                 className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
@@ -224,7 +244,7 @@ const Page = () => {
                 }`}
               >
                 <TrendingUp size={18} />
-                0%
+                10% {/* Giá trị này có thể được tính toán nếu có dữ liệu so sánh */}
               </span>
             </div>
           </div>
@@ -327,7 +347,7 @@ const Page = () => {
         </div>
       )}
 
-      {/* Biểu đồ đường parabol tổng quát */}
+      {/* Biểu đồ đường parabol cho doanh thu */}
       {!loading && (
         <div
           className={`card mr-5 col-span-1 md:col-span-2 lg:col-span-4 ${
@@ -346,12 +366,12 @@ const Page = () => {
           <div className="card-body p-0">
             <ResponsiveContainer width="100%" height={500}>
               <AreaChart
-                data={areaData} // Sử dụng areaData thay vì overviewData
+                data={areaData}
                 margin={{ top: 30, right: 30, left: 50, bottom: 30 }}
               >
                 <defs>
                   <linearGradient id="colorTotalOverview" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} /> {/* Màu cam */}
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
                     <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
                   </linearGradient>
                 </defs>
@@ -369,27 +389,97 @@ const Page = () => {
                   dataKey="name"
                   strokeWidth={0}
                   stroke={theme === "light" ? "#475569" : "#94a3b8"}
-                  angle={-45} // Xoay nhãn 45 độ để tránh đè lên nhau
+                  angle={-45}
                   textAnchor="end"
                   height={60}
-                  interval={0} // Hiển thị tất cả các nhãn
+                  interval={0}
                 />
                 <YAxis
                   dataKey="total"
                   strokeWidth={0}
                   stroke={theme === "light" ? "#475569" : "#94a3b8"}
-                  tickFormatter={(value) => `${value} DXLABCoin`} // Sửa lỗi chính tả: DXLABCoin -> DXLAB Coin
+                  tickFormatter={(value) => `${value} DXLAB Coin`}
                   tickMargin={40}
-                  domain={[minY, maxY]} // Phạm vi từ 0 đến 20000
-                  ticks={yTicks} // Các mốc: 0, 1000, 5000, 10000, 15000, 20000
+                  domain={[minY, maxY]}
+                  ticks={yTicks}
                   width={100}
                 />
                 <Area
                   type="monotone"
                   dataKey="total"
-                  stroke="#f97316" // Màu cam
+                  stroke="#f97316"
                   fillOpacity={1}
                   fill="url(#colorTotalOverview)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
+      {/* Biểu đồ đường parabol cho chi phí bỏ ra */}
+      {!loading && (
+        <div
+          className={`card mr-5 col-span-1 md:col-span-2 lg:col-span-4 ${
+            theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+          }`}
+        >
+          <div className="card-header">
+            <p
+              className={`card-title ${
+                theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+              } p-5`}
+            >
+              Thống kê chi phí bỏ ra
+            </p>
+          </div>
+          <div className="card-body p-0">
+            <ResponsiveContainer width="100%" height={500}>
+              <AreaChart
+                data={costData}
+                margin={{ top: 30, right: 30, left: 50, bottom: 30 }}
+              >
+                <defs>
+                  <linearGradient id="colorCostOverview" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} /> {/* Màu xanh emerald */}
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Tooltip
+                  cursor={false}
+                  formatter={(value) => `${value} DXLAB Coin`}
+                  contentStyle={{
+                    backgroundColor: theme === "dark" ? "black" : "white",
+                    color: theme === "dark" ? "white" : "black",
+                    borderRadius: "8px",
+                    border: `1px solid ${theme === "dark" ? "#334155" : "#cbd5e1"}`,
+                  }}
+                />
+                <XAxis
+                  dataKey="name"
+                  strokeWidth={0}
+                  stroke={theme === "light" ? "#475569" : "#94a3b8"}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  interval={0}
+                />
+                <YAxis
+                  dataKey="totalCost"
+                  strokeWidth={0}
+                  stroke={theme === "light" ? "#475569" : "#94a3b8"}
+                  tickFormatter={(value) => `${value} DXLAB Coin`}
+                  tickMargin={40}
+                  domain={[minY, maxY]}
+                  ticks={yTicks}
+                  width={100}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="totalCost"
+                  stroke="#10b981" // Màu xanh emerald
+                  fillOpacity={1}
+                  fill="url(#colorCostOverview)"
                 />
               </AreaChart>
             </ResponsiveContainer>

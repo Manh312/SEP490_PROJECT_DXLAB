@@ -21,14 +21,14 @@ const Banner = () => {
   };
 
   return (
-    <div className="relative w-full md:h-[50vh] lg:h-[70vh] sm:h-[50vh] h-[50vh] overflow-hidden">
+    <div className="relative w-full md:h-[120vh] lg:h-[120vh] sm:h-[120vh] overflow-hidden">
       <div 
         className="flex transition-transform duration-500 ease-in-out"
         style={{ transform: `translateX(-${currentIndex * 100}%)`, transition: "transform 0.5s ease-in-out" }}
       >
         {banners.map((banner, index) => (
           <div key={index} className="w-full flex-shrink-0">
-            <img src={banner.image} alt={`Banner ${index + 1}`} className="w-full h-160 object-cover" />
+            <img src={banner.image} alt={`Banner ${index + 1}`} className="w-full h-240 object-cover" />
           </div>
         ))}
       </div>
