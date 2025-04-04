@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useMemo, useState } from "react";
 import { fetchRooms } from "../../redux/slices/Room";
 import { Link, useNavigate } from "react-router-dom";
-import {PencilLine, Hotel, Filter, Search, Home } from "lucide-react";
+import {PencilLine, Hotel, Filter, Search, Home, Eye } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
 import Pagination from "../../hooks/use-pagination"; // Giả sử bạn có hook này
@@ -200,6 +200,16 @@ const RoomList = () => {
                         </span>
                       </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
+
+                      <button
+                          onClick={() => navigate(`/dashboard/room/${room.roomId}`)}
+                          data-tooltip-id="action-tooltip"
+                          data-tooltip-content="Xem chi tiết"
+                          className="bg-blue-100 text-blue-700 ml-2 hover:bg-blue-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+
                         <button
                           onClick={() => navigate(`/dashboard/room/update/${room.roomId}`)}
                           data-tooltip-id="action-tooltip"
@@ -240,6 +250,12 @@ const RoomList = () => {
                         <span className="font-medium">Tên Phòng:</span> {room.roomName}
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                      <button
+                          onClick={() => navigate(`/dashboard/room/detail/${room.roomId}`)}
+                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                        >
+                          <Eye className="w-4 h-4" /> Xem chi tiết
+                        </button>
                         <button
                           onClick={() => navigate(`/dashboard/room/update/${room.roomId}`)}
                           className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"

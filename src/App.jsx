@@ -10,7 +10,6 @@ import Pricing from './layouts/home/Pricing';
 import About from './layouts/home/About';
 import Services from './layouts/home/Services';
 import BlogDetail from './layouts/blog/BlogDetail';
-import AreaList from './routes/areas/AreaList';
 import FacilitiesList from './routes/facilities/FacilitiesList';
 import AccountList from './routes/account/AccountList';
 import BlogListOfStaff from './routes/blog-manage/BlogListOfStaff';
@@ -104,11 +103,7 @@ const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={["Admin"]}><DashboardPage /></ProtectedRoute>,
       },
       {
-        path: "dashboard/area",
-        element: <ProtectedRoute allowedRoles={["Admin"]}><AreaList /></ProtectedRoute>,
-      },
-      {
-        path: "dashboard/areas/:id",
+        path: "dashboard/room/:roomId/:areaId",
         element: <ProtectedRoute allowedRoles={["Admin"]}><ManageAreaDetail /></ProtectedRoute>,
       },
       {

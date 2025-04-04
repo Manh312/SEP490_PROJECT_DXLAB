@@ -28,6 +28,32 @@ export const fetchBookingDetailById = createAsyncThunk(
     }
 );
 
+// Thunk check-in theo bookingDetailId
+export const checkinBookingDetail = createAsyncThunk(
+  'bookingHistory/checkinBookingDetail',
+  async (bookingDetailId, thunkAPI) => {
+    try {
+      const response = await axiosInstance.post(`/bookinghistory/checkin/${bookingDetailId}`);
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Thunk check-out theo bookingDetailId
+export const checkoutBookingDetail = createAsyncThunk(
+  'bookingHistory/checkoutBookingDetail',
+  async (bookingDetailId, thunkAPI) => {
+    try {
+      const response = await axiosInstance.post(`/bookinghistory/checkout/${bookingDetailId}`);
+      return response.data;
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 const bookingHistorySlice = createSlice({
   name: 'bookingHistory',
   initialState: {
@@ -65,7 +91,33 @@ const bookingHistorySlice = createSlice({
       .addCase(fetchBookingDetailById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+
+      // Checkin
+      .addCase(checkinBookingDetail.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkinBookingDetail.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(checkinBookingDetail.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Checkout
+      .addCase(checkoutBookingDetail.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(checkoutBookingDetail.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(checkoutBookingDetail.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });     
   },
 });
 

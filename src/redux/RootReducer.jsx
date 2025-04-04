@@ -10,7 +10,7 @@ import blogsReducer from "./slices/Blog";
 import areaTypesReducer from "./slices/AreaType";
 import bookingHistoryReducer from "./slices/BookingHistory"
 import statisticsReducer from "./slices/Statistics"
-
+import areaReducer from "./slices/Area"
 
 
 // slices
@@ -33,6 +33,7 @@ const rootReducer = combineReducers({
   facilities: facilitiesReducer,
   blogs: blogsReducer,
   bookingHistory: bookingHistoryReducer,
+  areas: areaReducer,
 
 });
 

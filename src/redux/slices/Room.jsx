@@ -54,8 +54,7 @@ export const updateRoom = createAsyncThunk(
       });
       return response.data; // Trả về dữ liệu phòng đã cập nhật
     } catch (error) {
-      console.log(error);
-      return rejectWithValue(error.response?.data || "Cập nhật phòng thất bại");
+      return rejectWithValue(error || "Cập nhật phòng thất bại");
     }
   }
 );
