@@ -18,12 +18,13 @@ import "./styles.css";
 import { toast, ToastContainer } from "react-toastify";
 import { clearAuthData, fetchRoleByID, setAuthData } from "./redux/slices/Authentication.jsx";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import "react-toastify/dist/ReactToastify.css";
+import 'react-toastify/dist/ReactToastify.css';
 import axiosInstance from "./utils/axios.js";
 
 const activeChain = "sepolia";
 
 const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) => {
+
   try {
     const userEmail =
       walletType === "embeddedWallet"
@@ -34,12 +35,14 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       userId: 0,
       email: userEmail,
       fullName: "unknown",
-      walletAddress: walletAddress,
+      walletAddress,
       status: true,
       roleId: 3,
     };
 
-    const response = await axiosInstance.post("/user/verifyuser", payload);
+    // Removed useNavigate from here as it is passed as an argument
+
+    const response = await axiosInstance.post('/user/verifyuser', payload);
     const result = response.data;
 
     if (!result.data?.token) {
@@ -57,10 +60,11 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       walletType === "metamask"
         ? "Đăng nhập MetaMask thành công!"
         : walletType === "embeddedWallet"
-        ? "Đăng nhập Google thành công!"
-        : "Đăng nhập ví thành công!",
+          ? "Đăng nhập Google thành công!"
+          : "Đăng nhập ví thành công!",
       { toastId: `login-${walletType}` }
     );
+    // Call BLOCKCHAIN GET BALANCE
   } catch (error) {
     console.error("Backend error:", error.message);
     toast.error(
@@ -79,45 +83,30 @@ const AppWithWallet = React.memo(() => {
   const dispatch = useDispatch();
   const wallet = useWallet();
   const [isValidUser, setIsValidUser] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Thêm trạng thái loading
 
   const walletType = useMemo(() => wallet?.walletId, [wallet]);
 
-  const validateAndLogin = useCallback(async () => {
-    if (!walletAddress || !walletType) {
-      setIsValidUser(false);
-      setIsLoading(false);
-      return;
-    }
-
+  const validateUser = useCallback(() => {
     const user = store.getState().auth.user;
     const userEmail = user?.storedToken?.authDetails?.email || user?.email;
 
-    if (walletType === "embeddedWallet" && !userEmail) {
+    if (!walletAddress || !walletType) {
+      setIsValidUser(false);
+      return;
+    }
+
+    if (walletType === "embeddedWallet" && (!userEmail)) {
       disconnect();
       dispatch(clearAuthData());
       setIsValidUser(false);
-      setIsLoading(false);
     } else {
-      try {
-        await sendUserDataToBackend(user || {}, walletAddress, dispatch, walletType);
-        setIsValidUser(true);
-      } catch (error) {
-        setIsValidUser(false);
-        disconnect(); // Ngắt kết nối ví nếu đăng nhập thất bại
-      } finally {
-        setIsLoading(false);
-      }
+      setIsValidUser(true);
     }
   }, [walletAddress, walletType, disconnect, dispatch]);
 
   useEffect(() => {
-    validateAndLogin();
-  }, [validateAndLogin]);
-
-  if (isLoading) {
-    return <div>Đang tải...</div>; // Hiển thị loading khi đang xác thực
-  }
+    validateUser();
+  }, [validateUser]);
 
   return <App walletAddress={isValidUser ? walletAddress : null} />;
 });
@@ -138,8 +127,7 @@ const RootApp = () => {
         rtl={false}
         pauseOnFocusLoss
         draggable
-        pauseOnHover
-      />
+        pauseOnHover />
       <ThirdwebProvider
         activeChain={activeChain}
         clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID}
@@ -162,7 +150,7 @@ const RootApp = () => {
             },
           }),
         ]}
-        autoConnect={false}
+        autoConnect={true}
       >
         <PersistGate loading={null} persistor={persistor}>
           <AppWithWallet />
