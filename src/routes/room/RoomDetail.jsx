@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, NavLink } from "react-router-dom";
 import { PencilLine, ArrowLeft } from "lucide-react"; // Thêm ArrowLeft
 import { useDispatch, useSelector } from "react-redux";
 import { getRoomById } from "../../redux/slices/Room";
@@ -72,9 +72,14 @@ const RoomDetail = () => {
               <td className="px-4 py-3">
                 {area_DTO && area_DTO.length > 0 ? (
                   area_DTO.map((area, index) => (
-                    <div key={index} className="py-1">
-                      <span>Tên khu vực: </span>{area.areaName}
-                      <p className="text-gray-600">Loại: {area.areaTypeName}</p>
+                    <div key={index} className="py-1  hover:bg-gray-300">
+                       <NavLink
+                        to={`/dashboard/room/${id}/${area.areaId}`}
+                        className=" cursor-pointer font-medium"
+                      >
+                        <p>{area.areaName}</p>
+                        <p className="text-gray-600">Loại: {area.areaTypeName}</p>
+                      </NavLink>
                     </div>
                   ))
                 ) : (

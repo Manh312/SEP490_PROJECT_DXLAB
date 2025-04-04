@@ -86,12 +86,6 @@ const UpdateRoom = () => {
     if (formData.description !== selectedRoom.roomDescription) {
       updates.push({ operationType: 0, path: "roomDescription", op: "replace", value: formData.description });
     }
-    if (formData.capacity !== selectedRoom.capacity) {
-      updates.push({ operationType: 0, path: "capacity", op: "replace", value: formData.capacity });
-    }
-    if (formData.isDeleted !== selectedRoom.isDeleted) {
-      updates.push({ operationType: 0, path: "isDeleted", op: "replace", value: formData.isDeleted });
-    }
     if (hasImageChange) {
       updates.push({
         operationType: 0,
@@ -108,11 +102,11 @@ const UpdateRoom = () => {
 
     try {
       const res = await dispatch(updateRoom({ roomId: id, updates })).unwrap();
+      toast.success(res.message)
       navigate("/dashboard/room", { state: { successMessage: res.message } });
     } catch (error) {
       const errorMessage = error.message || "Unknown error";
-      toast.error(`Lỗi khi cập nhật phòng: ${errorMessage}`);
-      console.error("Update error:", error);
+      toast.error(errorMessage);
     }
   };
 
@@ -150,31 +144,32 @@ const UpdateRoom = () => {
               </div>
               <div className="flex flex-col space-y-1">
                 <label className="text-sm font-medium flex items-center">
-                  <FaUsers className="mr-2 text-orange-500" /> Sức Chứa
+                  <FaUsers className="mr-2 text-orange-500" /> Sức Chứa (Chỉ đọc)
                 </label>
-                <input
-                  type="number"
-                  name="capacity"
-                  value={formData.capacity}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 h-12 transition duration-150 ease-in-out"
-                  min={1}
-                  required
-                />
+                <div className="w-full px-4 py-3 rounded-lg border h-12 flex items-center">
+                  {formData.capacity || "Không có thông tin"}
+                </div>
               </div>
               <div className="flex flex-col space-y-1">
                 <label className="text-sm font-medium flex items-center">
-                  <FaTag className="mr-2 text-orange-500" /> Trạng Thái
+                  <FaTag className="mr-2 text-orange-500" /> Trạng Thái (Chỉ đọc)
                 </label>
-                <select
-                  name="isDeleted"
-                  value={String(formData.isDeleted)}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 h-12 transition duration-150 ease-in-out"
-                >
-                  <option value="false">Hoạt động</option>
-                  <option value="true">Xóa</option>
-                </select>
+                <div className="w-full px-4 py-3 rounded-lg border h-12 flex items-center">
+                  {formData.isDeleted === "true" || formData.isDeleted === true ? "Đã xóa" : "Hoạt động"}
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-1">
+                <label className="text-sm font-medium flex items-center">
+                  <FaImage className="mr-2 text-orange-500" /> Hình Ảnh
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                />
               </div>
             </div>
             {/* Cột bên phải */}
@@ -195,12 +190,11 @@ const UpdateRoom = () => {
                 <label className="text-sm font-medium flex items-center">
                   <FaBuilding className="mr-2 text-orange-500" /> Khu Vực (Chỉ đọc)
                 </label>
-                <div className="w-full px-4 py-3 rounded-lg border bg-gray-100 text-gray-700 h-12 flex items-center">
+                <div className="w-full px-4 py-3 rounded-lg border bg-gray-100 text-gray-700 max-h-40 overflow-y-auto space-y-1">
                   {selectedRoom.area_DTO && selectedRoom.area_DTO.length > 0 ? (
                     selectedRoom.area_DTO.map((area, index) => (
-                      <p key={index} className="truncate">
-                        {area.areaName} - <span className="text-gray-600">Loại: {area.areaTypeName}</span> 
-                        {index < selectedRoom.area_DTO.length - 1 && ", "}
+                      <p key={index} className="text-sm">
+                        {area.areaName} - <span className="text-gray-600">Loại: {area.areaTypeName}</span>
                       </p>
                     ))
                   ) : (
@@ -208,38 +202,29 @@ const UpdateRoom = () => {
                   )}
                 </div>
               </div>
-              <div className="flex flex-col space-y-1">
-                <label className="text-sm font-medium flex items-center">
-                  <FaImage className="mr-2 text-orange-500" /> Hình Ảnh
-                </label>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
-                />
-                {formData.images.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {formData.images.map((img, index) => (
-                      <div key={index} className="relative w-20 h-20">
-                        <img
-                          src={`/assets/${img}`}
-                          alt={`img-${index}`}
-                          className="w-full h-full object-cover rounded-lg border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition duration-150 ease-in-out"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              {formData.images.length > 0 && (
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium">Ảnh đã chọn:</label>
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {formData.images.map((img, index) => (
+                    <div key={index} className="relative w-20 h-20">
+                      <img
+                        src={`/assets/${img}`}
+                        alt={`img-${index}`}
+                        className="w-full h-full object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition duration-150 ease-in-out"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
+            )}
             </div>
           </div>
           <div className="mt-8 flex justify-between gap-4">
