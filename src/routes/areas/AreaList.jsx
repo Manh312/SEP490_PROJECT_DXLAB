@@ -1,17 +1,28 @@
-import { Link, useNavigate } from "react-router-dom";
-import { areas } from "../../constants";
-import { MapPin, PlusCircle, Search, Filter } from "lucide-react"; // Sử dụng MapPin làm icon cho area
-import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { MapPin, PlusCircle, Search, Filter } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 import debounce from "lodash/debounce";
-import Pagination from "../../hooks/use-pagination"; // Giả sử bạn có hook này
+import Pagination from "../../hooks/use-pagination";
+import { useDispatch, useSelector } from "react-redux"; // Import Redux hooks
+import { fetchAllAreaTypeCategories } from "../../redux/slices/AreaCategory"; // Adjust the path to your slice file
 
 const AreaList = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // Get data from Redux store
+  const { areaTypeCategories, loading, error } = useSelector((state) => state.areaCategory);
+
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const areasPerPage = 5;
+
+  // Fetch area type categories on component mount
+  useEffect(() => {
+    dispatch(fetchAllAreaTypeCategories());
+  }, [dispatch]);
 
   // Debounced search function
   const debouncedSearch = debounce((value) => {
@@ -19,16 +30,16 @@ const AreaList = () => {
     setCurrentPage(1);
   }, 300);
 
-  // Lọc và tìm kiếm danh sách khu vực
+  // Filter and search the list of area type categories
   const filteredAreas = useMemo(() => {
-    if (!Array.isArray(areas)) return [];
+    if (!Array.isArray(areaTypeCategories)) return [];
 
-    let result = areas.filter((area) => {
-      if (!area || typeof area !== "object" || !area.id || !area.name) return false;
+    let result = areaTypeCategories.filter((area) => {
+      if (!area || typeof area !== "object" || !area.categoryId || !area.title) return false;
       const matchesStatus =
         statusFilter === "All" ||
-        (statusFilter === "Hoạt động" && area.Room === "Hoạt động") ||
-        (statusFilter === "Không hoạt động" && area.Room !== "Hoạt động");
+        (statusFilter === "Hoạt động" && area.status === 1) || // Adjust `Room` to `status` or the correct field
+        (statusFilter === "Không hoạt động" && area.status === 0);
       return matchesStatus;
     });
 
@@ -39,7 +50,7 @@ const AreaList = () => {
     }
 
     return result;
-  }, [areas, statusFilter, searchQuery]);
+  }, [areaTypeCategories, statusFilter, searchQuery]);
 
   const totalPages = Math.ceil(filteredAreas.length / areasPerPage);
 
@@ -78,18 +89,18 @@ const AreaList = () => {
         {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <MapPin className="h-6 w-6 text-orange-500" /> {/* Icon MapPin cho khu vực */}
+            <MapPin className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
-              Danh Sách Khu Vực
+              Danh Sách Loại Khu Vực
             </h2>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
-              onClick={() => navigate("/dashboard/areas/create")}
+              onClick={() => navigate("/dashboard/area/create")}
               className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
             >
               <PlusCircle size={20} />
-              <span className="hidden sm:inline">Thêm Khu Vực</span>
+              <span className="hidden sm:inline">Thêm Loại Khu Vực</span>
             </button>
           </div>
         </div>
@@ -125,8 +136,16 @@ const AreaList = () => {
           </div>
         </div>
 
-        {/* Table or Empty State */}
-        {filteredAreas.length === 0 ? (
+        {/* Loading, Error, or Table/Empty State */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-gray-500 text-lg">Đang tải dữ liệu...</p>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <p className="text-red-500 text-lg">{error}</p>
+          </div>
+        ) : filteredAreas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <MapPin className="h-12 w-12 text-gray-400 mb-4" />
             <p className="text-gray-500 text-lg">{getEmptyStateMessage()}</p>
@@ -139,29 +158,44 @@ const AreaList = () => {
                 <thead className="border-b items-center bg-gray-400">
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Khu Vực</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Loại Phòng</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ảnh</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Loại Khu Vực</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Mô tả</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Trạng Thái</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Chỉnh Sửa</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentAreas.map((area, index) => (
-                    <tr key={area.id} className="border-b hover:bg-gray-400 transition-colors">
+                    <tr key={area.categoryId} className="border-b hover:bg-gray-400 transition-colors">
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {(currentPage - 1) * areasPerPage + index + 1}
                       </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        <Link to={`/dashboard/areas/${area.id}`}>{area.name}</Link>
+                      <td className="px-2 py-3 text-center">
+                        {Array.isArray(area.images?.data) && area.images.data.length >= 0 ? (
+                          <img src={area.images.data[0]} alt="Ảnh khu vực" className="h-12 w-12 object-cover mx-auto rounded" />
+                        ) : (
+                          "Không có ảnh"
+                        )}
                       </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{area.type}</td>
+
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{area.title}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{area.categoryDescription}</td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${
-                            area.Room === "Hoạt động" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${area.status === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                            }`}
                         >
-                          {area.Room === "Hoạt động" ? "Hoạt động" : "Không hoạt động"}
+                          {area.status === 1 ? "Hoạt động" : "Không hoạt động"}
                         </span>
+                      </td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        <button
+                          onClick={() => navigate(`/dashboard/area/update/${area.categoryId}`)}
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-all"
+                        >
+                          Chỉnh sửa
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -173,7 +207,7 @@ const AreaList = () => {
             <div className="block md:hidden space-y-4">
               {currentAreas.map((area, index) => (
                 <div
-                  key={area.id}
+                  key={area.categoryId}
                   className="border rounded-lg p-3 sm:p-4 shadow-sm hover:bg-gray-500 transition-colors"
                 >
                   <div className="flex flex-col gap-2">
@@ -182,18 +216,17 @@ const AreaList = () => {
                         #{(currentPage - 1) * areasPerPage + index + 1}
                       </span>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${
-                          area.Room === "Hoạt động" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                        }`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${area.status === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                          }`}
                       >
-                        {area.Room === "Hoạt động" ? "Hoạt động" : "Không hoạt động"}
+                        {area.status === 1 ? "Hoạt động" : "Không hoạt động"}
                       </span>
                     </div>
                     <p className="text-sm">
-                      <span className="font-medium">Tên Khu Vực:</span> {area.name}
+                      <span className="font-medium">Tên Loại Khu Vực:</span> {area.title}
                     </p>
                     <p className="text-sm">
-                      <span className="font-medium">Type:</span> {area.type}
+                      <span className="font-medium">Mô tả:</span> {area.categoryDescription}
                     </p>
                   </div>
                 </div>
