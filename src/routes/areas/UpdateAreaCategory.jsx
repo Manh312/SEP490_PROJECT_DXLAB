@@ -139,6 +139,7 @@ const UpdateAreaCategory = () => {
               Mô Tả
             </label>
             <textarea
+              type="text"
               id="categoryDescription"
               name="categoryDescription"
               value={formData.categoryDescription}

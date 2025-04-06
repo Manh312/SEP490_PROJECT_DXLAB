@@ -340,12 +340,12 @@ export const navbarLinks = [
         path: "/dashboard",
       },
       {
-        label: "Quản lý khu vực",
+        label: "Quản lý loại khu vực",
         icon: Map, // Thay ChartColumn bằng Map
         path: "/dashboard/area",
       },
       {
-        label: "Quản lý loại khu vực",
+        label: "Quản lý khu vực",
         icon: Tag, // Thay ChartColumn bằng Tag
         path: "/dashboard/areaType",
       },

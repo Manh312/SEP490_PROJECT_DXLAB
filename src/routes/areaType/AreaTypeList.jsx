@@ -130,7 +130,7 @@ const AreaTypeList = () => {
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <LucideAreaChart className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
-              Danh Sách Loại Khu Vực
+              Danh Sách Khu Vực
             </h2>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -139,7 +139,7 @@ const AreaTypeList = () => {
               className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
             >
               <PlusCircle className="h-5 w-5" />
-              <span className="hidden sm:inline">Thêm Loại Khu Vực</span>
+              <span className="hidden sm:inline">Thêm Khu Vực</span>
             </button>
           </div>
         </div>

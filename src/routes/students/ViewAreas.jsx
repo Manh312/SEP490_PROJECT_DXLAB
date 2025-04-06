@@ -46,7 +46,16 @@ const ViewAreas = () => {
   // Cập nhật groupAreas khi categoryInRoom thay đổi
   useEffect(() => {
     if (categoryInRoom?.data?.length > 0) {
-      const groupAreasList = categoryInRoom.data.filter((item) => item.value[0].areaCategory === 2);
+      const groupAreasList = categoryInRoom.data
+        .filter((item) => item.key.categoryId === 2) // Lọc categoryId = 2 (khu vực nhóm)
+        .flatMap((item) =>
+          item.value
+            .filter((valueItem) => valueItem.areaCategory === 2)
+            .map((valueItem) => ({
+              key: item.key,
+              value: [valueItem],
+            }))
+        );
       setGroupAreas(groupAreasList);
     }
   }, [categoryInRoom]);
@@ -67,7 +76,7 @@ const ViewAreas = () => {
     ) {
       fetchAllSlots();
     }
-  }, [selectedArea, bookingDates, selectedRoom]);  
+  }, [selectedArea, bookingDates, selectedRoom]);
 
   // Hàm fetch slot cho tất cả ngày trong bookingDates
   const fetchAllSlots = async () => {
@@ -290,12 +299,12 @@ const ViewAreas = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center">
           <div className="bg-gray-300 text-black p-6 rounded-lg shadow-lg lg:w-[600px] md:w-[600px] sm:w-[500px] w-xs relative">
-            <button className="absolute top-2 right-2" 
-            onClick={() => {
-              dispatch(closeModal());
-              setFetchedSlots({});
-              setBookingDates([{ date: getCurrentDate(), slots: [] }]);
-            }}>
+            <button className="absolute top-2 right-2"
+              onClick={() => {
+                dispatch(closeModal());
+                setFetchedSlots({});
+                setBookingDates([{ date: getCurrentDate(), slots: [] }]);
+              }}>
               <XIcon className="h-6 w-6 text-black" />
             </button>
             <h2 className="text-2xl font-bold mb-4 text-center">Đặt Lịch Tới DXLAB</h2>
@@ -304,7 +313,7 @@ const ViewAreas = () => {
                 Bạn đã chọn khu vực: <strong>{selectedArea?.key.title}</strong>
               </p>
             </div>
-            {selectedArea?.value[0].areaCategory === 2 && groupAreas.length > 0 && (
+            {selectedArea?.key.categoryId === 2 && groupAreas.length > 0 && (
               <div>
                 <label className="block font-medium mb-2">Chọn khu vực nhóm bạn mong muốn:</label>
                 <select
@@ -314,7 +323,7 @@ const ViewAreas = () => {
                 >
                   {groupAreas.map((area) => (
                     <option key={area.value[0].areaTypeId} value={area.value[0].areaTypeId}>
-                      {area.value[0].areaTypeName}
+                      {area.value[0].areaTypeName} (Kích thước: {area.value[0].size}, Giá: {area.value[0].price} DXLAB Coin)
                     </option>
                   ))}
                 </select>
@@ -339,39 +348,39 @@ const ViewAreas = () => {
                   </div>
                   <label className="block font-medium mb-2 mt-2">Chọn Slot:</label>
                   {booking.date ? (
-                      fetchedSlots[booking.date] && fetchedSlots[booking.date].length > 0 ? (
-                        <div className="grid grid-cols-2 gap-2">
-                          {fetchedSlots[booking.date].map((slot) => (
-                            <div
-                              key={slot.slotId}
-                              className={`group relative flex items-center space-x-2 p-2 rounded-md transition-all duration-200 ${slot.availableSlot === 0 ? 'text-orange-500 cursor-not-allowed' : ''}`}
-                            >
-                              <input
-                                type="checkbox"
-                                value={slot.slotId}
-                                checked={Array.isArray(booking.slots) && booking.slots.includes(slot.slotId)}
-                                onChange={() => handleSlotChange(index, slot.slotId)}
-                                disabled={isSlotDisabled(slot, booking.date)}
-                                className={`${slot.availableSlot === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-                              />
-                              <span className={`${slot.availableSlot === 0 ? 'line-through' : ''}`}>
-                                Slot {slot.slotNumber} ({slot.availableSlot} chỗ trống)
+                    fetchedSlots[booking.date] && fetchedSlots[booking.date].length > 0 ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        {fetchedSlots[booking.date].map((slot) => (
+                          <div
+                            key={slot.slotId}
+                            className={`group relative flex items-center space-x-2 p-2 rounded-md transition-all duration-200 ${slot.availableSlot === 0 ? 'text-orange-500 cursor-not-allowed' : ''}`}
+                          >
+                            <input
+                              type="checkbox"
+                              value={slot.slotId}
+                              checked={Array.isArray(booking.slots) && booking.slots.includes(slot.slotId)}
+                              onChange={() => handleSlotChange(index, slot.slotId)}
+                              disabled={isSlotDisabled(slot, booking.date)}
+                              className={`${slot.availableSlot === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                            />
+                            <span className={`${slot.availableSlot === 0 ? 'line-through' : ''}`}>
+                              Slot {slot.slotNumber} ({slot.availableSlot} chỗ trống)
+                            </span>
+                            {slot.availableSlot === 0 && (
+                              <span className="absolute left-1/2 transform -translate-x-1/2 -top-8 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2">
+                                Hết chỗ
                               </span>
-                              {slot.availableSlot === 0 && (
-                                <span className="absolute left-1/2 transform -translate-x-1/2 -top-8 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2">
-                                  Hết chỗ
-                                </span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-orange-500 w-full">
-                          {booking.date < today
-                            ? 'Chọn ngày hợp lệ để xem slot'
-                            : 'Không có slot nào khả dụng cho ngày này'}
-                        </p>
-                      )
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-orange-500 w-full">
+                        {booking.date < today
+                          ? 'Chọn ngày hợp lệ để xem slot'
+                          : 'Không có slot nào khả dụng cho ngày này'}
+                      </p>
+                    )
                   ) : (
                     <p className="text-orange-500">Vui lòng chọn ngày để xem các slot khả dụng</p>
                   )}
