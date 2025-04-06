@@ -37,7 +37,17 @@ const AreaDetail = () => {
   // Set selectedArea and groupAreas when categoryInRoom changes
   useEffect(() => {
     if (categoryInRoom?.data?.length > 0) {
-      const groupAreasList = categoryInRoom.data.filter((item) => item.value[0].areaCategory === 2);
+      // Làm phẳng danh sách value để lấy tất cả khu vực nhóm
+      const groupAreasList = categoryInRoom.data
+        .filter((item) => item.key.categoryId === 2) // Lọc categoryId = 2 (khu vực nhóm)
+        .flatMap((item) =>
+          item.value
+            .filter((valueItem) => valueItem.areaCategory === 2)
+            .map((valueItem) => ({
+              key: item.key,
+              value: [valueItem],
+            }))
+        );
       setGroupAreas(groupAreasList);
 
       const area = categoryInRoom.data.find((item) => item.value[0].areaTypeId.toString() === id);
@@ -72,11 +82,13 @@ const AreaDetail = () => {
 
     try {
       const promises = datesToFetch.map((date) =>
-        dispatch(fetchAvailableSlots({
-          roomId: selectedRoom.roomId,
-          areaTypeId: selectedArea.value[0].areaTypeId,
-          bookingDate: date,
-        })).unwrap()
+        dispatch(
+          fetchAvailableSlots({
+            roomId: selectedRoom.roomId,
+            areaTypeId: selectedArea.value[0].areaTypeId,
+            bookingDate: date,
+          })
+        ).unwrap()
       );
       const results = await Promise.all(promises);
 
@@ -102,11 +114,13 @@ const AreaDetail = () => {
     if (fetchedSlots[date]) return; // Không fetch lại nếu đã có dữ liệu
 
     try {
-      const res = await dispatch(fetchAvailableSlots({
-        roomId: selectedRoom.roomId,
-        areaTypeId: selectedArea.value[0].areaTypeId,
-        bookingDate: date,
-      })).unwrap();
+      const res = await dispatch(
+        fetchAvailableSlots({
+          roomId: selectedRoom.roomId,
+          areaTypeId: selectedArea.value[0].areaTypeId,
+          bookingDate: date,
+        })
+      ).unwrap();
 
       setFetchedSlots((prev) => ({
         ...prev,
@@ -237,7 +251,11 @@ const AreaDetail = () => {
       <div className="md:w-1/2 mr-10">
         <h1 className="text-3xl font-bold text-center mb-6">{selectedArea.key.title}</h1>
         <img
-          src={`https://localhost:9999${selectedArea.key.image}`}
+          src={
+            selectedArea.key.images && selectedArea.key.images.length > 0
+              ? `https://localhost:9999${selectedArea.key.images[0]}`
+              : 'https://via.placeholder.com/150'
+          }
           alt={selectedArea.name}
           className="w-full h-64 object-cover rounded-md mb-6"
         />
@@ -251,7 +269,7 @@ const AreaDetail = () => {
             Bạn đã chọn khu vực: <strong>{selectedArea.key.title}</strong>
           </p>
         </div>
-        {selectedArea.value[0].areaCategory === 2 && groupAreas.length > 0 && (
+        {selectedArea.key.categoryId === 2 && groupAreas.length > 0 && (
           <div>
             <label className="block font-medium mb-2">Chọn khu vực nhóm bạn mong muốn:</label>
             <select
@@ -261,7 +279,7 @@ const AreaDetail = () => {
             >
               {groupAreas.map((area) => (
                 <option key={area.value[0].areaTypeId} value={area.value[0].areaTypeId}>
-                  {area.value[0].areaTypeName}
+                  {area.value[0].areaTypeName} (Kích thước: {area.value[0].size}, Giá: {area.value[0].price} DXLAB Coin)
                 </option>
               ))}
             </select>
@@ -286,41 +304,41 @@ const AreaDetail = () => {
               </div>
               <label className="block font-medium mb-2 mt-2">Chọn Slot:</label>
               {booking.date ? (
-                  fetchedSlots[booking.date] && fetchedSlots[booking.date].length > 0 ? (
-                    <div className="grid grid-cols-2 gap-2">
-                      {fetchedSlots[booking.date].map((slot) => (
-                        <div
-                          key={slot.slotId}
-                          className={`group relative flex items-center space-x-2 p-2 rounded-md transition-all duration-200 ${
-                            slot.availableSlot === 0 ? 'text-orange-500 cursor-not-allowed' : ''
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            value={slot.slotId}
-                            checked={Array.isArray(booking.slots) && booking.slots.includes(slot.slotId)}
-                            onChange={() => handleSlotChange(index, slot.slotId)}
-                            disabled={isSlotDisabled(slot, booking.date)}
-                            className={`${slot.availableSlot === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
-                          />
-                          <span className={`${slot.availableSlot === 0 ? 'line-through' : ''}`}>
-                            Slot {slot.slotNumber} ({slot.availableSlot} chỗ trống)
+                fetchedSlots[booking.date] && fetchedSlots[booking.date].length > 0 ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    {fetchedSlots[booking.date].map((slot) => (
+                      <div
+                        key={slot.slotId}
+                        className={`group relative flex items-center space-x-2 p-2 rounded-md transition-all duration-200 ${
+                          slot.availableSlot === 0 ? 'text-orange-500 cursor-not-allowed' : ''
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          value={slot.slotId}
+                          checked={Array.isArray(booking.slots) && booking.slots.includes(slot.slotId)}
+                          onChange={() => handleSlotChange(index, slot.slotId)}
+                          disabled={isSlotDisabled(slot, booking.date)}
+                          className={`${slot.availableSlot === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                        />
+                        <span className={`${slot.availableSlot === 0 ? 'line-through' : ''}`}>
+                          Slot {slot.slotNumber} ({slot.availableSlot} chỗ trống)
+                        </span>
+                        {slot.availableSlot === 0 && (
+                          <span className="absolute left-1/2 transform -translate-x-1/2 -top-8 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2">
+                            Hết chỗ
                           </span>
-                          {slot.availableSlot === 0 && (
-                            <span className="absolute left-1/2 transform -translate-x-1/2 -top-8 hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2">
-                              Hết chỗ
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-orange-500 w-full">
-                      {booking.date < today
-                        ? 'Chọn ngày hợp lệ để xem slot'
-                        : 'Không có slot nào khả dụng cho ngày này'}
-                    </p>
-                  )
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-orange-500 w-full">
+                    {booking.date < today
+                      ? 'Chọn ngày hợp lệ để xem slot'
+                      : 'Không có slot nào khả dụng cho ngày này'}
+                  </p>
+                )
               ) : (
                 <p className="text-orange-500 w-full">Vui lòng chọn ngày để xem các slot khả dụng</p>
               )}

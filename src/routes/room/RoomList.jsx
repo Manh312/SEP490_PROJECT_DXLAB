@@ -199,13 +199,13 @@ const RoomList = () => {
                           {room.isDeleted ? "Đã xóa" : "Hoạt động"}
                         </span>
                       </td>
-                      <td className="px-2 py-3 md:px-4 md:py-4 text-center">
+                      <td className="px-2 py-3 md:px-4 md:py-4 text-center flex justify-center mt-6 gap-2">
 
                       <button
                           onClick={() => navigate(`/dashboard/room/${room.roomId}`)}
                           data-tooltip-id="action-tooltip"
                           data-tooltip-content="Xem chi tiết"
-                          className="bg-blue-100 text-blue-700 ml-2 hover:bg-blue-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                          className="bg-orange-100 text-orange-700 ml-2 hover:bg-orange-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                         >
                           <Eye className="w-4 h-4" />
                         </button>

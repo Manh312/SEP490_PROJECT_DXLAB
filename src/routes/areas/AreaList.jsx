@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { MapPin, PlusCircle, Search, Filter } from "lucide-react";
+import { MapPin, PlusCircle, Search, Filter, PencilLine, Trash2 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import debounce from "lodash/debounce";
 import Pagination from "../../hooks/use-pagination";
@@ -159,10 +159,10 @@ const AreaList = () => {
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ảnh</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Loại Khu Vực</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide w-60">Tên Loại Khu Vực</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Mô tả</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Trạng Thái</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Chỉnh Sửa</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide w-50">Trạng Thái</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide w-50">Hành Động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -180,7 +180,7 @@ const AreaList = () => {
                       </td>
 
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{area.title}</td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{area.categoryDescription}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{area.categoryDescription.slice(0, 100)}...</td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${area.status === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
@@ -189,12 +189,22 @@ const AreaList = () => {
                           {area.status === 1 ? "Hoạt động" : "Không hoạt động"}
                         </span>
                       </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        <button
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center flex justify-center mt-2 gap-2">
+                      <button
                           onClick={() => navigate(`/dashboard/area/update/${area.categoryId}`)}
-                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-all"
+                          data-tooltip-id="action-tooltip"
+                          data-tooltip-content="Cập nhật"
+                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                         >
-                          Chỉnh sửa
+                          <PencilLine className="w-4 h-4" />
+                        </button>
+                        <button
+                          // onClick={() => handleDelete(type.areaTypeId)}
+                          data-tooltip-id="action-tooltip"
+                          data-tooltip-content="Xóa"
+                          className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </td>
                     </tr>
@@ -226,7 +236,7 @@ const AreaList = () => {
                       <span className="font-medium">Tên Loại Khu Vực:</span> {area.title}
                     </p>
                     <p className="text-sm">
-                      <span className="font-medium">Mô tả:</span> {area.categoryDescription}
+                      <span className="font-medium">Mô tả:</span> {area.categoryDescription.slice(0, 100)}...
                     </p>
                   </div>
                 </div>
