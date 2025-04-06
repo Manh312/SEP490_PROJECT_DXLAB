@@ -130,10 +130,10 @@ const UpdateAreaCategory = () => {
     }
 
     // Validate that at least one image is present
-    if (imagePreviews.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một ảnh!");
-      return;
-    }
+    // if (imagePreviews.length === 0) {
+    //   toast.error("Vui lòng chọn ít nhất một ảnh!");
+    //   return;
+    // }
 
     const areaData = {
       title: trimmedTitle,

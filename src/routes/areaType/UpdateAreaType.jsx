@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { fetchAreaTypeById, updateAreaType } from "../../redux/slices/AreaType";
 import { toast } from "react-toastify";
 import { FaBuilding, FaFileAlt, FaUsers, FaImage, FaCheck, FaTag } from "react-icons/fa";
@@ -281,6 +281,7 @@ const UpdateAreaType = () => {
             >
               <ArrowLeft className="mr-2" /> Quay Lại
             </button>
+            <div className="flex gap-4">
             <button
               type="submit"
               disabled={loading}
@@ -301,6 +302,14 @@ const UpdateAreaType = () => {
                 </>
               )}
             </button>
+            <Link 
+              to={`/dashboard/${selectedAreaType.areaTypeId}/addFacility`}
+              disabled={loading}
+              className="flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+            >
+              <span>Thêm Cơ Sở Vật Chất</span>
+            </Link>
+            </div>
           </div>
         </form>
       </div>

@@ -45,10 +45,10 @@ export const fetchAllFacilities = createAsyncThunk(
 // ✅ POST: Thêm thiết bị vào khu vực
 export const addFacilityToArea = createAsyncThunk(
   'areas/addFacilityToArea',
-  async ({ areaId, data }, { rejectWithValue }) => {
+  async ({ id, data }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(
-        `${API_URL}/faci?areaid=${areaId}&status=0`,
+        `${API_URL}/faci?areaid=${id}&status=0`,
         data
       );
       return response.data;

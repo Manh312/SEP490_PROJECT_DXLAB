@@ -130,7 +130,7 @@ const AreaTypeList = () => {
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <LucideAreaChart className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
-              Danh Sách Khu Vực
+              Danh Sách Loại Khu Vực
             </h2>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
@@ -139,7 +139,7 @@ const AreaTypeList = () => {
               className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
             >
               <PlusCircle className="h-5 w-5" />
-              <span className="hidden sm:inline">Thêm Khu Vực</span>
+              <span className="hidden sm:inline">Thêm Loại Khu Vực</span>
             </button>
           </div>
         </div>
@@ -195,7 +195,7 @@ const AreaTypeList = () => {
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hình Ảnh</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Khu Vực</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Loại Khu Vực</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Phân Loại</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Giá</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Trạng Thái</th>

@@ -1,6 +1,6 @@
 import { CreditCard, DollarSign, Package, TrendingUp, Users } from "lucide-react";
 import { useTheme } from "../../hooks/use-theme";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchStudentGroupStats, fetchJobsByYearAndDate, resetStats } from "../../redux/slices/Statistics";
 import {

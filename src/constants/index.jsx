@@ -133,140 +133,7 @@ export const about = [
   },
 ];
 
-export const rooms = [
-  {
-    id: 1,
-    name: "Phòng 318",
-    description: "Phòng DXLAB thuộc dãy toàn Delta tại trường đại học FPT.",
-    images: images1,
-  },
-  {
-    id: 2,
-    name: "Phòng 319",
-    description: "Phòng DXLAB thuộc dãy toàn Delta tại trường đại học FPT.",
-    images: images1,
-  },
-  {
-    id: 3,
-    name: "Phòng 320",
-    description: "Phòng DXLAB thuộc dãy toàn Delta tại trường đại học FPT.",
-    images: images1,
-  },
-];
 
-export const mockTransactions = [
-  {
-    id: "TX12345",
-    room: "A101",
-    date: "2025-02-25T10:00:00",
-    amount: 500000,
-    status: "Thành công",
-  },
-  {
-    id: "TX67890",
-    room: "B202",
-    date: "2025-02-20T15:30:00",
-    amount: 300000,
-    status: "Thất bại",
-  },
-  {
-    id: "TX11111",
-    room: "A101",
-    date: "2025-02-18T09:00:00",
-    amount: 400000,
-    status: "Thành công",
-  },
-  {
-    id: "TX22222",
-    room: "C303",
-    date: "2025-02-15T14:00:00",
-    amount: 200000,
-    status: "Thành công",
-  },
-  {
-    id: "TX33333",
-    room: "B202",
-    date: "2025-02-08T08:00:00",
-    amount: 350000,
-    status: "Thất bại",
-  },
-  {
-    id: "TX62890",
-    room: "B202",
-    date: "2025-02-02T15:30:00",
-    amount: 300000,
-    status: "Thất bại",
-  },
-  {
-    id: "TX69890",
-    room: "B202",
-    date: "2025-03-20T15:30:00",
-    amount: 300000,
-    status: "Thất bại",
-  },
-];
-
-export const slot = [
-  {
-    id: 1,
-    name: "Slot 1",
-    time: "08:00 - 10:00",
-    isAvailable: true,
-    remainingSeats: 4,
-    price: 20
-  },
-  {
-    id: 2,
-    name: "Slot 2",
-    time: "10:00 - 12:00",
-    isAvailable: false,
-    remainingSeats: 0,
-    price: 80
-  },
-  {
-    id: 3,
-    name: "Slot 3",
-    time: "13:00 - 15:00",
-    isAvailable: true,
-    remainingSeats: 6,
-    price: 220
-  },
-  {
-    id: 4,
-    name: "Slot 4",
-    time: "15:00 - 17:00",
-    isAvailable: true,
-    remainingSeats: 2,
-    price: 300
-  },
-];
-
-export const slots_manage = [
-  {
-    id: 1,
-    slot_name: "Slot 1",
-    start_time: "08:00",
-    end_time: "10:00",
-  },
-  {
-    id: 2,
-    slot_name: "Slot 2",
-    start_time: "10:00",
-    end_time: "12:00",
-  },
-  {
-    id: 3,
-    slot_name: "Slot 3",
-    start_time: "13:00",
-    end_time: "15:00",
-  },
-  {
-    id: 4,
-    slot_name: "Slot 4",
-    start_time: "15:00",
-    end_time: "17:00",
-  },
-]
 
 export const features = [
   {
@@ -340,13 +207,13 @@ export const navbarLinks = [
         path: "/dashboard",
       },
       {
-        label: "Quản lý loại khu vực",
-        icon: Map, // Thay ChartColumn bằng Map
+        label: "Quản lý khu vực",
+        icon: Map, 
         path: "/dashboard/area",
       },
       {
-        label: "Quản lý khu vực",
-        icon: Tag, // Thay ChartColumn bằng Tag
+        label: "Quản lý loại khu vực",
+        icon: Tag, 
         path: "/dashboard/areaType",
       },
       {

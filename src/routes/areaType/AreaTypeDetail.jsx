@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { PencilLine, ToggleLeft, ToggleRight, ArrowLeft } from "lucide-react"; // Thêm ArrowLeft
+import { PencilLine, ArrowLeft } from "lucide-react"; // Thêm ArrowLeft
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAreaTypeById, updateAreaType } from "../../redux/slices/AreaType";
+import { fetchAreaTypeById } from "../../redux/slices/AreaType";
 import { toast } from "react-toastify";
 
 const AreaTypeDetail = () => {
@@ -17,31 +17,6 @@ const AreaTypeDetail = () => {
   useEffect(() => {
     dispatch(fetchAreaTypeById(id));
   }, [dispatch, id]);
-
-  // Xử lý cập nhật trạng thái `isDeleted`
-  const handleToggleStatus = async () => {
-    const updatedStatus = !selectedAreaType.isDeleted;
-
-    try {
-      const updates = [
-        {
-          operationType: 0,
-          path: "isDeleted",
-          op: "replace",
-          value: updatedStatus,
-        },
-      ];
-
-      const res = await dispatch(updateAreaType({ areaTypeId: id, updatedData: updates })).unwrap();
-      toast.success(res.message);
-      // Đợi một chút trước khi fetch lại để cập nhật giao diện
-      setTimeout(() => {
-        dispatch(fetchAreaTypeById(id));
-      }, 1000);
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
 
   if (loading) return (
     <div className="text-center py-4 mt-10">
@@ -143,15 +118,6 @@ const AreaTypeDetail = () => {
             onClick={() => navigate(`/dashboard/areaType/update/${areaTypeId}`)}
           >
             <PencilLine size={20} /> Chỉnh Sửa
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md transition ${
-              isDeleted ? "bg-green-500 text-white hover:bg-green-600" : "bg-red-500 text-white hover:bg-red-600"
-            }`}
-            onClick={handleToggleStatus}
-          >
-            {isDeleted ? <ToggleLeft size={20} /> : <ToggleRight size={20} />}
-            {isDeleted ? "Kích hoạt" : "Vô hiệu hóa"}
           </button>
         </div>
       </div>

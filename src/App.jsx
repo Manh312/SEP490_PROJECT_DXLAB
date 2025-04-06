@@ -109,10 +109,10 @@ const router = createBrowserRouter([
         path: "dashboard/area",
         element: <ProtectedRoute allowedRoles={["Admin"]}><AreaList /></ProtectedRoute>,
       },
-      {
-        path: "dashboard/area/:id",
-        element: <ProtectedRoute allowedRoles={["Admin"]}><ManageAreaDetail /></ProtectedRoute>,
-      },
+      // {
+      //   path: "dashboard/area/:id",
+      //   element: <ProtectedRoute allowedRoles={["Admin"]}><ManageAreaDetail /></ProtectedRoute>,
+      // },
       {
         path: "dashboard/area/create",
         element: <ProtectedRoute allowedRoles={["Admin"]}><CreateAreaCategory /></ProtectedRoute>,
@@ -175,6 +175,10 @@ const router = createBrowserRouter([
       {
         path: "dashboard/room/:id",
         element: <ProtectedRoute allowedRoles={["Admin"]}><RoomDetail /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/:id/addFacility",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><ManageAreaDetail /></ProtectedRoute>,
       },
       {
         path: "/dashboard/room/update/:id",
