@@ -1,14 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { MapPin, ArrowLeft } from "lucide-react";
+import { MapPin, ArrowLeft, X } from "lucide-react";
 import { fetchAllAreaTypeCategories, updateAreaTypeCategory } from "../../redux/slices/AreaCategory";
 import { toast } from "react-toastify";
+
+const BACKEND_URL = "https://localhost:9999"; // Define your backend URL
 
 const UpdateAreaCategory = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams(); // Lấy ID từ URL params
+  const fileInputRef = useRef(null); // Ref for file input
 
   // Get loading and error states from Redux store
   const { loading, areaTypeCategories } = useSelector((state) => state.areaCategory);
@@ -18,9 +21,6 @@ const UpdateAreaCategory = () => {
     (cat) => cat.categoryId === parseInt(id)
   );
 
-  console.log("Current Category:", currentCategory);
-  
-
   // Form state
   const [formData, setFormData] = useState({
     title: "",
@@ -29,15 +29,37 @@ const UpdateAreaCategory = () => {
     status: 1,
   });
 
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const [failedImages, setFailedImages] = useState(new Set());
+
   // Khởi tạo formData với dữ liệu hiện tại khi component mount
   useEffect(() => {
     if (currentCategory) {
+      // Đảm bảo images là một mảng
+      const images = Array.isArray(currentCategory.images)
+        ? currentCategory.images
+        : [currentCategory.images || ""];
+
+      // Thêm domain của backend vào URL của ảnh
+      const existing = images
+        .filter((img) => typeof img === "string" && img) // Lọc các giá trị hợp lệ
+        .map((img) => {
+          if (img.startsWith("http")) {
+            return img;
+          }
+          return `${BACKEND_URL}${img}`;
+        });
+
       setFormData({
         title: currentCategory.title || "",
         categoryDescription: currentCategory.categoryDescription || "",
         images: [], // Không set ảnh cũ vào state, chỉ xử lý ảnh mới
         status: currentCategory.status || 1,
       });
+
+      setExistingImages(existing);
+      setImagePreviews(existing);
     }
   }, [currentCategory]);
 
@@ -51,42 +73,98 @@ const UpdateAreaCategory = () => {
 
   // Handle file input change
   const handleFileChange = (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: e.target.files[0],
-    }));
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        images: [...prev.images, ...files],
+      }));
+      const previews = files.map((file) => URL.createObjectURL(file));
+      setImagePreviews((prev) => [...prev, ...previews]);
+    }
+  };
+
+  const handleRemoveImage = (index) => {
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    if (index < existingImages.length) {
+      setExistingImages((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      const fileIndex = index - existingImages.length;
+      setFormData((prev) => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== fileIndex),
+      }));
+    }
+  };
+
+  const handleImageError = (index) => {
+    setFailedImages((prev) => new Set(prev).add(index));
+  };
+
+  // Fetch image as Blob
+  const fetchImageAsBlob = async (imageUrl) => {
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+      return new File([blob], imageUrl.split("/").pop(), { type: blob.type });
+    } catch (error) {
+      console.error("Failed to fetch image as Blob:", error);
+      throw error;
+    }
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prepare the data to send to the API
-    const updatedAreaTypeCategory = {
-      title: formData.title,
-      categoryDescription: formData.categoryDescription,
-      status: formData.status,
-    };
+    const trimmedTitle = formData.title.trim();
+    const trimmedDescription = formData.categoryDescription.trim();
 
-    // Nếu có file ảnh mới thì thêm vào FormData
-    const formDataToSend = new FormData();
-    formDataToSend.append("Title", updatedAreaTypeCategory.title);
-    formDataToSend.append("CategoryDescription", updatedAreaTypeCategory.categoryDescription);
-    formDataToSend.append("Status", updatedAreaTypeCategory.status);
-    
-    if (formData.images) {
-      formDataToSend.append("Images", formData.images);
+    if (!trimmedTitle) {
+      toast.error("Tên loại khu vực là bắt buộc!");
+      return;
+    }
+    if (!trimmedDescription) {
+      toast.error("Mô tả là bắt buộc!");
+      return;
     }
 
+    // Validate that at least one image is present
+    if (imagePreviews.length === 0) {
+      toast.error("Vui lòng chọn ít nhất một ảnh!");
+      return;
+    }
+
+    const areaData = {
+      title: trimmedTitle,
+      categoryDescription: trimmedDescription,
+      status: formData.status,
+      existingImages: existingImages, // Gửi danh sách ảnh hiện tại
+    };
+
+    let filesToSend = [];
+
     try {
-      await dispatch(
+      // Nếu có ảnh mới, sử dụng ảnh mới
+      if (formData.images.length > 0) {
+        filesToSend = formData.images;
+      } else if (existingImages.length > 0) {
+        // Nếu không có ảnh mới, fetch ảnh hiện tại và gửi dưới dạng file
+        filesToSend = await Promise.all(
+          existingImages.map(async (imageUrl) => await fetchImageAsBlob(imageUrl))
+        );
+      }
+
+      const response = await dispatch(
         updateAreaTypeCategory({
           categoryId: parseInt(id),
-          updatedData: formDataToSend,
+          areaData,
+          files: filesToSend,
         })
       ).unwrap();
+
       await dispatch(fetchAllAreaTypeCategories()).unwrap();
-      toast.success("Cập nhật loại khu vực thành công!");
+      toast.success(response.message || "Cập nhật loại khu vực thành công!");
       navigate("/dashboard/area");
     } catch (err) {
       toast.error(err.message || "Lỗi khi cập nhật loại khu vực");
@@ -139,7 +217,6 @@ const UpdateAreaCategory = () => {
               Mô Tả
             </label>
             <textarea
-              type="text"
               id="categoryDescription"
               name="categoryDescription"
               value={formData.categoryDescription}
@@ -152,21 +229,42 @@ const UpdateAreaCategory = () => {
           </div>
 
           {/* Image Upload */}
-          <div>
-            <label htmlFor="images" className="block text-sm font-medium text-gray-700">
-              Ảnh
-            </label>
-            <input
-              type="file"
-              id="images"
-              name="images"
-              onChange={handleFileChange}
-              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
-              accept="image/*"
-            />
-            {formData.images && (
-              <p className="mt-2 text-sm text-gray-600">Đã chọn: {formData.images.name}</p>
-            )}
+          <div className="flex flex-col gap-2">
+            <label className="block text-sm font-medium text-gray-700">Ảnh</label>
+            <div className="flex items-center gap-4 flex-wrap">
+              {imagePreviews.length > 0 &&
+                imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={failedImages.has(index) ? "/placeholder-image.jpg" : preview}
+                      alt={`Area preview ${index}`}
+                      className="w-24 h-24 object-cover rounded-lg shadow-sm"
+                      onError={() => handleImageError(index)}
+                    />
+                    <button
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current.click()}
+                className="border-dashed border-2 border-gray-400 rounded-lg p-4 text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all"
+              >
+                Chọn tệp
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                multiple
+                className="hidden"
+              />
+            </div>
           </div>
 
           {/* Submit Button */}

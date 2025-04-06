@@ -47,12 +47,26 @@ export const createAreaTypeCategory = createAsyncThunk(
 // Update an area type category using PATCH
 export const updateAreaTypeCategory = createAsyncThunk(
   "areaTypeCategories/updateAreaTypeCategory",
-  async ({ categoryId, updatedData }, { rejectWithValue }) => {
+  async ({ categoryId, areaData, files }, { rejectWithValue }) => {
     try {
-      const response = await axios.patch(
-        `${API_URL}?id=${categoryId}`,
-        updatedData
-      );
+      const formData = new FormData();
+
+      formData.append("Title", areaData.title);
+      formData.append("CategoryDescription", areaData.categoryDescription);
+      formData.append("Status", areaData.status);
+
+      if (files && files.length > 0) {
+        files.forEach((file) => {
+          formData.append("Images", file); // Use "Images" to match the API's expected field name
+        });
+      }
+
+      const response = await axios.patch(`${API_URL}?id=${categoryId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       return response.data; // Return the updated data
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi khi cập nhật danh mục loại khu vực");

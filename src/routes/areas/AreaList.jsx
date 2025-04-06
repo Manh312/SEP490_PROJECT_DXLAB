@@ -172,11 +172,7 @@ const AreaList = () => {
                         {(currentPage - 1) * areasPerPage + index + 1}
                       </td>
                       <td className="px-2 py-3 text-center">
-                        {Array.isArray(area.images?.data) && area.images.data.length >= 0 ? (
-                          <img src={area.images.data[0]} alt="Ảnh khu vực" className="h-12 w-12 object-cover mx-auto rounded" />
-                        ) : (
-                          "Không có ảnh"
-                        )}
+                        <img src={`https://localhost:9999${area.images[0]}`} alt="Ảnh khu vực" className="h-32 w-32 object-cover mx-auto rounded" />
                       </td>
 
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{area.title}</td>
@@ -189,23 +185,25 @@ const AreaList = () => {
                           {area.status === 1 ? "Hoạt động" : "Không hoạt động"}
                         </span>
                       </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center flex justify-center mt-2 gap-2">
-                      <button
-                          onClick={() => navigate(`/dashboard/area/update/${area.categoryId}`)}
-                          data-tooltip-id="action-tooltip"
-                          data-tooltip-content="Cập nhật"
-                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <PencilLine className="w-4 h-4" />
-                        </button>
-                        <button
-                          // onClick={() => handleDelete(type.areaTypeId)}
-                          data-tooltip-id="action-tooltip"
-                          data-tooltip-content="Xóa"
-                          className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        <div className="flex justify-center items-center gap-2 h-full">
+                          <button
+                            onClick={() => navigate(`/dashboard/area/update/${area.categoryId}`)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Cập nhật"
+                            className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <PencilLine className="w-4 h-4" />
+                          </button>
+                          <button
+                            // onClick={() => handleDelete(type.areaTypeId)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Xóa"
+                            className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
