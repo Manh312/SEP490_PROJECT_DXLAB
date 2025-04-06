@@ -217,7 +217,7 @@ export const navbarLinks = [
         path: "/dashboard/areaType",
       },
       {
-        label: "Quản lý thiết bị",
+        label: "Quản lý cơ sở vật chất",
         icon: Wrench, // Thay NotepadText bằng Wrench
         path: "/dashboard/facilities",
       },
