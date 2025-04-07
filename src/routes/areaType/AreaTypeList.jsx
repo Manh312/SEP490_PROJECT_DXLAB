@@ -11,7 +11,7 @@ import {
   Map,
   Filter,
   Search,
-  LucideAreaChart,
+  Tag,
 } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
@@ -128,7 +128,7 @@ const AreaTypeList = () => {
         {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <LucideAreaChart className="h-6 w-6 text-orange-500" />
+            <Tag className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
               Danh Sách Loại Khu Vực
             </h2>
@@ -183,7 +183,7 @@ const AreaTypeList = () => {
           </div>
         ) : filteredAreaTypes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <Map className="h-12 w-12 text-gray-400 mb-4" />
+            <Tag className="h-12 w-12 text-gray-400 mb-4" />
             <p className="text-gray-500 text-lg">{getEmptyStateMessage()}</p>
           </div>
         ) : (
@@ -195,11 +195,13 @@ const AreaTypeList = () => {
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hình Ảnh</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Khu Vực</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Loại Khu Vực</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Phân Loại</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Giá</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Trạng Thái</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành Động</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide min-w-[150px]">
+                      Hành Động
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -212,9 +214,9 @@ const AreaTypeList = () => {
                         {type.images?.slice(0, 3).map((img, imgIndex) => (
                           <img
                             key={imgIndex}
-                            src={`/assets/${img}`}
+                            src={`https://localhost:9999${img}`}
                             alt={`Image ${imgIndex + 1}`}
-                            className="w-14 h-14 object-cover rounded-md shadow"
+                            className="w-32 h-32 object-cover rounded-md shadow"
                           />
                         ))}
                         {type.images?.length > 3 && (
@@ -227,10 +229,10 @@ const AreaTypeList = () => {
                         <Link to={`/dashboard/areaType/${type.areaTypeId}`}>{type.areaTypeName || "N/A"}</Link>
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {`${type.areaCategory === 1 ? "Khu vực cá nhân": "Khu vực nhóm"}`}
+                        {`${type.areaCategory === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}`}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {`${type.price} VNĐ`}
+                        {`${type.price} DXLAB Coin`}
                       </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
@@ -241,7 +243,8 @@ const AreaTypeList = () => {
                           {type.isDeleted ? "Đã xóa" : "Hoạt động"}
                         </span>
                       </td>
-                      <td className="px-2 py-3 md:px-4 md:py-4 text-center flex justify-center gap-2">
+                      <td className="px-2 py-3 md:px-4 md:py-4 text-center">
+                        <div className="flex justify-center items-center gap-2">
                         <button
                           onClick={() => navigate(`/dashboard/areaType/update/${type.areaTypeId}`)}
                           data-tooltip-id="action-tooltip"
@@ -258,6 +261,7 @@ const AreaTypeList = () => {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -295,19 +299,19 @@ const AreaTypeList = () => {
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <button
                           onClick={() => navigate(`/dashboard/areaType/${type.areaTypeId}`)}
-                          className="bg-blue-100 text-blue-700 hover:bg-blue-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                          className="bg-blue-100 text-blue-700 hover:bg-blue-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
                         >
                           <Eye className="w-4 h-4" /> Xem
                         </button>
                         <button
                           onClick={() => navigate(`/dashboard/areaType/update/${type.areaTypeId}`)}
-                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
                         >
                           <PencilLine className="w-4 h-4" /> Cập nhật
                         </button>
                         <button
                           onClick={() => handleDelete(type.areaTypeId)}
-                          className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                          className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
                         >
                           <Trash2 className="w-4 h-4" /> Xóa
                         </button>

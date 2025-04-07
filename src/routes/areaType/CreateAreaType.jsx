@@ -21,7 +21,11 @@ const CreateAreaType = () => {
     images: [],
   });
 
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [failedImages, setFailedImages] = useState(new Set());
+
   const textareaRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -48,34 +52,67 @@ const CreateAreaType = () => {
     setAreaTypeData({ ...areaTypeData, areaCategory: parseInt(e.target.value) });
   };
 
-  const handleImageUpload = (e) => {
+  const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    const fileNames = files.map((file) => file.name);
-
-    const newImages = fileNames.filter((name) => !areaTypeData.images.includes(name));
-    if (newImages.length === 0) {
-      toast.error("Ảnh đã tồn tại, vui lòng chọn ảnh khác!");
-      return;
+    if (files.length > 0) {
+      setAreaTypeData((prevData) => ({
+        ...prevData,
+        images: [...prevData.images, ...files],
+      }));
+      const previews = files.map((file) => URL.createObjectURL(file));
+      setImagePreviews((prev) => [...prev, ...previews]);
     }
-
-    setAreaTypeData((prevData) => ({
-      ...prevData,
-      images: [...prevData.images, ...newImages],
-    }));
   };
 
   const handleRemoveImage = (index) => {
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
     setAreaTypeData((prevData) => ({
       ...prevData,
       images: prevData.images.filter((_, i) => i !== index),
     }));
   };
 
+  const handleImageError = (index) => {
+    setFailedImages((prev) => new Set(prev).add(index));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!areaTypeData.areaTypeName.trim()) {
+      toast.error("Tên loại khu vực là bắt buộc!");
+      return;
+    }
+    if (!areaTypeData.areaDescription.trim()) {
+      toast.error("Mô tả là bắt buộc!");
+      return;
+    }
+    if (!areaTypeData.size || areaTypeData.size <= 0) {
+      toast.error("Số ghế phải lớn hơn 0!");
+      return;
+    }
+    if (!areaTypeData.price || areaTypeData.price < 0) {
+      toast.error("Giá phải lớn hơn hoặc bằng 0!");
+      return;
+    }
+    if (areaTypeData.images.length === 0) {
+      toast.error("Vui lòng chọn ít nhất một ảnh!");
+      return;
+    }
+
+    const newAreaType = {
+      AreaTypeName: areaTypeData.areaTypeName,
+      AreaCategory: areaTypeData.areaCategory,
+      AreaDescription: areaTypeData.areaDescription,
+      Size: areaTypeData.size,
+      Price: areaTypeData.price,
+      IsDeleted: areaTypeData.isDeleted,
+    };
+
+    const files = areaTypeData.images;
+
     try {
-      await dispatch(createAreaType(areaTypeData)).unwrap();
+      await dispatch(createAreaType({ newAreaType, files })).unwrap();
       toast.success("Tạo loại khu vực thành công!");
       navigate("/dashboard/areaType");
     } catch (error) {
@@ -105,6 +142,7 @@ const CreateAreaType = () => {
                   name="areaTypeName"
                   value={areaTypeData.areaTypeName}
                   onChange={handleChange}
+                  placeholder="Nhập tên loại khu vực"
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
                   required
                 />
@@ -121,28 +159,33 @@ const CreateAreaType = () => {
                   value={areaTypeData.size}
                   min={1}
                   onChange={handleNumberChange}
+                  placeholder="Nhập số ghế"
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
                   required
                 />
               </div>
-              <div className="flex flex-col">
-                <label className="block text-sm font-medium mb-1">
+              <div className="flex flex-col space-y-1">
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700">
                   <span className="flex items-center">
-                    <FaTag className="mr-2 text-orange-500" /> Giá
+                    <FaTag className="mr-1.5 h-4 w-4 text-orange-500" /> Giá
                   </span>
                 </label>
-                <div className="relative flex items-center">
+                <div className="flex items-center space-x-3">
                   <input
                     type="number"
+                    id="price"
                     name="price"
                     value={areaTypeData.price}
                     min={0}
                     step="0.01"
                     onChange={handleNumberChange}
-                    className="w-full px-4 py-3 pr-12 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                    className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                    placeholder="Nhập giá"
                     required
                   />
-                  <span className="absolute right-3 text-gray-600">VND</span>
+                  <span className="flex items-center gap-1 text-sm text-gray-500 font-medium whitespace-nowrap">
+                    DXLAB Coin
+                  </span>
                 </div>
               </div>
             </div>
@@ -160,6 +203,7 @@ const CreateAreaType = () => {
                   name="areaDescription"
                   value={areaTypeData.areaDescription}
                   onChange={handleChange}
+                  placeholder="Nhập mô tả loại khu vực"
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out min-h-[50px]"
                   required
                 />
@@ -186,34 +230,44 @@ const CreateAreaType = () => {
                     <FaImage className="mr-2 text-orange-500" /> Hình Ảnh
                   </span>
                 </label>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
-                  required
-                />
-                {areaTypeData.images.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {areaTypeData.images.map((file, index) => (
-                      <div key={index} className="relative w-20 h-20">
-                        <img
-                          src={`/assets/${file}`}
-                          alt={`preview-${index}`}
-                          className="w-full h-full object-cover rounded-lg border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(index)}
-                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current.click()}
+                    className="border-dashed border-2 border-gray-400 rounded-lg p-2 text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all"
+                  >
+                    Chọn tệp
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                  />
+                  {imagePreviews.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {imagePreviews.map((preview, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={failedImages.has(index) ? "/placeholder-image.jpg" : preview}
+                            alt={`preview-${index}`}
+                            className="w-20 h-20 object-cover rounded-lg border"
+                            onError={() => handleImageError(index)}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(index)}
+                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -222,9 +276,9 @@ const CreateAreaType = () => {
             <button
               type="button"
               onClick={() => navigate("/dashboard/areaType")}
-              className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out"
+              className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out"
             >
-              Hủy
+              Quay lại
             </button>
             <button
               type="submit"

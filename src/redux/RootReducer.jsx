@@ -8,9 +8,10 @@ import accountReducer from "./slices/Account";
 import facilitiesReducer from "./slices/Facilities";
 import blogsReducer from "./slices/Blog";
 import areaTypesReducer from "./slices/AreaType";
-import bookingHistoryReducer from "./slices/BookingHistory"
-import statisticsReducer from "./slices/Statistics"
-import areaReducer from "./slices/Area"
+import bookingHistoryReducer from "./slices/BookingHistory";
+import statisticsReducer from "./slices/Statistics";
+import areaReducer from "./slices/Area";
+import areaCategoryReducer from "./slices/AreaCategory";
 
 
 // slices
@@ -34,7 +35,7 @@ const rootReducer = combineReducers({
   blogs: blogsReducer,
   bookingHistory: bookingHistoryReducer,
   areas: areaReducer,
-
+  areaCategory: areaCategoryReducer,
 });
 
 export { rootPersistConfig, rootReducer }; 

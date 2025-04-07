@@ -99,6 +99,7 @@ const CreateFacilities = () => {
                   name="batchNumber"
                   value={facility.batchNumber}
                   onChange={handleChange}
+                  placeholder="Nhập số lô"
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
                   required
                 />
@@ -114,6 +115,7 @@ const CreateFacilities = () => {
                   name="facilityTitle"
                   value={facility.facilityTitle}
                   onChange={handleChange}
+                  placeholder="Nhập tiêu đề cơ sở vật chất"
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
                   required
                 />
@@ -124,7 +126,7 @@ const CreateFacilities = () => {
                     <FaDollarSign className="mr-2 text-orange-500" /> Giá
                   </span>
                 </label>
-                <div className="relative flex items-center">
+                <div className="flex items-center space-x-3">
                   <input
                     type="number"
                     name="cost"
@@ -132,10 +134,13 @@ const CreateFacilities = () => {
                     min={0}
                     step="0.01"
                     onChange={handleNumberChange}
-                    className="w-full px-4 py-3 pr-12 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                    className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                    placeholder="Nhập giá"
                     required
                   />
-                  <span className="absolute right-3 text-gray-600">DXLAB Coin</span>
+                  <span className="flex items-center gap-1 text-sm text-gray-500 font-medium whitespace-nowrap">
+                    DXLAB Coin
+                  </span>
                 </div>
               </div>
             </div>
@@ -198,7 +203,7 @@ const CreateFacilities = () => {
               className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out"
               disabled={loading}
             >
-              Hủy
+              Quay lại
             </button>
             <button
               type="submit"

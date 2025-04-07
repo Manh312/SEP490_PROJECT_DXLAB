@@ -6,7 +6,7 @@ const API_URL = "/areatype";
 // Fetch danh sách loại khu vực với filter tùy chọn
 export const fetchAreaTypes = createAsyncThunk(
   "areaTypes/fetchAreaTypes",
-  async (fil = "", {rejectWithValue}) => {
+  async (fil = "", { rejectWithValue }) => {
     try {
       console.log(fil);
       // Nếu filterString rỗng thì gọi API lấy tất cả, ngược lại thêm query param
@@ -23,26 +23,44 @@ export const fetchAreaTypes = createAsyncThunk(
 
 // Fetch loại khu vực theo id
 export const fetchAreaTypeById = createAsyncThunk(
-    "areaTypes/fetchAreaTypeById",
-    async (id, { rejectWithValue }) => {
-      try {
-        const response = await axiosInstance.get(`/areatype/${id}`);
-        return response.data.data; // ✅ Trả về dữ liệu chi tiết
-      } catch (error) {
-        return rejectWithValue(error.response?.data || "Lỗi khi lấy chi tiết loại khu vực");
-      }
+  "areaTypes/fetchAreaTypeById",
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/areatype/${id}`);
+      return response.data.data; // ✅ Trả về dữ liệu chi tiết
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Lỗi khi lấy chi tiết loại khu vực");
     }
-  );
+  }
+);
 
 // Thêm loại khu vực mới
 export const createAreaType = createAsyncThunk(
   "areaTypes/createAreaType",
-  async (newAreaType, { rejectWithValue }) => {
+  async ({newAreaType, files}, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(API_URL, newAreaType);
+      const formData = new FormData();
+
+      formData.append("AreaTypeName", newAreaType.AreaTypeName);
+      formData.append("AreaCategory", newAreaType.AreaCategory);
+      formData.append("AreaDescription", newAreaType.AreaDescription);
+      formData.append("Size", newAreaType.Size);
+      formData.append("Price", newAreaType.Price);
+      formData.append("IsDeleted", newAreaType.IsDeleted);
+
+      if (files && files.length > 0) {
+        files.forEach((file) => {
+          formData.append("files", file); 
+        });
+      }
+      const response = await axiosInstance.post(API_URL, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return response.data; // Trả về loại khu vực vừa tạo
     } catch (error) {
-        console.log(error.response.data);
+      console.log(error.response.data);
       return rejectWithValue(error.response?.data || "Lỗi khi tạo loại khu vực");
     }
   }
@@ -50,30 +68,43 @@ export const createAreaType = createAsyncThunk(
 
 // Cập nhật loại khu vực theo API `PATCH`
 export const updateAreaType = createAsyncThunk(
-    "areaTypes/updateAreaType",
-    async ({ areaTypeId, updatedData }, { rejectWithValue }) => {
-      try {
-        const response = await axiosInstance.patch(`${API_URL}/${areaTypeId}`, updatedData, {
-            headers: { "Content-Type": "application/json-patch+json" }
-          });
-        return response.data; // ✅ Chỉ return phần `data`, tránh lỗi React
-      } catch (error) {
-        return rejectWithValue(error.response?.data || "Lỗi khi cập nhật loại khu vực");
+  "areaTypes/updateAreaType",
+  async ({ areaTypeId, updatedData, files }, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+
+      formData.append("AreaTypeName", updatedData.areaTypeName);
+      formData.append("AreaCategory", updatedData.categoryDescription);
+      formData.append("Status", updatedData.status);
+
+      if (files && files.length > 0) {
+        files.forEach((file) => {
+          formData.append("files", file); 
+        });
       }
+      const response = await axiosInstance.patch(`${API_URL}/${areaTypeId}`, updatedData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data; // ✅ Chỉ return phần `data`, tránh lỗi React
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Lỗi khi cập nhật loại khu vực");
     }
+  }
 );
 
 // Xóa loại khu vực
 export const deleteAreaType = createAsyncThunk(
-    "areaTypes/deleteAreaType",
-    async (areaTypeId, { rejectWithValue }) => {
-      try {
-        await axiosInstance.delete(`${API_URL}/${areaTypeId}`);
-        return areaTypeId; // Trả về ID của loại khu vực đã xóa
-      } catch (error) {
-        return rejectWithValue(error.response?.data || "Lỗi khi xóa loại khu vực");
-      }
+  "areaTypes/deleteAreaType",
+  async (areaTypeId, { rejectWithValue }) => {
+    try {
+      await axiosInstance.delete(`${API_URL}/${areaTypeId}`);
+      return areaTypeId; // Trả về ID của loại khu vực đã xóa
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Lỗi khi xóa loại khu vực");
     }
+  }
 );
 
 const areaTypeSlice = createSlice({
@@ -100,7 +131,7 @@ const areaTypeSlice = createSlice({
         state.error = action.payload;
       })
 
-        // Fetch loại khu vực theo id
+      // Fetch loại khu vực theo id
       .addCase(fetchAreaTypeById.pending, (state) => {
         state.loading = true;
         state.selectedAreaType = null;
@@ -135,8 +166,8 @@ const areaTypeSlice = createSlice({
       .addCase(createAreaType.fulfilled, (state, action) => {
         state.loading = false;
         if (action.payload) {
-            state.areaTypes = [...state.areaTypes, action.payload.data]; // Thêm phòng mới vào danh sách
-          }
+          state.areaTypes = [...state.areaTypes, action.payload.data]; // Thêm phòng mới vào danh sách
+        }
       })
       .addCase(createAreaType.rejected, (state, action) => {
         state.loading = false;
@@ -149,17 +180,17 @@ const areaTypeSlice = createSlice({
       })
       .addCase(updateAreaType.fulfilled, (state, action) => {
         state.loading = false;
-    
+
         // Cập nhật dữ liệu nếu đang ở trang chi tiết
         if (state.selectedAreaType?.areaTypeId === action.payload.areaTypeId) {
           state.selectedAreaType = action.payload.data; // ✅ Chỉ chứa `data`
         }
-    
+
         // Cập nhật dữ liệu trong danh sách
         state.areaTypes = state.areaTypes.map((type) =>
           type.areaTypeId === action.payload.areaTypeId ? action.payload : type
         );
-    })
+      })
       .addCase(updateAreaType.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
