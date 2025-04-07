@@ -110,7 +110,6 @@ const ViewAreas = () => {
       });
     } catch (error) {
       console.error("Lỗi khi fetch slots:", error);
-      toast.error('Không thể tải danh sách slot!');
       datesToFetch.forEach((date) => {
         setFetchedSlots((prev) => ({ ...prev, [date]: [] }));
       });
@@ -221,7 +220,6 @@ const ViewAreas = () => {
   const calculateTotalPrice = () => {
     return bookingDates.reduce((total, booking) => {
       if (!Array.isArray(booking.slots)) return total;
-      const slotsForDate = fetchedSlots[booking.date] || [];
       const slotPrice = selectedArea?.value?.[0]?.price || 10;
       return total + booking.slots.length * slotPrice;
     }, 0);

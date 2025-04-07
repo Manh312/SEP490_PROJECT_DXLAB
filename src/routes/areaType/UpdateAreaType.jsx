@@ -5,6 +5,7 @@ import { fetchAreaTypeById, updateAreaType } from "../../redux/slices/AreaType";
 import {
   fetchFacilitiesByAreaId,
   fetchAllFacilities,
+  fetchFacilitiesList,
   addFacilityToArea,
   removeFacilityFromArea,
 } from "../../redux/slices/Area";
@@ -32,15 +33,15 @@ const UpdateAreaType = () => {
   });
   const [hasImageChange, setHasImageChange] = useState(false);
   const [imagePreviews, setImagePreviews] = useState([]);
-  const [failedImages, setFailedImages] = useState(new Set());
   const fileInputRef = useRef(null);
 
   // State cho ManageAreaDetail
   const {
     facilities,
-    facilitiesLoading,
-    facilitiesError,
     allFacilities,
+    facilitiesList,
+    facilitiesListLoading,
+    facilitiesListError,
     allFacilitiesLoading,
     allFacilitiesError,
     addFacilityLoading,
@@ -52,15 +53,21 @@ const UpdateAreaType = () => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [facilityToDelete, setFacilityToDelete] = useState(null);
   const [deleteQuantity, setDeleteQuantity] = useState("");
-  const [facilityQuantities, setFacilityQuantities] = useState(() => {
-    const savedQuantities = localStorage.getItem(`facilityQuantities_area_${id}`);
-    return savedQuantities ? JSON.parse(savedQuantities) : {};
-  });
+
+  console.log(facilities);
+  console.log(allFacilities);
+
+
 
   // Logic cho UpdateAreaType
   useEffect(() => {
     dispatch(fetchAreaTypeById(id));
   }, [dispatch, id]);
+
+  useEffect(() => {
+    dispatch(fetchFacilitiesList());
+  }, [dispatch]);
+
 
   useEffect(() => {
     if (selectedAreaType) {
@@ -101,10 +108,6 @@ const UpdateAreaType = () => {
       setImagePreviews((prev) => [...prev, ...previews]);
       setHasImageChange(true);
     }
-  };
-
-  const handleImageError = (index) => {
-    setFailedImages((prev) => new Set(prev).add(index));
   };
 
   const removeImage = (index) => {
@@ -186,24 +189,10 @@ const UpdateAreaType = () => {
 
   // Logic cho ManageAreaDetail
   useEffect(() => {
-    localStorage.setItem(`facilityQuantities_area_${id}`, JSON.stringify(facilityQuantities));
-  }, [facilityQuantities, id]);
-
-  useEffect(() => {
     if (id) {
       dispatch(fetchFacilitiesByAreaId(id));
     }
   }, [dispatch, id]);
-
-  useEffect(() => {
-    const updatedQuantities = facilities.reduce((acc, item) => {
-      if (facilityQuantities[item.facilityId] !== undefined) {
-        acc[item.facilityId] = facilityQuantities[item.facilityId];
-      }
-      return acc;
-    }, {});
-    setFacilityQuantities(updatedQuantities);
-  }, [facilities]);
 
   const openModal = () => {
     dispatch(fetchAllFacilities());
@@ -232,20 +221,15 @@ const UpdateAreaType = () => {
     try {
       const res = await dispatch(addFacilityToArea({ id, data: body })).unwrap();
       toast.success(res.message);
-      dispatch(fetchFacilitiesByAreaId(id));
-
-      setFacilityQuantities((prev) => ({
-        ...prev,
-        [selectedFacility.facilityId]:
-          (prev[selectedFacility.facilityId] || 0) + quantityToAdd,
-      }));
+      // Fetch the updated list of facilities
+      await dispatch(fetchFacilitiesList()).unwrap();
 
       setShowModal(false);
       setSelectedFacility(null);
       setQuantity("");
       setSearchTerm("");
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.message || "Lỗi khi thêm thiết bị!");
     }
   };
 
@@ -256,7 +240,9 @@ const UpdateAreaType = () => {
     }
 
     const quantityToDelete = parseInt(deleteQuantity);
-    const currentQuantity = facilityQuantities[facilityToDelete.facilityId] || 0;
+    const currentFacility = facilitiesList.find((f) => f.facilityId === facilityToDelete.facilityId);
+    const currentQuantity = currentFacility ? currentFacility.quantity : 0;
+
     if (quantityToDelete > currentQuantity) {
       toast.error(`Số lượng xóa vượt quá số lượng hiện có (${currentQuantity})!`);
       return;
@@ -272,31 +258,22 @@ const UpdateAreaType = () => {
     try {
       const res = await dispatch(removeFacilityFromArea(body)).unwrap();
       toast.success(res.message);
-      dispatch(fetchFacilitiesByAreaId(id));
-
-      setFacilityQuantities((prev) => {
-        const newQuantity = (prev[facilityToDelete.facilityId] || 0) - quantityToDelete;
-        if (newQuantity <= 0) {
-          const { [facilityToDelete.facilityId]: _, ...rest } = prev;
-          return rest;
-        }
-        return {
-          ...prev,
-          [facilityToDelete.facilityId]: newQuantity,
-        };
-      });
+      // Fetch the updated list of facilities
+      await dispatch(fetchFacilitiesList()).unwrap();
 
       setDeleteModal(false);
       setFacilityToDelete(null);
       setDeleteQuantity("");
     } catch (err) {
-      toast.error(err.message);
+      toast.error(err.message || "Lỗi khi xóa thiết bị!");
     }
   };
 
   const filteredFacilities = allFacilities.filter((faci) =>
     faci.facilityName.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+
 
   if (areaTypeLoading || !selectedAreaType) {
     return (
@@ -315,13 +292,15 @@ const UpdateAreaType = () => {
             <Building className="h-6 w-6 text-orange-500" />
             <h2 className="text-3xl font-bold text-gray-800">Quản Lý Loại Khu Vực {id}</h2>
           </div>
-          <button
-            onClick={() => navigate("/dashboard/areaType")}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-md"
-          >
-            <ArrowLeft size={20} />
-            <span className="hidden sm:inline">Quay Lại</span>
-          </button>
+          {/* Nút Thêm Thiết Bị */}
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={openModal}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all shadow-md"
+            >
+              <Plus className="w-5 h-5" /> Thêm Thiết Bị
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -330,8 +309,8 @@ const UpdateAreaType = () => {
             <button
               onClick={() => setActiveTab("update")}
               className={`py-3 px-4 text-sm font-medium border-b-2 transition-all duration-150 ease-in-out ${activeTab === "update"
-                  ? "border-orange-500 text-orange-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "border-orange-500 text-orange-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
             >
               Cập Nhật Loại Khu Vực
@@ -339,8 +318,8 @@ const UpdateAreaType = () => {
             <button
               onClick={() => setActiveTab("manageFacilities")}
               className={`py-3 px-4 text-sm font-medium border-b-2 transition-all duration-150 ease-in-out ${activeTab === "manageFacilities"
-                  ? "border-orange-500 text-orange-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                ? "border-orange-500 text-orange-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                 }`}
             >
               Quản Lý Trang Thiết Bị
@@ -556,16 +535,16 @@ const UpdateAreaType = () => {
 
         {activeTab === "manageFacilities" && (
           <div>
-            {/* Danh sách thiết bị */}
-            {facilitiesLoading ? (
+            {/* Facilities List (Using facilitiesList instead of facilities) */}
+            {facilitiesListLoading ? (
               <div className="flex justify-center items-center h-40">
                 <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
               </div>
-            ) : facilitiesError ? (
-              <p className="text-center text-red-500 bg-red-50 p-4 rounded-lg">{facilitiesError}</p>
-            ) : facilities.length === 0 ? (
+            ) : facilitiesListError ? (
+              <p className="text-center text-red-500 bg-red-50 p-4 rounded-lg">{facilitiesListError}</p>
+            ) : facilitiesList.length === 0 ? (
               <p className="text-center text-gray-500 bg-gray-50 p-4 rounded-lg">
-                Không có thiết bị nào trong khu vực này.
+                Không có thiết bị nào trong khu vực.
               </p>
             ) : (
               <div className="bg-white shadow-lg rounded-lg overflow-hidden">
@@ -573,10 +552,19 @@ const UpdateAreaType = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        #
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Tên Thiết Bị
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Lô
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Số Lượng
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Ngày Nhập
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Hành Động
@@ -584,13 +572,20 @@ const UpdateAreaType = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {facilities.map((item) => (
-                      <tr key={item.facilityId} className="hover:bg-gray-50 transition">
+                    {facilitiesList.map((item, index) => (
+                      <tr key={item.usingFacilityId} className="hover:bg-gray-50 transition">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
+                          {index + 1}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {item.facilityTitle}
+                          {item.facilityTitle || "N/A"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {facilityQuantities[item.facilityId] || 0}
+                          {item.batchNumber || "N/A"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantity || 0}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {item.importDate ? new Date(item.importDate).toLocaleDateString() : "N/A"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
@@ -610,15 +605,13 @@ const UpdateAreaType = () => {
               </div>
             )}
 
-            {/* Nút Thêm Thiết Bị */}
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={openModal}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all shadow-md"
-              >
-                <Plus className="w-5 h-5" /> Thêm Thiết Bị
-              </button>
-            </div>
+            <button
+              onClick={() => navigate("/dashboard/areaType")}
+              className="bg-gray-500 mt-20 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-md"
+            >
+              <ArrowLeft size={20} />
+              <span className="hidden sm:inline">Quay Lại</span>
+            </button>
 
             {/* Modal Xóa */}
             {deleteModal && facilityToDelete && (
@@ -638,15 +631,15 @@ const UpdateAreaType = () => {
                     </button>
                   </div>
                   <p className="text-gray-700">
-                    Thiết bị: <strong>{facilityToDelete.facilityTitle}</strong>
+                    Thiết bị: <strong>{facilityToDelete.facilityTitle || "N/A"}</strong>
                   </p>
                   <p className="text-gray-700">
-                    Số lượng hiện có: <strong>{facilityQuantities[facilityToDelete.facilityId] || 0}</strong>
+                    Số lượng hiện có: <strong>{facilityToDelete.quantity || 0}</strong>
                   </p>
                   <input
                     type="number"
                     min={1}
-                    max={facilityQuantities[facilityToDelete.facilityId] || 0}
+                    max={facilityToDelete.quantity || 0}
                     value={deleteQuantity}
                     onChange={(e) => setDeleteQuantity(e.target.value)}
                     placeholder="Nhập số lượng muốn xóa"
@@ -740,8 +733,8 @@ const UpdateAreaType = () => {
                               key={faci.facilityId}
                               onClick={() => setSelectedFacility(faci)}
                               className={`cursor-pointer hover:bg-orange-50 transition ${selectedFacility?.facilityId === faci.facilityId
-                                  ? "bg-orange-100"
-                                  : ""
+                                ? "bg-orange-100"
+                                : ""
                                 }`}
                             >
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">

@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 import { getRoomById } from '../../redux/slices/Room';
 
 const individualSeats = {
-  table1: ['A1', 'A2', 'A3', 'A4'], // 4 seats
+  table1: ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'], // 4 seats
   table2: ['B1', 'B2', 'B3', 'B4', 'B5', 'B6'], // 6 seats
 };
 
@@ -23,17 +23,19 @@ const createAreaToGroupMap = (areas) => {
 
 // Map position IDs to individual seats (kept static as per requirement)
 const positionIdToSeatMap = {
-  1: { seat: 'B1', area: 'individual' },
-  2: { seat: 'B2', area: 'individual' },
-  3: { seat: 'B3', area: 'individual' },
-  4: { seat: 'B4', area: 'individual' },
-  5: { seat: 'B5', area: 'individual' },
-  6: { seat: 'B6', area: 'individual' },
+  1: { seat: 'A1', area: 'individual' },
+  2: { seat: 'A2', area: 'individual' },
+  3: { seat: 'A3', area: 'individual' },
+  4: { seat: 'A4', area: 'individual' },
+  5: { seat: 'A5', area: 'individual' },
+  6: { seat: 'A6', area: 'individual' },
 
-  7: { seat: 'A1', area: 'individual' },
-  8: { seat: 'A2', area: 'individual' },
-  9: { seat: 'A3', area: 'individual' },
-  10: { seat: 'A4', area: 'individual' },
+  7: { seat: 'A7', area: 'individual' },
+  8: { seat: 'A8', area: 'individual' },
+  9: { seat: 'A9', area: 'individual' },
+  10: { seat: 'A10', area: 'individual' },
+  11: { seat: 'A11', area: 'individual' },
+  12: { seat: 'A12', area: 'individual' },
 };
 
 const ViewBookedSeats = () => {
@@ -89,13 +91,9 @@ const ViewBookedSeats = () => {
     if (!individualArea || !individualArea.areaTypeName) return { showTable1: false, showTable2: false };
 
     const numberOfSeats = individualArea.areaTypeName;
-    if (numberOfSeats === 'Khu vực 4 người') {
-      return { showTable1: true, showTable2: false }; // Show table1 for 1-4 seats
-    } else if (numberOfSeats === 'Khu vực 6 người') {
-      return { showTable1: false, showTable2: true }; // Show table2 for 5-6 seats
-    } else {
-      return { showTable1: true, showTable2: true }; // Show both for more than 6 seats
-    }
+    if (numberOfSeats === 'Khu vực 12 người') {
+      return { showTable1: true, showTable2: true }; // Show table1 for 1-4 seats
+    } 
   }, [individualArea]);
 
   // Debug logs to check data

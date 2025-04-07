@@ -1,6 +1,6 @@
 import { CreditCard, DollarSign, Package, TrendingUp, Users } from "lucide-react";
 import { useTheme } from "../../hooks/use-theme";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchStudentGroupStats, fetchJobsByYearAndDate, resetStats } from "../../redux/slices/Statistics";
 import {
@@ -30,6 +30,7 @@ const Page = () => {
   // State để lưu trữ dữ liệu tổng doanh thu và dữ liệu chi tiết riêng biệt
   const [yearlyStats, setYearlyStats] = useState(null); // Dữ liệu tổng doanh thu
   const [detailedStats, setDetailedStats] = useState([]); // Dữ liệu chi tiết theo tháng hoặc ngày
+  const [yearlyData, setYearlyData] = useState([]); // Dữ liệu hàng năm để lấy studentPercentage cho từng tháng
 
   // Danh sách các năm để người dùng chọn
   const years = Array.from({ length: 10 }, (_, i) => (2025 - i).toString());
@@ -42,6 +43,24 @@ const Page = () => {
     return new Date(year, month, 0).getDate(); // Trả về số ngày trong tháng
   };
 
+  // Fetch dữ liệu hàng năm khi component mount hoặc khi year thay đổi
+  useEffect(() => {
+    dispatch(
+      fetchStudentGroupStats({
+        period: "năm",
+        year: year,
+        month: null,
+      })
+    ).then((response) => {
+      if (response.payload && response.payload.data) {
+        const { details } = response.payload.data;
+        setYearlyData(details); // Lưu trữ dữ liệu hàng năm
+      } else {
+        setYearlyData([]);
+      }
+    });
+  }, [dispatch, year]);
+
   // Xử lý khi người dùng nhấn "Tìm kiếm"
   const handleSearch = () => {
     dispatch(resetStats()); // Reset dữ liệu cũ
@@ -49,7 +68,6 @@ const Page = () => {
     setDetailedStats([]); // Reset dữ liệu chi tiết
     setShowCharts(false); // Ẩn biểu đồ cho đến khi có dữ liệu mới
 
-    // Gọi API fetchStudentGroupStats dựa trên period
     if (period === "năm") {
       // Gọi API để lấy dữ liệu cho cả năm
       dispatch(
@@ -64,16 +82,8 @@ const Page = () => {
 
           // Tính tổng doanh thu và tỷ lệ sinh viên trung bình
           const totalRevenue = details.reduce((sum, item) => sum + (item.revenue.totalRevenue || 0), 0);
-          const totalStudentRevenue = details.reduce((sum, item) => sum + (item.revenue.studentRevenue || 0), 0);
-          const totalStudentPercentage = details.length > 0 ? details.reduce((sum, item) => sum + (item.revenue.studentPercentage || 0), 0) / details.length : 0;
 
-          // Lưu dữ liệu tổng
-          setYearlyStats({
-            totalRevenue,
-            studentPercentage: totalStudentPercentage,
-          });
-
-          // Lưu dữ liệu chi tiết theo tháng
+          // Tạo monthlyData để bao gồm tất cả 12 tháng
           const monthlyData = Array.from({ length: 12 }, (_, i) => {
             const month = i + 1;
             const item = details.find((d) => d.periodNumber === month) || {
@@ -86,6 +96,17 @@ const Page = () => {
               studentPercentage: item.revenue.studentPercentage || 0,
             };
           });
+
+          // Tính trung bình studentPercentage trên tất cả 12 tháng
+          const totalStudentPercentage = monthlyData.length > 0 ? monthlyData.reduce((sum, item) => sum + (item.studentPercentage || 0), 0) / monthlyData.length : 0;
+
+          // Lưu dữ liệu tổng
+          setYearlyStats({
+            totalRevenue,
+            studentPercentage: totalStudentPercentage,
+          });
+
+          // Lưu dữ liệu chi tiết theo tháng
           setDetailedStats(monthlyData);
         } else {
           // Nếu không có dữ liệu, tạo dữ liệu mặc định cho 12 tháng
@@ -106,6 +127,12 @@ const Page = () => {
         alert("Vui lòng chọn tháng và năm!");
         return;
       }
+
+      // Lấy studentPercentage từ dữ liệu hàng năm thay vì tính trung bình các ngày
+      const monthData = yearlyData.find((d) => d.periodNumber === parseInt(month));
+      const monthStudentPercentage = monthData ? monthData.revenue.studentPercentage || 0 : 0;
+
+      // Gọi API để lấy dữ liệu chi tiết theo ngày trong tháng
       dispatch(
         fetchStudentGroupStats({
           period: "tháng",
@@ -116,18 +143,10 @@ const Page = () => {
         if (response.payload && response.payload.data) {
           const { details } = response.payload.data;
 
-          // Tính tổng doanh thu và tỷ lệ sinh viên trung bình
+          // Tính tổng doanh thu cho tháng
           const totalRevenue = details.reduce((sum, item) => sum + (item.revenue.totalRevenue || 0), 0);
-          const totalStudentRevenue = details.reduce((sum, item) => sum + (item.revenue.studentRevenue || 0), 0);
-          const totalStudentPercentage = details.length > 0 ? details.reduce((sum, item) => sum + (item.revenue.studentPercentage || 0), 0) / details.length : 0;
 
-          // Lưu dữ liệu tổng
-          setYearlyStats({
-            totalRevenue,
-            studentPercentage: totalStudentPercentage,
-          });
-
-          // Lưu dữ liệu chi tiết theo ngày
+          // Tạo dailyData để bao gồm tất cả các ngày trong tháng
           const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
           const dailyData = Array.from({ length: daysInMonth }, (_, i) => {
             const day = i + 1;
@@ -141,6 +160,14 @@ const Page = () => {
               studentPercentage: dayData.revenue.studentPercentage || 0,
             };
           });
+
+          // Lưu dữ liệu tổng với studentPercentage từ dữ liệu hàng năm
+          setYearlyStats({
+            totalRevenue,
+            studentPercentage: monthStudentPercentage, // Sử dụng giá trị từ yearlyData
+          });
+
+          // Lưu dữ liệu chi tiết theo ngày
           setDetailedStats(dailyData);
         } else {
           // Nếu không có dữ liệu, tạo dữ liệu mặc định cho các ngày trong tháng
@@ -151,7 +178,7 @@ const Page = () => {
             studentRevenue: 0,
             studentPercentage: 0,
           }));
-          setYearlyStats({ totalRevenue: 0, studentPercentage: 0 });
+          setYearlyStats({ totalRevenue: 0, studentPercentage: monthStudentPercentage });
           setDetailedStats(dailyData);
         }
         setShowCharts(true); // Hiển thị biểu đồ
@@ -165,9 +192,7 @@ const Page = () => {
   // Tính giá trị tổng doanh thu (chỉ dựa trên yearlyStats)
   const totalRevenue = yearlyStats ? yearlyStats.totalRevenue || 0 : 0;
 
-  const avgStudentPercentage = yearlyStats
-    ? yearlyStats.studentPercentage || 0
-    : 0;
+  const avgStudentPercentage = yearlyStats ? yearlyStats.studentPercentage || 0 : 0;
 
   // Dữ liệu cho biểu đồ hình tròn (Pie Chart) của studentPercentage
   const pieData = [
@@ -184,10 +209,12 @@ const Page = () => {
         ? detailedStats.map((stat) => ({
             name: stat.name,
             studentRevenue: stat.studentRevenue || 0,
+            studentPercentage: stat.studentPercentage || 0, // Thêm để hiển thị trong tooltip
           }))
         : Array.from({ length: 12 }, (_, i) => ({
             name: `Tháng ${i + 1}`,
             studentRevenue: 0,
+            studentPercentage: 0,
           }));
     } else if (period === "tháng") {
       // Hiển thị dữ liệu cho tất cả các ngày trong tháng
@@ -195,10 +222,12 @@ const Page = () => {
         ? detailedStats.map((stat) => ({
             name: stat.name,
             studentRevenue: stat.studentRevenue || 0,
+            studentPercentage: stat.studentPercentage || 0, // Thêm để hiển thị trong tooltip
           }))
         : Array.from({ length: getDaysInMonth(parseInt(month), parseInt(year)) }, (_, i) => ({
             name: `Ngày ${i + 1}`,
             studentRevenue: 0,
+            studentPercentage: 0,
           }));
     }
     return [];
@@ -381,7 +410,7 @@ const Page = () => {
             </div>
           </div>
 
-          {/* Card 2: Tỷ lệ sinh viên tham gia trung bình */}
+          {/* Card 2: Tỷ lệ sinh viên tham gia */}
           <div
             className={`card ${
               theme === "dark" ? "bg-black text-white" : "bg-white text-black"
@@ -582,7 +611,7 @@ const Page = () => {
                 theme === "dark" ? "bg-black text-white" : "bg-white text-black"
               } p-5`}
             >
-              Thống kê doanh thu từ sinh viên
+              Thống kê doanh thu
             </p>
           </div>
           <div className="card-body p-0">
@@ -599,7 +628,7 @@ const Page = () => {
                 </defs>
                 <Tooltip
                   cursor={false}
-                  formatter={(value) => `${value} DXLAB Coin`}
+                  formatter={(value, name) => name === "studentPercentage" ? `${value}%` : `${value} DXLAB Coin`}
                   contentStyle={{
                     backgroundColor: theme === "dark" ? "black" : "white",
                     color: theme === "dark" ? "white" : "black",
