@@ -18,10 +18,13 @@ const CreateAreaType = () => {
     size: "",
     price: "",
     isDeleted: false,
-    images: [],
+    images: [], // Lưu danh sách File (không phải tên file)
   });
 
+  const [imagePreviews, setImagePreviews] = useState([]); // Lưu URL preview của ảnh
+
   const textareaRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -50,18 +53,16 @@ const CreateAreaType = () => {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    const fileNames = files.map((file) => file.name);
-
-    const newImages = fileNames.filter((name) => !areaTypeData.images.includes(name));
-    if (newImages.length === 0) {
-      toast.error("Ảnh đã tồn tại, vui lòng chọn ảnh khác!");
-      return;
+    if (files.length > 0) {
+      // Thêm các file mới vào areaTypeData.images
+      setAreaTypeData((prevData) => ({
+        ...prevData,
+        images: [...prevData.images, ...files],
+      }));
+      // Tạo URL preview cho các file mới
+      const previews = files.map((file) => URL.createObjectURL(file));
+      setImagePreviews((prev) => [...prev, ...previews]);
     }
-
-    setAreaTypeData((prevData) => ({
-      ...prevData,
-      images: [...prevData.images, ...newImages],
-    }));
   };
 
   const handleRemoveImage = (index) => {
@@ -69,13 +70,48 @@ const CreateAreaType = () => {
       ...prevData,
       images: prevData.images.filter((_, i) => i !== index),
     }));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Kiểm tra dữ liệu trước khi gửi
+    if (!areaTypeData.areaTypeName.trim()) {
+      toast.error("Tên loại khu vực là bắt buộc!");
+      return;
+    }
+    if (!areaTypeData.areaDescription.trim()) {
+      toast.error("Mô tả là bắt buộc!");
+      return;
+    }
+    if (!areaTypeData.size || areaTypeData.size <= 0) {
+      toast.error("Số ghế phải lớn hơn 0!");
+      return;
+    }
+    if (!areaTypeData.price || areaTypeData.price < 0) {
+      toast.error("Giá phải lớn hơn hoặc bằng 0!");
+      return;
+    }
+    if (areaTypeData.images.length === 0) {
+      toast.error("Vui lòng chọn ít nhất một ảnh!");
+      return;
+    }
+
+    // Chuẩn bị dữ liệu gửi lên thunk
+    const newAreaType = {
+      AreaTypeName: areaTypeData.areaTypeName,
+      AreaCategory: areaTypeData.areaCategory,
+      AreaDescription: areaTypeData.areaDescription,
+      Size: areaTypeData.size,
+      Price: areaTypeData.price,
+      IsDeleted: areaTypeData.isDeleted,
+    };
+
+    const files = areaTypeData.images; // Gửi danh sách File
+
     try {
-      await dispatch(createAreaType(areaTypeData)).unwrap();
+      await dispatch(createAreaType({ newAreaType, files })).unwrap();
       toast.success("Tạo loại khu vực thành công!");
       navigate("/dashboard/areaType");
     } catch (error) {
@@ -125,24 +161,29 @@ const CreateAreaType = () => {
                   required
                 />
               </div>
-              <div className="flex flex-col">
-                <label className="block text-sm font-medium mb-1">
+              <div className="flex flex-col space-y-1">
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700">
                   <span className="flex items-center">
-                    <FaTag className="mr-2 text-orange-500" /> Giá
+                    <FaTag className="mr-1.5 h-4 w-4 text-orange-500" /> Giá
                   </span>
                 </label>
-                <div className="relative flex items-center">
-                  <input
-                    type="number"
-                    name="price"
-                    value={areaTypeData.price}
-                    min={0}
-                    step="0.01"
-                    onChange={handleNumberChange}
-                    className="w-full px-4 py-3 pr-12 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
-                    required
-                  />
-                  <span className="absolute right-3 text-gray-600">VND</span>
+
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="number"
+                      id="price"
+                      name="price"
+                      value={areaTypeData.price}
+                      min={0}
+                      step="0.01"
+                      onChange={handleNumberChange}
+                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-150 ease-in-out text-sm placeholder-gray-400"
+                      placeholder="Nhập giá (VD: 10.50)"
+                      required
+                    />
+                    <span className="flex items-center gap-1 text-sm text-gray-500 font-medium whitespace-nowrap">
+                      DXLAB Coin
+                    </span>
                 </div>
               </div>
             </div>
@@ -190,16 +231,17 @@ const CreateAreaType = () => {
                   type="file"
                   multiple
                   accept="image/*"
+                  ref={fileInputRef}
                   onChange={handleImageUpload}
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
                   required
                 />
-                {areaTypeData.images.length > 0 && (
+                {imagePreviews.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {areaTypeData.images.map((file, index) => (
+                    {imagePreviews.map((preview, index) => (
                       <div key={index} className="relative w-20 h-20">
                         <img
-                          src={`/assets/${file}`}
+                          src={preview}
                           alt={`preview-${index}`}
                           className="w-full h-full object-cover rounded-lg border"
                         />

@@ -1,24 +1,28 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { MapPin, ArrowLeft } from "lucide-react";
-import { createAreaTypeCategory } from "../../redux/slices/AreaCategory"; // Adjust the path to your slice file
+import { MapPin, ArrowLeft, X } from "lucide-react";
+import { createAreaTypeCategory } from "../../redux/slices/AreaCategory";
 import { toast } from "react-toastify";
 
 const CreateAreaCategory = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const fileInputRef = useRef(null); // Ref for file input
 
   // Get loading and error states from Redux store
-  const { loading, error } = useSelector((state) => state.areaCategory);
+  const { loading } = useSelector((state) => state.areaCategory);
 
   // Form state
   const [formData, setFormData] = useState({
     title: "",
     categoryDescription: "",
-    images: [], // For file input
+    images: [], // Store array of files
     status: 1, // Default to "Hoạt động" (1)
   });
+
+  const [imagePreviews, setImagePreviews] = useState([]); // Store preview URLs for images
+  const [failedImages, setFailedImages] = useState(new Set()); // Track failed image loads
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -30,35 +34,71 @@ const CreateAreaCategory = () => {
 
   // Handle file input change
   const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        images: [...prev.images, ...files], // Add new files to the array
+      }));
+      const previews = files.map((file) => URL.createObjectURL(file));
+      setImagePreviews((prev) => [...prev, ...previews]);
+    }
+  };
+
+  // Handle image removal
+  const handleRemoveImage = (index) => {
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
     setFormData((prev) => ({
       ...prev,
-      images: e.target.files[0], // Store the file object
+      images: prev.images.filter((_, i) => i !== index),
     }));
+  };
+
+  // Handle image load error
+  const handleImageError = (index) => {
+    setFailedImages((prev) => new Set(prev).add(index));
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validate form data
+    const trimmedTitle = formData.title.trim();
+    const trimmedDescription = formData.categoryDescription.trim();
+
+    if (!trimmedTitle) {
+      toast.error("Tên loại khu vực là bắt buộc!");
+      return;
+    }
+    if (!trimmedDescription) {
+      toast.error("Mô tả là bắt buộc!");
+      return;
+    }
+    if (formData.images.length === 0) {
+      toast.error("Vui lòng chọn ít nhất một ảnh!");
+      return;
+    }
+
     // Prepare the data to send to the API
     const newAreaTypeCategory = {
-      title: formData.title,
-      categoryDescription: formData.categoryDescription, // Map categoryDescription to blogContent as per the thunk
+      title: trimmedTitle,
+      categoryDescription: trimmedDescription,
       status: formData.status,
     };
 
     // Prepare the files array
-    const files = formData.images ? [formData.images] : [];
+    const files = formData.images;
 
     try {
       // Dispatch the createAreaTypeCategory thunk with the correct arguments
       await dispatch(
         createAreaTypeCategory({ newAreaTypeCategory, files })
       ).unwrap();
-        toast.success("Tạo loại khu vực thành công!");
-        navigate("/dashboard/area");
+      toast.success("Tạo loại khu vực thành công!");
+      navigate("/dashboard/area");
     } catch (err) {
-      toast.error(err);
+      toast.error(err.message || "Lỗi khi tạo loại khu vực");
       console.error("Failed to create area type category:", err);
     }
   };
@@ -120,23 +160,43 @@ const CreateAreaCategory = () => {
           </div>
 
           {/* Image Upload */}
-          <div>
-            <label htmlFor="images" className="block text-sm font-medium text-gray-700">
-              Ảnh
-            </label>
-            <input
-              type="file"
-              id="images"
-              name="images"
-              onChange={handleFileChange}
-              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
-              accept="image/*"
-            />
-            {formData.images && (
-              <p className="mt-2 text-sm text-gray-600">Đã chọn: {formData.images.name}</p>
-            )}
+          <div className="flex flex-col gap-2">
+            <label className="block text-sm font-medium text-gray-700">Ảnh</label>
+            <div className="flex items-center gap-4 flex-wrap">
+              {imagePreviews.length > 0 &&
+                imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={failedImages.has(index) ? "/placeholder-image.jpg" : preview}
+                      alt={`Area preview ${index}`}
+                      className="w-24 h-24 object-cover rounded-lg shadow-sm"
+                      onError={() => handleImageError(index)}
+                    />
+                    <button
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current.click()}
+                className="border-dashed border-2 border-gray-400 rounded-lg p-4 text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all"
+              >
+                Chọn tệp
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                multiple
+                className="hidden"
+              />
+            </div>
           </div>
-
 
           {/* Submit Button */}
           <div className="flex justify-end">

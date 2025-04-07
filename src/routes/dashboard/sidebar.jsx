@@ -19,7 +19,7 @@
       <aside 
         ref={ref} 
         className={cn( 
-          collapsed ? "md:w-[70px] md:items-center" : "md:w-[240px]", 
+          collapsed ? "md:w-[70px] md:items-center" : "md:w-[250px]", 
           collapsed ? "max-md:-left-full" : "max-md:left-0", 
           theme === "light" ? "bg-white text-black" : "bg-dark text-white",  
           "transition-colors duration-300"

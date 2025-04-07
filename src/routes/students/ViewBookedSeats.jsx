@@ -23,26 +23,30 @@ const createAreaToGroupMap = (areas) => {
 
 // Map position IDs to individual seats (kept static as per requirement)
 const positionIdToSeatMap = {
-  1: { seat: 'A1', area: 'individual' },
-  2: { seat: 'A2', area: 'individual' },
-  3: { seat: 'A3', area: 'individual' },
-  4: { seat: 'A4', area: 'individual' },
-  5: { seat: 'B1', area: 'individual' },
-  6: { seat: 'B2', area: 'individual' },
-  7: { seat: 'B3', area: 'individual' },
-  8: { seat: 'B4', area: 'individual' },
-  9: { seat: 'B5', area: 'individual' },
-  10: { seat: 'B6', area: 'individual' },
+  1: { seat: 'B1', area: 'individual' },
+  2: { seat: 'B2', area: 'individual' },
+  3: { seat: 'B3', area: 'individual' },
+  4: { seat: 'B4', area: 'individual' },
+  5: { seat: 'B5', area: 'individual' },
+  6: { seat: 'B6', area: 'individual' },
+
+  7: { seat: 'A1', area: 'individual' },
+  8: { seat: 'A2', area: 'individual' },
+  9: { seat: 'A3', area: 'individual' },
+  10: { seat: 'A4', area: 'individual' },
 };
 
 const ViewBookedSeats = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { bookings, bookingDetail, bookingDate, bookingLoading, bookingError, selectedSlot, selectedDate } = useSelector((state) => state.booking);
+  const { bookings, bookingDetail, bookingDate, bookingLoading, selectedSlot, selectedDate } = useSelector((state) => state.booking);
   const { selectedRoom, loading: roomLoading } = useSelector((state) => state.rooms);
 
   const [hasFetchedDetail, setHasFetchedDetail] = useState(false);
   const [hasFetchedHistory, setHasFetchedHistory] = useState(false);
+
+  console.log(selectedRoom, 'selectedRoom');
+  
 
   // Fetch room data if not already fetched and ID exists
   useEffect(() => {
@@ -77,7 +81,7 @@ const ViewBookedSeats = () => {
   // Get individual area and number of seats
   const individualArea = useMemo(() => {
     if (!selectedRoom?.area_DTO) return null;
-    return selectedRoom.area_DTO.find(area => area.areaTypeId === 1); // Find individual area
+    return selectedRoom.area_DTO.find(area => area.areaId === 1); // Find individual area
   }, [selectedRoom]);
 
   // Determine which tables to display based on numberOfSeats
@@ -105,13 +109,13 @@ const ViewBookedSeats = () => {
   // Create the areaToGroupMap dynamically based on selectedRoom areas
   const areaToGroupMap = useMemo(() => {
     if (!selectedRoom?.area_DTO) return {};
-    return createAreaToGroupMap(selectedRoom.area_DTO.filter(area => area.areaTypeId !== 1)); // Exclude individual areas
+    return createAreaToGroupMap(selectedRoom.area_DTO.filter(area => area.areaId !== 1)); // Exclude individual areas
   }, [selectedRoom]);
 
   // Filter group areas from selectedRoom
   const groupAreas = useMemo(() => {
     if (!selectedRoom?.area_DTO) return [];
-    return selectedRoom.area_DTO.filter(area => area.areaTypeId !== 1); // Exclude individual areas
+    return selectedRoom.area_DTO.filter(area => area.areaId !== 1); // Exclude individual areas
   }, [selectedRoom]);
 
   // Compute booked seats, ensuring only valid seats are included based on numberOfSeats

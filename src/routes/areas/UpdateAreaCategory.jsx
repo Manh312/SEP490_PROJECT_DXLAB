@@ -26,7 +26,7 @@ const UpdateAreaCategory = () => {
     title: "",
     categoryDescription: "",
     images: [], // Để xử lý file mới nếu có
-    status: 1,
+    status: 1, // Default status
   });
 
   const [imagePreviews, setImagePreviews] = useState([]);
@@ -35,39 +35,61 @@ const UpdateAreaCategory = () => {
 
   // Khởi tạo formData với dữ liệu hiện tại khi component mount
   useEffect(() => {
-    if (currentCategory) {
-      // Đảm bảo images là một mảng
-      const images = Array.isArray(currentCategory.images)
-        ? currentCategory.images
-        : [currentCategory.images || ""];
+    const initializeFormData = async () => {
+      if (currentCategory) {
+        // Đảm bảo images là một mảng
+        const images = Array.isArray(currentCategory.images)
+          ? currentCategory.images
+          : [currentCategory.images || ""];
 
-      // Thêm domain của backend vào URL của ảnh
-      const existing = images
-        .filter((img) => typeof img === "string" && img) // Lọc các giá trị hợp lệ
-        .map((img) => {
-          if (img.startsWith("http")) {
-            return img;
-          }
-          return `${BACKEND_URL}${img}`;
+        // Thêm domain của backend vào URL của ảnh
+        const existing = images
+          .filter((img) => typeof img === "string" && img)
+          .map((img) => {
+            if (img.startsWith("http")) {
+              return img;
+            }
+            return `${BACKEND_URL}${img}`;
+          });
+
+        // Convert tất cả imageUrl thành File
+        const convertedImages = await Promise.all(
+          existing.map(async (imageUrl) => {
+            try {
+              return await fetchImageAsBlob(imageUrl);
+            } catch (error) {
+              console.warn(`Không thể convert ảnh ${imageUrl}:`, error);
+              return null; // Bỏ qua ảnh không convert được
+            }
+          })
+        );
+
+        // Lọc bỏ các giá trị null (ảnh không convert được)
+        const validImages = convertedImages.filter((file) => file !== null);
+
+        setFormData({
+          title: currentCategory.title || "",
+          categoryDescription: currentCategory.categoryDescription || "",
+          images: validImages, // Gán mảng File
+          status: currentCategory.status !== undefined ? currentCategory.status : 1, // Khởi tạo status từ currentCategory
         });
 
-      setFormData({
-        title: currentCategory.title || "",
-        categoryDescription: currentCategory.categoryDescription || "",
-        images: [], // Không set ảnh cũ vào state, chỉ xử lý ảnh mới
-        status: currentCategory.status || 1,
-      });
+        setExistingImages(existing);
+        setImagePreviews(existing);
+      }
+    };
 
-      setExistingImages(existing);
-      setImagePreviews(existing);
-    }
+    initializeFormData().catch((error) => {
+      console.error("Lỗi khi khởi tạo formData:", error);
+      toast.error("Lỗi khi tải dữ liệu ảnh!");
+    });
   }, [currentCategory]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: name === "status" ? parseInt(value) : value, // Chuyển đổi status thành số nguyên
     }));
   };
 
@@ -88,6 +110,10 @@ const UpdateAreaCategory = () => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
     if (index < existingImages.length) {
       setExistingImages((prev) => prev.filter((_, i) => i !== index));
+      setFormData((prev) => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index),
+      }));
     } else {
       const fileIndex = index - existingImages.length;
       setFormData((prev) => ({
@@ -104,7 +130,10 @@ const UpdateAreaCategory = () => {
   // Fetch image as Blob
   const fetchImageAsBlob = async (imageUrl) => {
     try {
-      const response = await fetch(imageUrl);
+      const response = await fetch(imageUrl, { mode: "cors" });
+      if (!response.ok) {
+        throw new Error(`Không thể tải ảnh từ URL: ${imageUrl} - Status: ${response.status}`);
+      }
       const blob = await response.blob();
       return new File([blob], imageUrl.split("/").pop(), { type: blob.type });
     } catch (error) {
@@ -129,32 +158,17 @@ const UpdateAreaCategory = () => {
       return;
     }
 
-    // Validate that at least one image is present
-    // if (imagePreviews.length === 0) {
-    //   toast.error("Vui lòng chọn ít nhất một ảnh!");
-    //   return;
-    // }
-
     const areaData = {
       title: trimmedTitle,
       categoryDescription: trimmedDescription,
-      status: formData.status,
-      existingImages: existingImages, // Gửi danh sách ảnh hiện tại
+      status: formData.status, // Gửi status đã chọn
+      existingImages: existingImages, // Gửi danh sách URL ảnh cũ để backend xử lý
     };
 
-    let filesToSend = [];
+    // Chỉ gửi các file mới (ảnh cũ đã được convert trong useEffect)
+    let filesToSend = formData.images;
 
     try {
-      // Nếu có ảnh mới, sử dụng ảnh mới
-      if (formData.images.length > 0) {
-        filesToSend = formData.images;
-      } else if (existingImages.length > 0) {
-        // Nếu không có ảnh mới, fetch ảnh hiện tại và gửi dưới dạng file
-        filesToSend = await Promise.all(
-          existingImages.map(async (imageUrl) => await fetchImageAsBlob(imageUrl))
-        );
-      }
-
       const response = await dispatch(
         updateAreaTypeCategory({
           categoryId: parseInt(id),
@@ -226,6 +240,23 @@ const UpdateAreaCategory = () => {
               rows="4"
               required
             />
+          </div>
+
+          {/* Status */}
+          <div>
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+              Trạng Thái
+            </label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status}
+              onChange={handleInputChange}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
+            >
+              <option value={1}>Hoạt động</option>
+              <option value={0}>Không hoạt động</option>
+            </select>
           </div>
 
           {/* Image Upload */}

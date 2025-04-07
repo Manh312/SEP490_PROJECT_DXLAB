@@ -1,14 +1,13 @@
 import {
   Home,
   Users,
-  Grid,
   Calendar,
   FileText,
   Settings,
-  Wrench,
   Tag,
   BarChart,
   Map,
+  Clock10Icon,
 } from "lucide-react";
 
 import ProfileImage from "../assets/profile-image.jpg";
@@ -19,6 +18,7 @@ import images1 from "../assets/dxlab_images1.jpg";
 // import images2 from "../assets/dxlab_images2.jpg";
 import images3 from "../assets/dxlab_images3.jpg";
 import images4 from "../assets/dxlab_images4.jpg";
+import { MdChair } from "react-icons/md";
 
 
 export const navItems = [
@@ -218,7 +218,7 @@ export const navbarLinks = [
       },
       {
         label: "Quản lý cơ sở vật chất",
-        icon: Wrench, // Thay NotepadText bằng Wrench
+        icon: MdChair, // Thay NotepadText bằng Wrench
         path: "/dashboard/facilities",
       },
       {
@@ -228,7 +228,7 @@ export const navbarLinks = [
       },
       {
         label: "Quản lý slot",
-        icon: Grid, // Giữ nguyên
+        icon: Clock10Icon, // Giữ nguyên
         path: "/dashboard/slot",
       },
     ],

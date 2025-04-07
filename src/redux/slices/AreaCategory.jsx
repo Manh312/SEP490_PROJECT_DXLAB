@@ -61,7 +61,7 @@ export const updateAreaTypeCategory = createAsyncThunk(
         });
       }
 
-      const response = await axios.patch(`${API_URL}?id=${categoryId}`, formData, {
+      const response = await axios.patch(`${API_URL}/${categoryId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

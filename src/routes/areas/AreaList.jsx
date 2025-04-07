@@ -1,23 +1,24 @@
-import { useNavigate } from "react-router-dom";
-import { MapPin, PlusCircle, Search, Filter, PencilLine, Trash2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { PlusCircle, Search, Filter, PencilLine, Trash2, Map, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import debounce from "lodash/debounce";
 import Pagination from "../../hooks/use-pagination";
-import { useDispatch, useSelector } from "react-redux"; // Import Redux hooks
-import { fetchAllAreaTypeCategories } from "../../redux/slices/AreaCategory"; // Adjust the path to your slice file
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAllAreaTypeCategories } from "../../redux/slices/AreaCategory";
 
 const AreaList = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   // Get data from Redux store
-  const { areaTypeCategories, loading, error } = useSelector((state) => state.areaCategory);
-
+  const { areaTypeCategories, loading } = useSelector((state) => state.areaCategory);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [imageIndices, setImageIndices] = useState({}); // Track current image index for each area
   const areasPerPage = 5;
+  const baseUrl = "https://localhost:9999";
 
   // Fetch area type categories on component mount
   useEffect(() => {
@@ -38,14 +39,14 @@ const AreaList = () => {
       if (!area || typeof area !== "object" || !area.categoryId || !area.title) return false;
       const matchesStatus =
         statusFilter === "All" ||
-        (statusFilter === "Hoạt động" && area.status === 1) || // Adjust `Room` to `status` or the correct field
+        (statusFilter === "Hoạt động" && area.status === 1) ||
         (statusFilter === "Không hoạt động" && area.status === 0);
       return matchesStatus;
     });
 
     if (searchQuery) {
       result = result.filter((area) =>
-        area.name?.toLowerCase().includes(searchQuery.toLowerCase())
+        area.title?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -54,10 +55,92 @@ const AreaList = () => {
 
   const totalPages = Math.ceil(filteredAreas.length / areasPerPage);
 
+  // Reset currentPage when the list is empty or invalid
+  useEffect(() => {
+    if (filteredAreas.length === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    } else if (currentPage > totalPages) {
+      setCurrentPage(Math.max(1, totalPages));
+    }
+  }, [filteredAreas, currentPage, totalPages]);
+
   const currentAreas = filteredAreas.slice(
     (currentPage - 1) * areasPerPage,
     currentPage * areasPerPage
   );
+
+  // Function to render images with navigation
+  const renderImages = (images, areaId) => {
+    const validImages = Array.isArray(images) && images.length > 0 ? images : [];
+    if (!validImages.length) {
+      return (
+        <div className="w-40 h-40 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
+          <span className="text-gray-500 text-sm">Không có ảnh</span>
+        </div>
+      );
+    }
+
+    const currentIndex = imageIndices[areaId] || 0;
+
+    const prevImage = () => {
+      setImageIndices((prev) => ({
+        ...prev,
+        [areaId]: (currentIndex - 1 + validImages.length) % validImages.length,
+      }));
+    };
+
+    const nextImage = () => {
+      setImageIndices((prev) => ({
+        ...prev,
+        [areaId]: (currentIndex + 1) % validImages.length,
+      }));
+    };
+
+    const imageSrc = validImages[currentIndex];
+    const displaySrc =
+      typeof imageSrc === "string"
+        ? imageSrc.startsWith("http")
+          ? imageSrc
+          : `${baseUrl}${imageSrc}`
+        : "/placeholder-image.jpg";
+
+    return (
+      <div className="relative w-40 h-40 mx-auto group">
+        <img
+          src={displaySrc}
+          alt={`Area image ${currentIndex}`}
+          className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
+          onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+        />
+        {validImages.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+              {validImages.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    idx === currentIndex ? "bg-white" : "bg-gray-400"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
 
   const getEmptyStateMessage = () => {
     if (statusFilter === "All") {
@@ -89,7 +172,7 @@ const AreaList = () => {
         {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <MapPin className="h-6 w-6 text-orange-500" />
+            <Map className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
               Danh Sách Khu Vực
             </h2>
@@ -141,13 +224,9 @@ const AreaList = () => {
           <div className="flex flex-col items-center justify-center py-12">
             <p className="text-gray-500 text-lg">Đang tải dữ liệu...</p>
           </div>
-        ) : error ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-red-500 text-lg">{error}</p>
-          </div>
         ) : filteredAreas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <MapPin className="h-12 w-12 text-gray-400 mb-4" />
+            <Map className="h-12 w-12 text-gray-400 mb-4" />
             <p className="text-gray-500 text-lg">{getEmptyStateMessage()}</p>
           </div>
         ) : (
@@ -172,15 +251,17 @@ const AreaList = () => {
                         {(currentPage - 1) * areasPerPage + index + 1}
                       </td>
                       <td className="px-2 py-3 text-center">
-                        <img src={`https://localhost:9999${area.images[0]}`} alt="Ảnh khu vực" className="h-32 w-32 object-cover mx-auto rounded" />
+                        {renderImages(area.images, area.categoryId)}
                       </td>
-
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{area.title}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        <Link to={`/dashboard/area/${area.categoryId}`} className="text-gray-700 hover:text-orange-500">{area.title}</Link>
+                      </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{area.categoryDescription.slice(0, 100)}...</td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${area.status === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                            }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${
+                            area.status === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                          }`}
                         >
                           {area.status === 1 ? "Hoạt động" : "Không hoạt động"}
                         </span>
@@ -196,7 +277,7 @@ const AreaList = () => {
                             <PencilLine className="w-4 h-4" />
                           </button>
                           <button
-                            // onClick={() => handleDelete(type.areaTypeId)}
+                            onClick={() => handleDelete(area.categoryId)}
                             data-tooltip-id="action-tooltip"
                             data-tooltip-content="Xóa"
                             className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
@@ -224,12 +305,14 @@ const AreaList = () => {
                         #{(currentPage - 1) * areasPerPage + index + 1}
                       </span>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${area.status === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                          }`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${
+                          area.status === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                        }`}
                       >
                         {area.status === 1 ? "Hoạt động" : "Không hoạt động"}
                       </span>
                     </div>
+                    {renderImages(area.images, area.categoryId)}
                     <p className="text-sm">
                       <span className="font-medium">Tên Loại Khu Vực:</span> {area.title}
                     </p>
