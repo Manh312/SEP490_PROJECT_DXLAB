@@ -2,9 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { createAreaType } from "../../redux/slices/AreaType";
-import { X } from "lucide-react";
+import { Map, X, Building, FileText, Users, Image, Check, Tag } from "lucide-react";
 import { toast } from "react-toastify";
-import { FaBuilding, FaFileAlt, FaUsers, FaImage, FaCheck, FaTag } from "react-icons/fa";
 
 const CreateAreaType = () => {
   const navigate = useNavigate();
@@ -134,7 +133,7 @@ const CreateAreaType = () => {
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
                   <span className="flex items-center">
-                    <FaBuilding className="mr-2 text-orange-500" /> Tên Loại Khu Vực
+                    <Building className="mr-2 text-orange-500" /> Tên Loại Khu Vực
                   </span>
                 </label>
                 <input
@@ -150,7 +149,7 @@ const CreateAreaType = () => {
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
                   <span className="flex items-center">
-                    <FaUsers className="mr-2 text-orange-500" /> Số Ghế
+                    <Users className="mr-2 text-orange-500" /> Số Ghế
                   </span>
                 </label>
                 <input
@@ -167,7 +166,7 @@ const CreateAreaType = () => {
               <div className="flex flex-col space-y-1">
                 <label htmlFor="price" className="block text-sm font-medium text-gray-700">
                   <span className="flex items-center">
-                    <FaTag className="mr-1.5 h-4 w-4 text-orange-500" /> Giá
+                    <Tag className="mr-1.5 text-orange-500" /> Giá
                   </span>
                 </label>
                 <div className="flex items-center space-x-3">
@@ -195,7 +194,7 @@ const CreateAreaType = () => {
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
                   <span className="flex items-center">
-                    <FaFileAlt className="mr-2 text-orange-500" /> Mô Tả
+                    <FileText className="mr-2 text-orange-500" /> Mô Tả
                   </span>
                 </label>
                 <textarea
@@ -211,7 +210,7 @@ const CreateAreaType = () => {
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
                   <span className="flex items-center">
-                    <FaTag className="mr-2 text-orange-500" /> Danh Mục
+                    <Map className="mr-2 text-orange-500" /> Danh Mục Khu Vực
                   </span>
                 </label>
                 <select
@@ -227,7 +226,7 @@ const CreateAreaType = () => {
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
                   <span className="flex items-center">
-                    <FaImage className="mr-2 text-orange-500" /> Hình Ảnh
+                    <Image className="mr-2 text-orange-500" /> Hình Ảnh
                   </span>
                 </label>
                 <div className="flex flex-col gap-2">
@@ -296,7 +295,7 @@ const CreateAreaType = () => {
                 </svg>
               ) : (
                 <>
-                  <FaCheck className="mr-2" /> Thêm Loại Khu Vực
+                  <Check className="mr-2" /> Thêm Loại Khu Vực
                 </>
               )}
             </button>

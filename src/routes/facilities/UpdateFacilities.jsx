@@ -68,16 +68,6 @@ const UpdateFacilities = () => {
           </div>
           <div className="flex justify-between">
             <button
-              type="button"
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 hover:bg-gray-600 transition"
-              onClick={() => {
-                console.log("Navigating to /dashboard/facilities");
-                navigate("/dashboard/facilities");
-              }}
-            >
-              <ArrowLeft size={20} /> Quay Lại
-            </button>
-            <button
               type="submit"
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
             >
