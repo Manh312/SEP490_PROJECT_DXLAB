@@ -14,6 +14,7 @@ const CreateRoom = () => {
   const { areaTypes } = useSelector((state) => state.areaTypes);
 
   const textareaRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     dispatch(fetchAreaTypes("1"));
@@ -28,6 +29,8 @@ const CreateRoom = () => {
     area_DTO: [{ areaTypeId: "", areaName: "" }],
   });
 
+  const [imagePreviews, setImagePreviews] = useState([]);
+  const [failedImages, setFailedImages] = useState(new Set());
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -63,25 +66,33 @@ const CreateRoom = () => {
     setRoomData({ ...roomData, capacity: value === "" ? "" : parseInt(value) });
   };
 
-  const handleImageUpload = (e) => {
+  const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    const fileNames = files.map((file) => file.name);
-    const newImages = fileNames.filter((name) => !roomData.images.includes(name));
-    if (newImages.length === 0) {
-      toast.error("Ảnh đã tồn tại, vui lòng chọn ảnh khác!");
-      return;
+    if (files.length > 0) {
+      const newFiles = files.filter(file => !roomData.images.some(existingFile => existingFile.name === file.name));
+      if (newFiles.length === 0) {
+        toast.error("Ảnh đã tồn tại, vui lòng chọn ảnh khác!");
+        return;
+      }
+      setRoomData((prevData) => ({
+        ...prevData,
+        images: [...prevData.images, ...newFiles],
+      }));
+      const previews = newFiles.map((file) => URL.createObjectURL(file));
+      setImagePreviews((prev) => [...prev, ...previews]);
     }
-    setRoomData((prevData) => ({
-      ...prevData,
-      images: [...prevData.images, ...newImages],
-    }));
   };
 
   const handleRemoveImage = (index) => {
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
     setRoomData((prevData) => ({
       ...prevData,
       images: prevData.images.filter((_, i) => i !== index),
     }));
+  };
+
+  const handleImageError = (index) => {
+    setFailedImages((prev) => new Set(prev).add(index));
   };
 
   const addArea = () => {
@@ -151,6 +162,7 @@ const CreateRoom = () => {
                   name="roomName"
                   value={roomData.roomName}
                   onChange={handleChange}
+                  placeholder="Nhập tên phòng"
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 h-12 transition duration-150 ease-in-out"
                   required
                 />
@@ -166,6 +178,7 @@ const CreateRoom = () => {
                   value={roomData.capacity}
                   min={1}
                   onChange={handleNumberChange}
+                  placeholder="Nhập sức chứa"
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 h-12 transition duration-150 ease-in-out"
                   required
                 />
@@ -186,7 +199,7 @@ const CreateRoom = () => {
                         <option value="">-- Chọn loại --</option>
                         {areaTypes.map((type) => (
                           <option key={type.areaTypeId} value={type.areaTypeId}>
-                            {type.areaTypeName} (Size: {type.size}, Loại: {type.areaCategory === 1 ? "Cá nhân":"Nhóm"})
+                            {type.areaTypeName} (Size: {type.size}, Loại: {type.areaCategory === 1 ? "Cá nhân" : "Nhóm"})
                           </option>
                         ))}
                       </select>
@@ -229,6 +242,7 @@ const CreateRoom = () => {
                   name="roomDescription"
                   value={roomData.roomDescription}
                   onChange={handleChange}
+                  placeholder="Nhập mô tả phòng"
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 min-h-[50px] transition duration-150 ease-in-out"
                   required
                 />
@@ -238,35 +252,45 @@ const CreateRoom = () => {
                 <label className="text-sm font-medium flex items-center">
                   <FaImage className="mr-2 text-orange-500" /> Hình Ảnh
                 </label>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
-                  required
-                />
-                {errors.images && <p className="text-red-500 text-sm">{errors.images}</p>}
-                {roomData.images.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {roomData.images.map((img, index) => (
-                      <div key={index} className="relative w-20 h-20">
-                        <img
-                          src={`/assets/${img}`}
-                          alt={`room-img-${index}`}
-                          className="w-full h-full object-cover rounded-lg border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(index)}
-                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition duration-150 ease-in-out"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current.click()}
+                    className="border-dashed border-2 border-gray-400 rounded-lg p-2 text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all"
+                  >
+                    Chọn tệp
+                  </button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                  />
+                  {errors.images && <p className="text-red-500 text-sm">{errors.images}</p>}
+                  {imagePreviews.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {imagePreviews.map((preview, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={failedImages.has(index) ? "/placeholder-image.jpg" : preview}
+                            alt={`room-preview-${index}`}
+                            className="w-20 h-20 object-cover rounded-lg border"
+                            onError={() => handleImageError(index)}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(index)}
+                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600 transition duration-150 ease-in-out"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

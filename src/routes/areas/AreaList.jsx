@@ -276,14 +276,14 @@ const AreaList = () => {
                           >
                             <PencilLine className="w-4 h-4" />
                           </button>
-                          <button
+                          {/* <button
                             onClick={() => handleDelete(area.categoryId)}
                             data-tooltip-id="action-tooltip"
                             data-tooltip-content="Xóa"
                             className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4" />
-                          </button>
+                          </button> */}
                         </div>
                       </td>
                     </tr>

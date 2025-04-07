@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { MapPin, ArrowLeft, ChevronLeft, ChevronRight, PencilLine } from "lucide-react";
+import { MapPin, ArrowLeft, ChevronLeft, ChevronRight, PencilLine, Map } from "lucide-react";
 
 const AreaDetailAdmin = () => {
   const { id } = useParams(); // Get categoryId from URL
@@ -66,7 +66,7 @@ const AreaDetailAdmin = () => {
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <MapPin className="h-6 w-6 text-orange-500" />
+            <Map className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">
               Chi Tiết Khu Vực: {areaDetail.title}
             </h2>

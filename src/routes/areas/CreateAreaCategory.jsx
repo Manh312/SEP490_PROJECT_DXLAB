@@ -104,23 +104,15 @@ const CreateAreaCategory = () => {
   };
 
   return (
-    <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
-      <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
+    <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-4xl rounded-xl border shadow-2xl p-8 transition-all duration-300 hover:shadow-3xl">
         {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <MapPin className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
               Thêm Loại Khu Vực Mới
             </h2>
           </div>
-          <button
-            onClick={() => navigate("/dashboard/area")}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
-          >
-            <ArrowLeft size={20} />
-            <span className="hidden sm:inline">Quay Lại</span>
-          </button>
         </div>
 
         {/* Form Section */}
@@ -199,13 +191,19 @@ const CreateAreaCategory = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="flex justify-end">
+          <div className="mt-8 flex justify-between gap-4">
+            <button
+              onClick={() => navigate("/dashboard/area")}
+              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
+            >
+              <ArrowLeft size={20} />
+              <span className="hidden sm:inline">Quay Lại</span>
+            </button>
             <button
               type="submit"
               disabled={loading}
-              className={`bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-all ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              className={`bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-all ${loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
             >
               {loading ? "Đang tạo..." : "Tạo Loại Khu Vực"}
             </button>
