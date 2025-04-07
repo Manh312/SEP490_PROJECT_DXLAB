@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useMemo, useState } from "react";
 import { fetchAreaTypes, deleteAreaType } from "../../redux/slices/AreaType";
+import { fetchFacilitiesByAreaId } from "../../redux/slices/Area"; // Import the thunk
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -22,10 +23,12 @@ const AreaTypeList = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { areaTypes, loading } = useSelector((state) => state.areaTypes);
+  const { facilities, facilitiesLoading, facilitiesError } = useSelector((state) => state.areas); // Get facilities state
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [areaFacilities, setAreaFacilities] = useState({}); // Local state to store facilities for each area
   const areaTypesPerPage = 5;
 
   // Debounced search function
@@ -33,6 +36,24 @@ const AreaTypeList = () => {
     setSearchTerm(value);
     setCurrentPage(1);
   }, 300);
+
+  // Fetch facilities for each area type when the component mounts or areaTypes change
+  useEffect(() => {
+    if (Array.isArray(areaTypes)) {
+      areaTypes.forEach((type) => {
+        if (type.areaTypeId) {
+          dispatch(fetchFacilitiesByAreaId(type.areaTypeId)).then((response) => {
+            if (response.payload) {
+              setAreaFacilities((prev) => ({
+                ...prev,
+                [type.areaTypeId]: response.payload,
+              }));
+            }
+          });
+        }
+      });
+    }
+  }, [areaTypes, dispatch]);
 
   // Lọc danh sách loại khu vực theo trạng thái và từ khóa tìm kiếm
   const filteredAreaTypes = useMemo(() => {
@@ -198,6 +219,7 @@ const AreaTypeList = () => {
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Loại Khu Vực</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Phân Loại</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Giá</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Thiết Bị</th> {/* New column */}
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Trạng Thái</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide min-w-[150px]">
                       Hành Động
@@ -234,6 +256,23 @@ const AreaTypeList = () => {
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {`${type.price} DXLAB Coin`}
                       </td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        {facilitiesLoading ? (
+                          <FaSpinner className="animate-spin text-orange-500 w-4 h-4 mx-auto" />
+                        ) : facilitiesError ? (
+                          <span className="text-red-500">Lỗi: {facilitiesError}</span>
+                        ) : areaFacilities[type.areaTypeId]?.length > 0 ? (
+                          <ul className="list-disc list-inside">
+                            {areaFacilities[type.areaTypeId].map((facility) => (
+                              <li key={facility.facilityId}>
+                                {facility.facilityTitle} (Lô: {facility.batchNumber})
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          "Không có thiết bị"
+                        )}
+                      </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${
@@ -245,22 +284,22 @@ const AreaTypeList = () => {
                       </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <div className="flex justify-center items-center gap-2">
-                        <button
-                          onClick={() => navigate(`/dashboard/areaType/update/${type.areaTypeId}`)}
-                          data-tooltip-id="action-tooltip"
-                          data-tooltip-content="Cập nhật"
-                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer flex justify-center"
-                        >
-                          <PencilLine className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(type.areaTypeId)}
-                          data-tooltip-id="action-tooltip"
-                          data-tooltip-content="Xóa"
-                          className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                          <button
+                            onClick={() => navigate(`/dashboard/areaType/update/${type.areaTypeId}`)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Cập nhật"
+                            className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer flex justify-center"
+                          >
+                            <PencilLine className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(type.areaTypeId)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Xóa"
+                            className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -294,7 +333,23 @@ const AreaTypeList = () => {
                         <span className="font-medium">Tên Loại:</span> {type.areaTypeName || "N/A"}
                       </p>
                       <p className="text-sm">
-                        <span className="font-medium">Giá:</span> {type.price ? `${type.price} VNĐ` : "N/A"}
+                        <span className="font-medium">Giá:</span> {type.price ? `${type.price} DXLAB Coin` : "N/A"}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Thiết Bị:</span>{" "}
+                        {facilitiesLoading ? (
+                          <FaSpinner className="animate-spin text-orange-500 w-4 h-4 inline" />
+                        ) : facilitiesError ? (
+                          <span className="text-red-500">Lỗi: {facilitiesError}</span>
+                        ) : areaFacilities[type.areaTypeId]?.length > 0 ? (
+                          areaFacilities[type.areaTypeId].map((facility) => (
+                            <span key={facility.facilityId}>
+                              {facility.facilityTitle} (Lô: {facility.batchNumber}),{" "}
+                            </span>
+                          ))
+                        ) : (
+                          "Không có thiết bị"
+                        )}
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <button

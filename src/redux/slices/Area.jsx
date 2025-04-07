@@ -1,4 +1,3 @@
-// redux/areaSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axiosInstance from '../../utils/axios';
 
@@ -34,7 +33,20 @@ export const fetchAllFacilities = createAsyncThunk(
   'areas/fetchAllFacilities',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get(`/area/faciall`);
+      const response = await axiosInstance.get(`/area/allfacistatus`);
+      return response.data.data; // Mảng thiết bị
+    } catch (error) {
+      return rejectWithValue(error.message || "Không thể lấy danh sách thiết bị tổng");
+    }
+  }
+);
+
+// Lấy danh sách thiết bị đang sử dụng
+export const fetchFacilitiesList = createAsyncThunk(
+  'areas/fetchFacilitiesList',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/area/allusingfaci`);
       return response.data.data; // Mảng thiết bị
     } catch (error) {
       return rejectWithValue(error.message || "Không thể lấy danh sách thiết bị tổng");
@@ -78,17 +90,24 @@ const areaSlice = createSlice({
     areas: [],
     loading: false,
     error: null,
-  
+
     facilities: [], // danh sách thiết bị theo khu vực
     facilitiesLoading: false,
     facilitiesError: null,
-  
-    allFacilities: [],            // 👈 danh sách tất cả thiết bị
+
+    allFacilities: [], // danh sách tất cả thiết bị
     allFacilitiesLoading: false,
     allFacilitiesError: null,
 
+    facilitiesList: [], // danh sách thiết bị đang sử dụng
+    facilitiesListLoading: false,
+    facilitiesListError: null,
+
     addFacilityLoading: false,
     addFacilityError: null,
+
+    removeFacilityLoading: false, // Thêm trạng thái cho removeFacility
+    removeFacilityError: null,
   },
   extraReducers: (builder) => {
     builder
@@ -134,19 +153,45 @@ const areaSlice = createSlice({
         state.allFacilitiesError = action.payload;
       })
 
+      // fetchFacilitiesList
+      .addCase(fetchFacilitiesList.pending, (state) => {
+        state.facilitiesListLoading = true;
+        state.facilitiesListError = null;
+      })
+      .addCase(fetchFacilitiesList.fulfilled, (state, action) => {
+        state.facilitiesListLoading = false;
+        state.facilitiesList = action.payload;
+      })
+      .addCase(fetchFacilitiesList.rejected, (state, action) => {
+        state.facilitiesListLoading = false;
+        state.facilitiesListError = action.payload;
+      })
+
       // addFacilityToArea
-    builder
-    .addCase(addFacilityToArea.pending, (state) => {
-      state.addFacilityLoading = true;
-      state.addFacilityError = null;
-    })
-    .addCase(addFacilityToArea.fulfilled, (state) => {
-      state.addFacilityLoading = false;
-    })
-    .addCase(addFacilityToArea.rejected, (state, action) => {
-      state.addFacilityLoading = false;
-      state.addFacilityError = action.payload;
-    });
+      .addCase(addFacilityToArea.pending, (state) => {
+        state.addFacilityLoading = true;
+        state.addFacilityError = null;
+      })
+      .addCase(addFacilityToArea.fulfilled, (state) => {
+        state.addFacilityLoading = false;
+      })
+      .addCase(addFacilityToArea.rejected, (state, action) => {
+        state.addFacilityLoading = false;
+        state.addFacilityError = action.payload;
+      })
+
+      // removeFacilityFromArea
+      .addCase(removeFacilityFromArea.pending, (state) => {
+        state.removeFacilityLoading = true;
+        state.removeFacilityError = null;
+      })
+      .addCase(removeFacilityFromArea.fulfilled, (state) => {
+        state.removeFacilityLoading = false;
+      })
+      .addCase(removeFacilityFromArea.rejected, (state, action) => {
+        state.removeFacilityLoading = false;
+        state.removeFacilityError = action.payload;
+      });
   },
 });
 

@@ -15,7 +15,6 @@ import AccountList from './routes/account/AccountList';
 import BlogListOfStaff from './routes/blog-manage/BlogListOfStaff';
 import CreateFacilities from './routes/facilities/CreateFacilities';
 import FacilitiesDetail from './routes/facilities/FacilitiesDetail';
-import UpdateFacilities from './routes/facilities/UpdateFacilities';
 import DeleteFacilities from './routes/facilities/DeleteFacilities';
 import CreateAccount from './routes/account/CreateAccount';
 import UpdateAccount from "./routes/account/UpdateAccount";
@@ -158,10 +157,6 @@ const router = createBrowserRouter([
       {
         path: "dashboard/facilities/create",
         element: <ProtectedRoute allowedRoles={["Admin"]}><CreateFacilities /></ProtectedRoute>,
-      },
-      {
-        path: "dashboard/facilities/update/:id",
-        element: <ProtectedRoute allowedRoles={["Admin"]}><UpdateFacilities /></ProtectedRoute>,
       },
       {
         path: "dashboard/facilities/delete/:id",

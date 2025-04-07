@@ -25,11 +25,10 @@ const Page = () => {
   const [period, setPeriod] = useState("năm"); // Mặc định là "năm"
   const [year, setYear] = useState("2025"); // Mặc định là năm 2025
   const [month, setMonth] = useState(""); // Tháng (1-12)
-  const [week, setWeek] = useState(""); // Tuần (1-4)
   const [showCharts, setShowCharts] = useState(false); // Kiểm soát việc hiển thị biểu đồ
 
   // State để lưu trữ dữ liệu tổng doanh thu và dữ liệu chi tiết riêng biệt
-  const [yearlyStats, setYearlyStats] = useState(null); // Dữ liệu tổng doanh thu cả năm
+  const [yearlyStats, setYearlyStats] = useState(null); // Dữ liệu tổng doanh thu
   const [detailedStats, setDetailedStats] = useState([]); // Dữ liệu chi tiết theo tháng hoặc ngày
 
   // Danh sách các năm để người dùng chọn
@@ -38,31 +37,9 @@ const Page = () => {
   // Danh sách các tháng (1-12)
   const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
 
-  // Danh sách các tuần (1-4)
-  const weeks = ["1", "2", "3", "4"];
-
   // Hàm tính số ngày trong tháng
   const getDaysInMonth = (month, year) => {
     return new Date(year, month, 0).getDate(); // Trả về số ngày trong tháng
-  };
-
-  // Hàm lấy danh sách ngày trong tuần được chọn
-  const getDaysInWeek = (week, month, year) => {
-    const firstDayOfMonth = new Date(year, month - 1, 1);
-    const firstDayOfWeek = (week - 1) * 7 + 1; // Ngày đầu tiên của tuần
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      const day = firstDayOfWeek + i;
-      if (day <= getDaysInMonth(month, year)) {
-        days.push(day);
-      }
-    }
-    return days;
-  };
-
-  // Hàm tính studentRevenue từ totalRevenue và studentPercentage
-  const calculateStudentRevenue = (totalRevenue, studentPercentage) => {
-    return totalRevenue * (studentPercentage / 100);
   };
 
   // Xử lý khi người dùng nhấn "Tìm kiếm"
@@ -74,55 +51,54 @@ const Page = () => {
 
     // Gọi API fetchStudentGroupStats dựa trên period
     if (period === "năm") {
-      // Gọi API một lần để lấy tổng doanh thu cho cả năm
+      // Gọi API để lấy dữ liệu cho cả năm
       dispatch(
         fetchStudentGroupStats({
           period: "năm",
           year: year,
           month: null,
-          week: null,
         })
       ).then((response) => {
         if (response.payload && response.payload.data) {
-          // Kiểm tra xem dữ liệu có hợp lệ không
-          const data = response.payload.data;
-          // Nếu totalRevenue không tồn tại hoặc là 0, hoặc không có dữ liệu hợp lệ, đặt yearlyStats là null
-          if (!data.totalRevenue || data.totalRevenue === 0) {
-            setYearlyStats(null);
-          } else {
-            setYearlyStats(data);
-          }
-        } else {
-          setYearlyStats(null); // Không có dữ liệu, đặt yearlyStats là null
-        }
-      });
+          const { details } = response.payload.data;
 
-      // Gọi API bổ sung để lấy dữ liệu chi tiết theo tháng
-      const monthsToFetch = Array.from({ length: 12 }, (_, i) => i + 1);
-      const monthlyPromises = monthsToFetch.map((month) =>
-        dispatch(
-          fetchStudentGroupStats({
-            period: "tháng",
-            year: year,
-            month: month,
-            week: null,
-          })
-        ).then((response) => {
-          if (response.payload && response.payload.data) {
-            const { totalRevenue, studentPercentage } = response.payload.data;
+          // Tính tổng doanh thu và tỷ lệ sinh viên trung bình
+          const totalRevenue = details.reduce((sum, item) => sum + (item.revenue.totalRevenue || 0), 0);
+          const totalStudentRevenue = details.reduce((sum, item) => sum + (item.revenue.studentRevenue || 0), 0);
+          const totalStudentPercentage = details.length > 0 ? details.reduce((sum, item) => sum + (item.revenue.studentPercentage || 0), 0) / details.length : 0;
+
+          // Lưu dữ liệu tổng
+          setYearlyStats({
+            totalRevenue,
+            studentPercentage: totalStudentPercentage,
+          });
+
+          // Lưu dữ liệu chi tiết theo tháng
+          const monthlyData = Array.from({ length: 12 }, (_, i) => {
+            const month = i + 1;
+            const item = details.find((d) => d.periodNumber === month) || {
+              revenue: { totalRevenue: 0, studentRevenue: 0, studentPercentage: 0 },
+            };
             return {
               name: `Tháng ${month}`,
-              totalRevenue: totalRevenue || 0,
-              studentPercentage: studentPercentage || 0,
-              studentRevenue: calculateStudentRevenue(totalRevenue || 0, studentPercentage || 0),
+              totalRevenue: item.revenue.totalRevenue || 0,
+              studentRevenue: item.revenue.studentRevenue || 0,
+              studentPercentage: item.revenue.studentPercentage || 0,
             };
-          }
-          return { name: `Tháng ${month}`, totalRevenue: 0, studentPercentage: 0, studentRevenue: 0 };
-        })
-      );
-
-      Promise.all(monthlyPromises).then((results) => {
-        setDetailedStats(results); // Lưu dữ liệu chi tiết theo tháng
+          });
+          setDetailedStats(monthlyData);
+        } else {
+          // Nếu không có dữ liệu, tạo dữ liệu mặc định cho 12 tháng
+          const monthlyData = Array.from({ length: 12 }, (_, i) => ({
+            name: `Tháng ${i + 1}`,
+            totalRevenue: 0,
+            studentRevenue: 0,
+            studentPercentage: 0,
+          }));
+          setYearlyStats({ totalRevenue: 0, studentPercentage: 0 });
+          setDetailedStats(monthlyData);
+        }
+        setShowCharts(true); // Hiển thị biểu đồ
       });
     } else if (period === "tháng") {
       // Gọi API cho tháng được chọn
@@ -135,98 +111,55 @@ const Page = () => {
           period: "tháng",
           year: year,
           month: month,
-          week: null,
         })
       ).then((response) => {
         if (response.payload && response.payload.data) {
-          const data = response.payload.data;
-          if (!data.totalRevenue || data.totalRevenue === 0) {
-            setYearlyStats(null);
-          } else {
-            setYearlyStats(data);
-          }
+          const { details } = response.payload.data;
 
-          // Giả lập dữ liệu chi tiết theo ngày (vì API không trả về dữ liệu theo ngày)
+          // Tính tổng doanh thu và tỷ lệ sinh viên trung bình
+          const totalRevenue = details.reduce((sum, item) => sum + (item.revenue.totalRevenue || 0), 0);
+          const totalStudentRevenue = details.reduce((sum, item) => sum + (item.revenue.studentRevenue || 0), 0);
+          const totalStudentPercentage = details.length > 0 ? details.reduce((sum, item) => sum + (item.revenue.studentPercentage || 0), 0) / details.length : 0;
+
+          // Lưu dữ liệu tổng
+          setYearlyStats({
+            totalRevenue,
+            studentPercentage: totalStudentPercentage,
+          });
+
+          // Lưu dữ liệu chi tiết theo ngày
           const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
-          const dailyData = [];
-          for (let day = 1; day <= daysInMonth; day++) {
-            // Giả định: Nếu ngày 13 là ngày có booking (theo fetchJobsByYearAndDate), thì gán toàn bộ doanh thu cho ngày đó
-            const isBookingDay = day === 13; // Giả định ngày 13 có booking
-            const totalRevenue = isBookingDay ? (data.totalRevenue || 0) : 0;
-            const studentPercentage = isBookingDay ? (data.studentPercentage || 0) : 0;
-            dailyData.push({
+          const dailyData = Array.from({ length: daysInMonth }, (_, i) => {
+            const day = i + 1;
+            const dayData = details.find((item) => item.periodNumber === day) || {
+              revenue: { totalRevenue: 0, studentRevenue: 0, studentPercentage: 0 },
+            };
+            return {
               name: `Ngày ${day}`,
-              totalRevenue: totalRevenue || 0,
-              studentPercentage: studentPercentage || 0,
-              studentRevenue: calculateStudentRevenue(totalRevenue || 0, studentPercentage || 0),
-            });
-          }
-          setDetailedStats(dailyData);
-        } else {
-          setYearlyStats(null);
-        }
-      });
-    } else if (period === "tuần") {
-      // Gọi API cho tuần được chọn
-      if (!week || !month || !year) {
-        alert("Vui lòng chọn tuần, tháng và năm!");
-        return;
-      }
-      dispatch(
-        fetchStudentGroupStats({
-          period: "tuần",
-          year: year,
-          month: month,
-          week: week,
-        })
-      ).then((response) => {
-        if (response.payload && response.payload.data) {
-          const data = response.payload.data;
-          if (!data.totalRevenue || data.totalRevenue === 0) {
-            setYearlyStats(null);
-          } else {
-            setYearlyStats(data);
-          }
-
-          // Phân bổ doanh thu đều cho các ngày trong tuần
-          const daysInWeek = getDaysInWeek(parseInt(week), parseInt(month), parseInt(year));
-          const dailyData = [];
-          const totalRevenue = data.totalRevenue || 0;
-          const studentPercentage = data.studentPercentage || 0;
-          const totalStudentRevenue = calculateStudentRevenue(totalRevenue, studentPercentage);
-          const dailyStudentRevenue = daysInWeek.length > 0 ? totalStudentRevenue / daysInWeek.length : 0;
-
-          daysInWeek.forEach((day) => {
-            dailyData.push({
-              name: `Ngày ${day}`,
-              totalRevenue: totalRevenue / daysInWeek.length, // Chia đều totalRevenue
-              studentPercentage: studentPercentage,
-              studentRevenue: dailyStudentRevenue, // Chia đều studentRevenue
-            });
+              totalRevenue: dayData.revenue.totalRevenue || 0,
+              studentRevenue: dayData.revenue.studentRevenue || 0,
+              studentPercentage: dayData.revenue.studentPercentage || 0,
+            };
           });
           setDetailedStats(dailyData);
         } else {
-          setYearlyStats(null);
-
-          // Nếu không có dữ liệu, vẫn tạo dữ liệu cho các ngày trong tuần với giá trị 0
-          const daysInWeek = getDaysInWeek(parseInt(week), parseInt(month), parseInt(year));
-          const dailyData = [];
-          daysInWeek.forEach((day) => {
-            dailyData.push({
-              name: `Ngày ${day}`,
-              totalRevenue: 0,
-              studentPercentage: 0,
-              studentRevenue: 0,
-            });
-          });
+          // Nếu không có dữ liệu, tạo dữ liệu mặc định cho các ngày trong tháng
+          const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
+          const dailyData = Array.from({ length: daysInMonth }, (_, i) => ({
+            name: `Ngày ${i + 1}`,
+            totalRevenue: 0,
+            studentRevenue: 0,
+            studentPercentage: 0,
+          }));
+          setYearlyStats({ totalRevenue: 0, studentPercentage: 0 });
           setDetailedStats(dailyData);
         }
+        setShowCharts(true); // Hiển thị biểu đồ
       });
     }
 
     // Gọi API fetchJobsByYearAndDate với year được chọn
     dispatch(fetchJobsByYearAndDate({ year: year, date: `${year}-04-13` }));
-    setShowCharts(true); // Hiển thị biểu đồ sau khi gọi API
   };
 
   // Tính giá trị tổng doanh thu (chỉ dựa trên yearlyStats)
@@ -246,40 +179,27 @@ const Page = () => {
   // Tạo dữ liệu cho biểu đồ parabol (doanh thu từ sinh viên) dựa trên period
   const areaData = () => {
     if (period === "năm") {
-      // Hiển thị dữ liệu cho tất cả 12 tháng, kể cả tháng không có dữ liệu (giá trị 0)
-      const data = [];
-      for (let month = 1; month <= 12; month++) {
-        const stat = detailedStats.find((item) => item.name === `Tháng ${month}`);
-        data.push({
-          name: `Tháng ${month}`,
-          studentRevenue: stat && stat.studentRevenue !== undefined ? stat.studentRevenue : 0,
-        });
-      }
-      return data;
+      // Hiển thị dữ liệu cho tất cả 12 tháng
+      return detailedStats.length > 0
+        ? detailedStats.map((stat) => ({
+            name: stat.name,
+            studentRevenue: stat.studentRevenue || 0,
+          }))
+        : Array.from({ length: 12 }, (_, i) => ({
+            name: `Tháng ${i + 1}`,
+            studentRevenue: 0,
+          }));
     } else if (period === "tháng") {
-      // Hiển thị dữ liệu cho tất cả các ngày trong tháng, kể cả ngày không có dữ liệu (giá trị 0)
-      const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
-      const data = [];
-      for (let day = 1; day <= daysInMonth; day++) {
-        const stat = detailedStats.find((item) => item.name === `Ngày ${day}`);
-        data.push({
-          name: `Ngày ${day}`,
-          studentRevenue: stat && stat.studentRevenue !== undefined ? stat.studentRevenue : 0,
-        });
-      }
-      return data;
-    } else if (period === "tuần") {
-      // Hiển thị dữ liệu cho tất cả các ngày trong tuần, kể cả ngày không có dữ liệu (giá trị 0)
-      const daysInWeek = getDaysInWeek(parseInt(week), parseInt(month), parseInt(year));
-      const data = [];
-      daysInWeek.forEach((day) => {
-        const stat = detailedStats.find((item) => item.name === `Ngày ${day}`);
-        data.push({
-          name: `Ngày ${day}`,
-          studentRevenue: stat && stat.studentRevenue !== undefined ? stat.studentRevenue : 0,
-        });
-      });
-      return data;
+      // Hiển thị dữ liệu cho tất cả các ngày trong tháng
+      return detailedStats.length > 0
+        ? detailedStats.map((stat) => ({
+            name: stat.name,
+            studentRevenue: stat.studentRevenue || 0,
+          }))
+        : Array.from({ length: getDaysInMonth(parseInt(month), parseInt(year)) }, (_, i) => ({
+            name: `Ngày ${i + 1}`,
+            studentRevenue: 0,
+          }));
     }
     return [];
   };
@@ -321,26 +241,6 @@ const Page = () => {
         });
       }
       return data;
-    } else if (period === "tuần") {
-      // Hiển thị dữ liệu cho tất cả các ngày trong tuần, kể cả ngày không có dữ liệu (giá trị 0)
-      const daysInWeek = getDaysInWeek(parseInt(week), parseInt(month), parseInt(year));
-      const data = [];
-      daysInWeek.forEach((day) => {
-        const dailyJobs = jobs.filter((job) => {
-          const jobDate = new Date(job.date);
-          return (
-            jobDate.getDate() === day &&
-            jobDate.getMonth() + 1 === parseInt(month) &&
-            jobDate.getFullYear() === parseInt(year)
-          );
-        });
-        const totalCost = dailyJobs.reduce((sum, job) => sum + (job.cost || 0), 0);
-        data.push({
-          name: `Ngày ${day}`,
-          totalCost: totalCost,
-        });
-      });
-      return data;
     }
     return [];
   };
@@ -358,7 +258,7 @@ const Page = () => {
       {/* Form tùy chỉnh */}
       <div className="mb-6 p-4 border rounded-lg shadow-md">
         <h3 className="text-lg font-semibold mb-4">Tùy chỉnh thống kê</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Chọn Period */}
           <div>
             <label className="block font-medium mb-2">Khoảng thời gian:</label>
@@ -367,13 +267,11 @@ const Page = () => {
               onChange={(e) => {
                 setPeriod(e.target.value);
                 setMonth(""); // Reset month khi thay đổi period
-                setWeek(""); // Reset week khi thay đổi period
               }}
               className="w-full p-2 border rounded-md"
             >
               <option value="năm">Năm</option>
               <option value="tháng">Tháng</option>
-              <option value="tuần">Tuần</option>
             </select>
           </div>
 
@@ -393,8 +291,8 @@ const Page = () => {
             </select>
           </div>
 
-          {/* Chọn Month (hiển thị nếu period là "tháng" hoặc "tuần") */}
-          {(period === "tháng" || period === "tuần") && (
+          {/* Chọn Month (hiển thị nếu period là "tháng") */}
+          {period === "tháng" && (
             <div>
               <label className="block font-medium mb-2">Tháng:</label>
               <select
@@ -406,25 +304,6 @@ const Page = () => {
                 {months.map((m) => (
                   <option key={m} value={m}>
                     Tháng {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Chọn Week (hiển thị nếu period là "tuần") */}
-          {period === "tuần" && (
-            <div>
-              <label className="block font-medium mb-2">Tuần:</label>
-              <select
-                value={week}
-                onChange={(e) => setWeek(e.target.value)}
-                className="w-full p-2 border rounded-md"
-              >
-                <option value="">Chọn tuần</option>
-                {weeks.map((w) => (
-                  <option key={w} value={w}>
-                    Tuần {w}
                   </option>
                 ))}
               </select>
