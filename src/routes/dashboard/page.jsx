@@ -21,18 +21,15 @@ const Page = () => {
   const dispatch = useDispatch();
   const { stats, jobs, loading } = useSelector((state) => state.statistics);
 
-  // State để quản lý lựa chọn của người dùng
-  const [period, setPeriod] = useState("năm"); // Mặc định là "năm"
-  const [year, setYear] = useState("2025"); // Mặc định là năm 2025
-  const [month, setMonth] = useState(""); // Tháng (1-12)
-  const [showCharts, setShowCharts] = useState(false); // Kiểm soát việc hiển thị biểu đồ
+  const [period, setPeriod] = useState("năm"); 
+  const [year, setYear] = useState("2025"); 
+  const [month, setMonth] = useState(""); 
+  const [showCharts, setShowCharts] = useState(false);
 
-  // State để lưu trữ dữ liệu tổng doanh thu và dữ liệu chi tiết riêng biệt
-  const [yearlyStats, setYearlyStats] = useState(null); // Dữ liệu tổng doanh thu
-  const [detailedStats, setDetailedStats] = useState([]); // Dữ liệu chi tiết theo tháng hoặc ngày
-  const [yearlyData, setYearlyData] = useState([]); // Dữ liệu hàng năm để lấy studentPercentage cho từng tháng
+  const [yearlyStats, setYearlyStats] = useState(null); 
+  const [detailedStats, setDetailedStats] = useState([]); 
+  const [yearlyData, setYearlyData] = useState([]);
 
-  // Danh sách các năm để người dùng chọn
   const years = Array.from({ length: 10 }, (_, i) => (2025 - i).toString());
 
   // Danh sách các tháng (1-12)

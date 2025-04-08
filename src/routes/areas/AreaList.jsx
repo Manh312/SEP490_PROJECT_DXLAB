@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { PlusCircle, Search, Filter, PencilLine, Trash2, Map, ChevronLeft, ChevronRight } from "lucide-react";
+import { PlusCircle, Search, Filter, PencilLine, Map, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import debounce from "lodash/debounce";
 import Pagination from "../../hooks/use-pagination";
@@ -130,9 +130,8 @@ const AreaList = () => {
               {validImages.map((_, idx) => (
                 <span
                   key={idx}
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    idx === currentIndex ? "bg-white" : "bg-gray-400"
-                  }`}
+                  className={`w-1.5 h-1.5 rounded-full ${idx === currentIndex ? "bg-white" : "bg-gray-400"
+                    }`}
                 />
               ))}
             </div>
@@ -254,14 +253,14 @@ const AreaList = () => {
                         {renderImages(area.images, area.categoryId)}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        <Link to={`/dashboard/area/${area.categoryId}`} className="text-gray-700 hover:text-orange-500">{area.title}</Link>
+                        <Link to={`/dashboard/area/${area.categoryId}`} className="hover:text-neutral-300 inline-block"
+                        >{area.title}</Link>
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{area.categoryDescription.slice(0, 100)}...</td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${
-                            area.status === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${area.status === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                            }`}
                         >
                           {area.status === 1 ? "Hoạt động" : "Không hoạt động"}
                         </span>
@@ -305,9 +304,8 @@ const AreaList = () => {
                         #{(currentPage - 1) * areasPerPage + index + 1}
                       </span>
                       <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${
-                          area.status === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                        }`}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${area.status === 1 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                          }`}
                       >
                         {area.status === 1 ? "Hoạt động" : "Không hoạt động"}
                       </span>

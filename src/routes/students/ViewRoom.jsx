@@ -53,9 +53,9 @@ const ViewRoom = () => {
               ))}
               <div className="p-6 text-left">
                 <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-                  {room.roomName}
+                  Phòng {room.roomName}
                 </h3>
-                <p className="text-gray-600 text-sm">{room.roomDescription?.slice(0, 100) || 'No description available'}...</p>
+                <p className="text-gray-600 text-sm">{room.roomDescription}</p>
                 <Link to={`/room/${room.roomId}`}>
                   <button className="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-lg font-semibold transition duration-300">
                     Xem chi tiết

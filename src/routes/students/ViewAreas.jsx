@@ -248,7 +248,7 @@ const ViewAreas = () => {
   };
 
   return (
-    <div className="p-6 min-h-screen">
+    <div className="p-6 mt-10 mb-20">
       <h1 className="text-3xl font-bold text-center mb-6">DXLAB Co-working Space</h1>
       <p className="text-center mb-8">Chọn khu vực phù hợp với nhu cầu làm việc của bạn</p>
       {roomLoading ? (

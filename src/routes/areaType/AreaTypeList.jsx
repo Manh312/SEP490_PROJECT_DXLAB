@@ -224,7 +224,8 @@ const AreaTypeList = () => {
                         )}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        <Link to={`/dashboard/areaType/${type.areaTypeId}`}>{type.areaTypeName || "N/A"}</Link>
+                        <Link to={`/dashboard/areaType/${type.areaTypeId}`} className="hover:text-neutral-300 inline-block"
+                        >{type.areaTypeName || "N/A"}</Link>
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {`${type.areaCategory === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}`}
