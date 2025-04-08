@@ -58,6 +58,9 @@ import AreaList from "./routes/areas/AreaList";
 import CreateAreaCategory from "./routes/areas/CreateAreaCategory";
 import UpdateAreaCategory from "./routes/areas/UpdateAreaCategory";
 import AreaDetailAdmin from "./routes/areas/AreaDetailAdmin";
+import CreateReport from "./routes/staff-manage/report-management/CreateReport";
+import ManageReportList from "./routes/report/ManageReportList";
+import ManageReportDetail from "./routes/report/ManageReportDetail";
 
 
 
@@ -213,7 +216,14 @@ const router = createBrowserRouter([
         path: "dashboard/account/storage",
         element: <ProtectedRoute allowedRoles={["Admin"]}><StorageListAccount /></ProtectedRoute>,
       },
-
+      {
+        path: "dashboard/report",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><ManageReportList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/report/:id",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><ManageReportDetail /></ProtectedRoute>,
+      },
       {
         path: "manage",
         element: <ProtectedRoute allowedRoles={["Staff"]}><BookingList /></ProtectedRoute>,
@@ -229,6 +239,10 @@ const router = createBrowserRouter([
       {
         path: "manage/reports/:id",
         element: <ProtectedRoute allowedRoles={["Staff"]}><ReportDetail /></ProtectedRoute>,
+      },
+      {
+        path: "manage/reports/:id/create",
+        element: <ProtectedRoute allowedRoles={["Staff"]}><CreateReport /></ProtectedRoute>,
       },
       {
         path: "manage/blog",

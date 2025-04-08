@@ -212,9 +212,9 @@ const AreaTypeList = () => {
                         {type.images?.slice(0, 3).map((img, imgIndex) => (
                           <img
                             key={imgIndex}
-                            src={`/assets/${img}`}
+                            src={`https://localhost:9999${img}`}
                             alt={`Image ${imgIndex + 1}`}
-                            className="w-14 h-14 object-cover rounded-md shadow"
+                            className="w-32 h-32 object-cover rounded-md shadow"
                           />
                         ))}
                         {type.images?.length > 3 && (
@@ -227,37 +227,38 @@ const AreaTypeList = () => {
                         <Link to={`/dashboard/areaType/${type.areaTypeId}`}>{type.areaTypeName || "N/A"}</Link>
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {`${type.areaCategory === 1 ? "Khu vực cá nhân": "Khu vực nhóm"}`}
+                        {`${type.areaCategory === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}`}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {`${type.price} VNĐ`}
                       </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${
-                            type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                            }`}
                         >
                           {type.isDeleted ? "Đã xóa" : "Hoạt động"}
                         </span>
                       </td>
-                      <td className="px-2 py-3 md:px-4 md:py-4 text-center flex justify-center gap-2">
-                        <button
-                          onClick={() => navigate(`/dashboard/areaType/update/${type.areaTypeId}`)}
-                          data-tooltip-id="action-tooltip"
-                          data-tooltip-content="Cập nhật"
-                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer flex justify-center"
-                        >
-                          <PencilLine className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(type.areaTypeId)}
-                          data-tooltip-id="action-tooltip"
-                          data-tooltip-content="Xóa"
-                          className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        <div className="flex justify-center items-center gap-2 h-full">
+                          <button
+                            onClick={() => navigate(`/dashboard/areaType/update/${type.areaTypeId}`)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Cập nhật"
+                            className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <PencilLine className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(type.areaTypeId)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Xóa"
+                            className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -279,9 +280,8 @@ const AreaTypeList = () => {
                           #{(currentPage - 1) * areaTypesPerPage + index + 1}
                         </span>
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${
-                            type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                            }`}
                         >
                           {type.isDeleted ? "Đã xóa" : "Hoạt động"}
                         </span>

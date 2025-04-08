@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Eye, Search } from "lucide-react";
+import { Calendar, Eye, Search } from "lucide-react";
 import { useTheme } from "../../../hooks/use-theme";
 import { NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -63,7 +63,7 @@ const BookingList = () => {
         {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <Eye className="h-6 w-6 text-orange-500" />
+            <Calendar className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">Lịch Sử Đặt Chỗ</h2>
           </div>
         </div>
@@ -121,7 +121,7 @@ const BookingList = () => {
                           to={`booking-history/${booking.bookingId}`}
                           data-tooltip-id="action-tooltip"
                           data-tooltip-content="Xem chi tiết"
-                          className="bg-blue-100 text-blue-700 hover:bg-blue-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                          className="bg-orange-100 text-orange-700 hover:bg-orange-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                         >
                           <Eye className="w-4 h-4" />
                         </NavLink>
@@ -162,7 +162,7 @@ const BookingList = () => {
                     <div className="flex justify-center mt-2">
                       <NavLink
                         to={`booking-history/${booking.bookingId}`}
-                        className="bg-blue-100 text-blue-700 hover:bg-blue-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                        className="bg-orange-100 text-orange-700 hover:bg-orange-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                       >
                         <Eye className="w-4 h-4" /> Xem
                       </NavLink>

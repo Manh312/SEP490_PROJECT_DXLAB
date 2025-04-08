@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useMemo, useState } from "react";
 import { fetchRooms } from "../../redux/slices/Room";
 import { Link, useNavigate } from "react-router-dom";
-import {PencilLine, Hotel, Filter, Search, Home, Eye } from "lucide-react";
+import { PencilLine, Hotel, Filter, Search, Home, Eye } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
 import Pagination from "../../hooks/use-pagination"; // Giả sử bạn có hook này
@@ -180,7 +180,7 @@ const RoomList = () => {
                             key={idx}
                             src={`/assets/${img}`}
                             alt={''}
-                            className="w-20 h-20 object-cover rounded-md shadow inline-block"
+                            className="w-32 h-32 object-cover rounded-md shadow inline-block"
                           />
                         ))}
                       </td>
@@ -192,32 +192,32 @@ const RoomList = () => {
                       </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${
-                            room.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${room.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                            }`}
                         >
                           {room.isDeleted ? "Đã xóa" : "Hoạt động"}
                         </span>
                       </td>
-                      <td className="px-2 py-3 md:px-4 md:py-4 text-center flex justify-center mt-6 gap-2">
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        <div className="flex justify-center items-center gap-2 h-full">
+                          <button
+                            onClick={() => navigate(`/dashboard/room/${room.roomId}`)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Xem chi tiết"
+                            className="bg-orange-100 text-orange-700 ml-2 hover:bg-orange-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
 
-                      <button
-                          onClick={() => navigate(`/dashboard/room/${room.roomId}`)}
-                          data-tooltip-id="action-tooltip"
-                          data-tooltip-content="Xem chi tiết"
-                          className="bg-orange-100 text-orange-700 ml-2 hover:bg-orange-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-
-                        <button
-                          onClick={() => navigate(`/dashboard/room/update/${room.roomId}`)}
-                          data-tooltip-id="action-tooltip"
-                          data-tooltip-content="Cập nhật"
-                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <PencilLine className="w-4 h-4" />
-                        </button>
+                          <button
+                            onClick={() => navigate(`/dashboard/room/update/${room.roomId}`)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Cập nhật"
+                            className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                          >
+                            <PencilLine className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -239,9 +239,8 @@ const RoomList = () => {
                           #{(currentPage - 1) * roomsPerPage + index + 1}
                         </span>
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${
-                            room.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${room.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                            }`}
                         >
                           {room.isDeleted ? "Đã xóa" : "Hoạt động"}
                         </span>
@@ -250,7 +249,7 @@ const RoomList = () => {
                         <span className="font-medium">Tên Phòng:</span> {room.roomName}
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                      <button
+                        <button
                           onClick={() => navigate(`/dashboard/room/detail/${room.roomId}`)}
                           className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                         >

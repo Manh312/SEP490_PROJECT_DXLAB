@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
+import { ClipboardList } from "lucide-react"; // Icon báo cáo
 
-const ReportDetail = () => {
+const ManageReportDetail = () => {
   const { id } = useParams(); // Lấy ID báo cáo từ URL
-  const { staffReport, loading, error } = useSelector((state) => state.reports); // Lấy staffReport từ Redux
+  const { reports, loading, error } = useSelector((state) => state.reports); // Lấy reports từ Redux
   const [report, setReport] = useState(null);
 
   // Định dạng ngày
@@ -21,17 +20,15 @@ const ReportDetail = () => {
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
-  // Lọc báo cáo từ staffReport dựa trên reportId
+  // Lọc báo cáo từ reports dựa trên reportId
   useEffect(() => {
-    if (staffReport) {
-      const selectedReport = staffReport.find((r) => r.reportId === parseInt(id));
+    if (reports) {
+      const selectedReport = reports.find((r) => r.reportId === parseInt(id));
       if (selectedReport) {
         setReport(selectedReport);
-      } else {
-        toast.error("Không tìm thấy báo cáo với ID này!");
-      }
+      };
     }
-  }, [id, staffReport]);
+  }, [id, reports]);
 
   if (loading) return <p className="text-center text-lg font-bold">Đang tải dữ liệu...</p>;
   if (error) return <p className="text-red-500 text-center">Lỗi: {error}</p>;
@@ -39,13 +36,16 @@ const ReportDetail = () => {
 
   return (
     <div
-      className="flex justify-center items-center mb-20 p-6"
+      className={`flex justify-center items-center mb-20 p-6`}
     >
       <div
-        className={`w-full max-w-2xl border p-6 rounded-lg shadow-lg `}
+        className={`w-full max-w-2xl border p-6 rounded-lg shadow-lg`}
       >
-        {/* Header */}
-        <h2 className="text-2xl font-bold mb-6 text-center">Chi Tiết Báo Cáo #{report.reportId}</h2>
+        {/* Header với icon */}
+        <div className="flex items-center justify-center mb-6">
+          <ClipboardList className="w-8 h-8 mr-2" />
+          <h2 className="text-2xl font-bold text-center">Chi Tiết Báo Cáo #{report.reportId}</h2>
+        </div>
 
         {/* Thông tin báo cáo */}
         <div className="mb-6">
@@ -80,17 +80,17 @@ const ReportDetail = () => {
             <p>
               <strong>Khu Vực:</strong> {report.areaName || "N/A"}
             </p>
-            {/* <p>
-              <strong>Loại Khu Vực:</strong> {report.areaType || "N/A"}
-            </p> */}
+            <p>
+              <strong>Loại Khu Vực:</strong> {report.areaTypeName || "N/A"}
+            </p>
           </div>
         </div>
 
         {/* Nút Quay lại */}
         <div className="flex justify-end mt-6">
           <Link
-            to="/manage/reports"
-            className="bg-orange-500 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors"
+            to="/dashboard/report"
+            className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
           >
             Quay Lại
           </Link>
@@ -100,4 +100,4 @@ const ReportDetail = () => {
   );
 };
 
-export default ReportDetail;
+export default ManageReportDetail;

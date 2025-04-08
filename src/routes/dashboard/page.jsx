@@ -19,7 +19,7 @@ import { FaSpinner } from "react-icons/fa";
 const Page = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
-  const { stats, jobs, loading, error } = useSelector((state) => state.statistics);
+  const { stats, jobs, loading } = useSelector((state) => state.statistics);
 
   // State để quản lý lựa chọn của người dùng
   const [period, setPeriod] = useState("năm"); // Mặc định là "năm"
@@ -285,7 +285,7 @@ const Page = () => {
       </h2>
 
       {/* Form tùy chỉnh */}
-      <div className="mb-6 p-4 border rounded-lg shadow-md">
+      <div className="mb-6 p-4 border rounded-lg shadow-md mr-5">
         <h3 className="text-lg font-semibold mb-4">Tùy chỉnh thống kê</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Chọn Period */}
@@ -356,11 +356,11 @@ const Page = () => {
           <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
         </div>
       )}
-      {error && (
+      {/* {error && (
         <div className="text-center text-red-500">
           Lỗi: {error.message || error}
         </div>
-      )}
+      )} */}
 
       {/* Hiển thị các card và biểu đồ chỉ khi showCharts là true và không có loading */}
       {!loading && showCharts && (
