@@ -286,12 +286,12 @@ const FacilitiesList = () => {
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
-                        <Link
+                        {/* <Link
                           to={`/dashboard/facilities/update/${facility.id}`}
                           className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors"
                         >
                           <Edit className="w-4 h-4" />
-                        </Link>
+                        </Link> */}
                       </td>
                     </tr>
                   ))}
@@ -345,12 +345,12 @@ const FacilitiesList = () => {
                       >
                         <Trash2 className="w-4 h-4" /> Xóa mềm
                       </button>
-                      <Link
+                      {/* <Link
                         to={`/dashboard/facilities/update/${facility.id}`}
                         className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                       >
                         <Edit className="w-4 h-4" /> Cập nhật
-                      </Link>
+                      </Link> */}
                     </div>
                   </div>
                 </div>

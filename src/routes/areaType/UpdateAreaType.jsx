@@ -12,6 +12,8 @@ import {
 import { toast } from "react-toastify";
 import { Building, FileText, Users, Image, Check, Tag, X, ArrowLeft, Search, Plus } from "lucide-react";
 
+const BACKEND_URL = "https://localhost:9999"; // Define your backend URL
+
 const UpdateAreaType = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -33,11 +35,12 @@ const UpdateAreaType = () => {
   });
   const [hasImageChange, setHasImageChange] = useState(false);
   const [imagePreviews, setImagePreviews] = useState([]);
+  const [existingImages, setExistingImages] = useState([]); // Ảnh hiện có từ backend
+  const [failedImages, setFailedImages] = useState(new Set()); // Theo dõi ảnh không tải được
   const fileInputRef = useRef(null);
 
   // State cho ManageAreaDetail
   const {
-    facilities,
     allFacilities,
     facilitiesList,
     facilitiesListLoading,
@@ -54,11 +57,6 @@ const UpdateAreaType = () => {
   const [facilityToDelete, setFacilityToDelete] = useState(null);
   const [deleteQuantity, setDeleteQuantity] = useState("");
 
-  console.log(facilities);
-  console.log(allFacilities);
-
-
-
   // Logic cho UpdateAreaType
   useEffect(() => {
     dispatch(fetchAreaTypeById(id));
@@ -68,24 +66,71 @@ const UpdateAreaType = () => {
     dispatch(fetchFacilitiesList());
   }, [dispatch]);
 
-
+  // Khởi tạo formData với dữ liệu hiện tại
   useEffect(() => {
-    if (selectedAreaType) {
-      const images = Array.isArray(selectedAreaType.images)
-        ? selectedAreaType.images.map((img) => `${img.imageUrl || img}`)
-        : [];
-      setFormData({
-        areaTypeName: selectedAreaType.areaTypeName || "",
-        areaDescription: selectedAreaType.areaDescription || "",
-        price: selectedAreaType.price !== undefined ? String(selectedAreaType.price) : "",
-        areaCategory: selectedAreaType.areaCategory || 1,
-        size: selectedAreaType.size || "",
-        isDeleted: selectedAreaType.isDeleted || false,
-        images: images,
-      });
-      setImagePreviews(images);
-    }
+    const initializeFormData = async () => {
+      if (selectedAreaType) {
+        const images = Array.isArray(selectedAreaType.images)
+          ? selectedAreaType.images
+          : [selectedAreaType.images || ""];
+
+        const existing = images
+          .filter((img) => typeof img === "string" && img)
+          .map((img) => {
+            if (img.startsWith("http")) {
+              return img;
+            }
+            return `${BACKEND_URL}${img.imageUrl || img}`;
+          });
+
+        const convertedImages = await Promise.all(
+          existing.map(async (imageUrl) => {
+            try {
+              return await fetchImageAsBlob(imageUrl);
+            } catch (error) {
+              console.warn(`Không thể convert ảnh ${imageUrl}:`, error);
+              return null;
+            }
+          })
+        );
+
+        const validImages = convertedImages.filter((file) => file !== null);
+
+        setFormData({
+          areaTypeName: selectedAreaType.areaTypeName || "",
+          areaDescription: selectedAreaType.areaDescription || "",
+          price: selectedAreaType.price !== undefined ? String(selectedAreaType.price) : "",
+          areaCategory: selectedAreaType.areaCategory || 1,
+          size: selectedAreaType.size || "",
+          isDeleted: selectedAreaType.isDeleted || false,
+          images: validImages,
+        });
+
+        setExistingImages(existing);
+        setImagePreviews(existing);
+      }
+    };
+
+    initializeFormData().catch((error) => {
+      console.error("Lỗi khi khởi tạo formData:", error);
+      toast.error("Lỗi khi tải dữ liệu ảnh!");
+    });
   }, [selectedAreaType]);
+
+  // Fetch image as Blob
+  const fetchImageAsBlob = async (imageUrl) => {
+    try {
+      const response = await fetch(imageUrl, { mode: "cors" });
+      if (!response.ok) {
+        throw new Error(`Không thể tải ảnh từ URL: ${imageUrl} - Status: ${response.status}`);
+      }
+      const blob = await response.blob();
+      return new File([blob], imageUrl.split("/").pop(), { type: blob.type });
+    } catch (error) {
+      console.error("Failed to fetch image as Blob:", error);
+      throw error;
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -110,13 +155,26 @@ const UpdateAreaType = () => {
     }
   };
 
-  const removeImage = (index) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      images: prevData.images.filter((_, i) => i !== index),
-    }));
+  const handleRemoveImage = (index) => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    if (index < existingImages.length) {
+      setExistingImages((prev) => prev.filter((_, i) => i !== index));
+      setFormData((prev) => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== index),
+      }));
+    } else {
+      const fileIndex = index - existingImages.length;
+      setFormData((prev) => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== fileIndex),
+      }));
+    }
     setHasImageChange(true);
+  };
+
+  const handleImageError = (index) => {
+    setFailedImages((prev) => new Set(prev).add(index));
   };
 
   const handleSubmit = async (e) => {
@@ -143,41 +201,28 @@ const UpdateAreaType = () => {
       return;
     }
 
-    const updates = [];
-    if (formData.areaTypeName !== selectedAreaType.areaTypeName) {
-      updates.push({ operationType: 0, path: "areaTypeName", op: "replace", value: formData.areaTypeName });
-    }
-    if (formData.areaDescription !== selectedAreaType.areaDescription) {
-      updates.push({ operationType: 0, path: "areaDescription", op: "replace", value: formData.areaDescription });
-    }
-    if (formData.price !== String(selectedAreaType.price)) {
-      updates.push({ operationType: 0, path: "price", op: "replace", value: parseFloat(formData.price) });
-    }
-    if (formData.areaCategory !== selectedAreaType.areaCategory) {
-      updates.push({ operationType: 0, path: "areaCategory", op: "replace", value: Number(formData.areaCategory) });
-    }
-    if (formData.size !== selectedAreaType.size) {
-      updates.push({ operationType: 0, path: "size", op: "replace", value: parseInt(formData.size) });
-    }
-    if (formData.isDeleted !== selectedAreaType.isDeleted) {
-      updates.push({ operationType: 0, path: "isDeleted", op: "replace", value: formData.isDeleted });
-    }
-    if (hasImageChange) {
-      updates.push({
-        operationType: 0,
-        path: "images",
-        op: "replace",
-        value: formData.images.map((img) => ({ imageUrl: typeof img === "string" ? img : img.name })),
-      });
-    }
+    // Tạo object areaTypeData
+    const areaTypeData = {
+      areaTypeName: formData.areaTypeName,
+      areaDescription: formData.areaDescription,
+      price: parseFloat(formData.price),
+      areaCategory: Number(formData.areaCategory),
+      size: parseInt(formData.size),
+      isDeleted: formData.isDeleted,
+      existingImages: existingImages, // Gửi danh sách URL ảnh hiện có
+    };
 
-    if (updates.length === 0) {
-      toast.info("Không có thay đổi nào cần cập nhật!");
-      return;
-    }
+    // Tách biệt ảnh mới (files) từ formData.images
+    const newFiles = formData.images.filter((img) => img instanceof File);
 
     try {
-      await dispatch(updateAreaType({ areaTypeId: id, updatedData: updates })).unwrap();
+      await dispatch(
+        updateAreaType({
+          areaTypeId: id,
+          updatedData: areaTypeData,
+          files: newFiles,
+        })
+      ).unwrap();
       toast.success("Cập nhật thành công!");
       navigate("/dashboard/areaType");
     } catch (error) {
@@ -221,7 +266,6 @@ const UpdateAreaType = () => {
     try {
       const res = await dispatch(addFacilityToArea({ id, data: body })).unwrap();
       toast.success(res.message);
-      // Fetch the updated list of facilities
       await dispatch(fetchFacilitiesList()).unwrap();
 
       setShowModal(false);
@@ -258,7 +302,6 @@ const UpdateAreaType = () => {
     try {
       const res = await dispatch(removeFacilityFromArea(body)).unwrap();
       toast.success(res.message);
-      // Fetch the updated list of facilities
       await dispatch(fetchFacilitiesList()).unwrap();
 
       setDeleteModal(false);
@@ -272,8 +315,6 @@ const UpdateAreaType = () => {
   const filteredFacilities = allFacilities.filter((faci) =>
     faci.facilityName.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-
 
   if (areaTypeLoading || !selectedAreaType) {
     return (
@@ -293,14 +334,17 @@ const UpdateAreaType = () => {
             <h2 className="text-3xl font-bold text-gray-800">Quản Lý Loại Khu Vực {id}</h2>
           </div>
           {/* Nút Thêm Thiết Bị */}
-          <div className="mt-6 flex justify-end">
-            <button
-              onClick={openModal}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all shadow-md"
-            >
-              <Plus className="w-5 h-5" /> Thêm Thiết Bị
-            </button>
-          </div>
+
+          {activeTab === "manageFacilities" && (
+             <div className="mt-6 flex justify-end">
+             <button
+               onClick={openModal}
+               className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all shadow-md"
+             >
+               <Plus className="w-5 h-5" /> Thêm Thiết Bị
+             </button>
+           </div>
+          )}
         </div>
 
         {/* Tabs */}
@@ -459,42 +503,40 @@ const UpdateAreaType = () => {
                     </span>
                   </label>
                   <div className="flex flex-col gap-2">
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current.click()}
-                      className="border-dashed border-2 border-gray-400 rounded-lg p-4 text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all"
-                    >
-                      Chọn tệp
-                    </button>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleImageChange}
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                    />
-                    {imagePreviews.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-3">
-                        {imagePreviews.map((preview, index) => (
-                          <div key={index} className="relative w-24 h-24">
+                    <div className="flex items-center gap-4 flex-wrap">
+                      {imagePreviews.length > 0 &&
+                        imagePreviews.map((preview, index) => (
+                          <div key={index} className="relative">
                             <img
-                              src={`https://localhost:9999${preview}`}
-                              alt={`preview-${index}`}
-                              className="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm"
-                              onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+                              src={failedImages.has(index) ? "/placeholder-image.jpg" : preview}
+                              alt={`Area preview ${index}`}
+                              className="w-24 h-24 object-cover rounded-lg shadow-sm"
+                              onError={() => handleImageError(index)}
                             />
                             <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition-all duration-150 ease-in-out"
+                              onClick={() => handleRemoveImage(index)}
+                              className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
                             >
                               <X size={16} />
                             </button>
                           </div>
                         ))}
-                      </div>
-                    )}
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current.click()}
+                        className="border-dashed border-2 border-gray-400 rounded-lg p-4 text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all"
+                      >
+                        Chọn tệp
+                      </button>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageChange}
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -549,7 +591,7 @@ const UpdateAreaType = () => {
             ) : (
               <div className="bg-white shadow-lg rounded-lg overflow-hidden">
                 <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+                  <thead className="bg-gray-50 flex-row items-center justify-center">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         #
@@ -571,7 +613,7 @@ const UpdateAreaType = () => {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200 flex-row items-center justify-center">
                     {facilitiesList.map((item, index) => (
                       <tr key={item.usingFacilityId} className="hover:bg-gray-50 transition">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
@@ -587,7 +629,7 @@ const UpdateAreaType = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {item.importDate ? new Date(item.importDate).toLocaleDateString() : "N/A"}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-center">
                           <button
                             onClick={() => {
                               setFacilityToDelete(item);

@@ -109,7 +109,7 @@ const BookingList = () => {
                   {currentBookings.map((booking, index) => (
                     <tr key={booking.bookingId} className="border-b hover:bg-gray-400 transition-colors">
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{booking.bookingId}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">DXL-{booking.bookingId}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{booking.userName}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {new Intl.DateTimeFormat("vi-VN").format(new Date(booking.bookingCreatedDate))}
@@ -144,7 +144,7 @@ const BookingList = () => {
                       <span className="font-semibold text-sm">#{(currentPage - 1) * itemsPerPage + index + 1}</span>
                     </div>
                     <p className="text-sm">
-                      <span className="font-medium">Booking ID:</span> {booking.bookingId}
+                      <span className="font-medium">Booking ID:</span> DXL-{booking.bookingId}
                     </p>
                     <p className="text-sm">
                       <span className="font-medium">Người Đặt:</span> {booking.userName}
