@@ -183,7 +183,7 @@ const ViewBookingHistory = () => {
                   {currentItems.map((tx, index) => (
                     <tr key={tx.id} className="border-b hover:bg-gray-400 transition-colors">
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{tx.id}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">DXL-{tx.id}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {new Date(tx.date).toLocaleString("vi-VN", {
                           day: "2-digit",
@@ -241,7 +241,7 @@ const ViewBookingHistory = () => {
                       </span>
                     </div>
                     <p className="text-sm">
-                      <span className="font-medium">Mã Giao Dịch:</span> {tx.id}
+                      <span className="font-medium">Mã Giao Dịch:</span> DXL-{tx.id}
                     </p>
                     <p className="text-sm">
                       <span className="font-medium">Ngày Đặt:</span>{" "}

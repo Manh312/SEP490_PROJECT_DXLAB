@@ -12,6 +12,7 @@ import bookingHistoryReducer from "./slices/BookingHistory";
 import statisticsReducer from "./slices/Statistics";
 import areaReducer from "./slices/Area";
 import areaCategoryReducer from "./slices/AreaCategory";
+import reportsReducer from "./slices/Report";
 
 
 // slices
@@ -36,6 +37,7 @@ const rootReducer = combineReducers({
   bookingHistory: bookingHistoryReducer,
   areas: areaReducer,
   areaCategory: areaCategoryReducer,
+  reports: reportsReducer,
 });
 
 export { rootPersistConfig, rootReducer }; 

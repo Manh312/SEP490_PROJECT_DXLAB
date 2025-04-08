@@ -4,20 +4,18 @@ import axios from '../../utils/axios';
 // Async thunk để lấy dữ liệu thống kê student group
 export const fetchStudentGroupStats = createAsyncThunk(
   'statistic/fetchStudentGroupStats',
-  async ({ period, year, month, week }, { rejectWithValue }) => {
+  async ({ period, year, month }, { rejectWithValue }) => {
     try {
       // Tạo query string dựa trên các tham số
       const queryParams = new URLSearchParams();
       if (period) queryParams.append('Period', period);
       if (year) queryParams.append('Year', year);
       if (month) queryParams.append('Month', month);
-      if (week) queryParams.append('Week', week);
 
       const response = await axios.get(`/statistic/student-group?${queryParams.toString()}`);
       return {
         data: response.data.data, // { totalRevenue, studentPercentage }
         month: month || null,
-        week: week || null,
       };
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Không thể tải dữ liệu thống kê');
@@ -25,7 +23,7 @@ export const fetchStudentGroupStats = createAsyncThunk(
   }
 );
 
-// Async thunk để lấy dữ liệu job theo year và date
+// Async thunk để lấy dữ liệu job theo year và date (giữ nguyên)
 export const fetchJobsByYearAndDate = createAsyncThunk(
   'statistic/fetchJobsByYearAndDate',
   async ({ year, date }, { rejectWithValue }) => {
@@ -67,9 +65,9 @@ const statisticSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchStudentGroupStats.fulfilled, (state, action) => {
-        const { data, month, week } = action.payload;
-        // Tạo label cho điểm dữ liệu (dựa trên month hoặc week)
-        const label = month ? `Tháng ${month}` : week ? `Tuần ${week}` : 'Kỳ';
+        const { data, month } = action.payload;
+        // Tạo label cho điểm dữ liệu (chỉ dựa trên month)
+        const label = month ? `Tháng ${month}` : 'Kỳ';
         state.stats.push({
           name: label,
           totalRevenue: data.totalRevenue,
@@ -81,7 +79,7 @@ const statisticSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Xử lý khi gọi API lấy dữ liệu job
+      // Xử lý khi gọi API lấy dữ liệu job (giữ nguyên)
       .addCase(fetchJobsByYearAndDate.pending, (state) => {
         state.loading = true;
         state.error = null;

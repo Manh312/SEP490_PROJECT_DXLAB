@@ -9,12 +9,11 @@ export const fetchAreaTypes = createAsyncThunk(
   async (fil = "", { rejectWithValue }) => {
     try {
       console.log(fil);
-      // Nếu filterString rỗng thì gọi API lấy tất cả, ngược lại thêm query param
       const response = await axiosInstance.get(
         fil ? `${API_URL}?fil=${fil}` : API_URL
       );
       console.log(response.data);
-      return response.data.data; // Lấy danh sách từ API response
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi khi lấy dữ liệu");
     }
@@ -27,7 +26,7 @@ export const fetchAreaTypeById = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get(`/areatype/${id}`);
-      return response.data.data; // ✅ Trả về dữ liệu chi tiết
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi khi lấy chi tiết loại khu vực");
     }
@@ -37,7 +36,7 @@ export const fetchAreaTypeById = createAsyncThunk(
 // Thêm loại khu vực mới
 export const createAreaType = createAsyncThunk(
   "areaTypes/createAreaType",
-  async ({newAreaType, files}, { rejectWithValue }) => {
+  async ({ newAreaType, files }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
 
@@ -50,7 +49,7 @@ export const createAreaType = createAsyncThunk(
 
       if (files && files.length > 0) {
         files.forEach((file) => {
-          formData.append("files", file); 
+          formData.append("files", file);
         });
       }
       const response = await axiosInstance.post(API_URL, formData, {
@@ -58,7 +57,7 @@ export const createAreaType = createAsyncThunk(
           "Content-Type": "multipart/form-data",
         },
       });
-      return response.data; // Trả về loại khu vực vừa tạo
+      return response.data;
     } catch (error) {
       console.log(error.response.data);
       return rejectWithValue(error.response?.data || "Lỗi khi tạo loại khu vực");
@@ -73,21 +72,32 @@ export const updateAreaType = createAsyncThunk(
     try {
       const formData = new FormData();
 
-      formData.append("AreaTypeName", updatedData.areaTypeName);
-      formData.append("AreaCategory", updatedData.categoryDescription);
-      formData.append("Status", updatedData.status);
+      // Tạo object areaTypeData từ updatedData
+      const areaTypeData = {
+        areaTypeName: updatedData.areaTypeName,
+        areaDescription: updatedData.areaDescription,
+        price: updatedData.price,
+        areaCategory: updatedData.areaCategory,
+        size: updatedData.size,
+        isDeleted: updatedData.isDeleted,
+      };
 
+      // Chuyển object thành chuỗi JSON
+      formData.append("areaTypeData", JSON.stringify(areaTypeData));
+
+      // Thêm files nếu có
       if (files && files.length > 0) {
         files.forEach((file) => {
-          formData.append("files", file); 
+          formData.append("files", file);
         });
       }
-      const response = await axiosInstance.patch(`${API_URL}/${areaTypeId}`, updatedData, {
+
+      const response = await axiosInstance.patch(`${API_URL}/${areaTypeId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
-      return response.data; // ✅ Chỉ return phần `data`, tránh lỗi React
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi khi cập nhật loại khu vực");
     }
@@ -100,7 +110,7 @@ export const deleteAreaType = createAsyncThunk(
   async (areaTypeId, { rejectWithValue }) => {
     try {
       await axiosInstance.delete(`${API_URL}/${areaTypeId}`);
-      return areaTypeId; // Trả về ID của loại khu vực đã xóa
+      return areaTypeId;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi khi xóa loại khu vực");
     }
@@ -111,6 +121,7 @@ const areaTypeSlice = createSlice({
   name: "areaTypes",
   initialState: {
     areaTypes: [],
+    selectedAreaType: null,
     loading: false,
     error: null,
   },
@@ -166,7 +177,7 @@ const areaTypeSlice = createSlice({
       .addCase(createAreaType.fulfilled, (state, action) => {
         state.loading = false;
         if (action.payload) {
-          state.areaTypes = [...state.areaTypes, action.payload.data]; // Thêm phòng mới vào danh sách
+          state.areaTypes = [...state.areaTypes, action.payload.data];
         }
       })
       .addCase(createAreaType.rejected, (state, action) => {
@@ -182,13 +193,13 @@ const areaTypeSlice = createSlice({
         state.loading = false;
 
         // Cập nhật dữ liệu nếu đang ở trang chi tiết
-        if (state.selectedAreaType?.areaTypeId === action.payload.areaTypeId) {
-          state.selectedAreaType = action.payload.data; // ✅ Chỉ chứa `data`
+        if (state.selectedAreaType?.areaTypeId === action.payload.data?.areaTypeId) {
+          state.selectedAreaType = action.payload.data;
         }
 
         // Cập nhật dữ liệu trong danh sách
         state.areaTypes = state.areaTypes.map((type) =>
-          type.areaTypeId === action.payload.areaTypeId ? action.payload : type
+          type.areaTypeId === action.payload.data?.areaTypeId ? action.payload.data : type
         );
       })
       .addCase(updateAreaType.rejected, (state, action) => {

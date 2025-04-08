@@ -15,7 +15,6 @@ import AccountList from './routes/account/AccountList';
 import BlogListOfStaff from './routes/blog-manage/BlogListOfStaff';
 import CreateFacilities from './routes/facilities/CreateFacilities';
 import FacilitiesDetail from './routes/facilities/FacilitiesDetail';
-import UpdateFacilities from './routes/facilities/UpdateFacilities';
 import DeleteFacilities from './routes/facilities/DeleteFacilities';
 import CreateAccount from './routes/account/CreateAccount';
 import UpdateAccount from "./routes/account/UpdateAccount";
@@ -59,6 +58,9 @@ import AreaList from "./routes/areas/AreaList";
 import CreateAreaCategory from "./routes/areas/CreateAreaCategory";
 import UpdateAreaCategory from "./routes/areas/UpdateAreaCategory";
 import AreaDetailAdmin from "./routes/areas/AreaDetailAdmin";
+import CreateReport from "./routes/staff-manage/report-management/CreateReport";
+import ManageReportList from "./routes/report/ManageReportList";
+import ManageReportDetail from "./routes/report/ManageReportDetail";
 
 
 
@@ -160,10 +162,6 @@ const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={["Admin"]}><CreateFacilities /></ProtectedRoute>,
       },
       {
-        path: "dashboard/facilities/update/:id",
-        element: <ProtectedRoute allowedRoles={["Admin"]}><UpdateFacilities /></ProtectedRoute>,
-      },
-      {
         path: "dashboard/facilities/delete/:id",
 
         element: <ProtectedRoute allowedRoles={["Admin"]}><DeleteFacilities /></ProtectedRoute>,
@@ -218,7 +216,14 @@ const router = createBrowserRouter([
         path: "dashboard/account/storage",
         element: <ProtectedRoute allowedRoles={["Admin"]}><StorageListAccount /></ProtectedRoute>,
       },
-
+      {
+        path: "dashboard/report",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><ManageReportList /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/report/:id",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><ManageReportDetail /></ProtectedRoute>,
+      },
       {
         path: "manage",
         element: <ProtectedRoute allowedRoles={["Staff"]}><BookingList /></ProtectedRoute>,
@@ -234,6 +239,10 @@ const router = createBrowserRouter([
       {
         path: "manage/reports/:id",
         element: <ProtectedRoute allowedRoles={["Staff"]}><ReportDetail /></ProtectedRoute>,
+      },
+      {
+        path: "manage/reports/:id/create",
+        element: <ProtectedRoute allowedRoles={["Staff"]}><CreateReport /></ProtectedRoute>,
       },
       {
         path: "manage/blog",

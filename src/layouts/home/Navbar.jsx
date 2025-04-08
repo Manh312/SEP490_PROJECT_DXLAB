@@ -131,7 +131,7 @@ const Navbar = () => {
                       style={{ width: "100%" }}
                     />
                   </div>
-                  <span className="ml-2 mb-4">Số dư: {balance?.displayValue} FPT</span>
+                  <span className="ml-2 mb-4">Số dư: {balance?.displayValue} DXLAB Coin</span>
                   <ul className="space-y-2">
                     {roleName === "Student" && (
                       <li>
@@ -224,7 +224,7 @@ const Navbar = () => {
                   />
                 </div>
                 <div className="mt-3 ml-1">
-                  <span className="">Số dư: {balance?.displayValue} FPT</span>
+                  <span className="">Số dư: {balance?.displayValue} DXLAB Coin</span>
                 </div>
               </div>
 

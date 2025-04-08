@@ -84,7 +84,7 @@ const BookHistoriedDetail = () => {
         <div className="bg-gradient-to-r from-orange-500 to-orange-700 p-6">
           <h2 className="text-2xl font-bold text-center text-white">Chi tiết giao dịch</h2>
           <p className=" text-center mt-1 text-sm text-white">
-            Mã giao dịch: {bookingDetail.data.bookingId}
+            Mã giao dịch: DXL-{bookingDetail.data.bookingId}
           </p>
         </div>
 

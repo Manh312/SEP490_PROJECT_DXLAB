@@ -3,11 +3,11 @@ import {
   Users,
   Calendar,
   FileText,
-  Settings,
   Tag,
   BarChart,
   Map,
   Clock10Icon,
+  ClipboardList,
 } from "lucide-react";
 
 import ProfileImage from "../assets/profile-image.jpg";
@@ -174,6 +174,11 @@ export const navbarLinks = [
         label: "Quản lý duyệt Blog",
         icon: FileText, // Thay Package bằng FileText
         path: "/dashboard/blog",
+      },
+      {
+        label: "Danh sách báo cáo",
+        icon: ClipboardList, 
+        path: "/dashboard/report",
       },
     ],
   },
@@ -389,7 +394,7 @@ export const staffLinks = [
       },
       {
         label: "Danh sách báo cáo",
-        icon: Settings,
+        icon: ClipboardList,
         path: "/manage/reports",
       },
       {

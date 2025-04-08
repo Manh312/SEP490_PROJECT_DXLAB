@@ -8,6 +8,9 @@ import { XIcon, PlusCircleIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { FaSpinner } from 'react-icons/fa';
 
+// Ảnh mặc định nếu không có ảnh từ API
+const DEFAULT_IMAGE = 'https://via.placeholder.com/150?text=No+Image';
+
 // Hàm lấy ngày hiện tại theo múi giờ cục bộ
 const getCurrentDate = () => {
   const date = new Date();
@@ -110,7 +113,6 @@ const ViewAreas = () => {
       });
     } catch (error) {
       console.error("Lỗi khi fetch slots:", error);
-      toast.error('Không thể tải danh sách slot!');
       datesToFetch.forEach((date) => {
         setFetchedSlots((prev) => ({ ...prev, [date]: [] }));
       });
@@ -221,7 +223,6 @@ const ViewAreas = () => {
   const calculateTotalPrice = () => {
     return bookingDates.reduce((total, booking) => {
       if (!Array.isArray(booking.slots)) return total;
-      const slotsForDate = fetchedSlots[booking.date] || [];
       const slotPrice = selectedArea?.value?.[0]?.price || 10;
       return total + booking.slots.length * slotPrice;
     }, 0);
@@ -259,40 +260,48 @@ const ViewAreas = () => {
         <p>Không tìm thấy phòng với ID: {id}</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {categoryInRoom?.data?.map((area, index) => (
-            <div key={index} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
-              <img
-                src={`https://localhost:9999${area.key.image}`}
-                alt={area.value[0].areaTypeName}
-                className="w-full h-48 object-cover rounded-md mb-4"
-              />
-              <h2 className="text-2xl font-semibold mb-2">{area.key.title}</h2>
-              <p>{area.key.categoryDescription.slice(0, 100)}...</p>
-              <div>
-                <button
-                  className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-                  onClick={() => {
-                    dispatch(openModal({
-                      ...area,
-                      name: area.value[0].areaTypeName,
-                      description: area.value[0].areaDescription,
-                      type: area.value[0].areaCategory === 1 ? 'individual' : 'group',
-                      roomId: selectedRoom.roomId,
-                    }));
-                    setBookingDates([{ date: getCurrentDate(), slots: [] }]);
-                  }}
-                >
-                  Chọn
-                </button>{" "}
-                <Link
-                  className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition"
-                  onClick={() => handleDetailClick(area)}
-                >
-                  Chi tiết
-                </Link>
+          {categoryInRoom?.data?.map((area, index) => {
+            // Lấy đường dẫn ảnh đầu tiên từ mảng images, nếu không có thì dùng ảnh mặc định
+            const imageUrl = area.key.images?.length > 0 
+              ? `https://localhost:9999${area.key.images[0]}` 
+              : DEFAULT_IMAGE;
+
+            return (
+              <div key={index} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                <img
+                  src={imageUrl}
+                  alt={area.value[0].areaTypeName}
+                  className="w-full h-48 object-cover rounded-md mb-4"
+                  onError={(e) => (e.target.src = DEFAULT_IMAGE)} // Nếu ảnh không tải được, dùng ảnh mặc định
+                />
+                <h2 className="text-2xl font-semibold mb-2">{area.key.title}</h2>
+                <p>{area.key.categoryDescription.slice(0, 100)}...</p>
+                <div>
+                  <button
+                    className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+                    onClick={() => {
+                      dispatch(openModal({
+                        ...area,
+                        name: area.value[0].areaTypeName,
+                        description: area.value[0].areaDescription,
+                        type: area.value[0].areaCategory === 1 ? 'individual' : 'group',
+                        roomId: selectedRoom.roomId,
+                      }));
+                      setBookingDates([{ date: getCurrentDate(), slots: [] }]);
+                    }}
+                  >
+                    Chọn
+                  </button>{" "}
+                  <Link
+                    className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition"
+                    onClick={() => handleDetailClick(area)}
+                  >
+                    Chi tiết
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

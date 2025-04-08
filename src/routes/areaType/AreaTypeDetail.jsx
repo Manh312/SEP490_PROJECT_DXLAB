@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { PencilLine, ArrowLeft } from "lucide-react"; // Thêm ArrowLeft
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAreaTypeById } from "../../redux/slices/AreaType";
-import { toast } from "react-toastify";
 
 const AreaTypeDetail = () => {
   const { id } = useParams();
@@ -87,9 +86,9 @@ const AreaTypeDetail = () => {
                   images.map((img, index) => (
                     <img
                       key={index}
-                      src={`/assets/${img}`}
+                      src={`https://localhost:9999${img}`}
                       alt={`areaType-${index}`}
-                      className="w-20 h-20 object-cover rounded-md"
+                      className="w-32 h-32 object-cover rounded-md"
                     />
                   ))
                 ) : (

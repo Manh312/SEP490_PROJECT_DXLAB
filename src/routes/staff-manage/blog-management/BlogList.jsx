@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { PlusCircle, Filter, Search, Edit, ChevronLeft, ChevronRight } from "lucide-react";
+import { PlusCircle, Filter, Search, Edit, ChevronLeft, ChevronRight, FileText } from "lucide-react";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBlogsByStatus, setStatusFilter } from "../../../redux/slices/Blog";
@@ -174,7 +174,7 @@ const BlogList = () => {
         {/* Header */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <PlusCircle className="h-6 w-6 text-orange-500" />
+            <FileText className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
               Danh Sách Blog
             </h2>
@@ -226,7 +226,7 @@ const BlogList = () => {
           </div>
         ) : filteredBlogs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <PlusCircle className="h-12 w-12 text-gray-400 mb-4" />
+            <FileText className="h-12 w-12 text-gray-400 mb-4" />
             <p className="text-gray-500 text-lg">
               {searchTerm
                 ? `Không tìm thấy blog nào với trạng thái "${getStatusDisplayName(Number(statusFilter))}" khớp với tìm kiếm`
