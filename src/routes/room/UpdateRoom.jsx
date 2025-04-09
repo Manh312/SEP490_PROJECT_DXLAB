@@ -19,9 +19,10 @@ const UpdateRoom = () => {
     description: "",
     capacity: "",
     isDeleted: "",
-    images: [],
+    images: [], // Lưu trữ danh sách các URL tạm thời hoặc tên ảnh
   });
 
+  const [imageFiles, setImageFiles] = useState([]); // Lưu trữ các tệp hình ảnh gốc
   const [hasImageChange, setHasImageChange] = useState(false);
 
   useEffect(() => {
@@ -58,21 +59,26 @@ const UpdateRoom = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    const fileNames = files.map((file) => file.name);
+    const newImageUrls = files.map((file) => URL.createObjectURL(file)); // Tạo URL tạm thời cho mỗi tệp
 
-    const duplicateFiles = fileNames.filter((name) => formData.images.includes(name));
+    // Kiểm tra trùng lặp (dựa trên tên tệp)
+    const duplicateFiles = files.filter((file) => imageFiles.some((existing) => existing.name === file.name));
     if (duplicateFiles.length > 0) {
-      toast.error(`Ảnh sau đã tồn tại: ${duplicateFiles.join(", ")}`);
+      toast.error(`Ảnh sau đã tồn tại: ${duplicateFiles.map((file) => file.name).join(", ")}`);
       return;
     }
 
-    setFormData({ ...formData, images: [...formData.images, ...fileNames] });
+    // Cập nhật danh sách tệp và URL
+    setImageFiles([...imageFiles, ...files]);
+    setFormData({ ...formData, images: [...formData.images, ...newImageUrls] });
     setHasImageChange(true);
   };
 
   const removeImage = (index) => {
     const newImages = formData.images.filter((_, i) => i !== index);
+    const newImageFiles = imageFiles.filter((_, i) => i !== index);
     setFormData({ ...formData, images: newImages });
+    setImageFiles(newImageFiles);
     setHasImageChange(true);
   };
 
@@ -91,7 +97,7 @@ const UpdateRoom = () => {
         operationType: 0,
         path: "images",
         op: "replace",
-        value: formData.images.map((img) => ({ imageUrl: img })),
+        value: imageFiles.map((file) => ({ imageUrl: file.name })), // Gửi tên tệp lên server
       });
     }
 
@@ -102,7 +108,7 @@ const UpdateRoom = () => {
 
     try {
       const res = await dispatch(updateRoom({ roomId: id, updates })).unwrap();
-      toast.success(res.message)
+      toast.success(res.message);
       navigate("/dashboard/room", { state: { successMessage: res.message } });
     } catch (error) {
       const errorMessage = error.message || "Unknown error";
@@ -203,28 +209,28 @@ const UpdateRoom = () => {
                 </div>
               </div>
               {formData.images.length > 0 && (
-              <div className="flex flex-col space-y-2">
-                <label className="text-sm font-medium">Ảnh đã chọn:</label>
-                <div className="mt-1 flex flex-wrap gap-2">
-                  {formData.images.map((img, index) => (
-                    <div key={index} className="relative w-20 h-20">
-                      <img
-                        src={`/assets/${img}`}
-                        alt={`img-${index}`}
-                        className="w-full h-full object-cover rounded-lg border"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition duration-150 ease-in-out"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ))}
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm font-medium">Ảnh đã chọn:</label>
+                  <div className="mt-1 flex flex-wrap gap-2">
+                    {formData.images.map((img, index) => (
+                      <div key={index} className="relative w-20 h-20">
+                        <img
+                          src={img.startsWith("blob:") ? img : `/assets/${img}`} // Sử dụng blob URL cho ảnh mới, hoặc đường dẫn server cho ảnh cũ
+                          alt={`img-${index}`}
+                          className="w-full h-full object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition duration-150 ease-in-out"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
             </div>
           </div>
           <div className="mt-8 flex justify-between gap-4">

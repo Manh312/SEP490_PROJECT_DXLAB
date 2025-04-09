@@ -122,16 +122,14 @@ const ViewAreas = () => {
   // Fetch slot cho một ngày cụ thể
   const fetchSlotsForDate = async (date) => {
     if (!selectedArea || !selectedRoom || !date) return;
-
-    if (fetchedSlots[date]) return; // Không fetch lại nếu đã có dữ liệu
-
+  
     try {
       const res = await dispatch(fetchAvailableSlots({
         roomId: selectedRoom.roomId,
         areaTypeId: selectedArea.value[0].areaTypeId,
         bookingDate: date,
       })).unwrap();
-
+  
       setFetchedSlots((prev) => ({
         ...prev,
         [date]: res.data || [],

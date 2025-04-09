@@ -45,16 +45,16 @@ const ReportDetail = () => {
         className={`w-full max-w-2xl border p-6 rounded-lg shadow-lg `}
       >
         {/* Header */}
-        <h2 className="text-2xl font-bold mb-6 text-center">Chi Tiết Báo Cáo #{report.reportId}</h2>
+        <h2 className="text-3xl font-bold mb-6 text-center">Chi Tiết Báo Cáo RP-{report.reportId}</h2>
 
         {/* Thông tin báo cáo */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3 border-b border-gray-300 pb-2">
+          <h3 className="text-xl font-semibold mb-3 border-b border-gray-300 pb-2">
             Thông Tin Báo Cáo
           </h3>
-          <div className="text-sm space-y-2">
+          <div className="text-md space-y-2">
             <p>
-              <strong>ID Báo Cáo:</strong> {report.reportId}
+              <strong>Mã Báo Cáo:</strong> RP-{report.reportId}
             </p>
             <p>
               <strong>Tên Nhân Viên:</strong> {report.staffName || "N/A"}
@@ -67,12 +67,12 @@ const ReportDetail = () => {
 
         {/* Thông tin liên quan */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3 border-b border-gray-300 pb-2">
+          <h3 className="text-xl font-semibold mb-3 border-b border-gray-300 pb-2">
             Thông Tin Liên Quan
           </h3>
-          <div className="text-sm space-y-2">
+          <div className="text-md space-y-2">
             <p>
-              <strong>Mã Đặt Chỗ:</strong> {report.bookingDetailId || "N/A"}
+              <strong>Mã Đặt Chỗ:</strong> DXL-{report.bookingDetailId || "N/A"}
             </p>
             <p>
               <strong>Vị Trí:</strong> {report.position || "N/A"}
@@ -90,7 +90,7 @@ const ReportDetail = () => {
         <div className="flex justify-end mt-6">
           <Link
             to="/manage/reports"
-            className="bg-orange-500 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors"
+            className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
           >
             Quay Lại
           </Link>

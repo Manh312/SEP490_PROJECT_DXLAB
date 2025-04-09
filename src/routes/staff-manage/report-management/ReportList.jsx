@@ -130,7 +130,7 @@ const ReportList = () => {
                 <thead className="border-b bg-gray-400">
                   <tr>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">#</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">ID Báo Cáo</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Mã Báo Cáo</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Mã Đặt Chỗ</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Khu Vực</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Tên Nhân Viên</th>
@@ -152,11 +152,11 @@ const ReportList = () => {
                           to={`/manage/report/${report.reportId}`}
                           className="hover:text-orange-400 transition-colors"
                         >
-                          {report.reportId}
+                          RP-{report.reportId}
                         </Link>
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {report.bookingDetailId || "N/A"}
+                        DXL-{report.bookingDetailId || "N/A"}
                       </td>
                       <td className="px-4 py-4 text-center">
                         {report.areaName || "N/A"}

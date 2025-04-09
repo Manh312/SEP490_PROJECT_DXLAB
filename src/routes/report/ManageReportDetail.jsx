@@ -44,17 +44,17 @@ const ManageReportDetail = () => {
         {/* Header với icon */}
         <div className="flex items-center justify-center mb-6">
           <ClipboardList className="w-8 h-8 mr-2" />
-          <h2 className="text-2xl font-bold text-center">Chi Tiết Báo Cáo #{report.reportId}</h2>
+          <h2 className="text-3xl font-bold text-center">Chi Tiết Báo Cáo RP-{report.reportId}</h2>
         </div>
 
         {/* Thông tin báo cáo */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3 border-b border-gray-300 pb-2">
+          <h3 className="text-xl font-semibold mb-3 border-b border-gray-300 pb-2">
             Thông Tin Báo Cáo
           </h3>
-          <div className="text-sm space-y-2">
+          <div className="text-md space-y-2">
             <p>
-              <strong>ID Báo Cáo:</strong> {report.reportId}
+              <strong>Mã Báo Cáo:</strong> RP-{report.reportId}
             </p>
             <p>
               <strong>Tên Nhân Viên:</strong> {report.staffName || "N/A"}
@@ -67,12 +67,12 @@ const ManageReportDetail = () => {
 
         {/* Thông tin liên quan */}
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3 border-b border-gray-300 pb-2">
+          <h3 className="text-xl font-semibold mb-3 border-b border-gray-300 pb-2">
             Thông Tin Liên Quan
           </h3>
-          <div className="text-sm space-y-2">
+          <div className="text-md space-y-2">
             <p>
-              <strong>Mã Đặt Chỗ:</strong> {report.bookingDetailId || "N/A"}
+              <strong>Mã Đặt Chỗ:</strong> DXL-{report.bookingDetailId || "N/A"}
             </p>
             <p>
               <strong>Vị Trí:</strong> {report.position || "N/A"}

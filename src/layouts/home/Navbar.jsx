@@ -23,8 +23,6 @@ const Navbar = () => {
   const { user } = useSelector((state) => state.auth); // Chỉ lấy user, không có role nữa
   const { contract } = useContract("0x1745A6155d7A0eD49f87F6554560a6b19D431706");
   const { data: balance } = useTokenBalance(contract, address);
-
-  console.log("Balance:", balance);
   
 
   // Lấy roleName từ roleId khi user thay đổi

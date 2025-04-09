@@ -111,8 +111,6 @@ const AreaDetail = () => {
   const fetchSlotsForDate = async (date) => {
     if (!selectedArea || !selectedRoom || !date) return;
 
-    if (fetchedSlots[date]) return; // Không fetch lại nếu đã có dữ liệu
-
     try {
       const res = await dispatch(
         fetchAvailableSlots({

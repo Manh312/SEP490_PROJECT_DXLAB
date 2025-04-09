@@ -161,8 +161,10 @@ const RoomList = () => {
                 <thead className="border-b items-center bg-gray-400">
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hình ảnh</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hình Ảnh</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Phòng</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Khu Vực</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Loại Khu Vực</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Sức Chứa</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Trạng Thái</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành Động</th>
@@ -185,7 +187,21 @@ const RoomList = () => {
                         ))}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        <Link to={`/dashboard/room/${room.roomId}`} className="">{room.roomName}</Link>
+                        {room.roomName}
+                      </td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        {room.area_DTO.map((area, idx) => (
+                          <span key={idx} className="block">
+                            {area.areaName}
+                          </span>
+                        ))}
+                      </td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        {room.area_DTO.map((area, idx) => (
+                          <span key={idx} className="block">
+                            {area.areaTypeName}
+                          </span>
+                        ))}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {room.capacity} người

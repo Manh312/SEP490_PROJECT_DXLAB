@@ -130,6 +130,7 @@ const ManageReportList = () => {
                 <thead className="border-b bg-gray-400">
                   <tr>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">#</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Mã Báo Cáo</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Mã Đặt Chỗ</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Vị Trí</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Phòng</th>
@@ -150,7 +151,10 @@ const ManageReportList = () => {
                         {(currentPage - 1) * reportsPerPage + index + 1}
                       </td>
                       <td className="px-4 py-4 text-center">
-                        {report.bookingDetailId || "N/A"}
+                        RP-{report.reportId || "N/A"}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        DXL-{report.bookingDetailId || "N/A"}
                       </td>
                       <td className="px-4 py-4 text-center">
                         {report.position || "N/A"}

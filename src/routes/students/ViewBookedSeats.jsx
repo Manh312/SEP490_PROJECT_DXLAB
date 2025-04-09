@@ -240,7 +240,7 @@ const ViewBookedSeats = () => {
             {/* Individual Seats (Conditional Display) */}
             {(tablesToDisplay.showTable1 || tablesToDisplay.showTable2) && (
               <div className="flex flex-col items-center gap-6">
-                <h2 className="text-2xl font-bold mb-4">Chỗ ngồi cá nhân</h2>
+                <h2 className="text-2xl font-bold mb-4">Khu vực cá nhân</h2>
                 {tablesToDisplay.showTable1 && (
                   <div
                     className="relative flex justify-center items-center border-4 border-gray-600 p-6 rounded-lg shadow-md w-full sm:w-[300px]"
@@ -270,7 +270,6 @@ const ViewBookedSeats = () => {
                     })}
                   </div>
                 )}
-
                 {tablesToDisplay.showTable2 && (
                   <div
                     className="relative flex justify-center items-center border-4 border-gray-600 p-6 rounded-lg shadow-md w-full sm:w-[300px]"

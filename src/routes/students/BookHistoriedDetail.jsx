@@ -139,10 +139,10 @@ const BookHistoriedDetail = () => {
                     <div>
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium ${
-                          detail.status === 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                          detail.status === 0 || detail.status === 1 || detail.status === 2 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {detail.status === 0 ? "Thành công" : "Không thành công"}
+                        {detail.status === 0 || detail.status === 1 || detail.status === 2 ? "Thành công" : "Không thành công"}
                       </span>
                     </div>
                   </div>
