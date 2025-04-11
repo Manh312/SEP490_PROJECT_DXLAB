@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchAreaTypeById, updateAreaType } from "../../redux/slices/AreaType";
+import { fetchAreaTypeById, updateAreaType, updateAreaTypeImages } from "../../redux/slices/AreaType";
 import {
   fetchFacilitiesByAreaId,
   fetchAllFacilities,
@@ -180,6 +180,7 @@ const UpdateAreaType = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validation
     if (!formData.areaTypeName.trim()) {
       toast.error("Tên loại khu vực là bắt buộc!");
       return;
@@ -216,18 +217,31 @@ const UpdateAreaType = () => {
     const newFiles = formData.images.filter((img) => img instanceof File);
 
     try {
+      // Step 1: Update the area type details using updateAreaType
       await dispatch(
         updateAreaType({
           areaTypeId: id,
           updatedData: areaTypeData,
-          files: newFiles,
         })
       ).unwrap();
-      toast.success("Cập nhật thành công!");
+      toast.success("Cập nhật thông tin loại khu vực thành công!");
+
+      // Step 2: If there are new images and hasImageChange is true, update the images using updateAreaTypeImages
+      if (hasImageChange && newFiles.length > 0) {
+        await dispatch(
+          updateAreaTypeImages({
+            areaTypeId: id,
+            files: newFiles,
+          })
+        ).unwrap();
+        toast.success("Cập nhật ảnh thành công!");
+      }
+
+      // Navigate back to the dashboard after successful updates
       navigate("/dashboard/areaType");
     } catch (error) {
       const errorMessage = error.message || "Unknown error";
-      toast.error(`Lỗi khi cập nhật loại khu vực: ${errorMessage}`);
+      toast.error(`Lỗi khi cập nhật: ${errorMessage}`);
       console.error("Update error:", error);
     }
   };
@@ -334,16 +348,15 @@ const UpdateAreaType = () => {
             <h2 className="text-3xl font-bold text-gray-800">Quản Lý Loại Khu Vực {id}</h2>
           </div>
           {/* Nút Thêm Thiết Bị */}
-
           {activeTab === "manageFacilities" && (
-             <div className="mt-6 flex justify-end">
-             <button
-               onClick={openModal}
-               className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all shadow-md"
-             >
-               <Plus className="w-5 h-5" /> Thêm Thiết Bị
-             </button>
-           </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={openModal}
+                className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all shadow-md"
+              >
+                <Plus className="w-5 h-5" /> Thêm Thiết Bị
+              </button>
+            </div>
           )}
         </div>
 
@@ -352,19 +365,21 @@ const UpdateAreaType = () => {
           <nav className="-mb-px flex space-x-4">
             <button
               onClick={() => setActiveTab("update")}
-              className={`py-3 px-4 text-sm font-medium border-b-2 transition-all duration-150 ease-in-out ${activeTab === "update"
-                ? "border-orange-500 text-orange-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+              className={`py-3 px-4 text-sm font-medium border-b-2 transition-all duration-150 ease-in-out ${
+                activeTab === "update"
+                  ? "border-orange-500 text-orange-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
             >
               Cập Nhật Loại Khu Vực
             </button>
             <button
               onClick={() => setActiveTab("manageFacilities")}
-              className={`py-3 px-4 text-sm font-medium border-b-2 transition-all duration-150 ease-in-out ${activeTab === "manageFacilities"
-                ? "border-orange-500 text-orange-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
+              className={`py-3 px-4 text-sm font-medium border-b-2 transition-all duration-150 ease-in-out ${
+                activeTab === "manageFacilities"
+                  ? "border-orange-500 text-orange-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
             >
               Quản Lý Trang Thiết Bị
             </button>
@@ -774,10 +789,9 @@ const UpdateAreaType = () => {
                             <tr
                               key={faci.facilityId}
                               onClick={() => setSelectedFacility(faci)}
-                              className={`cursor-pointer hover:bg-orange-50 transition ${selectedFacility?.facilityId === faci.facilityId
-                                ? "bg-orange-100"
-                                : ""
-                                }`}
+                              className={`cursor-pointer hover:bg-orange-50 transition ${
+                                selectedFacility?.facilityId === faci.facilityId ? "bg-orange-100" : ""
+                              }`}
                             >
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {faci.facilityName}

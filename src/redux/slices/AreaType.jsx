@@ -65,13 +65,11 @@ export const createAreaType = createAsyncThunk(
   }
 );
 
-// Cập nhật loại khu vực theo API `PATCH`
+// Cập nhật loại khu vực theo API `PATCH` (đã bỏ phần upload ảnh)
 export const updateAreaType = createAsyncThunk(
   "areaTypes/updateAreaType",
-  async ({ areaTypeId, updatedData, files }, { rejectWithValue }) => {
+  async ({ areaTypeId, updatedData }, { rejectWithValue }) => {
     try {
-      const formData = new FormData();
-
       // Tạo object areaTypeData từ updatedData
       const areaTypeData = {
         areaTypeName: updatedData.areaTypeName,
@@ -82,24 +80,40 @@ export const updateAreaType = createAsyncThunk(
         isDeleted: updatedData.isDeleted,
       };
 
-      // Chuyển object thành chuỗi JSON
-      formData.append("areaTypeData", JSON.stringify(areaTypeData));
-
-      // Thêm files nếu có
-      if (files && files.length > 0) {
-        files.forEach((file) => {
-          formData.append("files", file);
-        });
-      }
-
-      const response = await axiosInstance.patch(`${API_URL}/${areaTypeId}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await axiosInstance.patch(`${API_URL}/${areaTypeId}`, areaTypeData);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi khi cập nhật loại khu vực");
+    }
+  }
+);
+
+// API mới để cập nhật ảnh riêng
+export const updateAreaTypeImages = createAsyncThunk(
+  "areaTypes/updateAreaTypeImages",
+  async ({ id, files }, { rejectWithValue }) => {
+    try {
+      const formData = new FormData();
+
+      if (files && files.length > 0) {
+        files.forEach((file) => {
+          formData.append("Images", file);
+        });
+      }
+
+      // Include areaTypeId as a query parameter in the URL
+      const response = await axiosInstance.post(
+        `${API_URL}/newImage?id=${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Lỗi khi cập nhật ảnh");
     }
   }
 );
@@ -203,6 +217,28 @@ const areaTypeSlice = createSlice({
         );
       })
       .addCase(updateAreaType.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Cập nhật ảnh loại khu vực
+      .addCase(updateAreaTypeImages.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateAreaTypeImages.fulfilled, (state, action) => {
+        state.loading = false;
+
+        // Cập nhật dữ liệu nếu đang ở trang chi tiết
+        if (state.selectedAreaType?.areaTypeId === action.payload.data?.areaTypeId) {
+          state.selectedAreaType = action.payload.data;
+        }
+
+        // Cập nhật dữ liệu trong danh sách
+        state.areaTypes = state.areaTypes.map((type) =>
+          type.areaTypeId === action.payload.data?.areaTypeId ? action.payload.data : type
+        );
+      })
+      .addCase(updateAreaTypeImages.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

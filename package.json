@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@microsoft/signalr": "^8.0.7",
     "@reduxjs/toolkit": "^2.5.1",
     "@tailwindcss/vite": "^4.0.5",
     "@thirdweb-dev/auth": "^4.1.97",

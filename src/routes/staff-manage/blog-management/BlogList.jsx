@@ -1,18 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { PlusCircle, Filter, Search, Edit, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { toast } from "react-toastify";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBlogsByStatus, setStatusFilter } from "../../../redux/slices/Blog";
 import Pagination from "../../../hooks/use-pagination";
 import { FaSpinner } from "react-icons/fa";
+import { startSignalRConnection, stopSignalRConnection } from "../../../utils/signalR"; 
 
 const BlogList = () => {
   const dispatch = useDispatch();
-  const { blogs, loading, statusFilter, error } = useSelector((state) => state.blogs);
+  const { blogs, statusFilter, error } = useSelector((state) => state.blogs);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [imageIndices, setImageIndices] = useState({});
+  const [initialLoading, setInitialLoading] = useState(true); // State để kiểm soát loading ban đầu
   const blogsPerPage = 5;
   const baseUrl = "https://localhost:9999";
 
@@ -21,8 +24,35 @@ const BlogList = () => {
     setCurrentPage(1);
   }, 300);
 
+  // Khởi tạo SignalR và lắng nghe sự kiện
   useEffect(() => {
-    dispatch(fetchBlogsByStatus(statusFilter));
+    const setupSignalR = async () => {
+      const connection = await startSignalRConnection();
+
+      // Lắng nghe sự kiện "ReceiveBlogUpdate" từ server
+      connection.on("ReceiveBlogUpdate", (message, blogId, newStatus) => {
+        // Hiển thị thông báo
+        if (newStatus === 2) {
+          toast.success(`Blog đã được duyệt!`, { autoClose: 3000 });
+        } else if (newStatus === 0) {
+          toast.error(`Blog đã bị hủy!`, { autoClose: 3000 });
+        }
+
+        // Gọi lại API để cập nhật danh sách blog
+        dispatch(fetchBlogsByStatus(statusFilter));
+      });
+
+      // Lấy dữ liệu lần đầu
+      await dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
+      setInitialLoading(false);
+    };
+
+    setupSignalR();
+
+    // Cleanup khi component unmount
+    return () => {
+      stopSignalRConnection();
+    };
   }, [dispatch, statusFilter]);
 
   const filteredBlogs = useMemo(() => {
@@ -180,13 +210,13 @@ const BlogList = () => {
             </h2>
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-          <NavLink
-            to="create"
-            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-md"
-          >
-            <PlusCircle className="h-5 w-5" />
-            <span className="hidden sm:inline">Tạo Blog</span>
-          </NavLink>
+            <NavLink
+              to="create"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-md"
+            >
+              <PlusCircle className="h-5 w-5" />
+              <span className="hidden sm:inline">Tạo Blog</span>
+            </NavLink>
           </div>
         </div>
 
@@ -219,9 +249,9 @@ const BlogList = () => {
         </div>
 
         {/* Loading State */}
-        {loading ? (
+        {initialLoading ? (
           <div className="flex items-center justify-center py-6 mb-200">
-            <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2"/>
+            <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
             <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
           </div>
         ) : filteredBlogs.length === 0 ? (

@@ -24,7 +24,6 @@ import axiosInstance from "./utils/axios.js";
 const activeChain = "sepolia";
 
 const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) => {
-
   try {
     const userEmail =
       walletType === "embeddedWallet"
@@ -40,8 +39,6 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
       roleId: 3,
     };
 
-    // Removed useNavigate from here as it is passed as an argument
-
     const response = await axiosInstance.post('/user/verifyuser', payload);
     const result = response.data;
 
@@ -56,6 +53,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
 
     dispatch(setAuthData({ token: result.data.token, user: result.data.user }));
 
+    // Chỉ hiển thị toast.success sau khi tất cả logic hoàn tất
     toast.success(
       walletType === "metamask"
         ? "Đăng nhập MetaMask thành công!"
@@ -64,16 +62,17 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType) 
           : "Đăng nhập ví thành công!",
       { toastId: `login-${walletType}` }
     );
-    // Call BLOCKCHAIN GET BALANCE
   } catch (error) {
     console.error("Backend error:", error.message);
     toast.error(
-      error.message.includes("404")
-        ? "Backend server không khả dụng."
-        : "Lỗi đăng nhập. Vui lòng thử lại.",
+      error.response?.status === 401
+        ? "Xác thực thất bại: Thông tin không hợp lệ."
+        : error.message.includes("404")
+          ? "Backend server không khả dụng."
+          : "Lỗi đăng nhập. Vui lòng thử lại.",
       { toastId: "login-error" }
     );
-    throw error;
+    throw error; // Đảm bảo lỗi được truyền ra ngoài
   }
 };
 
@@ -89,13 +88,15 @@ const AppWithWallet = React.memo(() => {
   const validateUser = useCallback(() => {
     const user = store.getState().auth.user;
     const userEmail = user?.storedToken?.authDetails?.email || user?.email;
-
+  
+    console.log("Validating user:", { walletAddress, walletType, userEmail });
+  
     if (!walletAddress || !walletType) {
       setIsValidUser(false);
       return;
     }
-
-    if (walletType === "embeddedWallet" && (!userEmail)) {
+  
+    if (walletType === "embeddedWallet" && !userEmail) {
       disconnect();
       dispatch(clearAuthData());
       setIsValidUser(false);
@@ -146,11 +147,16 @@ const RootApp = () => {
                 });
                 throw new Error("Email không hợp lệ");
               }
-              await sendUserDataToBackend(user, user.walletDetails?.walletAddress, dispatch, "embeddedWallet");
+              try {
+                await sendUserDataToBackend(user, user.walletDetails?.walletAddress, dispatch, "embeddedWallet");
+              } catch (error) {
+                console.error("Auth success error:", error);
+                throw error; // Ném lỗi để Thirdweb biết xác thực thất bại
+              }
             },
-          }),
+          })
         ]}
-        autoConnect={true}
+        autoConnect={false}
       >
         <PersistGate loading={null} persistor={persistor}>
           <AppWithWallet />
