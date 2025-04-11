@@ -18,7 +18,9 @@ import images1 from "../assets/dxlab_images1.jpg";
 // import images2 from "../assets/dxlab_images2.jpg";
 import images3 from "../assets/dxlab_images3.jpg";
 import images4 from "../assets/dxlab_images4.jpg";
+import canhan from "../assets/CanhanDxlab.jpg";
 import { MdChair } from "react-icons/md";
+
 
 
 export const navItems = [
@@ -47,83 +49,10 @@ export const services = [
   },
 ];
 
-export const blogPosts = [
-  {
-    id: "1",
-    title: "Không gian làm việc hiện đại tại DXLAB",
-    date: "20/02/2025",
-    image: images1,
-    content: `DXLAB mang đến không gian làm việc linh hoạt, sáng tạo, phù hợp cho cá nhân và nhóm. 
-    Hãy khám phá sự tiện nghi mà chúng tôi cung cấp.
-
-    Với thiết kế hiện đại, DXLAB tạo ra môi trường làm việc chuyên nghiệp, giúp bạn tối ưu năng suất và 
-    sáng tạo. Chúng tôi cung cấp đầy đủ tiện nghi như Wi-Fi tốc độ cao, khu vực tiếp khách, phòng họp, và 
-    không gian thư giãn. Không chỉ là nơi làm việc, DXLAB còn là cộng đồng dành cho những người đam mê 
-    khởi nghiệp, nơi bạn có thể kết nối và học hỏi từ những chuyên gia trong ngành.
-
-    Ngoài ra, DXLAB còn tổ chức nhiều sự kiện, hội thảo và workshop giúp bạn mở rộng kiến thức, kết nối 
-    với các nhà đầu tư, doanh nhân và chuyên gia hàng đầu. Đừng bỏ lỡ cơ hội trải nghiệm không gian làm việc 
-    tuyệt vời này tại DXLAB!`
-  },
-  {
-    id: "2",
-    title: "Lợi ích của co-working space đối với freelancer",
-    date: "18/02/2025",
-    image: images4,
-    content: `Freelancer có thể tận hưởng môi trường làm việc chuyên nghiệp, kết nối với cộng đồng và 
-    tăng năng suất khi làm việc tại DXLAB.
-
-    Co-working space không chỉ đơn thuần là một nơi để làm việc mà còn mang lại nhiều lợi ích đáng kể 
-    cho freelancer. Một trong những ưu điểm lớn nhất là bạn có thể làm việc trong một môi trường chuyên nghiệp 
-    với đầy đủ tiện nghi, giúp giảm thiểu sự xao nhãng so với làm việc tại nhà. 
-
-    Bên cạnh đó, co-working space giúp freelancer có cơ hội gặp gỡ và mở rộng mối quan hệ với những người 
-    có cùng chí hướng. Việc kết nối với cộng đồng không chỉ tạo ra cơ hội hợp tác mà còn giúp bạn học hỏi từ 
-    những chuyên gia trong lĩnh vực của mình.
-
-    Ngoài ra, không gian làm việc chung như DXLAB còn tổ chức nhiều sự kiện, hội thảo và chương trình đào tạo, 
-    giúp bạn nâng cao kỹ năng và cập nhật xu hướng mới nhất trong ngành. Nếu bạn đang tìm kiếm một nơi làm việc 
-    chuyên nghiệp, linh hoạt và sáng tạo, co-working space chính là lựa chọn hoàn hảo cho bạn!`,
-    images: images3,
-    contents: `Freelancer có thể tận hưởng môi trường làm việc chuyên nghiệp, kết nối với cộng đồng và 
-    tăng năng suất khi làm việc tại DXLAB.
-
-    Co-working space không chỉ đơn thuần là một nơi để làm việc mà còn mang lại nhiều lợi ích đáng kể 
-    cho freelancer. Một trong những ưu điểm lớn nhất là bạn có thể làm việc trong một môi trường chuyên nghiệp 
-    với đầy đủ tiện nghi, giúp giảm thiểu sự xao nhãng so với làm việc tại nhà. 
-
-    Bên cạnh đó, co-working space giúp freelancer có cơ hội gặp gỡ và mở rộng mối quan hệ với những người 
-    có cùng chí hướng. Việc kết nối với cộng đồng không chỉ tạo ra cơ hội hợp tác mà còn giúp bạn học hỏi từ 
-    những chuyên gia trong lĩnh vực của mình.
-
-    Ngoài ra, không gian làm việc chung như DXLAB còn tổ chức nhiều sự kiện, hội thảo và chương trình đào tạo, 
-    giúp bạn nâng cao kỹ năng và cập nhật xu hướng mới nhất trong ngành. Nếu bạn đang tìm kiếm một nơi làm việc 
-    chuyên nghiệp, linh hoạt và sáng tạo, co-working space chính là lựa chọn hoàn hảo cho bạn!`,
-  },
-  {
-    id: "3",
-    title: "Không gian làm việc hiện đại tại DXLAB",
-    date: "20/02/2025",
-    image: images1,
-    content: `DXLAB mang đến không gian làm việc linh hoạt, sáng tạo, phù hợp cho cá nhân và nhóm. 
-    Hãy khám phá sự tiện nghi mà chúng tôi cung cấp.
-
-    Với thiết kế hiện đại, DXLAB tạo ra môi trường làm việc chuyên nghiệp, giúp bạn tối ưu năng suất và 
-    sáng tạo. Chúng tôi cung cấp đầy đủ tiện nghi như Wi-Fi tốc độ cao, khu vực tiếp khách, phòng họp, và 
-    không gian thư giãn. Không chỉ là nơi làm việc, DXLAB còn là cộng đồng dành cho những người đam mê 
-    khởi nghiệp, nơi bạn có thể kết nối và học hỏi từ những chuyên gia trong ngành.
-
-    Ngoài ra, DXLAB còn tổ chức nhiều sự kiện, hội thảo và workshop giúp bạn mở rộng kiến thức, kết nối 
-    với các nhà đầu tư, doanh nhân và chuyên gia hàng đầu. Đừng bỏ lỡ cơ hội trải nghiệm không gian làm việc 
-    tuyệt vời này tại DXLAB!`
-  },
-];
-
-
 export const about = [
   {
-    title: "CHỖ NGỒI CÁ NHÂN CỐ ĐỊNH",
-    image: images1,
+    title: "CHỖ NGỒI CÁ NHÂN ",
+    image: canhan,
     description: "Dịch vụ chỗ ngồi cá nhân cố định tại DXLAB cung cấp không gian làm việc riêng biệt với bàn làm việc hiện đại, ghế ergonomic giúp giảm đau lưng, cùng hệ thống internet tốc độ cao. Không gian này lý tưởng cho những ai cần một nơi làm việc yên tĩnh, tập trung mà vẫn được kết nối với cộng đồng sáng tạo. Ngoài ra, bạn còn có thể sử dụng các tiện ích chung như phòng họp, khu vực thư giãn và quầy bar mini."
   },
   {
