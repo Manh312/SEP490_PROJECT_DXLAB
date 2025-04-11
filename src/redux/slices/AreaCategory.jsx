@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "../../utils/axios";
+import axiosInstance from "../../utils/axios";
 
 const API_URL = "/areatypecategory";
 
@@ -8,7 +8,7 @@ export const fetchAllAreaTypeCategories = createAsyncThunk(
   "areaTypeCategories/fetchAllAreaTypeCategories",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await axios.get(`${API_URL}/allAreaTypeCategory`);
+      const response = await axiosInstance.get(`${API_URL}/allAreaTypeCategory`);
       return response.data.data; // Assuming the API returns data in a similar structure
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi khi lấy danh sách danh mục loại khu vực");
@@ -19,11 +19,11 @@ export const fetchAllAreaTypeCategories = createAsyncThunk(
 // Create a new area type category
 export const createAreaTypeCategory = createAsyncThunk(
   "areaTypeCategories/createAreaTypeCategory",
-  async ({newAreaTypeCategory, files}, { rejectWithValue }) => {
+  async ({ newAreaTypeCategory, files }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
 
-      formData.append("Title", newAreaTypeCategory.title);  
+      formData.append("Title", newAreaTypeCategory.title);
       formData.append("CategoryDescription", newAreaTypeCategory.categoryDescription);
       formData.append("Status", newAreaTypeCategory.status || 1);
 
@@ -32,14 +32,10 @@ export const createAreaTypeCategory = createAsyncThunk(
           formData.append("Images", file);
         });
       }
-      const response = await axios.post(`${API_URL}/newareatypecategory`, formData );
-      console.log("Response:", response);
-
+      const response = await axiosInstance.post(`${API_URL}/newareatypecategory`, formData);
       return response.data;
     } catch (error) {
-      console.log(error);
-      
-      return rejectWithValue(error);
+      return rejectWithValue(error.response?.data || "Lỗi khi tạo danh mục loại khu vực");
     }
   }
 );
@@ -47,29 +43,67 @@ export const createAreaTypeCategory = createAsyncThunk(
 // Update an area type category using PATCH
 export const updateAreaTypeCategory = createAsyncThunk(
   "areaTypeCategories/updateAreaTypeCategory",
-  async ({ categoryId, areaData, files }, { rejectWithValue }) => {
+  async ({ categoryId, patchDoc }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.patch(
+        `${API_URL}?id=${categoryId}`,
+        patchDoc,
+        {
+          headers: {
+            "Content-Type": "application/json-patch+json",
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Lỗi khi cập nhật danh mục loại khu vực");
+    }
+  }
+);
+
+// Update images for an area type category
+export const updateAreaTypeCategoryImages = createAsyncThunk(
+  "areaTypeCategories/updateAreaTypeCategoryImages",
+  async ({ categoryId, files }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
 
-      formData.append("Title", areaData.title);
-      formData.append("CategoryDescription", areaData.categoryDescription);
-      formData.append("Status", areaData.status);
-
       if (files && files.length > 0) {
         files.forEach((file) => {
-          formData.append("Images", file); // Use "Images" to match the API's expected field name
+          formData.append("Images", file);
         });
       }
 
-      const response = await axios.patch(`${API_URL}/${categoryId}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      return response.data; // Return the updated data
+      const response = await axiosInstance.post(
+        `${API_URL}/newImage?id=${categoryId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi cập nhật danh mục loại khu vực");
+      return rejectWithValue(error.response?.data || "Lỗi khi cập nhật ảnh");
+    }
+  }
+);
+
+// Delete an image from an area type category
+export const deleteAreaTypeCategoryImage = createAsyncThunk(
+  "areaTypeCategories/deleteAreaTypeCategoryImage",
+  async ({ categoryId, imageUrl }, { rejectWithValue }) => {
+    try {
+      await axiosInstance.delete(`${API_URL}/Images?id=${categoryId}`, {
+        headers: {
+          "Content-Type": "application/json-patch+json",
+        },
+        data: [imageUrl], // Send the image URL as a JSON array
+      });
+      return { categoryId, imageUrl }; // Return the areaTypeCategoryId and deleted image URL
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Lỗi khi xóa ảnh của loại khu vực");
     }
   }
 );
@@ -78,6 +112,7 @@ const areaCategorySlice = createSlice({
   name: "areaCategory",
   initialState: {
     areaTypeCategories: [],
+    selectedAreaTypeCategory: null,
     loading: false,
     error: null,
   },
@@ -104,7 +139,7 @@ const areaCategorySlice = createSlice({
       })
       .addCase(createAreaTypeCategory.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload) {
+        if (action.payload?.data) {
           state.areaTypeCategories = [...state.areaTypeCategories, action.payload.data];
         }
       })
@@ -119,13 +154,70 @@ const areaCategorySlice = createSlice({
       })
       .addCase(updateAreaTypeCategory.fulfilled, (state, action) => {
         state.loading = false;
+        // Update the list
         state.areaTypeCategories = state.areaTypeCategories.map((category) =>
-          category.areaTypeCategoryId === action.payload.areaTypeCategoryId
-            ? action.payload
+          category.areaTypeCategoryId === action.payload.data?.areaTypeCategoryId
+            ? action.payload.data
             : category
         );
+        // Update selected category if applicable
+        if (
+          state.selectedAreaTypeCategory?.areaTypeCategoryId ===
+          action.payload.data?.areaTypeCategoryId
+        ) {
+          state.selectedAreaTypeCategory = action.payload.data;
+        }
       })
       .addCase(updateAreaTypeCategory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Update images for an area type category
+      .addCase(updateAreaTypeCategoryImages.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateAreaTypeCategoryImages.fulfilled, (state, action) => {
+        state.loading = false;
+        // Update the list
+        state.areaTypeCategories = state.areaTypeCategories.map((category) =>
+          category.areaTypeCategoryId === action.payload.data?.areaTypeCategoryId
+            ? action.payload.data
+            : category
+        );
+        // Update selected category if applicable
+        if (
+          state.selectedAreaTypeCategory?.areaTypeCategoryId ===
+          action.payload.data?.areaTypeCategoryId
+        ) {
+          state.selectedAreaTypeCategory = action.payload.data;
+        }
+      })
+      .addCase(updateAreaTypeCategoryImages.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Delete an image from an area type category
+      .addCase(deleteAreaTypeCategoryImage.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteAreaTypeCategoryImage.fulfilled, (state, action) => {
+        state.loading = false;
+        const { areaTypeCategoryId, imageUrl } = action.payload;
+
+        // Update the list
+        state.areaTypeCategories = state.areaTypeCategories.map((category) => {
+          if (category.areaTypeCategoryId === areaTypeCategoryId) {
+            return {
+              ...category,
+              images: category.images.filter((img) => img !== imageUrl),
+            };
+          }
+          return category;
+        });
+      })
+      .addCase(deleteAreaTypeCategoryImage.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
