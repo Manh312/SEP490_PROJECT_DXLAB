@@ -8,11 +8,9 @@ export const fetchAreaTypes = createAsyncThunk(
   "areaTypes/fetchAreaTypes",
   async (fil = "", { rejectWithValue }) => {
     try {
-      console.log(fil);
       const response = await axiosInstance.get(
         fil ? `${API_URL}?fil=${fil}` : API_URL
       );
-      console.log(response.data);
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi khi lấy dữ liệu");
@@ -65,33 +63,30 @@ export const createAreaType = createAsyncThunk(
   }
 );
 
-// Cập nhật loại khu vực theo API `PATCH` (đã bỏ phần upload ảnh)
+// Cập nhật loại khu vực theo API `PATCH`
 export const updateAreaType = createAsyncThunk(
-  "areaTypes/updateAreaType",
-  async ({ areaTypeId, updatedData }, { rejectWithValue }) => {
+  'areaTypes/updateAreaType',
+  async ({ areaTypeId, patchDoc }, { rejectWithValue }) => {
     try {
-      // Tạo object areaTypeData từ updatedData
-      const areaTypeData = {
-        areaTypeName: updatedData.areaTypeName,
-        areaDescription: updatedData.areaDescription,
-        price: updatedData.price,
-        areaCategory: updatedData.areaCategory,
-        size: updatedData.size,
-        isDeleted: updatedData.isDeleted,
-      };
-
-      const response = await axiosInstance.patch(`${API_URL}/${areaTypeId}`, areaTypeData);
+      const response = await axiosInstance.patch(
+        `${API_URL}/${areaTypeId}`,
+        patchDoc , {
+          headers: {
+            'Content-Type': 'application/json-patch+json',
+          },
+        }
+      );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi cập nhật loại khu vực");
+      return rejectWithValue(error);
     }
   }
 );
 
-// API mới để cập nhật ảnh riêng
+// API để cập nhật ảnh riêng
 export const updateAreaTypeImages = createAsyncThunk(
   "areaTypes/updateAreaTypeImages",
-  async ({ id, files }, { rejectWithValue }) => {
+  async ({ areaTypeId, files }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
 
@@ -101,9 +96,8 @@ export const updateAreaTypeImages = createAsyncThunk(
         });
       }
 
-      // Include areaTypeId as a query parameter in the URL
       const response = await axiosInstance.post(
-        `${API_URL}/newImage?id=${id}`,
+        `${API_URL}/newImage?id=${areaTypeId}`,
         formData,
         {
           headers: {
@@ -127,6 +121,25 @@ export const deleteAreaType = createAsyncThunk(
       return areaTypeId;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi khi xóa loại khu vực");
+    }
+  }
+);
+
+// Xóa ảnh của loại khu vực
+export const deleteAreaTypeImage = createAsyncThunk(
+  "areaTypes/deleteAreaTypeImage",
+  async ({ areaTypeId, imageUrl }, { rejectWithValue }) => {
+    try {
+      // The API expects a JSON body with the image URL to delete
+      await axiosInstance.delete(`${API_URL}/Images?id=${areaTypeId}`, {
+        headers: {
+          "Content-Type": "application/json-patch+json",
+        },
+        data: [imageUrl], // Send the image URL as a JSON array
+      });
+      return { areaTypeId, imageUrl }; // Return the areaTypeId and deleted image URL for state update
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Lỗi khi xóa ảnh của loại khu vực");
     }
   }
 );
@@ -239,6 +252,37 @@ const areaTypeSlice = createSlice({
         );
       })
       .addCase(updateAreaTypeImages.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Xóa ảnh của loại khu vực
+      .addCase(deleteAreaTypeImage.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteAreaTypeImage.fulfilled, (state, action) => {
+        state.loading = false;
+        const { areaTypeId, imageUrl } = action.payload;
+
+        // Cập nhật danh sách areaTypes
+        state.areaTypes = state.areaTypes.map((type) => {
+          if (type.areaTypeId === areaTypeId) {
+            return {
+              ...type,
+              images: type.images.filter((img) => img !== imageUrl),
+            };
+          }
+          return type;
+        });
+
+        // Cập nhật selectedAreaType nếu đang ở trang chi tiết
+        if (state.selectedAreaType?.areaTypeId === areaTypeId) {
+          state.selectedAreaType.images = state.selectedAreaType.images.filter(
+            (img) => img !== imageUrl
+          );
+        }
+      })
+      .addCase(deleteAreaTypeImage.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

@@ -12,10 +12,12 @@ import {
   Filter,
   Search,
   LucideAreaChart,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
-import Pagination from "../../hooks/use-pagination"; // Giả sử bạn có hook này
+import Pagination from "../../hooks/use-pagination";
 import debounce from "lodash/debounce";
 
 const AreaTypeList = () => {
@@ -26,7 +28,9 @@ const AreaTypeList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [imageIndices, setImageIndices] = useState({}); // State to track current image index for each area type
   const areaTypesPerPage = 5;
+  const baseUrl = "https://localhost:9999"; // Base URL for image paths
 
   // Debounced search function
   const debouncedSearch = debounce((value) => {
@@ -34,7 +38,7 @@ const AreaTypeList = () => {
     setCurrentPage(1);
   }, 300);
 
-  // Lọc danh sách loại khu vực theo trạng thái và từ khóa tìm kiếm
+  // Filter area types based on status and search term
   const filteredAreaTypes = useMemo(() => {
     if (!Array.isArray(areaTypes)) return [];
 
@@ -71,7 +75,7 @@ const AreaTypeList = () => {
     dispatch(fetchAreaTypes("0"));
   }, [dispatch]);
 
-  // Xử lý xóa loại khu vực
+  // Handle delete area type
   const handleDelete = async (areaTypeId) => {
     if (!areaTypeId) {
       toast.error("Không thể xóa: ID không hợp lệ!");
@@ -88,7 +92,7 @@ const AreaTypeList = () => {
     }
   };
 
-  // Hiển thị thông báo tạo thành công
+  // Show success message if redirected after creation
   const location = useLocation();
   useEffect(() => {
     if (location.state?.successMessage) {
@@ -119,6 +123,79 @@ const AreaTypeList = () => {
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  // Function to render the image carousel
+  const renderImages = (images, areaTypeId) => {
+    const validImages = Array.isArray(images) && images.length > 0 ? images : [];
+    if (!validImages.length) {
+      return (
+        <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
+          <span className="text-gray-500 text-sm">Không có ảnh</span>
+        </div>
+      );
+    }
+
+    const currentIndex = imageIndices[areaTypeId] || 0;
+
+    const prevImage = () => {
+      setImageIndices((prev) => ({
+        ...prev,
+        [areaTypeId]: (currentIndex - 1 + validImages.length) % validImages.length,
+      }));
+    };
+
+    const nextImage = () => {
+      setImageIndices((prev) => ({
+        ...prev,
+        [areaTypeId]: (currentIndex + 1) % validImages.length,
+      }));
+    };
+
+    const imageSrc = validImages[currentIndex];
+    const displaySrc =
+      typeof imageSrc === "string"
+        ? imageSrc.startsWith("http")
+          ? imageSrc
+          : `${baseUrl}${imageSrc}`
+        : "/placeholder-image.jpg";
+
+    return (
+      <div className="relative w-32 h-32 mx-auto group">
+        <img
+          src={displaySrc}
+          alt={`Area type image ${currentIndex}`}
+          className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
+          onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+        />
+        {validImages.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+              {validImages.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    idx === currentIndex ? "bg-white" : "bg-gray-400"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -208,24 +285,16 @@ const AreaTypeList = () => {
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {(currentPage - 1) * areaTypesPerPage + index + 1}
                       </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center flex justify-center gap-2">
-                        {type.images?.slice(0, 3).map((img, imgIndex) => (
-                          <img
-                            key={imgIndex}
-                            src={`https://localhost:9999${img}`}
-                            alt={`Image ${imgIndex + 1}`}
-                            className="w-32 h-32 object-cover rounded-md shadow"
-                          />
-                        ))}
-                        {type.images?.length > 3 && (
-                          <span className="text-gray-500">
-                            + {type.images.length - 3} ảnh
-                          </span>
-                        )}
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        {renderImages(type.images, type.areaTypeId)}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        <Link to={`/dashboard/areaType/${type.areaTypeId}`} className="hover:text-neutral-300 inline-block"
-                        >{type.areaTypeName || "N/A"}</Link>
+                        <Link
+                          to={`/dashboard/areaType/${type.areaTypeId}`}
+                          className="hover:text-neutral-300 inline-block"
+                        >
+                          {type.areaTypeName || "N/A"}
+                        </Link>
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {`${type.areaCategory === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}`}
@@ -235,8 +304,9 @@ const AreaTypeList = () => {
                       </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                            }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${
+                            type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                          }`}
                         >
                           {type.isDeleted ? "Đã xóa" : "Hoạt động"}
                         </span>
@@ -281,17 +351,30 @@ const AreaTypeList = () => {
                           #{(currentPage - 1) * areaTypesPerPage + index + 1}
                         </span>
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                            }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${
+                            type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                          }`}
                         >
                           {type.isDeleted ? "Đã xóa" : "Hoạt động"}
                         </span>
                       </div>
+                      {renderImages(type.images, type.areaTypeId)}
                       <p className="text-sm">
-                        <span className="font-medium">Tên Loại:</span> {type.areaTypeName || "N/A"}
+                        <span className="font-medium">Tên Loại:</span>{" "}
+                        <Link
+                          to={`/dashboard/areaType/${type.areaTypeId}`}
+                          className="text-orange-500 hover:text-orange-600"
+                        >
+                          {type.areaTypeName || "N/A"}
+                        </Link>
                       </p>
                       <p className="text-sm">
-                        <span className="font-medium">Giá:</span> {type.price ? `${type.price} DXLAB Coin` : "N/A"}
+                        <span className="font-medium">Phân Loại:</span>{" "}
+                        {type.areaCategory === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Giá:</span>{" "}
+                        {type.price ? `${type.price} DXLAB Coin` : "N/A"}
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <button

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchAreaTypeById, updateAreaType, updateAreaTypeImages } from "../../redux/slices/AreaType";
+import { fetchAreaTypeById, updateAreaType, updateAreaTypeImages, deleteAreaTypeImage } from "../../redux/slices/AreaType";
 import {
   fetchFacilitiesByAreaId,
   fetchAllFacilities,
@@ -34,8 +34,10 @@ const UpdateAreaType = () => {
     images: [],
   });
   const [hasImageChange, setHasImageChange] = useState(false);
+  const [hasDetailsChange, setHasDetailsChange] = useState(false); // Track changes in area type details
   const [imagePreviews, setImagePreviews] = useState([]);
   const [existingImages, setExistingImages] = useState([]); // Ảnh hiện có từ backend
+  const [imagesToDelete, setImagesToDelete] = useState([]); // New state to track images to delete
   const [failedImages, setFailedImages] = useState(new Set()); // Theo dõi ảnh không tải được
   const fileInputRef = useRef(null);
 
@@ -135,11 +137,13 @@ const UpdateAreaType = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    setHasDetailsChange(true); // Mark details as changed
   };
 
   const handleNumberChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value === "" ? "" : parseFloat(value) });
+    setHasDetailsChange(true); // Mark details as changed
   };
 
   const handleImageChange = (e) => {
@@ -156,20 +160,65 @@ const UpdateAreaType = () => {
   };
 
   const handleRemoveImage = (index) => {
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-    if (index < existingImages.length) {
-      setExistingImages((prev) => prev.filter((_, i) => i !== index));
+    const isExistingImage = index < existingImages.length;
+    let updatedPreviews = [...imagePreviews];
+    let updatedImages = [...formData.images];
+    let updatedExistingImages = [...existingImages];
+
+    if (isExistingImage) {
+      // Log the existingImages array to debug the raw image URLs
+      console.log("Existing images from backend:", existingImages);
+
+      // Get the image URL from existingImages
+      let imageUrl = existingImages[index];
+
+      // Normalize the imageUrl to match the backend format
+      // Remove the BACKEND_URL prefix (e.g., https://localhost:9999)
+      imageUrl = imageUrl.replace(BACKEND_URL, '');
+
+      // Ensure the imageUrl starts with "/Images/"
+      if (!imageUrl.startsWith('/')) {
+        imageUrl = '/' + imageUrl; // Add a leading slash if missing
+      }
+      if (!imageUrl.startsWith('/Images/')) {
+        // If the path doesn't start with "/Images/", assume the remaining part is the filename
+        // and prepend "/Images/"
+        const filename = imageUrl.split('/').pop(); // Extract the filename
+        imageUrl = `/Images/${filename}`; // Prepend "/Images/" to the filename
+      }
+
+      console.log("Normalized imageUrl to delete:", imageUrl); // Debug log
+
+      // Add the normalized imageUrl to imagesToDelete
+      setImagesToDelete((prev) => [...prev, imageUrl]);
+
+      // Update existingImages
+      updatedExistingImages = updatedExistingImages.filter((_, i) => i !== index);
+      setExistingImages(updatedExistingImages);
+
+      // Update imagePreviews
+      updatedPreviews = updatedPreviews.filter((_, i) => i !== index);
+      setImagePreviews(updatedPreviews);
+
+      // Update formData.images
+      updatedImages = updatedImages.filter((_, i) => i !== index);
       setFormData((prev) => ({
         ...prev,
-        images: prev.images.filter((_, i) => i !== index),
+        images: updatedImages,
       }));
     } else {
+      // Remove new image (not yet uploaded to backend)
       const fileIndex = index - existingImages.length;
+      updatedPreviews = updatedPreviews.filter((_, i) => i !== index);
+      updatedImages = updatedImages.filter((_, i) => i !== fileIndex);
+
+      setImagePreviews(updatedPreviews);
       setFormData((prev) => ({
         ...prev,
-        images: prev.images.filter((_, i) => i !== fileIndex),
+        images: updatedImages,
       }));
     }
+
     setHasImageChange(true);
   };
 
@@ -197,36 +246,57 @@ const UpdateAreaType = () => {
       toast.error("Giá phải lớn hơn hoặc bằng 0!");
       return;
     }
-    if (formData.images.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một ảnh!");
-      return;
-    }
 
-    // Tạo object areaTypeData
-    const areaTypeData = {
-      areaTypeName: formData.areaTypeName,
-      areaDescription: formData.areaDescription,
-      price: parseFloat(formData.price),
-      areaCategory: Number(formData.areaCategory),
-      size: parseInt(formData.size),
-      isDeleted: formData.isDeleted,
-      existingImages: existingImages, // Gửi danh sách URL ảnh hiện có
-    };
-
-    // Tách biệt ảnh mới (files) từ formData.images
+    // Separate new files (images to upload) from formData.images
     const newFiles = formData.images.filter((img) => img instanceof File);
 
     try {
-      // Step 1: Update the area type details using updateAreaType
-      await dispatch(
-        updateAreaType({
-          areaTypeId: id,
-          updatedData: areaTypeData,
-        })
-      ).unwrap();
-      toast.success("Cập nhật thông tin loại khu vực thành công!");
+      // Step 1: Delete images marked for deletion
+      if (imagesToDelete.length > 0) {
+        for (const imageUrl of imagesToDelete) {
+          console.log("Deleting image:", imageUrl);
+          await dispatch(deleteAreaTypeImage({ areaTypeId: id, imageUrl })).unwrap();
+        }
+        toast.success("Xóa ảnh thành công!");
+        setImagesToDelete([]);
+      }
 
-      // Step 2: If there are new images and hasImageChange is true, update the images using updateAreaTypeImages
+      // Step 2: Update the area type details only if details have changed
+      if (hasDetailsChange) {
+        // Create a JSON Patch document by comparing selectedAreaType with formData
+        const patchDoc = [];
+        if (selectedAreaType.areaTypeName !== formData.areaTypeName) {
+          patchDoc.push({ op: "replace", path: "areaTypeName", value: formData.areaTypeName });
+        }
+        if (selectedAreaType.areaDescription !== formData.areaDescription) {
+          patchDoc.push({ op: "replace", path: "areaDescription", value: formData.areaDescription });
+        }
+        if (selectedAreaType.price !== parseFloat(formData.price)) {
+          patchDoc.push({ op: "replace", path: "price", value: parseFloat(formData.price) });
+        }
+        if (selectedAreaType.areaCategory !== Number(formData.areaCategory)) {
+          patchDoc.push({ op: "replace", path: "areaCategory", value: Number(formData.areaCategory) });
+        }
+        if (selectedAreaType.size !== parseInt(formData.size)) {
+          patchDoc.push({ op: "replace", path: "size", value: parseInt(formData.size) });
+        }
+        if (selectedAreaType.isDeleted !== formData.isDeleted) {
+          patchDoc.push({ op: "replace", path: "isDeleted", value: formData.isDeleted });
+        }
+
+        if (patchDoc.length > 0) {
+          console.log("Patch document being sent:", JSON.stringify(patchDoc, null, 2));
+          await dispatch(
+            updateAreaType({
+              areaTypeId: id,
+              patchDoc: patchDoc, // Use patchDoc instead of updatedData
+            })
+          ).unwrap();
+          toast.success("Cập nhật thông tin loại khu vực thành công!");
+        }
+      }
+
+      // Step 3: Update the images only if images have changed
       if (hasImageChange && newFiles.length > 0) {
         await dispatch(
           updateAreaTypeImages({
@@ -235,6 +305,12 @@ const UpdateAreaType = () => {
           })
         ).unwrap();
         toast.success("Cập nhật ảnh thành công!");
+      }
+
+      // If neither details nor images have changed, show a message
+      if (!hasDetailsChange && !hasImageChange && imagesToDelete.length === 0) {
+        toast.info("Không có thay đổi nào để cập nhật!");
+        return;
       }
 
       // Navigate back to the dashboard after successful updates
