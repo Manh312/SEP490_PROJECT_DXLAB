@@ -95,7 +95,7 @@ const CreateAreaCategory = () => {
       await dispatch(
         createAreaTypeCategory({ newAreaTypeCategory, files })
       ).unwrap();
-      toast.success("Tạo loại khu vực thành công!");
+      toast.success("Tạo khu vực thành công!");
       navigate("/dashboard/area");
     } catch (err) {
       toast.error(err.message || "Lỗi khi tạo loại khu vực");
@@ -129,7 +129,7 @@ const CreateAreaCategory = () => {
               value={formData.title}
               onChange={handleInputChange}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-              placeholder="Nhập tên loại khu vực"
+              placeholder="Nhập tên khu vực"
               required
             />
           </div>
