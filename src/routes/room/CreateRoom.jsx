@@ -25,7 +25,7 @@ const CreateRoom = () => {
     capacity: "",
     isDeleted: false,
     images: [], // Will store File objects
-    areaAddDTO: [{ areaTypeId: "", areaName: "" }], // Correctly initialized as an
+    areaAddDTO: [{ areaTypeId: "", areaName: "" }], // Initialized as an array of objects
   });
 
   const [errors, setErrors] = useState({});
@@ -48,7 +48,7 @@ const CreateRoom = () => {
     if (!roomData.capacity || roomData.capacity < 1) newErrors.capacity = "Sức chứa phải lớn hơn 0!";
     if (roomData.images.length === 0) newErrors.images = "Vui lòng chọn ít nhất một hình ảnh!";
     if (roomData.areaAddDTO.some((area) => !area.areaTypeId || !area.areaName.trim()))
-      newErrors[""] = "Vui lòng điền đầy đủ thông tin cho tất cả khu vực!";
+      newErrors.areaAddDTO = "Vui lòng điền đầy đủ thông tin cho tất cả khu vực!";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -92,17 +92,17 @@ const CreateRoom = () => {
 
   const handleAreaTypeChange = (index, areaTypeId) => {
     setRoomData((prevData) => {
-      const updatedAreaDTO = [...prevData.areaAddDTO];
-      updatedAreaDTO[index].areaTypeId = areaTypeId;
-      return { ...prevData, areaAddDTO: updatedAreaDTO };
+      const updatedAreaAddDTO = [...prevData.areaAddDTO];
+      updatedAreaAddDTO[index].areaTypeId = areaTypeId;
+      return { ...prevData, areaAddDTO: updatedAreaAddDTO };
     });
   };
 
   const handleAreaNameChange = (index, areaName) => {
     setRoomData((prevData) => {
-      const updatedAreaDTO = [...prevData.areaAddDTO];
-      updatedAreaDTO[index].areaName = areaName;
-      return { ...prevData, areaAddDTO: updatedAreaDTO };
+      const updatedAreaAddDTO = [...prevData.areaAddDTO];
+      updatedAreaAddDTO[index].areaName = areaName;
+      return { ...prevData, areaAddDTO: updatedAreaAddDTO };
     });
   };
 
@@ -112,20 +112,21 @@ const CreateRoom = () => {
         toast.error("Phải có ít nhất một khu vực!");
         return prevData;
       }
-      const updatedAreaDTO = prevData.areaAddDTO.filter((_, i) => i !== index);
-      return { ...prevData, areaAddDTO: updatedAreaDTO };
+      const updatedAreaAddDTO = prevData.areaAddDTO.filter((_, i) => i !== index);
+      return { ...prevData, areaAddDTO: updatedAreaAddDTO };
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+
+    // Convert areaAddDTO (array of objects) to a JSON string
     const updatedRoomData = {
       ...roomData,
-      areaAddDTO: roomData.areaAddDTO.map((area) => ({
-        areaTypeId: area.areaTypeId,
-        areaName: area.areaName,
-      })),
+      areaAddDTO: JSON.stringify(
+        roomData.areaAddDTO.filter((area) => area.areaTypeId && area.areaName.trim())
+      ),
     };
 
     try {
@@ -249,7 +250,7 @@ const CreateRoom = () => {
                   multiple
                   accept="image/*"
                   onChange={handleImageUpload}
-                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                  className="w-full px-4 py-3 rounded-lg border focus:layout-none focus:border-orange-500 duration-150 ease-in-out h-12"
                   required
                 />
                 {errors.images && <p className="text-red-500 text-sm">{errors.images}</p>}

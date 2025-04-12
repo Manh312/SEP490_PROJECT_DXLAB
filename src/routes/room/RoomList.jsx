@@ -2,10 +2,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useMemo, useState } from "react";
 import { fetchRooms } from "../../redux/slices/Room";
 import { Link, useNavigate } from "react-router-dom";
-import { PencilLine, Hotel, Filter, Search, Home, Eye } from "lucide-react";
+import { PencilLine, Hotel, Filter, Search, Home, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
-import Pagination from "../../hooks/use-pagination"; // Giả sử bạn có hook này
+import Pagination from "../../hooks/use-pagination";
 import debounce from "lodash/debounce";
 
 const RoomList = () => {
@@ -16,7 +16,9 @@ const RoomList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [imageIndices, setImageIndices] = useState({}); // To track the current image index for each room
   const roomsPerPage = 5;
+  const baseUrl = "https://localhost:9999"; // Base URL for image paths, matching BlogList
 
   // Debounced search function
   const debouncedSearch = debounce((value) => {
@@ -87,6 +89,79 @@ const RoomList = () => {
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  // Function to render multiple images with navigation, similar to BlogList
+  const renderImages = (images, roomId) => {
+    const validImages = Array.isArray(images) && images.length > 0 ? images : [];
+    if (!validImages.length) {
+      return (
+        <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
+          <span className="text-gray-500 text-sm">Không có ảnh</span>
+        </div>
+      );
+    }
+
+    const currentIndex = imageIndices[roomId] || 0;
+
+    const prevImage = () => {
+      setImageIndices((prev) => ({
+        ...prev,
+        [roomId]: (currentIndex - 1 + validImages.length) % validImages.length,
+      }));
+    };
+
+    const nextImage = () => {
+      setImageIndices((prev) => ({
+        ...prev,
+        [roomId]: (currentIndex + 1) % validImages.length,
+      }));
+    };
+
+    const imageSrc = validImages[currentIndex];
+    const displaySrc =
+      typeof imageSrc === "string"
+        ? imageSrc.startsWith("http")
+          ? imageSrc
+          : `${baseUrl}/${imageSrc}` // Prepend baseUrl if the image path doesn't start with http
+        : "/placeholder-image.jpg";
+
+    return (
+      <div className="relative w-40 h-40 mx-auto group">
+        <img
+          src={displaySrc}
+          alt={`Room image ${currentIndex}`}
+          className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
+          onError={(e) => (e.target.src = "/placeholder-image.jpg")} // Fallback image on error
+        />
+        {validImages.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1">
+              {validImages.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    idx === currentIndex ? "bg-white" : "bg-gray-400"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -177,14 +252,7 @@ const RoomList = () => {
                         {(currentPage - 1) * roomsPerPage + index + 1}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {room.images?.map((img, idx) => (
-                          <img
-                            key={idx}
-                            src={`/assets/${img}`}
-                            alt={''}
-                            className="w-32 h-32 object-cover rounded-md shadow inline-block"
-                          />
-                        ))}
+                        {renderImages(room.images, room.roomId)} {/* Use renderImages for multiple images */}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {room.roomName}
@@ -208,8 +276,9 @@ const RoomList = () => {
                       </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${room.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                            }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${
+                            room.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                          }`}
                         >
                           {room.isDeleted ? "Đã xóa" : "Hoạt động"}
                         </span>
@@ -224,7 +293,6 @@ const RoomList = () => {
                           >
                             <Eye className="w-4 h-4" />
                           </button>
-
                           <button
                             onClick={() => navigate(`/dashboard/room/update/${room.roomId}`)}
                             data-tooltip-id="action-tooltip"
@@ -255,14 +323,36 @@ const RoomList = () => {
                           #{(currentPage - 1) * roomsPerPage + index + 1}
                         </span>
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${room.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                            }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${
+                            room.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                          }`}
                         >
                           {room.isDeleted ? "Đã xóa" : "Hoạt động"}
                         </span>
                       </div>
+                      {/* Add image rendering in mobile view */}
+                      {renderImages(room.images, room.roomId)}
                       <p className="text-sm">
                         <span className="font-medium">Tên Phòng:</span> {room.roomName}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Tên Khu Vực:</span>{" "}
+                        {room.area_DTO.map((area, idx) => (
+                          <span key={idx} className="block">
+                            {area.areaName}
+                          </span>
+                        ))}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Loại Khu Vực:</span>{" "}
+                        {room.area_DTO.map((area, idx) => (
+                          <span key={idx} className="block">
+                            {area.areaTypeName}
+                          </span>
+                        ))}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Sức Chứa:</span> {room.capacity} người
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <button
