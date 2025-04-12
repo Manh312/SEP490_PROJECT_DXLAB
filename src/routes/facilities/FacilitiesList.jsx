@@ -117,6 +117,21 @@ const FacilitiesList = () => {
     setCurrentPage(1);
   };
 
+  // Function to determine quality status based on remainingValue
+  const getQualityStatus = (facility) => {
+    const remainingValue = facility.remainingValue || 0;
+    const originalValue = facility.quantity; // Assuming quantity is the original value
+    const threshold = originalValue / 10; // 1/10 of the original value
+
+    if (remainingValue === 0) {
+      return { status: "Hết hạn", color: "text-red-600" };
+    } else if (remainingValue <= threshold) {
+      return { status: "Sắp hết hạn", color: "text-orange-600" };
+    } else {
+      return { status: "Bình thường", color: "text-green-600" };
+    }
+  };
+
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
       <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
@@ -253,108 +268,126 @@ const FacilitiesList = () => {
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ngày nhập</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Số lượng</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ngày hết hạn</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Giá trị còn lại</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Chất lượng</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {currentPosts.map((facility, index) => (
-                    <tr key={facility.id} className="border-b hover:bg-gray-400 transition-colors">
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {(currentPage - 1) * postsPerPage + index + 1}
-                      </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        <Link
-                          to={`/dashboard/facilities/${facility.facilityId}`}
-                          className="hover:text-neutral-300 inline-block"
-                        >
-                          {facility.batchNumber}
-                        </Link>
-                      </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.facilityTitle}</td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.cost}</td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {format(new Date(facility.importDate), "dd/MM/yyyy")}
-                      </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.quantity}</td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {format(new Date(facility.expiredTime), "dd/MM/yyyy")}
-                      </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 flex justify-center gap-2">
-                        <button
-                          onClick={() => handleSoftDelete(facility.id)}
-                          className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                        {/* <Link
-                          to={`/dashboard/facilities/update/${facility.id}`}
-                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </Link> */}
-                      </td>
-                    </tr>
-                  ))}
+                  {currentPosts.map((facility, index) => {
+                    const { status, color } = getQualityStatus(facility);
+                    return (
+                      <tr key={facility.id} className="border-b hover:bg-gray-400 transition-colors">
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                          {(currentPage - 1) * postsPerPage + index + 1}
+                        </td>
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                          <Link
+                            to={`/dashboard/facilities/${facility.facilityId}`}
+                            className="hover:text-neutral-300 inline-block"
+                          >
+                            {facility.batchNumber}
+                          </Link>
+                        </td>
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.facilityTitle}</td>
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.cost}</td>
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                          {format(new Date(facility.importDate), "dd/MM/yyyy")}
+                        </td>
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.quantity}</td>
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                          {format(new Date(facility.expiredTime), "dd/MM/yyyy")}
+                        </td>
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.remainingValue || 0}</td>
+                        <td className={`px-2 py-3 md:px-3 md:py-4 text-center ${color}`}>
+                          {status}
+                        </td>
+                        <td className="px-2 py-3 md:px-3 md:py-4 flex justify-center gap-2">
+                          <button
+                            onClick={() => handleSoftDelete(facility.id)}
+                            className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          {/* <Link
+                            to={`/dashboard/facilities/update/${facility.id}`}
+                            className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Link> */}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
             {/* Card View for Mobile */}
             <div className="block md:hidden space-y-4">
-              {currentPosts.map((facility, index) => (
-                <div
-                  key={facility.id}
-                  className="border rounded-lg p-3 sm:p-4 shadow-sm hover:bg-gray-500 transition-colors"
-                >
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between">
-                      <span className="font-semibold text-sm">
-                        #{(currentPage - 1) * postsPerPage + index + 1}
-                      </span>
-                    </div>
-                    <p className="text-sm">
-                      <span className="font-medium">Số lô:</span>{" "}
-                      <Link
-                        to={`/dashboard/facilities/${facility.facilityId}`}
-                        className="hover:text-gray-400 transition-colors"
-                      >
-                        {facility.batchNumber}
-                      </Link>
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Mô tả:</span> {facility.facilityDescription}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Giá:</span> {facility.cost}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Ngày nhập:</span>{" "}
-                      {format(new Date(facility.importDate), "dd/MM/yyyy")}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Số lượng:</span> {facility.quantity}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Ngày hết hạn:</span>{" "}
-                      {format(new Date(facility.expiredTime), "dd/MM/yyyy")}
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                      <button
-                        onClick={() => handleSoftDelete(facility.id)}
-                        className="bg-red-500 text-white hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
-                      >
-                        <Trash2 className="w-4 h-4" /> Xóa mềm
-                      </button>
-                      {/* <Link
-                        to={`/dashboard/facilities/update/${facility.id}`}
-                        className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
-                      >
-                        <Edit className="w-4 h-4" /> Cập nhật
-                      </Link> */}
+              {currentPosts.map((facility, index) => {
+                const { status, color } = getQualityStatus(facility);
+                return (
+                  <div
+                    key={facility.id}
+                    className="border rounded-lg p-3 sm:p-4 shadow-sm hover:bg-gray-500 transition-colors"
+                  >
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-sm">
+                          #{(currentPage - 1) * postsPerPage + index + 1}
+                        </span>
+                      </div>
+                      <p className="text-sm">
+                        <span className="font-medium">Số lô:</span>{" "}
+                        <Link
+                          to={`/dashboard/facilities/${facility.facilityId}`}
+                          className="hover:text-gray-400 transition-colors"
+                        >
+                          {facility.batchNumber}
+                        </Link>
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Mô tả:</span> {facility.facilityDescription}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Giá:</span> {facility.cost}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Ngày nhập:</span>{" "}
+                        {format(new Date(facility.importDate), "dd/MM/yyyy")}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Số lượng:</span> {facility.quantity}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Ngày hết hạn:</span>{" "}
+                        {format(new Date(facility.expiredTime), "dd/MM/yyyy")}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Giá trị còn lại:</span> {facility.remainingValue || 0}
+                      </p>
+                      <p className={`text-sm ${color}`}>
+                        <span className="font-medium">Chất lượng:</span> {status}
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                        <button
+                          onClick={() => handleSoftDelete(facility.id)}
+                          className="bg-red-500 text-white hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                        >
+                          <Trash2 className="w-4 h-4" /> Xóa mềm
+                        </button>
+                        {/* <Link
+                          to={`/dashboard/facilities/update/${facility.id}`}
+                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                        >
+                          <Edit className="w-4 h-4" /> Cập nhật
+                        </Link> */}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {totalAccounts > 1 && (

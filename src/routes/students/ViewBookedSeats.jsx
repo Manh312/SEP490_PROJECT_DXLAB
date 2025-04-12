@@ -4,19 +4,19 @@ import table_images from '../../assets/table.png';
 import { useEffect, useMemo, useState } from 'react';
 import { fetchBookingHistory, fetchBookingHistoryDetail, setSelectedDate, setSelectedSlot } from '../../redux/slices/Booking';
 import { useParams } from 'react-router-dom';
-import { getRoomById } from '../../redux/slices/Room';
+import { getRoomById, fetchRooms } from '../../redux/slices/Room'; // Add fetchRooms action
 
 // Dynamically map areas to group identifiers
 const createAreaToGroupMap = (areas) => {
   const map = {};
   areas.forEach((area, index) => {
     const areaKey = `${area.areaName}-${area.areaTypeName}`.trim().toLowerCase();
-    map[areaKey] = `group-area-${index}`; // Unique identifier for each group area
+    map[areaKey] = `group-area-${index}`;
   });
   return map;
 };
 
-// Function to parse the number of seats from areaTypeName (e.g., "Khu vực 12 người" → 12)
+// Function to parse the number of seats from areaTypeName
 const parseNumberOfSeats = (areaTypeName) => {
   if (!areaTypeName) return 0;
   const match = areaTypeName.match(/Khu vực (\d+) người/);
@@ -25,11 +25,10 @@ const parseNumberOfSeats = (areaTypeName) => {
 
 // Dynamically generate seats and position mapping based on number of seats
 const generateSeatsAndMapping = (numberOfSeats) => {
-  const seatsPerTable = 6; // Maximum seats per table
+  const seatsPerTable = 6;
   const tables = [];
   const positionIdToSeatMap = {};
 
-  // Generate seats (e.g., A1, A2, ..., A12 for 12 seats)
   let seatIndex = 1;
   for (let i = 0; i < numberOfSeats; i += seatsPerTable) {
     const tableSeats = [];
@@ -53,6 +52,15 @@ const ViewBookedSeats = () => {
 
   const [hasFetchedDetail, setHasFetchedDetail] = useState(false);
   const [hasFetchedHistory, setHasFetchedHistory] = useState(false);
+  const [hasFetchedRooms, setHasFetchedRooms] = useState(false);
+
+  // Fetch the list of rooms if not already fetched
+  useEffect(() => {
+    if (!hasFetchedRooms && (!rooms || rooms.length === 0)) {
+      dispatch(fetchRooms()); // Fetch the rooms list
+      setHasFetchedRooms(true);
+    }
+  }, [dispatch, rooms, hasFetchedRooms]);
 
   // Fetch booking details or history
   useEffect(() => {
@@ -69,16 +77,21 @@ const ViewBookedSeats = () => {
   useEffect(() => {
     if (id && bookingDetail?.data) {
       const roomName = bookingDetail.data.details[0]?.roomName;
+      console.log('Room name from bookingDetail:', roomName); // Debug log
+      console.log('Rooms list:', rooms); // Debug log
+
       if (roomName) {
         const room = rooms.find((r) => r.roomName === roomName);
         if (room && room.roomId) {
-          // If selectedRoom is not set or doesn't match the roomId, fetch the room
+          console.log('Found room:', room); // Debug log
           if (!selectedRoom || selectedRoom.roomId !== room.roomId) {
             dispatch(getRoomById(room.roomId));
           }
         } else {
           console.warn(`Room with name ${roomName} not found in rooms list.`);
         }
+      } else {
+        console.warn('No roomName found in bookingDetail.data.details[0]');
       }
     }
   }, [dispatch, id, bookingDetail, rooms, selectedRoom]);
@@ -98,7 +111,7 @@ const ViewBookedSeats = () => {
   // Get individual area
   const individualArea = useMemo(() => {
     if (!selectedRoom?.area_DTO) return null;
-    return selectedRoom.area_DTO.find(area => area.areaTypeId === 1); // Find individual area
+    return selectedRoom.area_DTO.find(area => area.areaTypeId === 1);
   }, [selectedRoom]);
 
   // Parse number of seats and generate seats and position mapping
@@ -110,61 +123,59 @@ const ViewBookedSeats = () => {
   // Create the areaToGroupMap dynamically based on selectedRoom areas
   const areaToGroupMap = useMemo(() => {
     if (!selectedRoom?.area_DTO) return {};
-    const map = createAreaToGroupMap(selectedRoom.area_DTO.filter(area => area.areaTypeId !== 1)); // Exclude individual areas
-    console.log('areaToGroupMap:', map); // Debug log
+    const map = createAreaToGroupMap(selectedRoom.area_DTO.filter(area => area.areaTypeId !== 1));
+    console.log('areaToGroupMap:', map);
     return map;
   }, [selectedRoom]);
 
   // Filter group areas from selectedRoom
   const groupAreas = useMemo(() => {
     if (!selectedRoom?.area_DTO) return [];
-    return selectedRoom.area_DTO.filter(area => area.areaTypeId !== 1); // Exclude individual areas
+    return selectedRoom.area_DTO.filter(area => area.areaTypeId !== 1);
   }, [selectedRoom]);
 
   // Compute booked seats
   const bookedSeats = useMemo(() => {
-    if (bookingLoading || !selectedRoom) return { individual: [], groups: [] }; // Return empty if no room data
+    if (bookingLoading || !selectedRoom) return { individual: [], groups: [] };
 
     const individual = [];
     const groups = [];
-    const maxPositionId = parseNumberOfSeats(individualArea?.areaTypeName); // Maximum positionId based on numberOfSeats
+    const maxPositionId = parseNumberOfSeats(individualArea?.areaTypeName);
 
     if (id && bookingDetail?.data?.bookingId === Number(id) && Array.isArray(bookingDetail.data.details)) {
       const bookingDate = bookingDetail.data.bookingCreatedDate.split('T')[0];
       if (bookingDate !== selectedDate) return { individual: [], groups: [] };
 
-      console.log('Processing bookingDetail:', bookingDetail.data.details); // Debug log
-      console.log('selectedDate:', selectedDate, 'selectedSlot:', selectedSlot); // Debug log
+      console.log('Processing bookingDetail:', bookingDetail.data.details);
+      console.log('selectedDate:', selectedDate, 'selectedSlot:', selectedSlot);
 
       bookingDetail.data.details
         .filter((detail) => Number(detail.slotNumber) === selectedSlot)
         .forEach((detail) => {
-          // Handle individual seats
           const positionId = detail.position;
-          if (positionId > maxPositionId) return; // Skip if positionId exceeds numberOfSeats
+          if (positionId > maxPositionId) return;
 
           const seatInfo = positionIdToSeatMap[positionId];
           if (seatInfo && seatInfo.area === 'individual') {
             individual.push(seatInfo.seat);
           }
 
-          // Handle group areas
           const areaKey = `${detail.areaName}-${detail.areaTypeName}`.trim().toLowerCase();
-          console.log('Constructed areaKey:', areaKey); // Debug log
+          console.log('Constructed areaKey:', areaKey);
           const groupArea = areaToGroupMap[areaKey];
           if (groupArea && !groups.includes(groupArea)) {
             groups.push(groupArea);
           }
         });
 
-      console.log('bookedSeats from bookingDetail:', { individual, groups }); // Debug log
+      console.log('bookedSeats from bookingDetail:', { individual, groups });
       return { individual, groups };
     }
 
     if (!bookings || !Array.isArray(bookings.data)) return { individual: [], groups: [] };
 
-    console.log('Processing bookings:', bookings.data); // Debug log
-    console.log('selectedDate:', selectedDate, 'selectedSlot:', selectedSlot); // Debug log
+    console.log('Processing bookings:', bookings.data);
+    console.log('selectedDate:', selectedDate, 'selectedSlot:', selectedSlot);
 
     bookings.data
       .filter((booking) => {
@@ -178,18 +189,16 @@ const ViewBookedSeats = () => {
         booking.details
           .filter((detail) => Number(detail.slotNumber) === selectedSlot)
           .forEach((detail) => {
-            // Handle individual seats
             const positionId = detail.position;
-            if (positionId > maxPositionId) return; // Skip if positionId exceeds numberOfSeats
+            if (positionId > maxPositionId) return;
 
             const seatInfo = positionIdToSeatMap[positionId];
             if (seatInfo && seatInfo.area === 'individual') {
               individual.push(seatInfo.seat);
             }
 
-            // Handle group areas
             const areaKey = `${detail.areaName}-${detail.areaTypeName}`.trim().toLowerCase();
-            console.log('Constructed areaKey:', areaKey); // Debug log
+            console.log('Constructed areaKey:', areaKey);
             const groupArea = areaToGroupMap[areaKey];
             if (groupArea && !groups.includes(groupArea)) {
               groups.push(groupArea);
@@ -197,11 +206,10 @@ const ViewBookedSeats = () => {
           });
       });
 
-    console.log('bookedSeats from bookings:', { individual, groups }); // Debug log
+    console.log('bookedSeats from bookings:', { individual, groups });
     return { individual, groups };
   }, [bookingLoading, bookings, bookingDetail, id, selectedDate, selectedSlot, areaToGroupMap, selectedRoom, individualArea, positionIdToSeatMap]);
 
-  // Check if the room has any areas (including individual areas)
   const hasAreas = selectedRoom?.area_DTO && selectedRoom.area_DTO.length > 0;
 
   return (
@@ -242,7 +250,9 @@ const ViewBookedSeats = () => {
       )}
 
       {!roomLoading && !bookingLoading && !selectedRoom && (
-        <p className="text-center text-gray-500 inline">Phòng không tồn tại.</p>
+        <p className="text-center text-gray-500 inline">
+          Phòng không tồn tại hoặc không thể tải thông tin phòng. Vui lòng kiểm tra lại lịch sử giao dịch.
+        </p>
       )}
 
       {!roomLoading && !bookingLoading && selectedRoom && !hasAreas && (
@@ -252,7 +262,6 @@ const ViewBookedSeats = () => {
       {!roomLoading && !bookingLoading && selectedRoom && hasAreas && (
         <div className="w-full max-w-5xl space-y-6 border rounded-lg p-6">
           <div className="flex flex-col md:flex-row justify-center gap-6 md:gap-12">
-            {/* Individual Seats (Dynamic Display) */}
             {individualArea && individualTables.length > 0 && (
               <div className="flex flex-col items-center gap-6">
                 <h2 className="text-2xl font-bold mb-4">Khu vực cá nhân</h2>
@@ -289,7 +298,6 @@ const ViewBookedSeats = () => {
               </div>
             )}
 
-            {/* Group Areas (Dynamic) */}
             {groupAreas.length > 0 && (
               <div className="flex flex-col items-center gap-6">
                 <h2 className="text-2xl font-bold mb-4">Khu vực Nhóm</h2>
@@ -297,7 +305,7 @@ const ViewBookedSeats = () => {
                   {groupAreas.map((area, index) => {
                     const areaKey = `${area.areaName}-${area.areaTypeName}`.trim().toLowerCase();
                     const groupAreaId = areaToGroupMap[areaKey];
-                    console.log(`Rendering group area: ${areaKey}, groupAreaId: ${groupAreaId}, isBooked: ${bookedSeats.groups.includes(groupAreaId)}`); // Debug log
+                    console.log(`Rendering group area: ${areaKey}, groupAreaId: ${groupAreaId}, isBooked: ${bookedSeats.groups.includes(groupAreaId)}`);
                     return (
                       <div
                         key={index}

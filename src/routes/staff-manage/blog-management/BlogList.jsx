@@ -25,71 +25,92 @@ const BlogList = () => {
     setSearchTerm(value);
     setCurrentPage(1);
   }, 300);
+  
 
   // SignalR Setup
   useEffect(() => {
     let connection;
     const setupSignalR = async () => {
       if (!token) {
-        console.error("No access token found. Cannot connect to SignalR.");
         setSignalRError("Không tìm thấy token xác thực. Vui lòng đăng nhập lại.");
         setInitialLoading(false);
         return;
       }
-
-      try {
-        console.log("Starting SignalR connection for staff...");
-        connection = await startSignalRConnection(token);
-
-        if (!connection) {
-          throw new Error("Không thể thiết lập kết nối SignalR.");
-        }
-
-        // Đăng ký sự kiện SignalR
-        registerSignalREvent("ReceiveBlogStatus", (blog) => {
-          console.log("Nhận được cập nhật trạng thái blog:", blog);
-          toast.info(
-            `Blog "${blog.blogTitle}" đã cập nhật trạng thái thành: ${getStatusDisplayName(blog.status)}`
-          );
-          // Làm mới danh sách blog bất kể statusFilter hiện tại
-          dispatch(fetchBlogsByStatus(statusFilter)).then(() => {
-            // Nếu blog vừa cập nhật không thuộc tab hiện tại, thông báo cho người dùng chuyển tab
-            if (String(blog.status) !== String(statusFilter)) {
-              toast.info(`Hãy chuyển sang tab "${getStatusDisplayName(blog.status)}" để xem blog vừa cập nhật!`);
-            }
+  
+      let retries = 3;
+      while (retries > 0) {
+        try {
+          console.log("Starting SignalR connection for staff...");
+          connection = await startSignalRConnection(token);
+  
+          if (!connection) {
+            throw new Error("Không thể thiết lập kết nối SignalR.");
+          }
+  
+          registerSignalREvent("ReceiveBlogStatus", (blog) => {
+            console.log("Nhận được cập nhật trạng thái blog:", blog);
+            toast.info(
+              `Blog "${blog.blogTitle}" đã cập nhật trạng thái thành: ${getStatusDisplayName(blog.status)}`
+            );
+            dispatch(fetchBlogsByStatus(statusFilter)).then(() => {
+              if (String(blog.status) !== String(statusFilter)) {
+                toast.info(`Hãy chuyển sang tab "${getStatusDisplayName(blog.status)}" để xem blog vừa cập nhật!`);
+              }
+            });
           });
-        });
-
-        registerSignalREvent("ReceiveBlogDeleted", (blogId) => {
-          console.log("Nhận được thông báo xóa blog:", blogId);
-          toast.warn(`Blog với ID ${blogId} đã bị xóa bởi Admin!`);
-          // Làm mới danh sách blog
-          dispatch(fetchBlogsByStatus(statusFilter));
-        });
-
-        // Lấy danh sách blog ban đầu
-        await dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
+  
+          registerSignalREvent("ReceiveBlogDeleted", (blogId) => {
+            console.log("Nhận được thông báo xóa blog:", blogId);
+            toast.warn(`Blog với ID ${blogId} đã bị xóa bởi Admin!`);
+            dispatch(fetchBlogsByStatus(statusFilter));
+          });
+  
+          break;
+        } catch (err) {
+          console.error("Lỗi khi thiết lập SignalR:", err);
+          retries--;
+          if (retries === 0) {
+            setSignalRError("Không thể kết nối tới SignalR sau nhiều lần thử. Vui lòng thử lại sau.");
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+      }
+  
+      // Fetch blog bất kể SignalR có thành công hay không
+      try {
+        const fetchPromise = dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
+        await Promise.all([
+          fetchPromise,
+          new Promise((resolve) => setTimeout(resolve, 500)), // Đảm bảo loading tối thiểu
+        ]);
       } catch (err) {
-        console.error("Lỗi khi thiết lập SignalR hoặc lấy blog:", err);
+        console.error("Lỗi khi lấy danh sách blog:", err);
+        // setSignalRError("Không thể tải danh sách blog. Vui lòng thử lại.");
       } finally {
         setInitialLoading(false);
       }
     };
-
+  
     setupSignalR();
-
+  
     return () => {
       if (connection) {
         console.log("Dọn dẹp kết nối SignalR...");
         stopSignalRConnection();
       }
     };
-  }, [dispatch, statusFilter, token]);
+  }, [token]);
 
+  useEffect(() => {
+    dispatch(fetchBlogsByStatus(statusFilter));
+  }, [dispatch, statusFilter]);
+  
   const filteredBlogs = useMemo(() => {
-    let result = blogs || [];
-    if (error) return [];
-    result = result.filter((blog) => String(blog.status) === String(statusFilter));
+    if (error || !Array.isArray(blogs)) return [];
+    let result = blogs.filter(
+      (blog) => blog && String(blog.status) === String(statusFilter)
+    );
     if (searchTerm) {
       result = result.filter((blog) =>
         (blog.blogTitle || "").toLowerCase().includes(searchTerm.toLowerCase())
