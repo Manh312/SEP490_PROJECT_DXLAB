@@ -11,7 +11,7 @@ import { startSignalRConnection, stopSignalRConnection, registerSignalREvent } f
 
 const BlogList = () => {
   const dispatch = useDispatch();
-  const { blogs, statusFilter, error } = useSelector((state) => state.blogs);
+  const { blogs, statusFilter, error, loading } = useSelector((state) => state.blogs); // Thêm loading từ Redux
   const { token } = useSelector((state) => state.auth);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,7 +25,6 @@ const BlogList = () => {
     setSearchTerm(value);
     setCurrentPage(1);
   }, 300);
-  
 
   // SignalR Setup
   useEffect(() => {
@@ -36,76 +35,84 @@ const BlogList = () => {
         setInitialLoading(false);
         return;
       }
-  
+
       let retries = 3;
       while (retries > 0) {
         try {
           console.log("Starting SignalR connection for staff...");
           connection = await startSignalRConnection(token);
-  
+
           if (!connection) {
             throw new Error("Không thể thiết lập kết nối SignalR.");
           }
-  
+
           registerSignalREvent("ReceiveBlogStatus", (blog) => {
             console.log("Nhận được cập nhật trạng thái blog:", blog);
             toast.info(
               `Blog "${blog.blogTitle}" đã cập nhật trạng thái thành: ${getStatusDisplayName(blog.status)}`
             );
-            dispatch(fetchBlogsByStatus(statusFilter)).then(() => {
-              if (String(blog.status) !== String(statusFilter)) {
-                toast.info(`Hãy chuyển sang tab "${getStatusDisplayName(blog.status)}" để xem blog vừa cập nhật!`);
-              }
+            // Chỉ làm mới nếu blog thuộc trạng thái hiện tại hoặc cần cập nhật toàn bộ
+            dispatch(fetchBlogsByStatus(statusFilter)).unwrap().catch((err) => {
+              console.error("Lỗi khi làm mới danh sách blog:", err);
             });
           });
-  
+
           registerSignalREvent("ReceiveBlogDeleted", (blogId) => {
             console.log("Nhận được thông báo xóa blog:", blogId);
             toast.warn(`Blog với ID ${blogId} đã bị xóa bởi Admin!`);
-            dispatch(fetchBlogsByStatus(statusFilter));
+            dispatch(fetchBlogsByStatus(statusFilter)).unwrap().catch((err) => {
+              console.error("Lỗi khi làm mới danh sách blog:", err);
+            });
           });
-  
+
           break;
         } catch (err) {
           console.error("Lỗi khi thiết lập SignalR:", err);
           retries--;
           if (retries === 0) {
-            setSignalRError("Không thể kết nối tới SignalR sau nhiều lần thử. Vui lòng thử lại sau.");
             break;
           }
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       }
-  
-      // Fetch blog bất kể SignalR có thành công hay không
+
+      // Fetch blog ban đầu
       try {
         const fetchPromise = dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
         await Promise.all([
           fetchPromise,
-          new Promise((resolve) => setTimeout(resolve, 500)), // Đảm bảo loading tối thiểu
+          new Promise((resolve) => setTimeout(resolve, 500)),
         ]);
       } catch (err) {
         console.error("Lỗi khi lấy danh sách blog:", err);
-        // setSignalRError("Không thể tải danh sách blog. Vui lòng thử lại.");
       } finally {
         setInitialLoading(false);
       }
     };
-  
+
     setupSignalR();
-  
+
     return () => {
       if (connection) {
         console.log("Dọn dẹp kết nối SignalR...");
         stopSignalRConnection();
       }
     };
-  }, [token]);
+  }, [token, dispatch, statusFilter]);
 
+  // Làm mới danh sách blog khi statusFilter thay đổi
   useEffect(() => {
-    dispatch(fetchBlogsByStatus(statusFilter));
+    setInitialLoading(true);
+    dispatch(fetchBlogsByStatus(statusFilter))
+      .unwrap()
+      .catch((err) => {
+        console.error("Lỗi khi làm mới danh sách blog:", err);
+      })
+      .finally(() => {
+        setInitialLoading(false);
+      });
   }, [dispatch, statusFilter]);
-  
+
   const filteredBlogs = useMemo(() => {
     if (error || !Array.isArray(blogs)) return [];
     let result = blogs.filter(
@@ -318,7 +325,7 @@ const BlogList = () => {
         )}
 
         {/* Loading State */}
-        {initialLoading ? (
+        {(initialLoading || loading) ? (
           <div className="flex items-center justify-center py-6 mb-200">
             <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
             <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>

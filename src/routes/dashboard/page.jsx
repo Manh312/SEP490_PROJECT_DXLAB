@@ -32,15 +32,12 @@ const Page = () => {
 
   const years = Array.from({ length: 10 }, (_, i) => (2025 - i).toString());
 
-  // Danh sách các tháng (1-12)
   const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
 
-  // Hàm tính số ngày trong tháng
   const getDaysInMonth = (month, year) => {
-    return new Date(year, month, 0).getDate(); // Trả về số ngày trong tháng
+    return new Date(year, month, 0).getDate();
   };
 
-  // Fetch dữ liệu hàng năm khi component mount hoặc khi year thay đổi
   useEffect(() => {
     dispatch(
       fetchStudentGroupStats({
@@ -51,22 +48,20 @@ const Page = () => {
     ).then((response) => {
       if (response.payload && response.payload.data) {
         const { details } = response.payload.data;
-        setYearlyData(details); // Lưu trữ dữ liệu hàng năm
+        setYearlyData(details);
       } else {
         setYearlyData([]);
       }
     });
   }, [dispatch, year]);
 
-  // Xử lý khi người dùng nhấn "Tìm kiếm"
   const handleSearch = () => {
-    dispatch(resetStats()); // Reset dữ liệu cũ
-    setYearlyStats(null); // Reset dữ liệu tổng
-    setDetailedStats([]); // Reset dữ liệu chi tiết
-    setShowCharts(false); // Ẩn biểu đồ cho đến khi có dữ liệu mới
+    dispatch(resetStats());
+    setYearlyStats(null);
+    setDetailedStats([]);
+    setShowCharts(false);
 
     if (period === "năm") {
-      // Gọi API để lấy dữ liệu cho cả năm
       dispatch(
         fetchStudentGroupStats({
           period: "năm",
@@ -76,11 +71,7 @@ const Page = () => {
       ).then((response) => {
         if (response.payload && response.payload.data) {
           const { details } = response.payload.data;
-
-          // Tính tổng doanh thu và tỷ lệ sinh viên trung bình
           const totalRevenue = details.reduce((sum, item) => sum + (item.revenue.totalRevenue || 0), 0);
-
-          // Tạo monthlyData để bao gồm tất cả 12 tháng
           const monthlyData = Array.from({ length: 12 }, (_, i) => {
             const month = i + 1;
             const item = details.find((d) => d.periodNumber === month) || {
@@ -93,20 +84,13 @@ const Page = () => {
               studentPercentage: item.revenue.studentPercentage || 0,
             };
           });
-
-          // Tính trung bình studentPercentage trên tất cả 12 tháng
           const totalStudentPercentage = monthlyData.length > 0 ? monthlyData.reduce((sum, item) => sum + (item.studentPercentage || 0), 0) / monthlyData.length : 0;
-
-          // Lưu dữ liệu tổng
           setYearlyStats({
             totalRevenue,
             studentPercentage: totalStudentPercentage,
           });
-
-          // Lưu dữ liệu chi tiết theo tháng
           setDetailedStats(monthlyData);
         } else {
-          // Nếu không có dữ liệu, tạo dữ liệu mặc định cho 12 tháng
           const monthlyData = Array.from({ length: 12 }, (_, i) => ({
             name: `Tháng ${i + 1}`,
             totalRevenue: 0,
@@ -116,20 +100,15 @@ const Page = () => {
           setYearlyStats({ totalRevenue: 0, studentPercentage: 0 });
           setDetailedStats(monthlyData);
         }
-        setShowCharts(true); // Hiển thị biểu đồ
+        setShowCharts(true);
       });
     } else if (period === "tháng") {
-      // Gọi API cho tháng được chọn
       if (!month || !year) {
         alert("Vui lòng chọn tháng và năm!");
         return;
       }
-
-      // Lấy studentPercentage từ dữ liệu hàng năm thay vì tính trung bình các ngày
       const monthData = yearlyData.find((d) => d.periodNumber === parseInt(month));
       const monthStudentPercentage = monthData ? monthData.revenue.studentPercentage || 0 : 0;
-
-      // Gọi API để lấy dữ liệu chi tiết theo ngày trong tháng
       dispatch(
         fetchStudentGroupStats({
           period: "tháng",
@@ -139,11 +118,7 @@ const Page = () => {
       ).then((response) => {
         if (response.payload && response.payload.data) {
           const { details } = response.payload.data;
-
-          // Tính tổng doanh thu cho tháng
           const totalRevenue = details.reduce((sum, item) => sum + (item.revenue.totalRevenue || 0), 0);
-
-          // Tạo dailyData để bao gồm tất cả các ngày trong tháng
           const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
           const dailyData = Array.from({ length: daysInMonth }, (_, i) => {
             const day = i + 1;
@@ -157,17 +132,12 @@ const Page = () => {
               studentPercentage: dayData.revenue.studentPercentage || 0,
             };
           });
-
-          // Lưu dữ liệu tổng với studentPercentage từ dữ liệu hàng năm
           setYearlyStats({
             totalRevenue,
-            studentPercentage: monthStudentPercentage, // Sử dụng giá trị từ yearlyData
+            studentPercentage: monthStudentPercentage,
           });
-
-          // Lưu dữ liệu chi tiết theo ngày
           setDetailedStats(dailyData);
         } else {
-          // Nếu không có dữ liệu, tạo dữ liệu mặc định cho các ngày trong tháng
           const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
           const dailyData = Array.from({ length: daysInMonth }, (_, i) => ({
             name: `Ngày ${i + 1}`,
@@ -178,35 +148,28 @@ const Page = () => {
           setYearlyStats({ totalRevenue: 0, studentPercentage: monthStudentPercentage });
           setDetailedStats(dailyData);
         }
-        setShowCharts(true); // Hiển thị biểu đồ
+        setShowCharts(true);
       });
     }
-
-    // Gọi API fetchJobsByYearAndDate với year được chọn
     dispatch(fetchJobsByYearAndDate({ year: year, date: `${year}-04-13` }));
   };
 
-  // Tính giá trị tổng doanh thu (chỉ dựa trên yearlyStats)
   const totalRevenue = yearlyStats ? yearlyStats.totalRevenue || 0 : 0;
-
   const avgStudentPercentage = yearlyStats ? yearlyStats.studentPercentage || 0 : 0;
 
-  // Dữ liệu cho biểu đồ hình tròn (Pie Chart) của studentPercentage
   const pieData = [
     { name: "Sinh viên tham gia", value: avgStudentPercentage },
     { name: "Không tham gia", value: 100 - avgStudentPercentage },
   ];
-  const COLORS = ["#f97316", "#94a3b8"]; // Màu cam (#f97316) cho phần "Sinh viên tham gia"
+  const COLORS = ["#f97316", "#94a3b8"];
 
-  // Tạo dữ liệu cho biểu đồ parabol (doanh thu từ sinh viên) dựa trên period
   const areaData = () => {
     if (period === "năm") {
-      // Hiển thị dữ liệu cho tất cả 12 tháng
       return detailedStats.length > 0
         ? detailedStats.map((stat) => ({
             name: stat.name,
             studentRevenue: stat.studentRevenue || 0,
-            studentPercentage: stat.studentPercentage || 0, // Thêm để hiển thị trong tooltip
+            studentPercentage: stat.studentPercentage || 0,
           }))
         : Array.from({ length: 12 }, (_, i) => ({
             name: `Tháng ${i + 1}`,
@@ -214,12 +177,11 @@ const Page = () => {
             studentPercentage: 0,
           }));
     } else if (period === "tháng") {
-      // Hiển thị dữ liệu cho tất cả các ngày trong tháng
       return detailedStats.length > 0
         ? detailedStats.map((stat) => ({
             name: stat.name,
             studentRevenue: stat.studentRevenue || 0,
-            studentPercentage: stat.studentPercentage || 0, // Thêm để hiển thị trong tooltip
+            studentPercentage: stat.studentPercentage || 0,
           }))
         : Array.from({ length: getDaysInMonth(parseInt(month), parseInt(year)) }, (_, i) => ({
             name: `Ngày ${i + 1}`,
@@ -230,10 +192,8 @@ const Page = () => {
     return [];
   };
 
-  // Tạo dữ liệu cho biểu đồ chi phí (cost) từ jobs dựa trên period
   const costData = () => {
     if (period === "năm") {
-      // Hiển thị dữ liệu cho tất cả 12 tháng, kể cả tháng không có dữ liệu (giá trị 0)
       const data = [];
       for (let month = 1; month <= 12; month++) {
         const monthlyJobs = jobs.filter((job) => {
@@ -248,7 +208,6 @@ const Page = () => {
       }
       return data;
     } else if (period === "tháng") {
-      // Hiển thị dữ liệu cho tất cả các ngày trong tháng, kể cả ngày không có dữ liệu (giá trị 0)
       const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
       const data = [];
       for (let day = 1; day <= daysInMonth; day++) {
@@ -271,9 +230,39 @@ const Page = () => {
     return [];
   };
 
-  const yTicks = [0, 200, 400, 600, 800, 1000]; // Các mốc bạn muốn hiển thị
-  const maxY = 1000; // Giá trị tối đa trên trục Y
-  const minY = 0;
+  // Hàm tính toán yTicks động dựa trên maxValue
+  const generateYTicks = (maxValue) => {
+    if (maxValue === 0) return [0, 200, 400, 600, 800, 1000];
+
+    const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
+    const roundedMax = Math.ceil(maxValue / magnitude) * magnitude;
+    const step = roundedMax / 4;
+    const ticks = [];
+    for (let i = 0; i <= 4; i++) {
+      ticks.push(Math.round(i * step));
+    }
+    return ticks;
+  };
+
+  // Tính maxY và yTicks cho biểu đồ doanh thu
+  const revenueAreaData = areaData();
+  const maxRevenue = Math.max(
+    ...revenueAreaData.map((d) => d.studentRevenue),
+    1000
+  );
+  const revenueYTicks = generateYTicks(maxRevenue);
+  const revenueMaxY = revenueYTicks[revenueYTicks.length - 1];
+  const revenueMinY = 0;
+
+  // Tính maxY và yTicks cho biểu đồ chi phí
+  const costAreaData = costData();
+  const maxCost = Math.max(
+    ...costAreaData.map((d) => d.totalCost),
+    1000
+  );
+  const costYTicks = generateYTicks(maxCost);
+  const costMaxY = costYTicks[costYTicks.length - 1];
+  const costMinY = 0;
 
   return (
     <div className="flex flex-col gap-y-4 mb-20 pl-5">
@@ -281,18 +270,16 @@ const Page = () => {
         Thống kê
       </h2>
 
-      {/* Form tùy chỉnh */}
       <div className="mb-6 p-4 border rounded-lg shadow-md mr-5">
         <h3 className="text-lg font-semibold mb-4">Tùy chỉnh thống kê</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Chọn Period */}
           <div>
             <label className="block font-medium mb-2">Khoảng thời gian:</label>
             <select
               value={period}
               onChange={(e) => {
                 setPeriod(e.target.value);
-                setMonth(""); // Reset month khi thay đổi period
+                setMonth("");
               }}
               className="w-full p-2 border rounded-md"
             >
@@ -301,7 +288,6 @@ const Page = () => {
             </select>
           </div>
 
-          {/* Chọn Year */}
           <div>
             <label className="block font-medium mb-2">Năm:</label>
             <select
@@ -317,7 +303,6 @@ const Page = () => {
             </select>
           </div>
 
-          {/* Chọn Month (hiển thị nếu period là "tháng") */}
           {period === "tháng" && (
             <div>
               <label className="block font-medium mb-2">Tháng:</label>
@@ -337,7 +322,6 @@ const Page = () => {
           )}
         </div>
 
-        {/* Nút Tìm kiếm */}
         <button
           onClick={handleSearch}
           className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
@@ -346,23 +330,15 @@ const Page = () => {
         </button>
       </div>
 
-      {/* Hiển thị trạng thái loading và error */}
       {loading && (
         <div className="flex items-center justify-center py-6 mt-50 mb-200">
           <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
           <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
         </div>
       )}
-      {/* {error && (
-        <div className="text-center text-red-500">
-          Lỗi: {error.message || error}
-        </div>
-      )} */}
 
-      {/* Hiển thị các card và biểu đồ chỉ khi showCharts là true và không có loading */}
       {!loading && showCharts && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mr-5">
-          {/* Card 1: Tổng doanh thu */}
           <div
             className={`card ${
               theme === "dark" ? "bg-black text-white" : "bg-white text-black"
@@ -407,7 +383,6 @@ const Page = () => {
             </div>
           </div>
 
-          {/* Card 2: Tỷ lệ sinh viên tham gia */}
           <div
             className={`card ${
               theme === "dark" ? "bg-black text-white" : "bg-white text-black"
@@ -452,7 +427,6 @@ const Page = () => {
             </div>
           </div>
 
-          {/* Card 3: Tổng chi phí bỏ ra */}
           <div
             className={`card ${
               theme === "dark" ? "bg-black text-white" : "bg-white text-black"
@@ -497,7 +471,6 @@ const Page = () => {
             </div>
           </div>
 
-          {/* Card 4: Placeholder */}
           <div
             className={`card ${
               theme === "dark" ? "bg-black text-white" : "bg-white text-black"
@@ -544,7 +517,6 @@ const Page = () => {
         </div>
       )}
 
-      {/* Biểu đồ hình tròn cho studentPercentage */}
       {!loading && showCharts && yearlyStats && (
         <div
           className={`card mr-5 col-span-1 md:col-span-2 lg:col-span-4 ${
@@ -595,7 +567,6 @@ const Page = () => {
         </div>
       )}
 
-      {/* Biểu đồ đường parabol cho doanh thu từ sinh viên */}
       {!loading && showCharts && (
         <div
           className={`card mr-5 col-span-1 md:col-span-2 lg:col-span-4 ${
@@ -614,7 +585,7 @@ const Page = () => {
           <div className="card-body p-0">
             <ResponsiveContainer width="100%" height={500}>
               <AreaChart
-                data={areaData()}
+                data={revenueAreaData}
                 margin={{ top: 30, right: 30, left: 50, bottom: 30 }}
               >
                 <defs>
@@ -648,8 +619,8 @@ const Page = () => {
                   stroke={theme === "light" ? "#475569" : "#94a3b8"}
                   tickFormatter={(value) => `${value} DXLAB Coin`}
                   tickMargin={40}
-                  domain={[minY, maxY]}
-                  ticks={yTicks}
+                  domain={[revenueMinY, revenueMaxY]}
+                  ticks={revenueYTicks}
                   width={100}
                 />
                 <Area
@@ -665,7 +636,6 @@ const Page = () => {
         </div>
       )}
 
-      {/* Biểu đồ đường parabol cho chi phí bỏ ra */}
       {!loading && showCharts && (
         <div
           className={`card mr-5 col-span-1 md:col-span-2 lg:col-span-4 ${
@@ -684,7 +654,7 @@ const Page = () => {
           <div className="card-body p-0">
             <ResponsiveContainer width="100%" height={500}>
               <AreaChart
-                data={costData()}
+                data={costAreaData}
                 margin={{ top: 30, right: 30, left: 50, bottom: 30 }}
               >
                 <defs>
@@ -718,8 +688,8 @@ const Page = () => {
                   stroke={theme === "light" ? "#475569" : "#94a3b8"}
                   tickFormatter={(value) => `${value} DXLAB Coin`}
                   tickMargin={40}
-                  domain={[minY, maxY]}
-                  ticks={yTicks}
+                  domain={[costMinY, costMaxY]}
+                  ticks={costYTicks}
                   width={100}
                 />
                 <Area
