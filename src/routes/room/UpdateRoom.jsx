@@ -180,17 +180,17 @@ const UpdateRoom = () => {
         // Create JSON Patch document
         const patchDoc = [];
         if (selectedRoom.roomName !== trimmedRoomName) {
-          patchDoc.push({ op: "replace", path: "RoomName", value: trimmedRoomName });
+          patchDoc.push({ op: "replace", path: "roomName", value: trimmedRoomName });
         }
         if (selectedRoom.roomDescription !== trimmedDescription) {
           patchDoc.push({
             op: "replace",
-            path: "RoomDescription",
+            path: "roomDescription",
             value: trimmedDescription,
           });
         }
         if (selectedRoom.isDeleted !== formData.isDeleted) {
-          patchDoc.push({ op: "replace", path: "IsDeleted", value: formData.isDeleted });
+          patchDoc.push({ op: "replace", path: "isDeleted", value: formData.isDeleted });
         }
 
         if (patchDoc.length > 0) {

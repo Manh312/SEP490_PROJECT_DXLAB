@@ -3,7 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setSelectedTime, confirmBooking, fetchAvailableSlots, fetchCategoryInRoom } from '../../redux/slices/Booking';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { PlusCircleIcon, XIcon } from 'lucide-react';
+import { PlusCircleIcon, XIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+
+// Ảnh mặc định nếu không có ảnh từ API
+const DEFAULT_IMAGE = 'https://via.placeholder.com/150?text=No+Image';
 
 // Hàm lấy ngày hiện tại theo múi giờ cục bộ
 const getCurrentDate = () => {
@@ -25,7 +28,9 @@ const AreaDetail = () => {
   const [fetchedSlots, setFetchedSlots] = useState({});
   const [selectedArea, setSelectedArea] = useState(null);
   const [groupAreas, setGroupAreas] = useState([]);
+  const [imageIndex, setImageIndex] = useState(0);
   const today = getCurrentDate();
+  const baseUrl = "https://localhost:9999";
 
   // Fetch category in room when selectedRoom changes
   useEffect(() => {
@@ -71,6 +76,16 @@ const AreaDetail = () => {
       fetchAllSlots();
     }
   }, [selectedArea, bookingDates, selectedRoom]);
+
+  // Auto-slide effect for images
+  useEffect(() => {
+    if (selectedArea?.key.images && selectedArea.key.images.length > 1) {
+      const timer = setInterval(() => {
+        setImageIndex((prev) => (prev + 1) % selectedArea.key.images.length);
+      }, 3000); // Change image every 3 seconds
+      return () => clearInterval(timer);
+    }
+  }, [selectedArea]);
 
   // Hàm fetch slot cho tất cả ngày trong bookingDates
   const fetchAllSlots = async () => {
@@ -240,6 +255,68 @@ const AreaDetail = () => {
     }
   };
 
+  const renderImages = () => {
+    const validImages = selectedArea?.key.images && Array.isArray(selectedArea.key.images) && selectedArea.key.images.length > 0 ? selectedArea.key.images : [];
+    if (!validImages.length) {
+      return (
+        <div className="w-full h-56 flex items-center justify-center bg-gray-200 rounded-lg">
+          <span className="text-gray-500 text-sm">Không có ảnh</span>
+        </div>
+      );
+    }
+
+    const prevImage = () => {
+      setImageIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
+    };
+
+    const nextImage = () => {
+      setImageIndex((prev) => (prev + 1) % validImages.length);
+    };
+
+    const imageSrc = validImages[imageIndex];
+    const displaySrc =
+      typeof imageSrc === "string"
+        ? imageSrc.startsWith("http")
+          ? imageSrc
+          : `${baseUrl}/${imageSrc}`
+        : DEFAULT_IMAGE;
+
+    return (
+      <div className="relative w-full h-70 group">
+        <img
+          src={displaySrc}
+          alt={`Area image ${imageIndex + 1}`}
+          className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
+          onError={(e) => (e.target.src = DEFAULT_IMAGE)}
+        />
+        {validImages.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+              {validImages.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`w-2 h-2 rounded-full ${idx === imageIndex ? "bg-white" : "bg-gray-400"}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   if (roomLoading) return <p className="text-center mt-10">Đang tải thông tin phòng...</p>;
   if (!selectedRoom) return <p className="text-center mt-10 text-orange-500">Vui lòng chọn phòng trước.</p>;
   if (!selectedArea) return <p className="text-center mt-10 text-orange-500">Đang tải thông tin khu vực...</p>;
@@ -248,16 +325,13 @@ const AreaDetail = () => {
     <div className="p-6 min-h-screen flex flex-col md:flex-row gap-6 mt-15 max-w-7xl mx-auto">
       <div className="md:w-1/2 mr-10">
         <h1 className="text-3xl font-bold text-center mb-6">{selectedArea.key.title}</h1>
-        <img
-          src={
-            selectedArea.key.images && selectedArea.key.images.length > 0
-              ? `https://localhost:9999${selectedArea.key.images[0]}`
-              : 'https://via.placeholder.com/150'
-          }
-          alt={selectedArea.name}
-          className="w-full h-64 object-cover rounded-md mb-6"
-        />
-        <p className="text-center mb-4">{selectedArea.key.categoryDescription}</p>
+        {renderImages()}
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg shadow-sm">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Mô tả khu vực</h2>
+          <p className="text-base text-gray-700 text-left max-w-prose">
+            {selectedArea.key.categoryDescription || "Không có mô tả chi tiết."}
+          </p>
+        </div>
       </div>
 
       <div className="md:w-1/2 p-6 rounded-lg border shadow-md mt-15 mb-60 ml-10">

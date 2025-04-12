@@ -4,7 +4,7 @@ import { fetchAvailableSlots, fetchCategoryInRoom } from '../../redux/slices/Boo
 import { getRoomById } from '../../redux/slices/Room';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { XIcon, PlusCircleIcon } from 'lucide-react';
+import { XIcon, PlusCircleIcon, ChevronLeft, ChevronRight, AreaChartIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { FaSpinner } from 'react-icons/fa';
 
@@ -16,6 +16,13 @@ const getCurrentDate = () => {
   const date = new Date();
   const offset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - offset).toISOString().split('T')[0];
+};
+
+// Hàm cắt ngắn mô tả
+const truncateDescription = (description, maxLength = 150) => {
+  if (typeof description !== 'string') return '';
+  if (description.length <= maxLength) return description;
+  return description.slice(0, maxLength) + '...';
 };
 
 const ViewAreas = () => {
@@ -30,7 +37,9 @@ const ViewAreas = () => {
   const [bookingDates, setBookingDates] = useState([{ date: getCurrentDate(), slots: [] }]);
   const [fetchedSlots, setFetchedSlots] = useState({});
   const [groupAreas, setGroupAreas] = useState([]);
+  const [imageIndices, setImageIndices] = useState({});
   const today = getCurrentDate();
+  const baseUrl = "https://localhost:9999";
 
   // Fetch room data khi id thay đổi
   useEffect(() => {
@@ -50,7 +59,7 @@ const ViewAreas = () => {
   useEffect(() => {
     if (categoryInRoom?.data?.length > 0) {
       const groupAreasList = categoryInRoom.data
-        .filter((item) => item.key.categoryId === 2) // Lọc categoryId = 2 (khu vực nhóm)
+        .filter((item) => item.key.categoryId === 2)
         .flatMap((item) =>
           item.value
             .filter((valueItem) => valueItem.areaCategory === 2)
@@ -74,12 +83,32 @@ const ViewAreas = () => {
   useEffect(() => {
     if (
       selectedArea?.value?.[0]?.areaTypeId &&
-      selectedArea?.roomId === selectedRoom?.roomId &&  // CHỈ fetch nếu cùng phòng
+      selectedArea?.roomId === selectedRoom?.roomId &&
       bookingDates.length > 0
     ) {
       fetchAllSlots();
     }
   }, [selectedArea, bookingDates, selectedRoom]);
+
+  // Auto-slide effect for images
+  useEffect(() => {
+    const timers = {};
+    categoryInRoom?.data?.forEach((area, index) => {
+      if (area.key.images && area.key.images.length > 1) {
+        timers[index] = setInterval(() => {
+          setImageIndices((prev) => {
+            const currentIndex = prev[index] || 0;
+            const nextIndex = (currentIndex + 1) % area.key.images.length;
+            return { ...prev, [index]: nextIndex };
+          });
+        }, 3000); // Change image every 3 seconds
+      }
+    });
+
+    return () => {
+      Object.values(timers).forEach((timer) => clearInterval(timer));
+    };
+  }, [categoryInRoom]);
 
   // Hàm fetch slot cho tất cả ngày trong bookingDates
   const fetchAllSlots = async () => {
@@ -122,14 +151,14 @@ const ViewAreas = () => {
   // Fetch slot cho một ngày cụ thể
   const fetchSlotsForDate = async (date) => {
     if (!selectedArea || !selectedRoom || !date) return;
-  
+
     try {
       const res = await dispatch(fetchAvailableSlots({
         roomId: selectedRoom.roomId,
         areaTypeId: selectedArea.value[0].areaTypeId,
         bookingDate: date,
       })).unwrap();
-  
+
       setFetchedSlots((prev) => ({
         ...prev,
         [date]: res.data || [],
@@ -241,67 +270,153 @@ const ViewAreas = () => {
         description: selected.value[0].areaDescription,
         type: 'group',
       }));
-      fetchAllSlots(); // Fetch lại slot khi thay đổi khu vực nhóm
+      fetchAllSlots();
     }
   };
 
-  return (
-    <div className="p-6 mt-10 mb-20">
-      <h1 className="text-3xl font-bold text-center mb-6">DXLAB Co-working Space</h1>
-      <p className="text-center mb-8">Chọn khu vực phù hợp với nhu cầu làm việc của bạn</p>
-      {roomLoading ? (
-        <div className="flex items-center justify-center py-6">
-          <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
-          <p className="text-orange-500 font-medium">Đang tải thông tin chi tiết phòng...</p>
+  const renderImages = (images, areaIndex) => {
+    const validImages = Array.isArray(images) && images.length > 0 ? images : [];
+    if (!validImages.length) {
+      return (
+        <div className="w-full h-48 flex items-center justify-center bg-gray-200 rounded-md">
+          <span className="text-gray-500 text-sm">Không có ảnh</span>
         </div>
-      ) : !selectedRoom ? (
-        <p>Không tìm thấy phòng với ID: {id}</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {categoryInRoom?.data?.map((area, index) => {
-            // Lấy đường dẫn ảnh đầu tiên từ mảng images, nếu không có thì dùng ảnh mặc định
-            const imageUrl = area.key.images?.length > 0 
-              ? `https://localhost:9999${area.key.images[0]}` 
-              : DEFAULT_IMAGE;
+      );
+    }
 
-            return (
-              <div key={index} className="p-6 border rounded-lg shadow-lg transition-transform transform hover:scale-105">
-                <img
-                  src={imageUrl}
-                  alt={area.value[0].areaTypeName}
-                  className="w-full h-48 object-cover rounded-md mb-4"
-                  onError={(e) => (e.target.src = DEFAULT_IMAGE)} // Nếu ảnh không tải được, dùng ảnh mặc định
+    const currentIndex = imageIndices[areaIndex] || 0;
+
+    const prevImage = () => {
+      setImageIndices((prev) => ({
+        ...prev,
+        [areaIndex]: (currentIndex - 1 + validImages.length) % validImages.length,
+      }));
+    };
+
+    const nextImage = () => {
+      setImageIndices((prev) => ({
+        ...prev,
+        [areaIndex]: (currentIndex + 1) % validImages.length,
+      }));
+    };
+
+    const imageSrc = validImages[currentIndex];
+    const displaySrc =
+      typeof imageSrc === "string"
+        ? imageSrc.startsWith("http")
+          ? imageSrc
+          : `${baseUrl}/${imageSrc}`
+        : DEFAULT_IMAGE;
+
+    return (
+      <div className="relative w-full h-48 group">
+        <img
+          src={displaySrc}
+          alt={`Area ${areaIndex + 1} - image ${currentIndex + 1}`}
+          className="w-full h-full object-cover rounded-md shadow-md transition-transform duration-300 group-hover:scale-105"
+          onError={(e) => (e.target.src = DEFAULT_IMAGE)}
+        />
+        {validImages.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+              {validImages.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`w-2 h-2 rounded-full ${idx === currentIndex ? "bg-white" : "bg-gray-400"
+                    }`}
                 />
-                <h2 className="text-2xl font-semibold mb-2">{area.key.title}</h2>
-                <p>{area.key.categoryDescription.slice(0, 100)}...</p>
-                <div>
-                  <button
-                    className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-                    onClick={() => {
-                      dispatch(openModal({
-                        ...area,
-                        name: area.value[0].areaTypeName,
-                        description: area.value[0].areaDescription,
-                        type: area.value[0].areaCategory === 1 ? 'individual' : 'group',
-                        roomId: selectedRoom.roomId,
-                      }));
-                      setBookingDates([{ date: getCurrentDate(), slots: [] }]);
-                    }}
-                  >
-                    Chọn
-                  </button>{" "}
-                  <Link
-                    className="mt-4 px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition"
-                    onClick={() => handleDetailClick(area)}
-                  >
-                    Chi tiết
-                  </Link>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="p-6 mb-20">
+      <div className='p-8 flex flex-col items-center text-center mt-16 mb-20'>
+        <h1 className="text-4xl mb-10 tracking-wide">
+          Danh sách khu vực tại{" "}
+          <span className="bg-gradient-to-r from-orange-500 to-orange-800 text-transparent bg-clip-text">
+            DXLAB Co-working Space
+          </span>
+        </h1>
+        <p className="text-gray-600 mb-10 max-w-2xl">
+          Chọn khu vực phù hợp với nhu cầu làm việc của bạn
+        </p>
+        {roomLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+            <p className="text-orange-500 font-medium">Đang tải thông tin khu vực...</p>
+          </div>
+        ) : !selectedRoom ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <AreaChartIcon className="h-12 w-12 text-gray-400 mb-4" />
+            <p className="text-gray-500 text-lg">Không tìm thấy phòng với ID: {id}</p>
+          </div>
+        ) : !categoryInRoom?.data?.length ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <AreaChartIcon className="h-12 w-12 text-gray-400 mb-4" />
+            <p className="text-gray-500 text-lg">Không tìm thấy khu vực nào trong phòng này</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl">
+            {categoryInRoom.data.map((area, index) => (
+              <div
+                key={index}
+                className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 flex flex-col"
+              >
+                {renderImages(area.key.images, index)}
+                <div className="p-6 text-left flex flex-col flex-grow">
+                  <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+                    {area.key.title}
+                  </h3>
+                  <p className="text-gray-600 text-sm flex-grow">
+                    {truncateDescription(area.key.categoryDescription)}
+                  </p>
+                  <div className="mt-4 flex gap-4">
+                    <button
+                      className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-lg font-semibold transition duration-300"
+                      onClick={() => {
+                        dispatch(openModal({
+                          ...area,
+                          name: area.value[0].areaTypeName,
+                          description: area.value[0].areaDescription,
+                          type: area.value[0].areaCategory === 1 ? 'individual' : 'group',
+                          roomId: selectedRoom.roomId,
+                        }));
+                        setBookingDates([{ date: getCurrentDate(), slots: [] }]);
+                      }}
+                    >
+                      Chọn
+                    </button>
+                    <Link
+                      to={`/area/${area.value[0].areaTypeId}`}
+                      className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-lg font-semibold text-center transition duration-300"
+                      onClick={() => handleDetailClick(area)}
+                    >
+                      Chi tiết
+                    </Link>
+                  </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center">
