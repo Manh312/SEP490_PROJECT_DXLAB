@@ -38,22 +38,20 @@ export const createRoom = createAsyncThunk(
       const formData = new FormData();
 
       // Append the fields to FormData
-      formData.append("RoomName", roomData.RoomName || "");
-      formData.append("RoomDescription", roomData.RoomDescription || "");
-      formData.append("Capacity", roomData.Capacity || 0);
-      formData.append("IsDeleted", roomData.IsDeleted ? "true" : "false");
+      formData.append("RoomName", roomData.roomName || "");
+      formData.append("RoomDescription", roomData.roomDescription || "");
+      formData.append("Capacity", roomData.capacity || 0);
+      formData.append("IsDeleted", roomData.isDeleted ? "true" : "false");
 
-      // Append Images (assuming roomData.Images is an array of File objects)
-      if (roomData.Images && Array.isArray(roomData.Images)) {
-        roomData.Images.forEach((image) => {
-          if (image instanceof File) {
-            formData.append(`Images`, image); // Use the same key "Images" for each file
-          }
+      // Append Images (roomData.images is now an array of File objects)
+      if (roomData.images && Array.isArray(roomData.images)) {
+        roomData.images.forEach((file) => {
+          formData.append("Images", file); // Append each File object
         });
       }
 
-      // Append AreaAddDTO (renamed from Area_DTO)
-      formData.append("Area_DTO", roomData.AreaDTO || "");
+      // Append AreaAddDTO (string)
+      formData.append("AreaAddDTO", roomData.areaAddDTO || "");
 
       // Send the request with multipart/form-data
       const response = await axiosInstance.post(API_URL, formData, {
