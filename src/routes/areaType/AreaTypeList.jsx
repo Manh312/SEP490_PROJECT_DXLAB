@@ -118,7 +118,7 @@ const AreaTypeList = () => {
         return "bg-gray-100 text-gray-800";
       case "Hoạt động":
         return "bg-green-100 text-green-800";
-      case "Đã xóa":
+      case "Không hoạt động":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -246,7 +246,7 @@ const AreaTypeList = () => {
               >
                 <option value="All">Tất cả</option>
                 <option value="Hoạt động">Hoạt động</option>
-                <option value="Đã xóa">Đã xóa</option>
+                <option value="Không hoạt động">Không hoạt động</option>
               </select>
             </div>
           </div>
@@ -308,7 +308,7 @@ const AreaTypeList = () => {
                             type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
                           }`}
                         >
-                          {type.isDeleted ? "Đã xóa" : "Hoạt động"}
+                          {type.isDeleted ? "Không hoạt động" : "Hoạt động"}
                         </span>
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">

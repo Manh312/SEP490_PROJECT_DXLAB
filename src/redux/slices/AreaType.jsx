@@ -47,7 +47,7 @@ export const createAreaType = createAsyncThunk(
 
       if (files && files.length > 0) {
         files.forEach((file) => {
-          formData.append("files", file);
+          formData.append("Images", file);
         });
       }
       const response = await axiosInstance.post(API_URL, formData, {

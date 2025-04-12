@@ -47,7 +47,7 @@ export const createBlog = createAsyncThunk(
       const response = await axios.post("/blog", formData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Không thể tạo blog");
+      return rejectWithValue(error);
     }
   }
 );
@@ -255,7 +255,6 @@ const blogSlice = createSlice({
       .addCase(fetchAdminPendingBlogs.fulfilled, (state, action) => {
         state.adminLoading = false;
         state.pendingBlogs = action.payload || []; // Đảm bảo luôn là mảng
-        console.log("Updated pendingBlogs in store:", state.pendingBlogs); // Debug store
       })
       .addCase(fetchAdminPendingBlogs.rejected, (state, action) => {
         state.adminLoading = false;

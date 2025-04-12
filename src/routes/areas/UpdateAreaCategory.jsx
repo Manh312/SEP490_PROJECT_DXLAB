@@ -161,6 +161,9 @@ const UpdateAreaCategory = () => {
       return;
     }
 
+    const newFiles = formData.images.filter((img) => img instanceof File);
+
+
     try {
       // Step 1: Delete images marked for deletion
       if (imagesToDelete.length > 0) {
@@ -206,11 +209,11 @@ const UpdateAreaCategory = () => {
       }
 
       // Step 3: Update new images if changed
-      if (hasImageChange && formData.images.length > 0) {
+      if (hasImageChange && newFiles.length > 0) {
         await dispatch(
           updateAreaTypeCategoryImages({
             categoryId: parseInt(id),
-            files: formData.images,
+            files: newFiles,
           })
         ).unwrap();
         toast.success("Cập nhật ảnh thành công!");

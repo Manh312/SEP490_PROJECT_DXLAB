@@ -29,16 +29,43 @@ export const getRoomById = createAsyncThunk(
   }
 );
 
-// **3. Tạo phòng**
+// **3. Tạo phòng (Updated to use multipart/form-data)**
 export const createRoom = createAsyncThunk(
   "room/create",
   async (roomData, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post(API_URL, roomData);
+      // Create a FormData object for multipart/form-data
+      const formData = new FormData();
+
+      // Append the fields to FormData
+      formData.append("RoomName", roomData.RoomName || "");
+      formData.append("RoomDescription", roomData.RoomDescription || "");
+      formData.append("Capacity", roomData.Capacity || 0);
+      formData.append("IsDeleted", roomData.IsDeleted ? "true" : "false");
+
+      // Append Images (assuming roomData.Images is an array of File objects)
+      if (roomData.Images && Array.isArray(roomData.Images)) {
+        roomData.Images.forEach((image) => {
+          if (image instanceof File) {
+            formData.append(`Images`, image); // Use the same key "Images" for each file
+          }
+        });
+      }
+
+      // Append AreaAddDTO (renamed from Area_DTO)
+      formData.append("Area_DTO", roomData.AreaDTO || "");
+
+      // Send the request with multipart/form-data
+      const response = await axiosInstance.post(API_URL, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       return response.data; // Chỉ lấy data
     } catch (error) {
-      console.error(error.response.data);
-      return rejectWithValue(error.response.data || "Không thể tạo phòng");
+      console.error("Error creating room:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || "Không thể tạo phòng");
     }
   }
 );
@@ -48,9 +75,8 @@ export const updateRoom = createAsyncThunk(
   "room/update",
   async ({ roomId, updates }, { rejectWithValue }) => {
     try {
-
       const response = await axiosInstance.patch(`${API_URL}/${roomId}`, updates, {
-        headers: { "Content-Type": "application/json-patch+json" }
+        headers: { "Content-Type": "application/json-patch+json" },
       });
       return response.data; // Trả về dữ liệu phòng đã cập nhật
     } catch (error) {

@@ -127,9 +127,6 @@ const AppWithWallet = React.memo(() => {
     validateUser();
   }, [validateUser]);
 
-  if (isConnecting) {
-    return <div>Đang kết nối wallet...</div>;
-  }
 
   return <App walletAddress={isValidUser ? walletAddress : null} />;
 });

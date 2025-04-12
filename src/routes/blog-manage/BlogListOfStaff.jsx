@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { PlusCircle, Filter, Search, CheckCircle, XCircle, Trash, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "react-toastify";
 import debounce from "lodash/debounce";
@@ -15,12 +15,18 @@ import {
 } from "../../redux/slices/Blog";
 import Pagination from "../../hooks/use-pagination";
 import { FaSpinner } from "react-icons/fa";
+import { startSignalRConnection, stopSignalRConnection } from "../../utils/signalR";
+
+// Utility to track shown notifications
+const notificationTracker = new Set();
 
 const BlogListOfStaff = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { pendingBlogs, approvedBlogs, adminLoading, adminStatusFilter } = useSelector(
     (state) => state.blogs
   );
+  const { token } = useSelector((state) => state.auth);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,6 +35,7 @@ const BlogListOfStaff = () => {
   const [blogIdToDelete, setBlogIdToDelete] = useState(null);
   const [blogTitle, setBlogTitle] = useState("");
   const [imageIndices, setImageIndices] = useState({});
+  const [isInitialLoading, setIsInitialLoading] = useState(true); // New state for initial loading
   const blogsPerPage = 5;
   const baseUrl = "https://localhost:9999";
 
@@ -37,18 +44,99 @@ const BlogListOfStaff = () => {
     setCurrentPage(1);
   }, 300);
 
+  // SignalR Setup with deduplicated notifications
   useEffect(() => {
-    dispatch(fetchAdminPendingBlogs());
-    dispatch(fetchAdminApprovedBlogs());
-    console.log("Initial fetch - Pending Blogs:", pendingBlogs);
-    console.log("Initial fetch - Approved Blogs:", approvedBlogs);
-  }, [dispatch]);
+    let connection;
+    const setupSignalR = async () => {
+      if (!token) {
+        console.error("No access token found. Cannot connect to SignalR.");
+        toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.", { toastId: "no-token" });
+        navigate("/login");
+        return;
+      }
+
+      try {
+        connection = await startSignalRConnection(token);
+
+        const showToastOnce = (eventName, message, blogId) => {
+          const notificationKey = `${eventName}-${blogId}`;
+          if (!notificationTracker.has(notificationKey)) {
+            notificationTracker.add(notificationKey);
+            toast.info(message, { toastId: notificationKey });
+            setTimeout(() => notificationTracker.delete(notificationKey), 5000);
+          }
+        };
+
+        connection.on("ReceiveNewBlog", (blog) => {
+          showToastOnce("ReceiveNewBlog", `Blog mới: "${blog.blogTitle}" đã được tạo!`, blog.blogId);
+          dispatch(fetchAdminPendingBlogs());
+        });
+
+        connection.on("ReceiveEditedBlog", (blog) => {
+          showToastOnce("ReceiveEditedBlog", `Blog "${blog.blogTitle}" đã được chỉnh sửa!`, blog.blogId);
+          if (blog.status === 1) {
+            dispatch(fetchAdminPendingBlogs());
+          } else if (blog.status === 2) {
+            dispatch(fetchAdminApprovedBlogs());
+          }
+        });
+
+        connection.on("ReceiveBlogStatus", (blog) => {
+          showToastOnce(
+            "ReceiveBlogStatus",
+            `Blog "${blog.blogTitle}" đã cập nhật trạng thái thành: ${mapStatusToString(blog.status)}`,
+            blog.blogId
+          );
+          dispatch(fetchAdminPendingBlogs());
+          dispatch(fetchAdminApprovedBlogs());
+        });
+
+        connection.on("ReceiveBlogDeleted", (blogId) => {
+          showToastOnce("ReceiveBlogDeleted", `Blog với ID ${blogId} đã bị xóa!`, blogId);
+          dispatch(fetchAdminPendingBlogs());
+          dispatch(fetchAdminApprovedBlogs());
+        });
+
+        // Fetch blogs with a minimum loading duration
+        const fetchPromise = Promise.all([
+          dispatch(fetchAdminPendingBlogs()).unwrap(),
+          dispatch(fetchAdminApprovedBlogs()).unwrap(),
+        ]);
+
+        // Ensure loading spinner shows for at least 500ms to avoid flickering
+        await Promise.all([
+          fetchPromise,
+          new Promise((resolve) => setTimeout(resolve, 500)), // Minimum loading duration
+        ]);
+
+        setIsInitialLoading(false); // Mark initial loading as complete
+      } catch (err) {
+        console.error("Failed to setup SignalR:", err);
+        setIsInitialLoading(false); // Ensure loading state is updated even on error
+      }
+
+      return () => {
+        if (connection) {
+          connection.off("ReceiveNewBlog");
+          connection.off("ReceiveEditedBlog");
+          connection.off("ReceiveBlogStatus");
+          connection.off("ReceiveBlogDeleted");
+          stopSignalRConnection();
+        }
+      };
+    };
+
+    setupSignalR();
+  }, [dispatch, token, navigate]);
 
   const mapStatusToString = (status) => {
     switch (status) {
-      case 1: return "Đang chờ";
-      case 2: return "Đã duyệt";
-      default: return "Không xác định";
+      case 1:
+        return "Đang chờ";
+      case 2:
+        return "Đã duyệt";
+      default:
+        return "Không xác định";
     }
   };
 
@@ -91,20 +179,19 @@ const BlogListOfStaff = () => {
 
   const handleApprove = async (blogId) => {
     if (!blogId) {
-      toast.error("Không tìm thấy ID của blog!");
+      toast.error("Không tìm thấy ID của blog!", { toastId: `approve-error-${blogId}` });
       return;
     }
     setLocalLoading(true);
     try {
       const response = await dispatch(approveAdminBlog(blogId)).unwrap();
-      toast.success(response.message || "Bài blog đã được phê duyệt!");
+      toast.success(response.message || "Bài blog đã được phê duyệt!", { toastId: `approve-${blogId}` });
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
-        dispatch(fetchBlogsByStatus("2")),
       ]);
     } catch (err) {
-      toast.error(err.message || "Phê duyệt thất bại!");
+      toast.error(err.message || "Phê duyệt thất bại!", { toastId: `approve-error-${blogId}` });
     } finally {
       setLocalLoading(false);
     }
@@ -112,20 +199,19 @@ const BlogListOfStaff = () => {
 
   const handleCancel = async (blogId) => {
     if (!blogId) {
-      toast.error("Không tìm thấy ID của blog!");
+      toast.error("Không tìm thấy ID của blog!", { toastId: `cancel-error-${blogId}` });
       return;
     }
     setLocalLoading(true);
     try {
       const response = await dispatch(cancelAdminBlog(blogId)).unwrap();
-      toast.success(response.message || "Bài blog đã bị hủy!");
+      toast.success(response.message || "Bài blog đã bị hủy!", { toastId: `cancel-${blogId}` });
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
-        dispatch(fetchBlogsByStatus("0")),
       ]);
     } catch (err) {
-      toast.error(err.message || "Hủy thất bại!");
+      toast.error(err.message || "Hủy thất bại!", { toastId: `cancel-error-${blogId}` });
     } finally {
       setLocalLoading(false);
     }
@@ -133,22 +219,19 @@ const BlogListOfStaff = () => {
 
   const handleDelete = async () => {
     if (!blogIdToDelete) {
-      toast.error("Không tìm thấy ID của blog!");
+      toast.error("Không tìm thấy ID của blog!", { toastId: `delete-error-${blogIdToDelete}` });
       return;
     }
     setLocalLoading(true);
     try {
       const response = await dispatch(deleteAdminBlog(blogIdToDelete)).unwrap();
-      toast.success(response.message || "Bài blog đã được xóa!");
+      toast.success(response.message || "Bài blog đã được xóa!", { toastId: `delete-${blogIdToDelete}` });
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
-        dispatch(fetchBlogsByStatus("0")),
-        dispatch(fetchBlogsByStatus("1")),
-        dispatch(fetchBlogsByStatus("2")),
       ]);
     } catch (err) {
-      toast.error(err.message || "Xóa thất bại!");
+      toast.error(err.message || "Xóa thất bại!", { toastId: `delete-error-${blogIdToDelete}` });
     } finally {
       setLocalLoading(false);
       setIsDeleteModalOpen(false);
@@ -171,18 +254,25 @@ const BlogListOfStaff = () => {
 
   const getFilterBgClass = () => {
     switch (adminStatusFilter) {
-      case "All": return "bg-gray-100 text-gray-800";
-      case "Approved": return "bg-green-100 text-green-800";
-      case "Pending": return "bg-yellow-100 text-yellow-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "All":
+        return "bg-gray-100 text-gray-800";
+      case "Approved":
+        return "bg-green-100 text-green-800";
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusClass = (status) => {
     switch (status) {
-      case "Đã duyệt": return "bg-green-100 text-green-800";
-      case "Đang chờ": return "bg-yellow-100 text-yellow-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "Đã duyệt":
+        return "bg-green-100 text-green-800";
+      case "Đang chờ":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -279,8 +369,6 @@ const BlogListOfStaff = () => {
     return title;
   };
 
-  console.log("Filtered Blogs:", filteredBlogs); // Debug filteredBlogs
-
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-6 xl:px-8 mb-10">
       <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
@@ -289,14 +377,6 @@ const BlogListOfStaff = () => {
             <PlusCircle className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Danh Sách Blog (Admin)</h2>
           </div>
-          {/* <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-blue-600 transition"
-              onClick={handleRefresh}
-            >
-              Làm mới
-            </button>
-          </div> */}
         </div>
 
         <div className="mb-6 p-4 rounded-lg shadow-sm">
@@ -326,7 +406,8 @@ const BlogListOfStaff = () => {
           </div>
         </div>
 
-        {(adminLoading || localLoading) ? (
+        {/* Show loading spinner during initial load or local loading */}
+        {(isInitialLoading || adminLoading || localLoading) ? (
           <div className="flex items-center justify-center py-6 mb-200">
             <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
             <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>

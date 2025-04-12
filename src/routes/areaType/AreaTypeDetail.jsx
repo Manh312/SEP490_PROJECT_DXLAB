@@ -69,7 +69,7 @@ const AreaTypeDetail = () => {
             {/* Price */}
             <tr className="border-b">
               <td className="px-4 py-3 font-semibold bg-gray-200 text-gray-700">Giá</td>
-              <td className="px-4 py-3">{price.toLocaleString()} VNĐ</td>
+              <td className="px-4 py-3">{price.toLocaleString()} DXLAB Coin</td>
             </tr>
             {/* Status */}
             <tr className="border-b">

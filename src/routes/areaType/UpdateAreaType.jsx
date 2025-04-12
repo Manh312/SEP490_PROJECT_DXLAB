@@ -76,27 +76,11 @@ const UpdateAreaType = () => {
           ? selectedAreaType.images
           : [selectedAreaType.images || ""];
 
-        const existing = images
-          .filter((img) => typeof img === "string" && img)
-          .map((img) => {
-            if (img.startsWith("http")) {
-              return img;
-            }
-            return `${BACKEND_URL}${img.imageUrl || img}`;
-          });
+          const existing = images.map((img) =>
+            img.startsWith("http") ? img : `${BACKEND_URL}${img}`
+          );
 
-        const convertedImages = await Promise.all(
-          existing.map(async (imageUrl) => {
-            try {
-              return await fetchImageAsBlob(imageUrl);
-            } catch (error) {
-              console.warn(`Không thể convert ảnh ${imageUrl}:`, error);
-              return null;
-            }
-          })
-        );
 
-        const validImages = convertedImages.filter((file) => file !== null);
 
         setFormData({
           areaTypeName: selectedAreaType.areaTypeName || "",
@@ -105,44 +89,24 @@ const UpdateAreaType = () => {
           areaCategory: selectedAreaType.areaCategory || 1,
           size: selectedAreaType.size || "",
           isDeleted: selectedAreaType.isDeleted || false,
-          images: validImages,
+          images: [],
         });
 
         setExistingImages(existing);
         setImagePreviews(existing);
       }
     };
+    initializeFormData();
 
-    initializeFormData().catch((error) => {
-      console.error("Lỗi khi khởi tạo formData:", error);
-      toast.error("Lỗi khi tải dữ liệu ảnh!");
-    });
   }, [selectedAreaType]);
 
-  // Fetch image as Blob
-  const fetchImageAsBlob = async (imageUrl) => {
-    try {
-      const response = await fetch(imageUrl, { mode: "cors" });
-      if (!response.ok) {
-        throw new Error(`Không thể tải ảnh từ URL: ${imageUrl} - Status: ${response.status}`);
-      }
-      const blob = await response.blob();
-      return new File([blob], imageUrl.split("/").pop(), { type: blob.type });
-    } catch (error) {
-      console.error("Failed to fetch image as Blob:", error);
-      throw error;
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    setHasDetailsChange(true); // Mark details as changed
-  };
 
   const handleNumberChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value === "" ? "" : parseFloat(value) });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "isDeleted" ? parseInt(value) : value,
+    }));
     setHasDetailsChange(true); // Mark details as changed
   };
 
@@ -166,48 +130,30 @@ const UpdateAreaType = () => {
     let updatedExistingImages = [...existingImages];
 
     if (isExistingImage) {
-      // Log the existingImages array to debug the raw image URLs
-      console.log("Existing images from backend:", existingImages);
-
-      // Get the image URL from existingImages
+      // Get the image URL to delete
       let imageUrl = existingImages[index];
 
-      // Normalize the imageUrl to match the backend format
-      // Remove the BACKEND_URL prefix (e.g., https://localhost:9999)
-      imageUrl = imageUrl.replace(BACKEND_URL, '');
-
-      // Ensure the imageUrl starts with "/Images/"
-      if (!imageUrl.startsWith('/')) {
-        imageUrl = '/' + imageUrl; // Add a leading slash if missing
+      // Normalize the imageUrl for backend (remove BACKEND_URL and ensure correct path)
+      imageUrl = imageUrl.replace(BACKEND_URL, "");
+      if (!imageUrl.startsWith("/")) {
+        imageUrl = "/" + imageUrl;
       }
-      if (!imageUrl.startsWith('/Images/')) {
-        // If the path doesn't start with "/Images/", assume the remaining part is the filename
-        // and prepend "/Images/"
-        const filename = imageUrl.split('/').pop(); // Extract the filename
-        imageUrl = `/Images/${filename}`; // Prepend "/Images/" to the filename
+      if (!imageUrl.startsWith("/Images/")) {
+        const filename = imageUrl.split("/").pop();
+        imageUrl = `/Images/${filename}`;
       }
 
-      console.log("Normalized imageUrl to delete:", imageUrl); // Debug log
-
-      // Add the normalized imageUrl to imagesToDelete
+      // Add to imagesToDelete
       setImagesToDelete((prev) => [...prev, imageUrl]);
 
-      // Update existingImages
+      // Update existingImages and previews
       updatedExistingImages = updatedExistingImages.filter((_, i) => i !== index);
-      setExistingImages(updatedExistingImages);
-
-      // Update imagePreviews
       updatedPreviews = updatedPreviews.filter((_, i) => i !== index);
-      setImagePreviews(updatedPreviews);
 
-      // Update formData.images
-      updatedImages = updatedImages.filter((_, i) => i !== index);
-      setFormData((prev) => ({
-        ...prev,
-        images: updatedImages,
-      }));
+      setExistingImages(updatedExistingImages);
+      setImagePreviews(updatedPreviews);
     } else {
-      // Remove new image (not yet uploaded to backend)
+      // Remove new image (not yet uploaded)
       const fileIndex = index - existingImages.length;
       updatedPreviews = updatedPreviews.filter((_, i) => i !== index);
       updatedImages = updatedImages.filter((_, i) => i !== fileIndex);
@@ -219,7 +165,7 @@ const UpdateAreaType = () => {
       }));
     }
 
-    setHasImageChange(true);
+    setHasImageChange(true); // Mark images as changed
   };
 
   const handleImageError = (index) => {
@@ -479,7 +425,7 @@ const UpdateAreaType = () => {
                     type="text"
                     name="areaTypeName"
                     value={formData.areaTypeName}
-                    onChange={handleChange}
+                    onChange={handleNumberChange}
                     className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
                     placeholder="Nhập tên loại khu vực"
                     required
@@ -540,11 +486,11 @@ const UpdateAreaType = () => {
                   <select
                     name="isDeleted"
                     value={String(formData.isDeleted)}
-                    onChange={handleChange}
+                    onChange={handleNumberChange}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 duration-150 ease-in-out h-12"
                   >
                     <option value="false">Hoạt động</option>
-                    <option value="true">Xóa</option>
+                    <option value="true">Không hoạt động</option>
                   </select>
                 </div>
               </div>
@@ -561,7 +507,7 @@ const UpdateAreaType = () => {
                   <textarea
                     name="areaDescription"
                     value={formData.areaDescription}
-                    onChange={handleChange}
+                    onChange={handleNumberChange}
                     className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out min-h-[50px]"
                     placeholder="Nhập mô tả loại khu vực"
                     required
@@ -578,7 +524,7 @@ const UpdateAreaType = () => {
                   <select
                     name="areaCategory"
                     value={String(formData.areaCategory)}
-                    onChange={handleChange}
+                    onChange={handleNumberChange}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 duration-150 ease-in-out h-12"
                   >
                     <option value="1">Khu vực cá nhân</option>

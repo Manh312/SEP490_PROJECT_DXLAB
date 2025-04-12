@@ -7,15 +7,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchBlogsByStatus, setStatusFilter } from "../../../redux/slices/Blog";
 import Pagination from "../../../hooks/use-pagination";
 import { FaSpinner } from "react-icons/fa";
-import { startSignalRConnection, stopSignalRConnection } from "../../../utils/signalR"; 
+import { startSignalRConnection, stopSignalRConnection, registerSignalREvent } from "../../../utils/signalR";
 
 const BlogList = () => {
   const dispatch = useDispatch();
   const { blogs, statusFilter, error } = useSelector((state) => state.blogs);
+  const { token } = useSelector((state) => state.auth);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [imageIndices, setImageIndices] = useState({});
-  const [initialLoading, setInitialLoading] = useState(true); // State để kiểm soát loading ban đầu
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [signalRError, setSignalRError] = useState(null);
   const blogsPerPage = 5;
   const baseUrl = "https://localhost:9999";
 
@@ -24,42 +26,69 @@ const BlogList = () => {
     setCurrentPage(1);
   }, 300);
 
-  // Khởi tạo SignalR và lắng nghe sự kiện
+  // SignalR Setup
   useEffect(() => {
+    let connection;
     const setupSignalR = async () => {
-      const connection = await startSignalRConnection();
+      if (!token) {
+        console.error("No access token found. Cannot connect to SignalR.");
+        setSignalRError("Không tìm thấy token xác thực. Vui lòng đăng nhập lại.");
+        setInitialLoading(false);
+        return;
+      }
 
-      // Lắng nghe sự kiện "ReceiveBlogUpdate" từ server
-      connection.on("ReceiveBlogUpdate", (message, blogId, newStatus) => {
-        // Hiển thị thông báo
-        if (newStatus === 2) {
-          toast.success(`Blog đã được duyệt!`, { autoClose: 3000 });
-        } else if (newStatus === 0) {
-          toast.error(`Blog đã bị hủy!`, { autoClose: 3000 });
+      try {
+        console.log("Starting SignalR connection for staff...");
+        connection = await startSignalRConnection(token);
+
+        if (!connection) {
+          throw new Error("Không thể thiết lập kết nối SignalR.");
         }
 
-        // Gọi lại API để cập nhật danh sách blog
-        dispatch(fetchBlogsByStatus(statusFilter));
-      });
+        // Đăng ký sự kiện SignalR
+        registerSignalREvent("ReceiveBlogStatus", (blog) => {
+          console.log("Nhận được cập nhật trạng thái blog:", blog);
+          toast.info(
+            `Blog "${blog.blogTitle}" đã cập nhật trạng thái thành: ${getStatusDisplayName(blog.status)}`
+          );
+          // Làm mới danh sách blog bất kể statusFilter hiện tại
+          dispatch(fetchBlogsByStatus(statusFilter)).then(() => {
+            // Nếu blog vừa cập nhật không thuộc tab hiện tại, thông báo cho người dùng chuyển tab
+            if (String(blog.status) !== String(statusFilter)) {
+              toast.info(`Hãy chuyển sang tab "${getStatusDisplayName(blog.status)}" để xem blog vừa cập nhật!`);
+            }
+          });
+        });
 
-      // Lấy dữ liệu lần đầu
-      await dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
-      setInitialLoading(false);
+        registerSignalREvent("ReceiveBlogDeleted", (blogId) => {
+          console.log("Nhận được thông báo xóa blog:", blogId);
+          toast.warn(`Blog với ID ${blogId} đã bị xóa bởi Admin!`);
+          // Làm mới danh sách blog
+          dispatch(fetchBlogsByStatus(statusFilter));
+        });
+
+        // Lấy danh sách blog ban đầu
+        await dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
+      } catch (err) {
+        console.error("Lỗi khi thiết lập SignalR hoặc lấy blog:", err);
+      } finally {
+        setInitialLoading(false);
+      }
     };
 
     setupSignalR();
 
-    // Cleanup khi component unmount
     return () => {
-      stopSignalRConnection();
+      if (connection) {
+        console.log("Dọn dẹp kết nối SignalR...");
+        stopSignalRConnection();
+      }
     };
-  }, [dispatch, statusFilter]);
+  }, [dispatch, statusFilter, token]);
 
   const filteredBlogs = useMemo(() => {
     let result = blogs || [];
-    if (error) {
-      return []; // Nếu có lỗi (ví dụ: không tìm thấy blog), trả về mảng rỗng
-    }
+    if (error) return [];
     result = result.filter((blog) => String(blog.status) === String(statusFilter));
     if (searchTerm) {
       result = result.filter((blog) =>
@@ -69,12 +98,12 @@ const BlogList = () => {
     return result;
   }, [blogs, searchTerm, statusFilter, error]);
 
-  // Reset currentPage khi danh sách blog trống hoặc không hợp lệ
   useEffect(() => {
+    const totalPages = Math.ceil(filteredBlogs.length / blogsPerPage);
     if (filteredBlogs.length === 0 && currentPage !== 1) {
       setCurrentPage(1);
-    } else if (currentPage > Math.ceil(filteredBlogs.length / blogsPerPage)) {
-      setCurrentPage(Math.max(1, Math.ceil(filteredBlogs.length / blogsPerPage)));
+    } else if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
     }
   }, [filteredBlogs, currentPage, blogsPerPage]);
 
@@ -90,28 +119,40 @@ const BlogList = () => {
 
   const getStatusDisplayName = (status) => {
     switch (status) {
-      case 2: return "Đã xuất bản";
-      case 1: return "Đang chờ";
-      case 0: return "Bị hủy";
-      default: return "Không xác định";
+      case 2:
+        return "Đã xuất bản";
+      case 1:
+        return "Đang chờ";
+      case 0:
+        return "Bị hủy";
+      default:
+        return "Không xác định";
     }
   };
 
   const getFilterBgClass = () => {
     switch (statusFilter) {
-      case "2": return "bg-green-100 text-green-800";
-      case "1": return "bg-yellow-100 text-yellow-800";
-      case "0": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "2":
+        return "bg-green-100 text-green-800";
+      case "1":
+        return "bg-yellow-100 text-yellow-800";
+      case "0":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getStatusClass = (status) => {
     switch (status) {
-      case 2: return "bg-green-100 text-green-800";
-      case 1: return "bg-yellow-100 text-yellow-800";
-      case 0: return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case 2:
+        return "bg-green-100 text-green-800";
+      case 1:
+        return "bg-yellow-100 text-yellow-800";
+      case 0:
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -248,6 +289,13 @@ const BlogList = () => {
           </div>
         </div>
 
+        {/* SignalR Error */}
+        {signalRError && (
+          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+            {signalRError}
+          </div>
+        )}
+
         {/* Loading State */}
         {initialLoading ? (
           <div className="flex items-center justify-center py-6 mb-200">
@@ -259,8 +307,12 @@ const BlogList = () => {
             <FileText className="h-12 w-12 text-gray-400 mb-4" />
             <p className="text-gray-500 text-lg">
               {searchTerm
-                ? `Không tìm thấy blog nào với trạng thái "${getStatusDisplayName(Number(statusFilter))}" khớp với tìm kiếm`
-                : `Không có blog nào với trạng thái "${getStatusDisplayName(Number(statusFilter))}"`}
+                ? `Không tìm thấy blog nào với trạng thái "${getStatusDisplayName(
+                    Number(statusFilter)
+                  )}" khớp với tìm kiếm`
+                : `Không có blog nào với trạng thái "${getStatusDisplayName(
+                    Number(statusFilter)
+                  )}"`}
             </p>
           </div>
         ) : (
@@ -270,14 +322,28 @@ const BlogList = () => {
               <table className="w-full text-left border-collapse">
                 <thead className="border-b bg-gray-400">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">#</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Ảnh</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Tiêu đề</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Nội dung</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Ngày tạo</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      #
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Ảnh
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Tiêu đề
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Nội dung
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Ngày tạo
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Trạng thái
+                    </th>
                     {hasCancelledBlogs && (
-                      <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Thao tác</th>
+                      <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                        Thao tác
+                      </th>
                     )}
                   </tr>
                 </thead>
@@ -365,7 +431,8 @@ const BlogList = () => {
                       </Link>
                     </p>
                     <p className="text-sm text-gray-600 truncate">
-                      <span className="font-medium">Nội dung:</span> {blog.blogContent}
+                      <span className="font-medium">Nội dung:</span>{" "}
+                      {blog.blogContent}
                     </p>
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Ngày tạo:</span>{" "}

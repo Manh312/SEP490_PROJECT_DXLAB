@@ -14,41 +14,49 @@ const CreateRoom = () => {
   const { areaTypes } = useSelector((state) => state.areaTypes);
 
   const textareaRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     dispatch(fetchAreaTypes("1"));
   }, [dispatch]);
 
   const [roomData, setRoomData] = useState({
-    roomName: "",
-    roomDescription: "",
-    capacity: "",
-    isDeleted: false,
-    images: [],
-    area_DTO: [{ areaTypeId: "", areaName: "" }],
+    RoomName: "",
+    RoomDescription: "",
+    Capacity: "",
+    IsDeleted: false,
+    Images: [], // Array of File objects
+    AreaDTO: "", // Single string (areaTypeId)
   });
 
+  const [imagePreviews, setImagePreviews] = useState([]); // For displaying image previews
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (textareaRef.current) {
-      if (!roomData.roomDescription.trim()) {
+      if (!roomData.RoomDescription.trim()) {
         textareaRef.current.style.height = "50px";
       } else {
         textareaRef.current.style.height = "50px";
         textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
       }
     }
-  }, [roomData.roomDescription]);
+  }, [roomData.RoomDescription]);
+
+  // Clean up object URLs when component unmounts or images change
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach((preview) => URL.revokeObjectURL(preview));
+    };
+  }, [imagePreviews]);
 
   const validate = () => {
     let newErrors = {};
-    if (!roomData.roomName.trim()) newErrors.roomName = "Tên phòng không được để trống!";
-    if (!roomData.roomDescription.trim()) newErrors.roomDescription = "Mô tả phòng không được để trống!";
-    if (!roomData.capacity || roomData.capacity < 1) newErrors.capacity = "Sức chứa phải lớn hơn 0!";
-    if (roomData.images.length === 0) newErrors.images = "Vui lòng chọn ít nhất một hình ảnh!";
-    if (roomData.area_DTO.some(area => !area.areaTypeId || !area.areaName.trim()))
-      newErrors.area_DTO = "Vui lòng điền đầy đủ thông tin cho tất cả khu vực!";
+    if (!roomData.RoomName.trim()) newErrors.RoomName = "Tên phòng không được để trống!";
+    if (!roomData.RoomDescription.trim()) newErrors.RoomDescription = "Mô tả phòng không được để trống!";
+    if (!roomData.Capacity || roomData.Capacity < 1) newErrors.Capacity = "Sức chứa phải lớn hơn 0!";
+    if (roomData.Images.length === 0) newErrors.Images = "Vui lòng chọn ít nhất một hình ảnh!";
+    if (!roomData.AreaAddDTO) newErrors.AreaAddDTO = "Vui lòng chọn loại khu vực!";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -60,62 +68,48 @@ const CreateRoom = () => {
 
   const handleNumberChange = (e) => {
     const value = e.target.value.trim();
-    setRoomData({ ...roomData, capacity: value === "" ? "" : parseInt(value) });
+    setRoomData({ ...roomData, Capacity: value === "" ? "" : parseInt(value) });
   };
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    const fileNames = files.map((file) => file.name);
-    const newImages = fileNames.filter((name) => !roomData.images.includes(name));
-    if (newImages.length === 0) {
+    if (files.length === 0) return;
+
+    // Check for duplicate files
+    const existingFileNames = roomData.Images.map((file) => file.name);
+    const newFiles = files.filter((file) => !existingFileNames.includes(file.name));
+
+    if (newFiles.length === 0) {
       toast.error("Ảnh đã tồn tại, vui lòng chọn ảnh khác!");
       return;
     }
+
+    // Create previews for new files
+    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+
     setRoomData((prevData) => ({
       ...prevData,
-      images: [...prevData.images, ...newImages],
+      Images: [...prevData.Images, ...newFiles],
     }));
+    setImagePreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
   };
 
   const handleRemoveImage = (index) => {
-    setRoomData((prevData) => ({
-      ...prevData,
-      images: prevData.images.filter((_, i) => i !== index),
-    }));
-  };
-
-  const addArea = () => {
-    setRoomData((prevData) => ({
-      ...prevData,
-      area_DTO: [...prevData.area_DTO, { areaTypeId: "", areaName: "" }],
-    }));
-  };
-
-  const handleAreaTypeChange = (index, areaTypeId) => {
     setRoomData((prevData) => {
-      const updatedAreaDTO = [...prevData.area_DTO];
-      updatedAreaDTO[index].areaTypeId = areaTypeId;
-      return { ...prevData, area_DTO: updatedAreaDTO };
+      const updatedImages = prevData.Images.filter((_, i) => i !== index);
+      return { ...prevData, Images: updatedImages };
+    });
+
+    setImagePreviews((prevPreviews) => {
+      const updatedPreviews = prevPreviews.filter((_, i) => i !== index);
+      // Revoke the object URL for the removed image
+      URL.revokeObjectURL(prevPreviews[index]);
+      return updatedPreviews;
     });
   };
 
-  const handleAreaNameChange = (index, areaName) => {
-    setRoomData((prevData) => {
-      const updatedAreaDTO = [...prevData.area_DTO];
-      updatedAreaDTO[index].areaName = areaName;
-      return { ...prevData, area_DTO: updatedAreaDTO };
-    });
-  };
-
-  const handleRemoveArea = (index) => {
-    setRoomData((prevData) => {
-      if (prevData.area_DTO.length === 1) {
-        toast.error("Phải có ít nhất một khu vực!");
-        return prevData;
-      }
-      const updatedAreaDTO = prevData.area_DTO.filter((_, i) => i !== index);
-      return { ...prevData, area_DTO: updatedAreaDTO };
-    });
+  const handleAreaTypeChange = (e) => {
+    setRoomData({ ...roomData, AreaAddDTO: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -148,13 +142,13 @@ const CreateRoom = () => {
                 </label>
                 <input
                   type="text"
-                  name="roomName"
-                  value={roomData.roomName}
+                  name="RoomName"
+                  value={roomData.RoomName}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 h-12 transition duration-150 ease-in-out"
                   required
                 />
-                {errors.roomName && <p className="text-red-500 text-sm">{errors.roomName}</p>}
+                {errors.RoomName && <p className="text-red-500 text-sm">{errors.RoomName}</p>}
               </div>
               <div className="flex flex-col space-y-1">
                 <label className="text-sm font-medium flex items-center">
@@ -162,59 +156,33 @@ const CreateRoom = () => {
                 </label>
                 <input
                   type="number"
-                  name="capacity"
-                  value={roomData.capacity}
+                  name="Capacity"
+                  value={roomData.Capacity}
                   min={1}
                   onChange={handleNumberChange}
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 h-12 transition duration-150 ease-in-out"
                   required
                 />
-                {errors.capacity && <p className="text-red-500 text-sm">{errors.capacity}</p>}
+                {errors.Capacity && <p className="text-red-500 text-sm">{errors.Capacity}</p>}
               </div>
               <div className="flex flex-col space-y-1">
                 <label className="text-sm font-medium flex items-center">
-                  <FaMap className="mr-2 text-orange-500" /> Khu Vực
+                  <FaMap className="mr-2 text-orange-500" /> Loại Khu Vực
                 </label>
-                <div className="space-y-2">
-                  {roomData.area_DTO.map((area, index) => (
-                    <div key={index} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-                      <select
-                        value={area.areaTypeId}
-                        onChange={(e) => handleAreaTypeChange(index, e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 h-12 transition duration-150 ease-in-out"
-                      >
-                        <option value="">-- Chọn loại --</option>
-                        {areaTypes.map((type) => (
-                          <option key={type.areaTypeId} value={type.areaTypeId}>
-                            {type.areaTypeName} (Size: {type.size}, Loại: {type.areaCategory === 1 ? "Cá nhân":"Nhóm"})
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        type="text"
-                        placeholder="Tên khu vực"
-                        value={area.areaName}
-                        onChange={(e) => handleAreaNameChange(index, e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 h-12 transition duration-150 ease-in-out"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveArea(index)}
-                        className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition duration-150 ease-in-out self-start sm:self-center"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
+                <select
+                  name="AreaAddDTO"
+                  value={roomData.AreaAddDTO}
+                  onChange={handleAreaTypeChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 h-12 transition duration-150 ease-in-out"
+                >
+                  <option value="">-- Chọn loại khu vực --</option>
+                  {areaTypes.map((type) => (
+                    <option key={type.areaTypeId} value={type.areaTypeId}>
+                      {type.areaTypeName} (Size: {type.size}, Loại: {type.areaCategory === 1 ? "Cá nhân" : "Nhóm"})
+                    </option>
                   ))}
-                  <button
-                    type="button"
-                    onClick={addArea}
-                    className="w-full py-2 px-4 border border-orange-500 rounded-lg text-sm font-medium text-orange-500 hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out"
-                  >
-                    + Thêm khu vực
-                  </button>
-                </div>
-                {errors.area_DTO && <p className="text-red-500 text-sm">{errors.area_DTO}</p>}
+                </select>
+                {errors.AreaAddDTO && <p className="text-red-500 text-sm">{errors.AreaAddDTO}</p>}
               </div>
             </div>
 
@@ -226,13 +194,13 @@ const CreateRoom = () => {
                 </label>
                 <textarea
                   ref={textareaRef}
-                  name="roomDescription"
-                  value={roomData.roomDescription}
+                  name="RoomDescription"
+                  value={roomData.RoomDescription}
                   onChange={handleChange}
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 min-h-[50px] transition duration-150 ease-in-out"
                   required
                 />
-                {errors.roomDescription && <p className="text-red-500 text-sm">{errors.roomDescription}</p>}
+                {errors.RoomDescription && <p className="text-red-500 text-sm">{errors.RoomDescription}</p>}
               </div>
               <div className="flex flex-col space-y-1">
                 <label className="text-sm font-medium flex items-center">
@@ -242,19 +210,21 @@ const CreateRoom = () => {
                   type="file"
                   multiple
                   accept="image/*"
+                  ref={fileInputRef}
                   onChange={handleImageUpload}
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
                   required
                 />
-                {errors.images && <p className="text-red-500 text-sm">{errors.images}</p>}
-                {roomData.images.length > 0 && (
+                {errors.Images && <p className="text-red-500 text-sm">{errors.Images}</p>}
+                {imagePreviews.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {roomData.images.map((img, index) => (
+                    {imagePreviews.map((preview, index) => (
                       <div key={index} className="relative w-20 h-20">
                         <img
-                          src={`/assets/${img}`}
+                          src={preview}
                           alt={`room-img-${index}`}
                           className="w-full h-full object-cover rounded-lg border"
+                          onError={(e) => (e.target.src = "/placeholder-image.jpg")} // Optional: Add a placeholder image
                         />
                         <button
                           type="button"
