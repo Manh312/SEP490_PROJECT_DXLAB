@@ -1,7 +1,7 @@
 import { HubConnectionBuilder, LogLevel, HttpTransportType } from "@microsoft/signalr";
 
 // URL của SignalR Hub dựa trên cấu hình backend
-const signalRUrl = "https://localhost:9999/chatHub"; // Sửa từ /chatHub thành /blogHub
+const signalRUrl = "https://localhost:9999/blogHub"; // Sửa từ /chatHub thành /blogHub
 
 let connection = null;
 

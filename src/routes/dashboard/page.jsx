@@ -1,37 +1,35 @@
+// Page.js
 import { CreditCard, DollarSign, Package, TrendingUp, Users } from "lucide-react";
 import { useTheme } from "../../hooks/use-theme";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchStudentGroupStats, fetchJobsByYearAndDate, resetStats } from "../../redux/slices/Statistics";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-  Area,
-  AreaChart,
-} from "recharts";
 import { FaSpinner } from "react-icons/fa";
+
+// Import the components
+import RevenueStatistics from "./statistics/RevenueStatistics";
+import CostStatistics from "./statistics/CostStatistics";
+import DepreciationStatistics from "./statistics/DepreciationStatistics";
+import PerformanceStatistics from "./statistics/PerformanceStatistics";
+
+import { toast } from "react-toastify";
 
 const Page = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
-  const { stats, jobs, loading } = useSelector((state) => state.statistics);
+  const { stats, jobs, loading, error } = useSelector((state) => state.statistics);
 
-  const [period, setPeriod] = useState("năm"); 
-  const [year, setYear] = useState("2025"); 
-  const [month, setMonth] = useState(""); 
+  const [period, setPeriod] = useState("năm");
+  const [year, setYear] = useState("2025");
+  const [month, setMonth] = useState("");
   const [showCharts, setShowCharts] = useState(false);
+  const [activeTab, setActiveTab] = useState("revenue");
 
-  const [yearlyStats, setYearlyStats] = useState(null); 
-  const [detailedStats, setDetailedStats] = useState([]); 
+  const [yearlyStats, setYearlyStats] = useState(null);
+  const [detailedStats, setDetailedStats] = useState([]);
   const [yearlyData, setYearlyData] = useState([]);
 
   const years = Array.from({ length: 10 }, (_, i) => (2025 - i).toString());
-
   const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
 
   const getDaysInMonth = (month, year) => {
@@ -60,7 +58,7 @@ const Page = () => {
     setYearlyStats(null);
     setDetailedStats([]);
     setShowCharts(false);
-
+  
     if (period === "năm") {
       dispatch(
         fetchStudentGroupStats({
@@ -71,12 +69,16 @@ const Page = () => {
       ).then((response) => {
         if (response.payload && response.payload.data) {
           const { details } = response.payload.data;
-          const totalRevenue = details.reduce((sum, item) => sum + (item.revenue.totalRevenue || 0), 0);
+          const totalRevenue = details.reduce(
+            (sum, item) => sum + (item.revenue.totalRevenue || 0),
+            0
+          );
           const monthlyData = Array.from({ length: 12 }, (_, i) => {
             const month = i + 1;
-            const item = details.find((d) => d.periodNumber === month) || {
-              revenue: { totalRevenue: 0, studentRevenue: 0, studentPercentage: 0 },
-            };
+            const item =
+              details.find((d) => d.periodNumber === month) || {
+                revenue: { totalRevenue: 0, studentRevenue: 0, studentPercentage: 0 },
+              };
             return {
               name: `Tháng ${month}`,
               totalRevenue: item.revenue.totalRevenue || 0,
@@ -84,7 +86,11 @@ const Page = () => {
               studentPercentage: item.revenue.studentPercentage || 0,
             };
           });
-          const totalStudentPercentage = monthlyData.length > 0 ? monthlyData.reduce((sum, item) => sum + (item.studentPercentage || 0), 0) / monthlyData.length : 0;
+          const totalStudentPercentage =
+            monthlyData.length > 0
+              ? monthlyData.reduce((sum, item) => sum + (item.studentPercentage || 0), 0) /
+                monthlyData.length
+              : 0;
           setYearlyStats({
             totalRevenue,
             studentPercentage: totalStudentPercentage,
@@ -104,11 +110,13 @@ const Page = () => {
       });
     } else if (period === "tháng") {
       if (!month || !year) {
-        alert("Vui lòng chọn tháng và năm!");
+        toast.error("Vui lòng chọn tháng và năm!");
         return;
       }
       const monthData = yearlyData.find((d) => d.periodNumber === parseInt(month));
-      const monthStudentPercentage = monthData ? monthData.revenue.studentPercentage || 0 : 0;
+      const monthStudentPercentage = monthData
+        ? monthData.revenue.studentPercentage || 0
+        : 0;
       dispatch(
         fetchStudentGroupStats({
           period: "tháng",
@@ -118,13 +126,17 @@ const Page = () => {
       ).then((response) => {
         if (response.payload && response.payload.data) {
           const { details } = response.payload.data;
-          const totalRevenue = details.reduce((sum, item) => sum + (item.revenue.totalRevenue || 0), 0);
+          const totalRevenue = details.reduce(
+            (sum, item) => sum + (item.revenue.totalRevenue || 0),
+            0
+          );
           const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
           const dailyData = Array.from({ length: daysInMonth }, (_, i) => {
             const day = i + 1;
-            const dayData = details.find((item) => item.periodNumber === day) || {
-              revenue: { totalRevenue: 0, studentRevenue: 0, studentPercentage: 0 },
-            };
+            const dayData =
+              details.find((item) => item.periodNumber === day) || {
+                revenue: { totalRevenue: 0, studentRevenue: 0, studentPercentage: 0 },
+              };
             return {
               name: `Ngày ${day}`,
               totalRevenue: dayData.revenue.totalRevenue || 0,
@@ -151,17 +163,47 @@ const Page = () => {
         setShowCharts(true);
       });
     }
-    dispatch(fetchJobsByYearAndDate({ year: year, date: `${year}-04-13` }));
+  
+    // Use the selected month for fetching jobs, default to "04" if period is "năm"
+    const selectedMonth = period === "tháng" && month ? month : "04";
+    dispatch(fetchJobsByYearAndDate({ year: year, date: `${year}-${selectedMonth.padStart(2, '0')}-13` }));
   };
 
   const totalRevenue = yearlyStats ? yearlyStats.totalRevenue || 0 : 0;
   const avgStudentPercentage = yearlyStats ? yearlyStats.studentPercentage || 0 : 0;
 
-  const pieData = [
+  // Calculate expense distribution (same logic as in CostStatistics)
+  const expenseData = () => {
+    if (!jobs || jobs.length === 0) {
+      return [
+        { name: "Bàn", value: 0 },
+        { name: "Ghế", value: 0 },
+      ];
+    }
+
+    const categoryTotals = jobs.reduce(
+      (acc, job) => {
+        const category = job.faciCategory === 1 ? "table" : "chair";
+        acc[category] += job.amout || 0;
+        return acc;
+      },
+      { table: 0, chair: 0 }
+    );
+
+    return [
+      { name: "Bàn", value: categoryTotals.table },
+      { name: "Ghế", value: categoryTotals.chair },
+    ];
+  };
+
+  const expenses = expenseData();
+  const totalExpenses = expenses.reduce((sum, item) => sum + item.value, 0);
+
+  // Data for the participation pie chart
+  const participationPieData = [
     { name: "Sinh viên tham gia", value: avgStudentPercentage },
     { name: "Không tham gia", value: 100 - avgStudentPercentage },
   ];
-  const COLORS = ["#f97316", "#94a3b8"];
 
   const areaData = () => {
     if (period === "năm") {
@@ -183,15 +225,20 @@ const Page = () => {
             studentRevenue: stat.studentRevenue || 0,
             studentPercentage: stat.studentPercentage || 0,
           }))
-        : Array.from({ length: getDaysInMonth(parseInt(month), parseInt(year)) }, (_, i) => ({
-            name: `Ngày ${i + 1}`,
-            studentRevenue: 0,
-            studentPercentage: 0,
-          }));
+        : Array.from(
+            { length: getDaysInMonth(parseInt(month), parseInt(year)) },
+            (_, i) => ({
+              name: `Ngày ${i + 1}`,
+              studentRevenue: 0,
+              studentPercentage: 0,
+            })
+          );
     }
     return [];
   };
 
+  // Remove costData since CostStatistics now calculates its own data
+  /*
   const costData = () => {
     if (period === "năm") {
       const data = [];
@@ -229,6 +276,7 @@ const Page = () => {
     }
     return [];
   };
+  */
 
   // Hàm tính toán yTicks động dựa trên maxValue
   const generateYTicks = (maxValue) => {
@@ -246,30 +294,16 @@ const Page = () => {
 
   // Tính maxY và yTicks cho biểu đồ doanh thu
   const revenueAreaData = areaData();
-  const maxRevenue = Math.max(
-    ...revenueAreaData.map((d) => d.studentRevenue),
-    1000
-  );
+  const maxRevenue = Math.max(...revenueAreaData.map((d) => d.studentRevenue), 1000);
   const revenueYTicks = generateYTicks(maxRevenue);
   const revenueMaxY = revenueYTicks[revenueYTicks.length - 1];
   const revenueMinY = 0;
 
-  // Tính maxY và yTicks cho biểu đồ chi phí
-  const costAreaData = costData();
-  const maxCost = Math.max(
-    ...costAreaData.map((d) => d.totalCost),
-    1000
-  );
-  const costYTicks = generateYTicks(maxCost);
-  const costMaxY = costYTicks[costYTicks.length - 1];
-  const costMinY = 0;
-
   return (
     <div className="flex flex-col gap-y-4 mb-20 pl-5">
-      <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
-        Thống kê
-      </h2>
+      <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">Thống kê</h2>
 
+      {/* Filter Section */}
       <div className="mb-6 p-4 border rounded-lg shadow-md mr-5">
         <h3 className="text-lg font-semibold mb-4">Tùy chỉnh thống kê</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -330,378 +364,290 @@ const Page = () => {
         </button>
       </div>
 
+      {/* Loading State */}
       {loading && (
-        <div className="flex items-center justify-center py-6 mt-50 mb-200">
+        <div className="flex items-center justify-center py-6 mr-5">
           <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
           <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
         </div>
       )}
 
-      {!loading && showCharts && (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mr-5">
-          <div
-            className={`card ${
-              theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-            } transition-colors`}
+      {/* Error State */}
+      {!loading && error && (
+        <div className="flex items-center justify-center py-6 mr-5">
+          <p
+            className={`text-lg font-medium ${
+              theme === "dark" ? "text-red-400" : "text-red-600"
+            }`}
           >
-            <div className="card-header">
-              <div
-                className={`w-fit rounded-lg p-2 transition-colors ${
-                  theme === "dark"
-                    ? "bg-orange-600/20 text-orange-400"
-                    : "bg-orange-500/20 text-orange-500"
-                }`}
-              >
-                <DollarSign size={26} />
-              </div>
-              <p
-                className={`card-title ${
-                  theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-                }`}
-              >
-                Tổng doanh thu
-              </p>
-            </div>
-            <div className="card-body">
-              <p
-                className={`text-3xl font-bold transition-colors ${
-                  theme === "dark" ? "text-white" : "text-black"
-                }`}
-              >
-                {totalRevenue} DXLAB Coin
-              </p>
-              <span
-                className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
-                  theme === "dark"
-                    ? "border-orange-400 text-orange-400"
-                    : "border-orange-500 text-orange-500"
-                }`}
-              >
-                <TrendingUp size={18} />
-                25%
-              </span>
-            </div>
-          </div>
-
-          <div
-            className={`card ${
-              theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-            } transition-colors`}
-          >
-            <div className="card-header">
-              <div
-                className={`w-fit rounded-lg p-2 transition-colors ${
-                  theme === "dark"
-                    ? "bg-orange-600/20 text-orange-400"
-                    : "bg-orange-500/20 text-orange-500"
-                }`}
-              >
-                <Users size={26} />
-              </div>
-              <p
-                className={`card-title ${
-                  theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-                }`}
-              >
-                Tỷ lệ sinh viên tham gia
-              </p>
-            </div>
-            <div className="card-body">
-              <p
-                className={`text-3xl font-bold transition-colors ${
-                  theme === "dark" ? "text-white" : "text-black"
-                }`}
-              >
-                {avgStudentPercentage.toFixed(1)}%
-              </p>
-              <span
-                className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
-                  theme === "dark"
-                    ? "border-orange-400 text-orange-400"
-                    : "border-orange-500 text-orange-500"
-                }`}
-              >
-                <TrendingUp size={18} />
-                12%
-              </span>
-            </div>
-          </div>
-
-          <div
-            className={`card ${
-              theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-            } transition-colors`}
-          >
-            <div className="card-header">
-              <div
-                className={`w-fit rounded-lg p-2 transition-colors ${
-                  theme === "dark"
-                    ? "bg-orange-600/20 text-orange-400"
-                    : "bg-orange-500/20 text-orange-500"
-                }`}
-              >
-                <Package size={26} />
-              </div>
-              <p
-                className={`card-title ${
-                  theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-                }`}
-              >
-                Tổng chi phí bỏ ra
-              </p>
-            </div>
-            <div className="card-body">
-              <p
-                className={`text-3xl font-bold transition-colors ${
-                  theme === "dark" ? "text-white" : "text-black"
-                }`}
-              >
-                {jobs.reduce((sum, job) => sum + (job.cost || 0), 0)} DXLAB Coin
-              </p>
-              <span
-                className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
-                  theme === "dark"
-                    ? "border-orange-400 text-orange-400"
-                    : "border-orange-500 text-orange-500"
-                }`}
-              >
-                <TrendingUp size={18} />
-                10%
-              </span>
-            </div>
-          </div>
-
-          <div
-            className={`card ${
-              theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-            } transition-colors`}
-          >
-            <div className="card-header">
-              <div
-                className={`w-fit rounded-lg p-2 transition-colors ${
-                  theme === "dark"
-                    ? "bg-orange-600/20 text-orange-400"
-                    : "bg-orange-500/20 text-orange-500"
-                }`}
-              >
-                <CreditCard size={26} />
-              </div>
-              <p
-                className={`card-title ${
-                  theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-                }`}
-              >
-                Tổng số người dùng
-              </p>
-            </div>
-            <div className="card-body">
-              <p
-                className={`text-3xl font-bold transition-colors ${
-                  theme === "dark" ? "text-white" : "text-black"
-                }`}
-              >
-                Chưa có dữ liệu
-              </p>
-              <span
-                className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
-                  theme === "dark"
-                    ? "border-orange-400 text-orange-400"
-                    : "border-orange-500 text-orange-500"
-                }`}
-              >
-                <TrendingUp size={18} />
-                0%
-              </span>
-            </div>
-          </div>
+            Lỗi: {error}
+          </p>
         </div>
       )}
 
-      {!loading && showCharts && yearlyStats && (
-        <div
-          className={`card mr-5 col-span-1 md:col-span-2 lg:col-span-4 ${
-            theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-          }`}
-        >
-          <div className="card-header">
-            <p
-              className={`card-title ${
+      {/* Show Charts if Search is Performed */}
+      {!loading && !error && showCharts && (
+        <div className="mr-5">
+          {/* Overview Section (Above Tabs) */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-6">
+            <div
+              className={`card ${
                 theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-              } p-5`}
+              } transition-colors`}
             >
-              Tỷ lệ sinh viên tham gia
-            </p>
-          </div>
-          <div className="card-body p-0">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(1)}%`
-                  }
+              <div className="card-header">
+                <div
+                  className={`w-fit rounded-lg p-2 transition-colors ${
+                    theme === "dark"
+                      ? "bg-orange-600/20 text-orange-400"
+                      : "bg-orange-500/20 text-orange-500"
+                  }`}
                 >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value) => `${value.toFixed(1)}%`}
-                  contentStyle={{
-                    backgroundColor: theme === "dark" ? "black" : "white",
-                    color: theme === "dark" ? "white" : "black",
-                    borderRadius: "8px",
-                    border: `1px solid ${
-                      theme === "dark" ? "#334155" : "#cbd5e1"
-                    }`,
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+                  <DollarSign size={26} />
+                </div>
+                <p
+                  className={`card-title ${
+                    theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+                  }`}
+                >
+                  Tổng doanh thu
+                </p>
+              </div>
+              <div className="card-body">
+                <p
+                  className={`text-2xl font-bold transition-colors ${
+                    theme === "dark" ? "text-white" : "text-black"
+                  }`}
+                >
+                  {totalRevenue.toLocaleString()} DXLAB Coin
+                </p>
+                <span
+                  className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
+                    theme === "dark"
+                      ? "border-orange-400 text-orange-400"
+                      : "border-orange-500 text-orange-500"
+                  }`}
+                >
+                  <TrendingUp size={18} />
+                  25%
+                </span>
+              </div>
+            </div>
+
+            <div
+              className={`card ${
+                theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+              } transition-colors`}
+            >
+              <div className="card-header">
+                <div
+                  className={`w-fit rounded-lg p-2 transition-colors ${
+                    theme === "dark"
+                      ? "bg-orange-600/20 text-orange-400"
+                      : "bg-orange-500/20 text-orange-500"
+                  }`}
+                >
+                  <Users size={26} />
+                </div>
+                <p
+                  className={`card-title ${
+                    theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+                  }`}
+                >
+                  Tỷ lệ sinh viên tham gia
+                </p>
+              </div>
+              <div className="card-body">
+                <p
+                  className={`text-2xl font-bold transition-colors ${
+                    theme === "dark" ? "text-white" : "text-black"
+                  }`}
+                >
+                  {avgStudentPercentage.toFixed(1)}%
+                </p>
+                <span
+                  className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
+                    theme === "dark"
+                      ? "border-orange-400 text-orange-400"
+                      : "border-orange-500 text-orange-500"
+                  }`}
+                >
+                  <TrendingUp size={18} />
+                  12%
+                </span>
+              </div>
+            </div>
+
+            <div
+              className={`card ${
+                theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+              } transition-colors`}
+            >
+              <div className="card-header">
+                <div
+                  className={`w-fit rounded-lg p-2 transition-colors ${
+                    theme === "dark"
+                      ? "bg-orange-600/20 text-orange-400"
+                      : "bg-orange-500/20 text-orange-500"
+                  }`}
+                >
+                  <Package size={26} />
+                </div>
+                <p
+                  className={`card-title ${
+                    theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+                  }`}
+                >
+                  Tổng chi phí bỏ ra
+                </p>
+              </div>
+              <div className="card-body">
+                <p
+                  className={`text-2xl font-bold transition-colors ${
+                    theme === "dark" ? "text-white" : "text-black"
+                  }`}
+                >
+                  {totalExpenses.toLocaleString()} DXLAB Coin
+                </p>
+                <span
+                  className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
+                    theme === "dark"
+                      ? "border-orange-400 text-orange-400"
+                      : "border-orange-500 text-orange-500"
+                  }`}
+                >
+                  <TrendingUp size={18} />
+                  10%
+                </span>
+              </div>
+            </div>
+
+            <div
+              className={`card ${
+                theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+              } transition-colors`}
+            >
+              <div className="card-header">
+                <div
+                  className={`w-fit rounded-lg p-2 transition-colors ${
+                    theme === "dark"
+                      ? "bg-orange-600/20 text-orange-400"
+                      : "bg-orange-500/20 text-orange-500"
+                  }`}
+                >
+                  <CreditCard size={26} />
+                </div>
+                <p
+                  className={`card-title ${
+                    theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+                  }`}
+                >
+                  Tổng số người dùng
+                </p>
+              </div>
+              <div className="card-body">
+                <p
+                  className={`text-2xl font-bold transition-colors ${
+                    theme === "dark" ? "text-white" : "text-black"
+                  }`}
+                >
+                  Chưa có dữ liệu
+                </p>
+                <span
+                  className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
+                    theme === "dark"
+                      ? "border-orange-400 text-orange-400"
+                      : "border-orange-500 text-orange-500"
+                  }`}
+                >
+                  <TrendingUp size={18} />
+                  0%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Tab Navigation */}
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+              <button
+                onClick={() => setActiveTab("revenue")}
+                className={`${
+                  activeTab === "revenue"
+                    ? "border-orange-500 text-orange-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200`}
+              >
+                Thống kê doanh thu
+              </button>
+              <button
+                onClick={() => setActiveTab("cost")}
+                className={`${
+                  activeTab === "cost"
+                    ? "border-orange-500 text-orange-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200`}
+              >
+                Thống kê chi phí
+              </button>
+              <button
+                onClick={() => setActiveTab("depreciation")}
+                className={`${
+                  activeTab === "depreciation"
+                    ? "border-orange-500 text-orange-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200`}
+              >
+                Thống kê khấu hao
+              </button>
+              <button
+                onClick={() => setActiveTab("performance")}
+                className={`${
+                  activeTab === "performance"
+                    ? "border-orange-500 text-orange-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200`}
+              >
+                Hiệu suất
+              </button>
+            </nav>
+          </div>
+
+          {/* Tab Content */}
+          <div className="mt-6">
+            {activeTab === "revenue" && (
+              <RevenueStatistics
+                revenueAreaData={revenueAreaData}
+                revenueMinY={revenueMinY}
+                revenueMaxY={revenueMaxY}
+                revenueYTicks={revenueYTicks}
+                participationPieData={participationPieData}
+              />
+            )}
+
+            {activeTab === "cost" && (
+              <CostStatistics
+                jobs={jobs} // Pass the raw jobs data
+              />
+            )}
+
+            {activeTab === "depreciation" && <DepreciationStatistics />}
+
+            {activeTab === "performance" && <PerformanceStatistics />}
           </div>
         </div>
       )}
 
-      {!loading && showCharts && (
-        <div
-          className={`card mr-5 col-span-1 md:col-span-2 lg:col-span-4 ${
-            theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-          }`}
-        >
-          <div className="card-header">
-            <p
-              className={`card-title ${
-                theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-              } p-5`}
-            >
-              Thống kê doanh thu
-            </p>
-          </div>
-          <div className="card-body p-0">
-            <ResponsiveContainer width="100%" height={500}>
-              <AreaChart
-                data={revenueAreaData}
-                margin={{ top: 30, right: 30, left: 50, bottom: 30 }}
-              >
-                <defs>
-                  <linearGradient id="colorTotalOverview" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#f97316" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <Tooltip
-                  cursor={false}
-                  formatter={(value, name) => name === "studentPercentage" ? `${value}%` : `${value} DXLAB Coin`}
-                  contentStyle={{
-                    backgroundColor: theme === "dark" ? "black" : "white",
-                    color: theme === "dark" ? "white" : "black",
-                    borderRadius: "8px",
-                    border: `1px solid ${theme === "dark" ? "#334155" : "#cbd5e1"}`,
-                  }}
-                />
-                <XAxis
-                  dataKey="name"
-                  strokeWidth={0}
-                  stroke={theme === "light" ? "#475569" : "#94a3b8"}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                  interval={0}
-                />
-                <YAxis
-                  dataKey="studentRevenue"
-                  strokeWidth={0}
-                  stroke={theme === "light" ? "#475569" : "#94a3b8"}
-                  tickFormatter={(value) => `${value} DXLAB Coin`}
-                  tickMargin={40}
-                  domain={[revenueMinY, revenueMaxY]}
-                  ticks={revenueYTicks}
-                  width={100}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="studentRevenue"
-                  stroke="#f97316"
-                  fillOpacity={1}
-                  fill="url(#colorTotalOverview)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      )}
-
-      {!loading && showCharts && (
-        <div
-          className={`card mr-5 col-span-1 md:col-span-2 lg:col-span-4 ${
-            theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-          }`}
-        >
-          <div className="card-header">
-            <p
-              className={`card-title ${
-                theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-              } p-5`}
-            >
-              Thống kê chi phí bỏ ra
-            </p>
-          </div>
-          <div className="card-body p-0">
-            <ResponsiveContainer width="100%" height={500}>
-              <AreaChart
-                data={costAreaData}
-                margin={{ top: 30, right: 30, left: 50, bottom: 30 }}
-              >
-                <defs>
-                  <linearGradient id="colorCostOverview" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <Tooltip
-                  cursor={false}
-                  formatter={(value) => `${value} DXLAB Coin`}
-                  contentStyle={{
-                    backgroundColor: theme === "dark" ? "black" : "white",
-                    color: theme === "dark" ? "white" : "black",
-                    borderRadius: "8px",
-                    border: `1px solid ${theme === "dark" ? "#334155" : "#cbd5e1"}`,
-                  }}
-                />
-                <XAxis
-                  dataKey="name"
-                  strokeWidth={0}
-                  stroke={theme === "light" ? "#475569" : "#94a3b8"}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                  interval={0}
-                />
-                <YAxis
-                  dataKey="totalCost"
-                  strokeWidth={0}
-                  stroke={theme === "light" ? "#475569" : "#94a3b8"}
-                  tickFormatter={(value) => `${value} DXLAB Coin`}
-                  tickMargin={40}
-                  domain={[costMinY, costMaxY]}
-                  ticks={costYTicks}
-                  width={100}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="totalCost"
-                  stroke="#10b981"
-                  fillOpacity={1}
-                  fill="url(#colorCostOverview)"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+      {/* No Search Performed Message */}
+      {!loading && !error && !showCharts && (
+        <div className="flex items-center justify-center py-6 mr-5">
+          <p
+            className={`text-lg font-medium ${
+              theme === "dark" ? "text-gray-300" : "text-gray-600"
+            }`}
+          >
+            Vui lòng thực hiện tìm kiếm để xem thống kê
+          </p>
         </div>
       )}
     </div>

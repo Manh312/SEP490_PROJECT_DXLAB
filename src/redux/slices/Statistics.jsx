@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../../utils/axios';
 
-// Async thunk để lấy dữ liệu thống kê student group
+// Async thunk để lấy dữ liệu thống kê student group (giữ nguyên)
 export const fetchStudentGroupStats = createAsyncThunk(
   'statistic/fetchStudentGroupStats',
   async ({ period, year, month }, { rejectWithValue }) => {
@@ -23,20 +23,33 @@ export const fetchStudentGroupStats = createAsyncThunk(
   }
 );
 
-// Async thunk để lấy dữ liệu job theo year và date (giữ nguyên)
+// Async thunk để lấy dữ liệu job theo year và month
 export const fetchJobsByYearAndDate = createAsyncThunk(
   'statistic/fetchJobsByYearAndDate',
   async ({ year, date }, { rejectWithValue }) => {
     try {
-      // Tạo query string cho year và date
-      const queryParams = new URLSearchParams();
-      if (year) queryParams.append('year', year);
-      if (date) queryParams.append('date', date);
+      // Extract month from the date (format: YYYY-MM-DD)
+      const month = date ? parseInt(date.split('-')[1], 10) : null;
 
-      const response = await axios.get(`/job?${queryParams.toString()}`);
+      if (!year || !month) {
+        throw new Error('Cần cung cấp năm và tháng để lấy dữ liệu job');
+      }
+
+      // Tạo query string cho year và month
+      const queryParams = new URLSearchParams();
+      queryParams.append('year', year);
+      queryParams.append('month', month);
+
+      const response = await axios.get(`/job/month?${queryParams.toString()}`);
+      
+      // Kiểm tra nếu response.data không có thuộc tính data hoặc không phải mảng
+      if (!response.data || !response.data.data || !Array.isArray(response.data.data)) {
+        throw new Error('Dữ liệu job không hợp lệ');
+      }
+
       return response.data; // Trả về toàn bộ dữ liệu từ API
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Không thể tải dữ liệu job');
+      return rejectWithValue(error.response?.data?.message || error.message || 'Không thể tải dữ liệu job');
     }
   }
 );
@@ -79,7 +92,7 @@ const statisticSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // Xử lý khi gọi API lấy dữ liệu job (giữ nguyên)
+      // Xử lý khi gọi API lấy dữ liệu job
       .addCase(fetchJobsByYearAndDate.pending, (state) => {
         state.loading = true;
         state.error = null;

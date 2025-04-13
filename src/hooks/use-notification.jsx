@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
@@ -7,11 +7,22 @@ import {
 } from "../redux/slices/Notification";
 import { Bell, CheckCircle, XCircle, Trash2, FileText } from "lucide-react";
 
+// Tạo một instance của Audio để phát âm thanh thông báo
+const notificationSound = new Audio(
+  "https://www.soundjay.com/buttons/sounds/button-13.mp3"
+);
+
 const Notification = () => {
   const dispatch = useDispatch();
   const { notifications } = useSelector((state) => state.notifications);
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("all"); // Tab: "all" hoặc "unread"
+  const [activeTab, setActiveTab] = useState("all");
+  const [prevNotificationCount, setPrevNotificationCount] = useState(0); // Khởi tạo với 0
+
+  // Kiểm tra dữ liệu notifications
+  useEffect(() => {
+    console.log("Notifications:", notifications); // Kiểm tra dữ liệu
+  }, [notifications]);
 
   // Format timestamp
   const formatTimestamp = (timestamp) => {
@@ -53,7 +64,7 @@ const Notification = () => {
   // Sắp xếp thông báo: thông báo chưa đọc lên trên, sau đó theo thời gian giảm dần
   const sortedNotifications = [...filteredNotifications].sort((a, b) => {
     if (a.isRead !== b.isRead) {
-      return a.isRead ? 1 : -1; // Thông báo chưa đọc lên trên
+      return a.isRead ? 1 : -1;
     }
     return new Date(b.timestamp) - new Date(a.timestamp);
   });
@@ -64,6 +75,22 @@ const Notification = () => {
       dispatch(markAsRead(notifId));
     }
   };
+
+  // Phát âm thanh khi có thông báo mới
+  useEffect(() => {
+    if (notifications.length > prevNotificationCount) {
+      // Chỉ phát âm thanh nếu đã có tương tác người dùng
+      const playSound = async () => {
+        try {
+          await notificationSound.play();
+        } catch (error) {
+          console.log("Lỗi phát âm thanh:", error);
+        }
+      };
+      playSound();
+    }
+    setPrevNotificationCount(notifications.length);
+  }, [notifications, prevNotificationCount]);
 
   return (
     <div className="relative">

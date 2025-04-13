@@ -110,14 +110,14 @@ const Navbar = () => {
         <div className="hidden lg:flex justify-center space-x-6 items-center relative z-10">
           {isLoggedIn ? (
             <div className="flex items-center space-x-4" ref={profileRef}>
-              <FaUserCircle
-                className="h-10 w-10 rounded-full cursor-pointer"
-                onClick={handleProfileClick}
-              />
               {/* Notification for Admin and Staff */}
               {(roleName === "Admin" || roleName === "Staff") && (
                 <Notification />
               )}
+              <FaUserCircle
+                className="h-10 w-10 rounded-full cursor-pointer"
+                onClick={handleProfileClick}
+              />
               {dropdownOpen && (
                 <div
                   ref={dropdownRef}
