@@ -13,6 +13,7 @@ import statisticsReducer from "./slices/Statistics";
 import areaReducer from "./slices/Area";
 import areaCategoryReducer from "./slices/AreaCategory";
 import reportsReducer from "./slices/Report";
+import notificationReducer from "./slices/Notification";
 
 
 // slices
@@ -38,6 +39,7 @@ const rootReducer = combineReducers({
   areas: areaReducer,
   areaCategory: areaCategoryReducer,
   reports: reportsReducer,
+  notifications: notificationReducer,
 });
 
 export { rootPersistConfig, rootReducer }; 

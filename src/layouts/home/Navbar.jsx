@@ -9,23 +9,23 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearAuthData, fetchRoleByID } from "../../redux/slices/Authentication";
 import { FaUserCircle } from "react-icons/fa";
 import { toast } from "react-toastify";
+import Notification from "../../hooks/use-notification"; // Cập nhật import
 
 const Navbar = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [roleName, setRoleName] = useState(null); // State cục bộ để lưu roleName
+  const [roleName, setRoleName] = useState(null);
   const { theme, setTheme } = useTheme();
   const address = useAddress();
   const dispatch = useDispatch();
   const disconnect = useDisconnect();
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
-  const { user } = useSelector((state) => state.auth); // Chỉ lấy user, không có role nữa
+  const { user } = useSelector((state) => state.auth);
   const { contract } = useContract("0x1745A6155d7A0eD49f87F6554560a6b19D431706");
   const { data: balance } = useTokenBalance(contract, address);
-  
 
-  // Lấy roleName từ roleId khi user thay đổi
+  // Fetch roleName based on roleId
   useEffect(() => {
     if (user?.roleId) {
       dispatch(fetchRoleByID(user.roleId))
@@ -35,20 +35,22 @@ const Navbar = () => {
     }
   }, [user, dispatch]);
 
+  // Reset state on disconnect
   useEffect(() => {
     if (!address) {
       setDropdownOpen(false);
-      setRoleName(null); // Reset roleName khi đăng xuất
+      setRoleName(null);
     }
   }, [address]);
 
-  // Xử lý ngắt kết nối
+  // Handle wallet disconnect
   const handleDisconnect = async () => {
     try {
       await disconnect();
       dispatch(clearAuthData());
       setDropdownOpen(false);
-      setRoleName(null); // Reset roleName khi đăng xuất
+      setRoleName(null);
+      toast.success("Đăng xuất thành công!");
     } catch (error) {
       console.error("Disconnect error:", error);
       toast.error("Có lỗi khi đăng xuất.");
@@ -65,7 +67,7 @@ const Navbar = () => {
     }
   };
 
-  // Xác định trạng thái đăng nhập hợp lệ
+  // Determine login status
   const isLoggedIn = address && user && (user?.walletType !== "embeddedWallet" || (user?.storedToken?.authDetails?.email || user?.email)?.endsWith("@fpt.edu.vn"));
   const displayName = user?.storedToken?.authDetails?.email || user?.email || "Wallet User";
 
@@ -76,7 +78,7 @@ const Navbar = () => {
           <img className="h-30 w-35" src={logo} alt="logo" />
         </div>
 
-        {/* Menu cho desktop */}
+        {/* Menu for desktop */}
         <ul className="hidden lg:flex space-x-12 text-xl">
           {navItems.map((item, index) => (
             <li key={index}>
@@ -85,13 +87,11 @@ const Navbar = () => {
           ))}
           {isLoggedIn && (
             <>
-              {/* Ẩn nút Dịch vụ nếu là Admin hoặc Staff */}
               {roleName !== "Admin" && roleName !== "Staff" && (
                 <li>
                   <Link to="/rooms">Dịch vụ</Link>
                 </li>
               )}
-              {/* Hiển thị nút Dashboard nếu là Admin */}
               {roleName === "Admin" && (
                 <li>
                   <Link to="/dashboard">Bảng điều khiển</Link>
@@ -106,14 +106,18 @@ const Navbar = () => {
           )}
         </ul>
 
-        {/* Phần hiển thị cho desktop */}
+        {/* Desktop actions */}
         <div className="hidden lg:flex justify-center space-x-6 items-center relative z-10">
           {isLoggedIn ? (
-            <div ref={profileRef} className="relative">
+            <div className="flex items-center space-x-4" ref={profileRef}>
               <FaUserCircle
                 className="h-10 w-10 rounded-full cursor-pointer"
                 onClick={handleProfileClick}
               />
+              {/* Notification for Admin and Staff */}
+              {(roleName === "Admin" || roleName === "Staff") && (
+                <Notification />
+              )}
               {dropdownOpen && (
                 <div
                   ref={dropdownRef}
@@ -133,7 +137,7 @@ const Navbar = () => {
                   <ul className="space-y-2">
                     {roleName === "Student" && (
                       <li>
-                        <Link to={"/booked-history"}>
+                        <Link to="/booked-history">
                           <button className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded">
                             <span className="ml-2">Lịch sử giao dịch</span>
                             <LucideHistory size={20} className="ml-2" />
@@ -166,10 +170,9 @@ const Navbar = () => {
           ) : (
             <>
               <ConnectWallet
-                btnTitle={"Đăng nhập"}
+                btnTitle="Đăng nhập"
                 auth={{ loginOptional: false }}
                 modalSize="wide"
-
               />
               <button
                 className="p-2 border rounded-md transition-colors ml-5"
@@ -181,7 +184,7 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Nút menu cho mobile */}
+        {/* Mobile menu button */}
         <div className="lg:hidden flex">
           <button onClick={handleMobileDrawer} className="p-2 border rounded-md">
             {mobileDrawerOpen ? <X /> : <Menu />}
@@ -189,14 +192,14 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Drawer cho mobile */}
+      {/* Mobile drawer */}
       <div
         className={`fixed top-0 left-0 h-screen z-20 transition-transform duration-300 w-4/5 max-w-sm flex flex-col ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} ${mobileDrawerOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div className="flex items-center justify-between p-4 border-b relative z-10">
           <div className="flex items-center space-x-4">
             {isLoggedIn && (
-              <div>
+              <div className="flex items-center space-x-2">
                 <FaUserCircle className="h-8 w-8 rounded-full cursor-pointer" />
                 <span className="text-sm">{displayName}</span>
               </div>
@@ -222,10 +225,9 @@ const Navbar = () => {
                   />
                 </div>
                 <div className="mt-3 ml-1">
-                  <span className="">Số dư: {balance?.displayValue} DXLAB Coin</span>
+                  <span>Số dư: {balance?.displayValue} DXLAB Coin</span>
                 </div>
               </div>
-
             ) : (
               <ConnectWallet
                 btnTitle="Đăng nhập"
@@ -258,6 +260,11 @@ const Navbar = () => {
                     </Link>
                   </li>
                 )}
+                {(roleName === "Admin" || roleName === "Staff") && (
+                  <li className="px-4 py-3">
+                    <Notification />
+                  </li>
+                )}
                 {roleName === "Admin" && (
                   <li>
                     <Link
@@ -282,7 +289,7 @@ const Navbar = () => {
                 )}
                 {roleName === "Student" && (
                   <li>
-                    <Link to={"/booked-history"}>
+                    <Link to="/booked-history">
                       <button className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded">
                         <span className="ml-4">Lịch sử giao dịch</span>
                         <LucideHistory size={20} className="ml-2" />
@@ -292,28 +299,27 @@ const Navbar = () => {
                 )}
               </>
             )}
-          </ul>
-
-          <li className="flex items-center">
-            <button
-              className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded"
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            >
-              <span className="ml-4">Màu nền</span>
-              {theme === "dark" ? <Moon size={20} className="ml-2" /> : <Sun size={20} className="ml-2" />}
-            </button>
-          </li>
-          {isLoggedIn && (
-            <div className="flex flex-col mt-5 border-t border-b">
+            <li className="flex items-center">
               <button
-                className="flex items-center w-full h-10 text-left hover:bg-gray-500"
-                onClick={handleDisconnect}
+                className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded"
+                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
               >
-                <span className="ml-4">Đăng xuất</span>
-                <LogOut size={20} className="ml-2" />
+                <span className="ml-4">Màu nền</span>
+                {theme === "dark" ? <Moon size={20} className="ml-2" /> : <Sun size={20} className="ml-2" />}
               </button>
-            </div>
-          )}
+            </li>
+            {isLoggedIn && (
+              <li className="flex items-center">
+                <button
+                  className="flex items-center w-full h-10 text-left hover:bg-gray-500 rounded"
+                  onClick={handleDisconnect}
+                >
+                  <span className="ml-4">Đăng xuất</span>
+                  <LogOut size={20} className="ml-2" />
+                </button>
+              </li>
+            )}
+          </ul>
         </div>
 
         <div className="border-t p-4 text-xs">

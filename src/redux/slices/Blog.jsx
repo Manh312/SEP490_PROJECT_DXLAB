@@ -88,7 +88,6 @@ export const fetchAdminPendingBlogs = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get("/approvalblog/pending");
-      console.log("API Pending Blogs:", response.data.data); // Debug API response
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy danh sách blog chờ duyệt");
@@ -101,7 +100,6 @@ export const fetchAdminApprovedBlogs = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get("/approvalblog/approved");
-      console.log("API Approved Blogs:", response.data.data); // Debug API response
       return response.data.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || "Không thể lấy danh sách blog đã duyệt");
@@ -268,7 +266,6 @@ const blogSlice = createSlice({
       .addCase(fetchAdminApprovedBlogs.fulfilled, (state, action) => {
         state.adminLoading = false;
         state.approvedBlogs = action.payload || []; // Đảm bảo luôn là mảng
-        console.log("Updated approvedBlogs in store:", state.approvedBlogs); // Debug store
       })
       .addCase(fetchAdminApprovedBlogs.rejected, (state, action) => {
         state.adminLoading = false;

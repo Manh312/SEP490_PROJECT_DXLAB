@@ -1,17 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { PlusCircle, Filter, Search, Edit, ChevronLeft, ChevronRight, FileText } from "lucide-react";
-import { toast } from "react-toastify";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBlogsByStatus, setStatusFilter } from "../../../redux/slices/Blog";
+import { addNotification } from "../../../redux/slices/Notification"; // Import action
 import Pagination from "../../../hooks/use-pagination";
 import { FaSpinner } from "react-icons/fa";
 import { startSignalRConnection, stopSignalRConnection, registerSignalREvent } from "../../../utils/signalR";
 
+// Utility to track shown notifications
+const notificationTracker = new Set();
+
 const BlogList = () => {
   const dispatch = useDispatch();
-  const { blogs, statusFilter, error, loading } = useSelector((state) => state.blogs); // Thêm loading từ Redux
+  const { blogs, statusFilter, error, loading } = useSelector((state) => state.blogs);
   const { token } = useSelector((state) => state.auth);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,16 +33,10 @@ const BlogList = () => {
   useEffect(() => {
     let connection;
     const setupSignalR = async () => {
-      if (!token) {
-        setSignalRError("Không tìm thấy token xác thực. Vui lòng đăng nhập lại.");
-        setInitialLoading(false);
-        return;
-      }
 
       let retries = 3;
       while (retries > 0) {
         try {
-          console.log("Starting SignalR connection for staff...");
           connection = await startSignalRConnection(token);
 
           if (!connection) {
@@ -48,10 +45,20 @@ const BlogList = () => {
 
           registerSignalREvent("ReceiveBlogStatus", (blog) => {
             console.log("Nhận được cập nhật trạng thái blog:", blog);
-            toast.info(
-              `Blog "${blog.blogTitle}" đã cập nhật trạng thái thành: ${getStatusDisplayName(blog.status)}`
-            );
-            // Chỉ làm mới nếu blog thuộc trạng thái hiện tại hoặc cần cập nhật toàn bộ
+            const message = `Blog "${blog.blogTitle}" đã cập nhật trạng thái thành: ${getStatusDisplayName(blog.status)}`;
+            const notificationKey = `ReceiveBlogStatus-${blog.blogId}`;
+            if (!notificationTracker.has(notificationKey)) {
+              notificationTracker.add(notificationKey);
+              dispatch(
+                addNotification({
+                  id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                  message,
+                  type: "info",
+                  timestamp: new Date().toISOString(),
+                })
+              );
+              notificationTracker.delete(notificationKey);
+            }
             dispatch(fetchBlogsByStatus(statusFilter)).unwrap().catch((err) => {
               console.error("Lỗi khi làm mới danh sách blog:", err);
             });
@@ -59,7 +66,20 @@ const BlogList = () => {
 
           registerSignalREvent("ReceiveBlogDeleted", (blogId) => {
             console.log("Nhận được thông báo xóa blog:", blogId);
-            toast.warn(`Blog với ID ${blogId} đã bị xóa bởi Admin!`);
+            const message = `Blog với ID ${blogId} đã bị xóa bởi Admin!`;
+            const notificationKey = `ReceiveBlogDeleted-${blogId}`;
+            if (!notificationTracker.has(notificationKey)) {
+              notificationTracker.add(notificationKey);
+              dispatch(
+                addNotification({
+                  id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                  message,
+                  type: "warning",
+                  timestamp: new Date().toISOString(),
+                })
+              );
+              setTimeout(() => notificationTracker.delete(notificationKey), 5000);
+            }
             dispatch(fetchBlogsByStatus(statusFilter)).unwrap().catch((err) => {
               console.error("Lỗi khi làm mới danh sách blog:", err);
             });
@@ -69,14 +89,22 @@ const BlogList = () => {
         } catch (err) {
           console.error("Lỗi khi thiết lập SignalR:", err);
           retries--;
-          if (retries === 0) {
-            break;
-          }
+          // if (retries === 0) {
+          //   dispatch(
+          //     addNotification({
+          //       id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+          //       message: "Không thể kết nối SignalR. Vui lòng thử lại.",
+          //       type: "error",
+          //       timestamp: new Date().toISOString(),
+          //     })
+          //   );
+          //   break;
+          // }
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       }
 
-      // Fetch blog ban đầu
+      // Fetch initial blogs
       try {
         const fetchPromise = dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
         await Promise.all([
@@ -100,7 +128,7 @@ const BlogList = () => {
     };
   }, [token, dispatch, statusFilter]);
 
-  // Làm mới danh sách blog khi statusFilter thay đổi
+  // Refresh blog list when statusFilter changes
   useEffect(() => {
     setInitialLoading(true);
     dispatch(fetchBlogsByStatus(statusFilter))
@@ -278,7 +306,7 @@ const BlogList = () => {
               Danh Sách Blog
             </h2>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 items-center">
             <NavLink
               to="create"
               className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-md"
@@ -286,6 +314,7 @@ const BlogList = () => {
               <PlusCircle className="h-5 w-5" />
               <span className="hidden sm:inline">Tạo Blog</span>
             </NavLink>
+            {/* Removed <Notification /> */}
           </div>
         </div>
 
