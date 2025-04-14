@@ -7,7 +7,9 @@ import { fetchBlogsByStatus, setStatusFilter } from "../../../redux/slices/Blog"
 import { addNotification } from "../../../redux/slices/Notification"; // Import action
 import Pagination from "../../../hooks/use-pagination";
 import { FaSpinner } from "react-icons/fa";
-import { startSignalRConnection, stopSignalRConnection, registerSignalREvent } from "../../../utils/signalR";
+import { startSignalRConnection, stopSignalRConnection } from "../../../utils/signalR/connection";
+import { registerSignalREvent, unregisterSignalREvent } from "../../../utils/signalR/event";
+import { signalRConfig } from "../../../utils/signalR/config";
 
 // Utility to track shown notifications
 const notificationTracker = new Set();
@@ -22,7 +24,7 @@ const BlogList = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [signalRError, setSignalRError] = useState(null);
   const blogsPerPage = 5;
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = signalRConfig.baseUrl;
 
   const debouncedSearch = debounce((value) => {
     setSearchTerm(value);
@@ -31,19 +33,16 @@ const BlogList = () => {
 
   // SignalR Setup
   useEffect(() => {
-    let connection;
+    let mounted = true;
+  
     const setupSignalR = async () => {
-
-      let retries = 3;
-      while (retries > 0) {
-        try {
-          connection = await startSignalRConnection(token);
-
-          if (!connection) {
-            throw new Error("Không thể thiết lập kết nối SignalR.");
-          }
-
-          registerSignalREvent("ReceiveBlogStatus", (blog) => {
+      try {
+        // Khởi tạo kết nối tới blogHub
+        await startSignalRConnection("blogHub", token);
+  
+        if (mounted) {
+          // Đăng ký sự kiện ReceiveBlogStatus
+          registerSignalREvent("blogHub", "ReceiveBlogStatus", (blog) => {
             console.log("Nhận được cập nhật trạng thái blog:", blog);
             const message = `Blog "${blog.blogTitle}" đã cập nhật trạng thái thành: ${getStatusDisplayName(blog.status)}`;
             const notificationKey = `ReceiveBlogStatus-${blog.blogId}`;
@@ -63,8 +62,9 @@ const BlogList = () => {
               console.error("Lỗi khi làm mới danh sách blog:", err);
             });
           });
-
-          registerSignalREvent("ReceiveBlogDeleted", (blogId) => {
+  
+          // Đăng ký sự kiện ReceiveBlogDeleted
+          registerSignalREvent("blogHub", "ReceiveBlogDeleted", (blogId) => {
             console.log("Nhận được thông báo xóa blog:", blogId);
             const message = `Blog với ID ${blogId} đã bị xóa bởi Admin!`;
             const notificationKey = `ReceiveBlogDeleted-${blogId}`;
@@ -84,47 +84,38 @@ const BlogList = () => {
               console.error("Lỗi khi làm mới danh sách blog:", err);
             });
           });
-
-          break;
+        }
+  
+        // Fetch initial blogs
+        try {
+          const fetchPromise = dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
+          await Promise.all([
+            fetchPromise,
+            new Promise((resolve) => setTimeout(resolve, 500)),
+          ]);
         } catch (err) {
-          console.error("Lỗi khi thiết lập SignalR:", err);
-          retries--;
-          // if (retries === 0) {
-          //   dispatch(
-          //     addNotification({
-          //       id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-          //       message: "Không thể kết nối SignalR. Vui lòng thử lại.",
-          //       type: "error",
-          //       timestamp: new Date().toISOString(),
-          //     })
-          //   );
-          //   break;
-          // }
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+          console.error("Lỗi khi lấy danh sách blog:", err);
+        } finally {
+          if (mounted) {
+            setInitialLoading(false);
+          }
+        }
+      } catch (err) {
+        console.error("Lỗi khi thiết lập SignalR:", err);
+        if (mounted) {
+          setSignalRError(`Không thể kết nối SignalR: ${err.message}`);
         }
       }
-
-      // Fetch initial blogs
-      try {
-        const fetchPromise = dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
-        await Promise.all([
-          fetchPromise,
-          new Promise((resolve) => setTimeout(resolve, 500)),
-        ]);
-      } catch (err) {
-        console.error("Lỗi khi lấy danh sách blog:", err);
-      } finally {
-        setInitialLoading(false);
-      }
     };
-
+  
     setupSignalR();
-
+  
     return () => {
-      if (connection) {
-        console.log("Dọn dẹp kết nối SignalR...");
-        stopSignalRConnection();
-      }
+      mounted = false;
+      console.log("Dọn dẹp kết nối SignalR...");
+      unregisterSignalREvent("blogHub", "ReceiveBlogStatus");
+      unregisterSignalREvent("blogHub", "ReceiveBlogDeleted");
+      stopSignalRConnection("blogHub");
     };
   }, [token, dispatch, statusFilter]);
 

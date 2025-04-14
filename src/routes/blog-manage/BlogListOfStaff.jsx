@@ -23,8 +23,10 @@ import {
 import { addNotification } from "../../redux/slices/Notification";
 import Pagination from "../../hooks/use-pagination";
 import { FaSpinner } from "react-icons/fa";
-import { startSignalRConnection, stopSignalRConnection } from "../../utils/signalR";
+import { startSignalRConnection, stopSignalRConnection } from "../../utils/signalR/connection";
 import { toast } from "react-toastify";
+import { signalRConfig } from "../../utils/signalR/config";
+
 
 // Utility to track shown notifications
 const notificationTracker = new Set();
@@ -46,7 +48,7 @@ const BlogListOfStaff = () => {
   const [imageIndices, setImageIndices] = useState({});
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const blogsPerPage = 5;
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = signalRConfig.baseUrl;
 
   const debouncedSearch = debounce((value) => {
     setSearchTerm(value);
@@ -59,7 +61,7 @@ const BlogListOfStaff = () => {
     const setupSignalR = async () => {
 
       try {
-        connection = await startSignalRConnection(token);
+        connection = await startSignalRConnection("blogHub", token);
 
         const showNotificationOnce = (eventName, message, blogId, type) => {
           const notificationKey = `${eventName}-${blogId}`;
