@@ -146,7 +146,7 @@ const CostStatistics = ({ jobs, period, year, month }) => {
               theme === "dark" ? "text-gray-200" : "text-gray-700"
             }`}
           >
-            Phân bổ chi phí theo hạng mục
+            Phân bổ chi phí bỏ ra theo hạng mục - {period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}
           </h3>
           {pieData.every(item => item.value === 0) ? (
             <p className={`text-center text-gray-500 dark:text-gray-400`}>Không có dữ liệu chi phí</p>

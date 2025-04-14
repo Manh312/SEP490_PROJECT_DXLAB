@@ -6,6 +6,14 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
   const { theme } = useTheme();
   const COLORS = ["#f97316", "#94a3b8"]; // Orange for participating students, gray for non-participating
 
+  // Kiểm tra nếu không có dữ liệu thực sự
+  const hasParticipationData = participationPieData.some(
+    entry => entry.name === "Sinh viên tham gia" && entry.value > 0
+  );
+  const hasRevenueData = revenueAreaData.some(
+    entry => entry.studentRevenue > 0
+  );
+
   return (
     <div
       className={`card col-span-1 md:col-span-2 lg:col-span-4 rounded-xl shadow-lg transition-all duration-300 ${
@@ -34,54 +42,60 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
           >
             Tỷ lệ sinh viên tham gia
           </h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={participationPieData}
-                cx="50%"
-                cy="50%"
-                outerRadius={110}
-                fill="#8884d8"
-                dataKey="value"
-                labelLine={false}
-                label={({ name, percent }) =>
-                  `${name}: ${(percent * 100).toFixed(1)}%`
-                }
-              >
-                {participationPieData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                    className="transition-all duration-300 hover:opacity-80"
-                  />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(value) => `${value.toFixed(1)}%`}
-                contentStyle={{
-                  backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
-                  color: theme === "dark" ? "#ffffff" : "#1f2937",
-                  borderRadius: "8px",
-                  border: `1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"}`,
-                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                  padding: "8px 12px",
-                }}
-              />
-              <Legend
-                verticalAlign="bottom"
-                height={36}
-                formatter={(value) => (
-                  <span
-                    className={`text-sm ${
-                      theme === "dark" ? "text-gray-300" : "text-gray-600"
-                    }`}
-                  >
-                    {value}
-                  </span>
-                )}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          {hasParticipationData ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={participationPieData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={110}
+                  fill="#8884d8"
+                  dataKey="value"
+                  labelLine={false}
+                  label={({ name, percent }) =>
+                    `${name}: ${(percent * 100).toFixed(1)}%`
+                  }
+                >
+                  {participationPieData.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                      className="transition-all duration-300 hover:opacity-80"
+                    />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value) => `${value.toFixed(1)}%`}
+                  contentStyle={{
+                    backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
+                    color: theme === "dark" ? "#ffffff" : "#1f2937",
+                    borderRadius: "8px",
+                    border: `1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"}`,
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                    padding: "8px 12px",
+                  }}
+                />
+                <Legend
+                  verticalAlign="bottom"
+                  height={36}
+                  formatter={(value) => (
+                    <span
+                      className={`text-sm ${
+                        theme === "dark" ? "text-gray-300" : "text-gray-600"
+                      }`}
+                    >
+                      {value}
+                    </span>
+                  )}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className={`text-center text-gray-500 dark:text-gray-400`}>
+              Không có dữ liệu tỷ lệ tham gia
+            </p>
+          )}
         </div>
 
         {/* Area Chart for Revenue Trends */}
@@ -93,63 +107,69 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
           >
             Biểu đồ thống kê doanh thu
           </h3>
-          <ResponsiveContainer width="100%" height={500}>
-            <AreaChart
-              data={revenueAreaData}
-              margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
-            >
-              <defs>
-                <linearGradient id="colorTotalOverview" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.9} />
-                  <stop offset="95%" stopColor="#f97316" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <Tooltip
-                cursor={{ stroke: theme === "dark" ? "#4b5563" : "#e5e7eb", strokeWidth: 1 }}
-                formatter={(value, name) =>
-                  name === "studentPercentage" ? `${value}%` : `${value} DXLAB Coin`
-                }
-                contentStyle={{
-                  backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
-                  color: theme === "dark" ? "#ffffff" : "#1f2937",
-                  borderRadius: "8px",
-                  border: `1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"}`,
-                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                  padding: "8px 12px",
-                }}
-              />
-              <XAxis
-                dataKey="name"
-                strokeWidth={0}
-                stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                angle={-45}
-                textAnchor="end"
-                height={70}
-                interval={0}
-                tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
-              />
-              <YAxis
-                dataKey="studentRevenue"
-                strokeWidth={0}
-                stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                tickFormatter={(value) => `${value} DXLAB Coin`}
-                tickMargin={20}
-                domain={[revenueMinY, revenueMaxY]}
-                ticks={revenueYTicks}
-                width={100}
-                tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
-              />
-              <Area
-                type="monotone"
-                dataKey="studentRevenue"
-                stroke="#f97316"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorTotalOverview)"
-                activeDot={{ r: 6, fill: "#f97316", stroke: theme === "dark" ? "#1f2937" : "#ffffff" }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+          {hasRevenueData ? (
+            <ResponsiveContainer width="100%" height={500}>
+              <AreaChart
+                data={revenueAreaData}
+                margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
+              >
+                <defs>
+                  <linearGradient id="colorTotalOverview" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.9} />
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                <Tooltip
+                  cursor={{ stroke: theme === "dark" ? "#4b5563" : "#e5e7eb", strokeWidth: 1 }}
+                  formatter={(value, name) =>
+                    name === "studentPercentage" ? `${value}%` : `${value} DXLAB Coin`
+                  }
+                  contentStyle={{
+                    backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
+                    color: theme === "dark" ? "#ffffff" : "#1f2937",
+                    borderRadius: "8px",
+                    border: `1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"}`,
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                    padding: "8px 12px",
+                  }}
+                />
+                <XAxis
+                  dataKey="name"
+                  strokeWidth={0}
+                  stroke={theme === "light" ? "#64748b" : "#94a3b8"}
+                  angle={-45}
+                  textAnchor="end"
+                  height={70}
+                  interval={0}
+                  tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+                />
+                <YAxis
+                  dataKey="studentRevenue"
+                  strokeWidth={0}
+                  stroke={theme === "light" ? "#64748b" : "#94a3b8"}
+                  tickFormatter={(value) => `${value} DXLAB Coin`}
+                  tickMargin={20}
+                  domain={[revenueMinY, revenueMaxY]}
+                  ticks={revenueYTicks}
+                  width={100}
+                  tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="studentRevenue"
+                  stroke="#f97316"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#colorTotalOverview)"
+                  activeDot={{ r: 6, fill: "#f97316", stroke: theme === "dark" ? "#1f2937" : "#ffffff" }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className={`text-center text-gray-500 dark:text-gray-400`}>
+              Không có dữ liệu doanh thu
+            </p>
+          )}
         </div>
       </div>
     </div>

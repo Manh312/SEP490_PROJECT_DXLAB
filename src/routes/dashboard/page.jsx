@@ -347,7 +347,7 @@ const Page = () => {
       )}
 
       {/* Error State */}
-      {/* {!loading && error && (
+      {!loading && error && (
         <div className="flex items-center justify-center py-6 mr-5">
           <p
             className={`text-lg font-medium ${theme === "dark" ? "text-red-400" : "text-red-600"}`}
@@ -355,7 +355,7 @@ const Page = () => {
             Lỗi: {error}
           </p>
         </div>
-      )} */}
+      )}
 
       {/* Show Charts if Search is Performed */}
       {!loading && !error && showCharts && (
