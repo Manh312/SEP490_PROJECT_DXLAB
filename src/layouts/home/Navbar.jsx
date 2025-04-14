@@ -50,10 +50,8 @@ const Navbar = () => {
       dispatch(clearAuthData());
       setDropdownOpen(false);
       setRoleName(null);
-      toast.success("Đăng xuất thành công!");
     } catch (error) {
       console.error("Disconnect error:", error);
-      toast.error("Có lỗi khi đăng xuất.");
     }
   };
 

@@ -2,17 +2,68 @@ import { useTheme } from "../../../hooks/use-theme";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
 import PropTypes from "prop-types";
 
-const CostStatistics = ({ jobs }) => {
+const CostStatistics = ({ jobs, period, year, month }) => {
   const { theme } = useTheme();
-  const EXPENSE_COLORS = ["#3b82f6", "#ef4444"]; // Blue for "Bàn" (faCategory 1), red for "Ghế" (faCategory 0)
+  const EXPENSE_COLORS = ["#3b82f6", "#ef4444"]; // Blue for "Bàn" (faciCategory 1), red for "Ghế" (faciCategory 0)
 
-  // Log the jobs data for debugging
-  console.log("Jobs data in CostStatistics:", jobs);
+  // Tạo danh sách các tháng: nếu period là "tháng", chỉ hiển thị tháng được chọn
+  const months = period === "tháng" && month
+    ? [{ name: `Tháng ${month}`, table: 0, chair: 0 }]
+    : Array.from({ length: 12 }, (_, i) => ({
+        name: `Tháng ${i + 1}`,
+        table: 0, // Chi phí cho Bàn (faciCategory 1)
+        chair: 0, // Chi phí cho Ghế (faciCategory 0)
+      }));
 
-  // Calculate expense distribution by faCategory (raw amounts) for both pie chart and area chart
+  // Nhóm dữ liệu theo tháng và faciCategory
+  const processDataByMonth = () => {
+    if (!jobs || jobs.length === 0) {
+      return months; // Trả về dữ liệu mặc định
+    }
+
+    // Nhóm chi phí theo tháng và faciCategory
+    jobs.forEach(job => {
+      // Kiểm tra job và summaryDate có tồn tại và hợp lệ không
+      if (!job || !job.summaryDate) {
+        return; // Bỏ qua job này
+      }
+
+      // Trích xuất năm và tháng từ summaryDate
+      const date = new Date(job.summaryDate);
+      if (isNaN(date.getTime())) {
+        return; // Bỏ qua job nếu ngày không hợp lệ
+      }
+
+      const jobYear = date.getFullYear();
+      const jobMonth = date.getMonth(); // getMonth() trả về 0-11
+
+      // Lọc theo năm
+      if (jobYear !== parseInt(year)) {
+        return; // Bỏ qua job nếu không thuộc năm được chọn
+      }
+
+      // Nếu period là "tháng", chỉ xử lý nếu job thuộc tháng được chọn
+      if (period === "tháng" && month) {
+        const selectedMonth = parseInt(month) - 1; // Chuyển month về dạng 0-11 để so sánh
+        if (jobMonth !== selectedMonth) {
+          return; // Bỏ qua job nếu không thuộc tháng được chọn
+        }
+      }
+
+      const monthIndex = period === "tháng" ? 0 : jobMonth; // Nếu period là "tháng", chỉ dùng index 0
+      const category = job.faciCategory === 1 ? "table" : "chair";
+      const amount = job.amount || 0;
+
+      // Cộng dồn chi phí vào tháng tương ứng
+      months[monthIndex][category] += amount;
+    });
+
+    return months;
+  };
+
+  // Tính toán dữ liệu cho Pie Chart (phân bổ chi phí theo faciCategory)
   const expenseData = () => {
     if (!jobs || jobs.length === 0) {
-      console.log("No jobs data, returning default data");
       return [
         { name: "Bàn", value: 0 },
         { name: "Ghế", value: 0 },
@@ -21,14 +72,23 @@ const CostStatistics = ({ jobs }) => {
 
     const categoryTotals = jobs.reduce(
       (acc, job) => {
+        if (!job) return acc; // Bỏ qua nếu job không hợp lệ
+        const date = new Date(job.summaryDate);
+        if (isNaN(date.getTime()) || date.getFullYear() !== parseInt(year)) {
+          return acc; // Bỏ qua nếu không thuộc năm được chọn
+        }
+        if (period === "tháng" && month) {
+          const selectedMonth = parseInt(month) - 1;
+          if (date.getMonth() !== selectedMonth) {
+            return acc; // Bỏ qua nếu không thuộc tháng được chọn
+          }
+        }
         const category = job.faciCategory === 1 ? "table" : "chair";
-        acc[category] += job.amout || 0;
+        acc[category] += job.amount || 0;
         return acc;
       },
       { table: 0, chair: 0 }
     );
-
-    console.log("Category totals:", categoryTotals);
 
     return [
       { name: "Bàn", value: categoryTotals.table },
@@ -36,9 +96,12 @@ const CostStatistics = ({ jobs }) => {
     ];
   };
 
-  // Calculate Y-axis domain and ticks dynamically based on the data
+  // Tính toán Y-axis domain và ticks động dựa trên dữ liệu
   const calculateYAxisProps = (data) => {
-    const maxValue = Math.max(...data.map(item => item.value), 1000); // Ensure a minimum max for visibility
+    const maxValue = Math.max(
+      ...data.map(item => Math.max(item.table || 0, item.chair || 0)),
+      1000 // Đảm bảo giá trị tối thiểu cho visibility
+    );
     const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
     const roundedMax = Math.ceil(maxValue / magnitude) * magnitude;
     const step = roundedMax / 4;
@@ -54,12 +117,8 @@ const CostStatistics = ({ jobs }) => {
   };
 
   const pieData = expenseData();
-  const areaData = expenseData(); // Same data format, reused for the area chart
+  const areaData = processDataByMonth(); // Dữ liệu cho Area Chart, nhóm theo tháng
   const { minY, maxY, ticks } = calculateYAxisProps(areaData);
-
-  console.log("Pie data:", pieData);
-  console.log("Area data:", areaData);
-  console.log("Y-axis props:", { minY, maxY, ticks });
 
   return (
     <div
@@ -80,7 +139,7 @@ const CostStatistics = ({ jobs }) => {
 
       {/* Chart Container - Stacked Vertically */}
       <div className="card-body p-6 flex flex-col gap-8">
-        {/* Pie Chart for Expense Distribution by faCategory */}
+        {/* Pie Chart for Expense Distribution by faciCategory */}
         <div className="flex flex-col items-center animate-fade-in">
           <h3
             className={`text-xl font-medium mb-4 ${
@@ -143,70 +202,100 @@ const CostStatistics = ({ jobs }) => {
           )}
         </div>
 
-        {/* Area Chart for "Bàn" and "Ghế" Expenses */}
-        <div className="flex flex-col animate-fade-in">
-          <h3
-            className={`text-xl font-medium mb-4 ${
-              theme === "dark" ? "text-gray-200" : "text-gray-700"
-            }`}
-          >
-            Biểu đồ thống kê chi phí bỏ ra
-          </h3>
-          {areaData.every(item => item.value === 0) ? (
-            <p className={`text-center text-gray-500 dark:text-gray-400`}>Không có dữ liệu chi phí</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={500}>
-              <AreaChart
-                data={areaData}
-                margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
-              >
-                <defs>
-                  <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.9} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <Tooltip
-                  cursor={{ stroke: theme === "dark" ? "#4b5563" : "#e5e7eb", strokeWidth: 1 }}
-                  formatter={(value) => `${value.toLocaleString()} DXLAB Coin`}
-                  contentStyle={{
-                    backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
-                    color: theme === "dark" ? "#ffffff" : "#1f2937",
-                    borderRadius: "8px",
-                    border: `1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"}`,
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    padding: "8px 12px",
-                  }}
-                />
-                <XAxis
-                  dataKey="name"
-                  strokeWidth={0}
-                  stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                  tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
-                />
-                <YAxis
-                  strokeWidth={0}
-                  stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                  tickFormatter={(value) => `${value} DXLAB Coin`}
-                  tickMargin={20}
-                  domain={[minY, maxY]}
-                  ticks={ticks}
-                  width={100}
-                  tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="value"
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorExpense)"
-                  activeDot={{ r: 6, fill: "#10b981", stroke: theme === "dark" ? "#1f2937" : "#ffffff" }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+        {/* Area Chart for "Bàn" and "Ghế" Expenses theo tháng - Chỉ hiển thị khi period là "năm" */}
+        {period === "năm" && (
+          <div className="flex flex-col animate-fade-in">
+            <h3
+              className={`text-xl font-medium mb-4 ${
+                theme === "dark" ? "text-gray-200" : "text-gray-700"
+              }`}
+            >
+              Biểu đồ thống kê chi phí bỏ ra
+            </h3>
+            {areaData.every(item => item.table === 0 && item.chair === 0) ? (
+              <p className={`text-center text-gray-500 dark:text-gray-400`}>Không có dữ liệu chi phí</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={500}>
+                <AreaChart
+                  data={areaData}
+                  margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
+                >
+                  <defs>
+                    <linearGradient id="colorTable" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.9} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1} />
+                    </linearGradient>
+                    <linearGradient id="colorChair" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.9} />
+                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <Tooltip
+                    cursor={{ stroke: theme === "dark" ? "#4b5563" : "#e5e7eb", strokeWidth: 1 }}
+                    formatter={(value) => `${value.toLocaleString()} DXLAB Coin`}
+                    contentStyle={{
+                      backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
+                      color: theme === "dark" ? "#ffffff" : "#1f2937",
+                      borderRadius: "8px",
+                      border: `1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"}`,
+                      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                      padding: "8px 12px",
+                    }}
+                  />
+                  <XAxis
+                    dataKey="name"
+                    strokeWidth={0}
+                    stroke={theme === "light" ? "#64748b" : "#94a3b8"}
+                    tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+                  />
+                  <YAxis
+                    strokeWidth={0}
+                    stroke={theme === "light" ? "#64748b" : "#94a3b8"}
+                    tickFormatter={(value) => `${value} DXLAB Coin`}
+                    tickMargin={20}
+                    domain={[minY, maxY]}
+                    ticks={ticks}
+                    width={100}
+                    tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="table"
+                    name="Bàn"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorTable)"
+                    activeDot={{ r: 6, fill: "#3b82f6", stroke: theme === "dark" ? "#1f2937" : "#ffffff" }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="chair"
+                    name="Ghế"
+                    stroke="#ef4444"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorChair)"
+                    activeDot={{ r: 6, fill: "#ef4444", stroke: theme === "dark" ? "#1f2937" : "#ffffff" }}
+                  />
+                  <Legend
+                    verticalAlign="top"
+                    height={36}
+                    formatter={(value) => (
+                      <span
+                        className={`text-sm ${
+                          theme === "dark" ? "text-gray-300" : "text-gray-600"
+                        }`}
+                      >
+                        {value}
+                      </span>
+                    )}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -215,12 +304,15 @@ const CostStatistics = ({ jobs }) => {
 CostStatistics.propTypes = {
   jobs: PropTypes.arrayOf(
     PropTypes.shape({
-      sumaryExpenseID: PropTypes.number,
-      sumaryDate: PropTypes.string,
+      summaryExpenseId: PropTypes.number,
+      summaryDate: PropTypes.string,
       amount: PropTypes.number,
-      faCategory: PropTypes.number,
+      faciCategory: PropTypes.number,
     })
   ).isRequired,
+  period: PropTypes.oneOf(["năm", "tháng"]).isRequired,
+  year: PropTypes.string.isRequired,
+  month: PropTypes.string,
 };
 
 export default CostStatistics;

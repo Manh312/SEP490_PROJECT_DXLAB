@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import {
   markAsRead,
+  clearNotification,
   markAllAsRead,
 } from "../redux/slices/Notification";
-import { Bell, CheckCircle, XCircle, Trash2, FileText } from "lucide-react";
+import { Bell, CheckCircle, XCircle, Trash2, FileText, MoreHorizontal } from "lucide-react";
 
 // Tạo một instance của Audio để phát âm thanh thông báo
 const notificationSound = new Audio(
@@ -17,12 +18,36 @@ const Notification = () => {
   const { notifications } = useSelector((state) => state.notifications);
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
-  const [prevNotificationCount, setPrevNotificationCount] = useState(0); // Khởi tạo với 0
+  const [prevNotificationCount, setPrevNotificationCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(null); // Trạng thái menu cho mỗi thông báo
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false); // Trạng thái menu ba chấm ở header
+  const menuRefs = useRef({}); // Ref cho các menu thông báo
+  const headerMenuRef = useRef(null); // Ref cho menu header
 
   // Kiểm tra dữ liệu notifications
   useEffect(() => {
-    console.log("Notifications:", notifications); // Kiểm tra dữ liệu
+    console.log("Notifications:", notifications);
   }, [notifications]);
+
+  // Đóng menu khi nhấp ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Đóng menu thông báo
+      if (menuOpen !== null && menuRefs.current[menuOpen]) {
+        if (!menuRefs.current[menuOpen].contains(event.target)) {
+          setMenuOpen(null);
+        }
+      }
+      // Đóng menu header
+      if (headerMenuOpen && headerMenuRef.current) {
+        if (!headerMenuRef.current.contains(event.target)) {
+          setHeaderMenuOpen(false);
+        }
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuOpen, headerMenuOpen]);
 
   // Format timestamp
   const formatTimestamp = (timestamp) => {
@@ -61,11 +86,8 @@ const Notification = () => {
     ? notifications
     : notifications.filter((notif) => !notif.isRead);
 
-  // Sắp xếp thông báo: thông báo chưa đọc lên trên, sau đó theo thời gian giảm dần
+  // Sắp xếp thông báo chỉ theo thời gian (mới nhất lên trên)
   const sortedNotifications = [...filteredNotifications].sort((a, b) => {
-    if (a.isRead !== b.isRead) {
-      return a.isRead ? 1 : -1;
-    }
     return new Date(b.timestamp) - new Date(a.timestamp);
   });
 
@@ -74,12 +96,30 @@ const Notification = () => {
     if (!isRead) {
       dispatch(markAsRead(notifId));
     }
+    setMenuOpen(null); // Đóng menu khi nhấp vào thông báo
+  };
+
+  // Xử lý khi nhấp vào menu thông báo
+  const handleMenuClick = (notifId, action) => {
+    if (action === "markAsRead") {
+      dispatch(markAsRead(notifId));
+    } else if (action === "delete") {
+      dispatch(clearNotification(notifId));
+    }
+    setMenuOpen(null); // Đóng menu sau khi chọn
+  };
+
+  // Xử lý khi nhấp vào menu header
+  const handleHeaderMenuClick = (action) => {
+    if (action === "markAllAsRead" && unreadCount > 0) {
+      dispatch(markAllAsRead());
+    }
+    setHeaderMenuOpen(false); // Đóng menu header
   };
 
   // Phát âm thanh khi có thông báo mới
   useEffect(() => {
-    if (notifications.length > prevNotificationCount) {
-      // Chỉ phát âm thanh nếu đã có tương tác người dùng
+    if (unreadCount > prevNotificationCount) {
       const playSound = async () => {
         try {
           await notificationSound.play();
@@ -89,8 +129,8 @@ const Notification = () => {
       };
       playSound();
     }
-    setPrevNotificationCount(notifications.length);
-  }, [notifications, prevNotificationCount]);
+    setPrevNotificationCount(unreadCount);
+  }, [unreadCount, prevNotificationCount]);
 
   return (
     <div className="relative">
@@ -115,12 +155,41 @@ const Notification = () => {
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xl font-semibold text-gray-900">Thông báo</h3>
-              <Link
-                to="/notifications"
-                className="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded-full transition-colors duration-200"
-              >
-                Xem tất cả
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/notifications"
+                  className="text-sm font-medium text-blue-600 hover:underline"
+                >
+                  Xem tất cả
+                </Link>
+                {/* Nút ba chấm ở header */}
+                <div className="relative">
+                  <button
+                    onClick={() => setHeaderMenuOpen(!headerMenuOpen)}
+                    className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                  >
+                    <MoreHorizontal className="w-5 h-5 text-gray-500" />
+                  </button>
+                  {headerMenuOpen && (
+                    <div
+                      ref={headerMenuRef}
+                      className="absolute right-0 top-8 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                    >
+                      <button
+                        onClick={() => handleHeaderMenuClick("markAllAsRead")}
+                        className={`w-full text-left px-4 py-2 text-sm ${
+                          unreadCount > 0
+                            ? "text-gray-700 hover:bg-gray-100"
+                            : "text-gray-400 cursor-not-allowed"
+                        }`}
+                        disabled={unreadCount === 0}
+                      >
+                        Đánh dấu tất cả là đã đọc
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
             {/* Tabs */}
             <div className="flex gap-2">
@@ -128,7 +197,7 @@ const Notification = () => {
                 onClick={() => setActiveTab("all")}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
                   activeTab === "all"
-                    ? "bg-white text-gray-900 border border-gray-300"
+                    ? "bg-blue-100 text-blue-900"
                     : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                 }`}
               >
@@ -138,7 +207,7 @@ const Notification = () => {
                 onClick={() => setActiveTab("unread")}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
                   activeTab === "unread"
-                    ? "bg-white text-gray-900 border border-gray-300"
+                    ? "bg-blue-100 text-blue-900"
                     : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                 }`}
               >
@@ -153,38 +222,69 @@ const Notification = () => {
               Không có thông báo nào
             </div>
           ) : (
-            <ul className="divide-y divide-gray-200">
+            <ul className="divide-y divide-gray-100">
               {sortedNotifications.map((notif) => (
                 <li
                   key={notif.id}
-                  onClick={() => handleNotificationClick(notif.id, notif.isRead)}
-                  className={`flex items-start gap-3 p-3 transition-colors duration-200 cursor-pointer ${
+                  className={`relative flex items-start gap-3 p-4 transition-colors duration-200 cursor-pointer ${
                     notif.isRead ? "bg-white" : "bg-blue-50"
-                  } hover:bg-gray-100`}
+                  } hover:bg-gray-50`}
                 >
                   {/* Avatar/Icon */}
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 mt-1">
                     {getNotificationIcon(notif.type)}
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 overflow-x-hidden">
+                  <div
+                    className="flex-1 overflow-x-hidden"
+                    onClick={() => handleNotificationClick(notif.id, notif.isRead)}
+                  >
                     <p
                       className={`text-sm whitespace-normal break-words ${
-                        notif.isRead ? "text-gray-900" : "text-gray-900 font-semibold"
+                        notif.isRead ? "text-gray-700" : "text-gray-900 font-medium"
                       }`}
                     >
                       {notif.message}
                     </p>
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-gray-500 mt-1">
                       {formatTimestamp(notif.timestamp)}
                     </p>
                   </div>
 
                   {/* Điểm đánh dấu chưa đọc */}
                   {!notif.isRead && (
-                    <span className="flex-shrink-0 w-3 h-3 bg-blue-600 rounded-full mt-2" />
+                    <span className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2" />
                   )}
+
+                  {/* Menu ba chấm */}
+                  <div className="flex-shrink-0 relative">
+                    <button
+                      onClick={() => setMenuOpen(menuOpen === notif.id ? null : notif.id)}
+                      className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                    >
+                      <MoreHorizontal className="w-5 h-5 text-gray-500" />
+                    </button>
+                    {menuOpen === notif.id && (
+                      <div
+                        ref={(el) => (menuRefs.current[notif.id] = el)}
+                        className="absolute right-0 top-8 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                      >
+                        <button
+                          onClick={() => handleMenuClick(notif.id, "markAsRead")}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          {notif.isRead ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
+                        </button>
+                        <button
+                          onClick={() => handleMenuClick(notif.id, "delete")}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        >
+                          Xóa thông báo
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
