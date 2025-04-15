@@ -59,8 +59,8 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, 
         walletType === "metamask"
           ? "Đăng nhập MetaMask thành công!"
           : walletType === "embeddedWallet"
-          ? "Đăng nhập Google thành công!"
-          : "Đăng nhập ví thành công!",
+            ? "Đăng nhập Google thành công!"
+            : "Đăng nhập ví thành công!",
         { toastId: `login-${walletType}` }
       );
     }
@@ -116,6 +116,7 @@ const AppWithWallet = React.memo(() => {
         await sendUserDataToBackend(user || {}, walletAddress, dispatch, walletType, false);
         setIsValidUser(true);
       } catch (error) {
+        console.error("Error validating user:", error.message);
         setIsValidUser(false);
         disconnect();
       }

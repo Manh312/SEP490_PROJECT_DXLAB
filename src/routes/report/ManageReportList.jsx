@@ -4,15 +4,25 @@ import { Search, Eye, ClipboardList } from "lucide-react";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllReports, resetReports } from "../../redux/slices/Report";
+import { addNotification } from "../../redux/slices/Notification"; // Để thêm thông báo
 import { FaSpinner } from "react-icons/fa";
 import Pagination from "../../hooks/use-pagination";
+import { startSignalRConnection, stopSignalRConnection } from "../../utils/signalR/connection";
+import {registerSignalREvent, unregisterSignalREvent,} from "../../utils/signalR/event"
+import { toast } from "react-toastify";
+
+// Utility để tránh thông báo trùng lặp
+const notificationTracker = new Set();
 
 const ManageReportList = () => {
   const dispatch = useDispatch();
-  const { reports, loading, error } = useSelector((state) => state.reports); // Lấy reports từ Redux
+  const { reports, loading, error } = useSelector((state) => state.reports);
+  const { token } = useSelector((state) => state.auth); // Lấy token để xác thực SignalR
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const reportsPerPage = 5; // Số báo cáo hiển thị trên mỗi trang
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [signalRError, setSignalRError] = useState(null);
+  const reportsPerPage = 5;
 
   // Debounce tìm kiếm
   const debouncedSearch = debounce((value) => {
@@ -20,34 +30,86 @@ const ManageReportList = () => {
     setCurrentPage(1);
   }, 300);
 
-  // Gọi API để lấy tất cả báo cáo
+  // Thiết lập SignalR và lấy danh sách báo cáo ban đầu
   useEffect(() => {
-    dispatch(fetchAllReports());
+    let mounted = true;
 
-    // Reset trạng thái khi component unmount
+    const setupSignalR = async () => {
+      try {
+        // Khởi tạo kết nối tới reportHub
+        await startSignalRConnection("reportHub", token);
+
+        if (mounted) {
+          // Đăng ký sự kiện ReceiveNewReport
+          registerSignalREvent("reportHub", "ReceiveNewReport", (report) => {
+            const notificationKey = `ReceiveNewReport-${report.reportId}`;
+            if (!notificationTracker.has(notificationKey)) {
+              notificationTracker.add(notificationKey);
+              dispatch(
+                addNotification({
+                  id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                  message: `Báo cáo mới: "${report.reportId}" từ nhân viên "${report.staffName}"!`,
+                  type: "info",
+                  timestamp: new Date().toISOString(),
+                })
+              );
+              toast.info(`Báo cáo mới: "${report.reportId}" từ nhân viên "${report.staffName}"!`, {
+                position: "top-right",
+              });
+              notificationTracker.delete(notificationKey);
+            }
+            // Cập nhật danh sách báo cáo
+            dispatch(fetchAllReports());
+          });
+
+          // Lấy danh sách báo cáo ban đầu
+          await Promise.all([
+            dispatch(fetchAllReports()).unwrap(),
+            new Promise((resolve) => setTimeout(resolve, 500)),
+          ]);
+        }
+      } catch (err) {
+        console.error("Failed to setup SignalR:", err);
+        if (mounted) {
+          setSignalRError(`Không thể kết nối SignalR: ${err.message}`);
+        }
+      } finally {
+        if (mounted) {
+          setIsInitialLoading(false);
+        }
+      }
+    };
+
+    setupSignalR();
+
+    // Cleanup
     return () => {
+      mounted = false;
+      unregisterSignalREvent("reportHub", "ReceiveNewReport");
+      stopSignalRConnection("reportHub");
       dispatch(resetReports());
     };
-  }, [dispatch]);
+  }, [dispatch, token]);
 
   // Lọc danh sách báo cáo theo tìm kiếm
   const filteredReports = useMemo(() => {
     let result = Array.isArray(reports) ? reports : [];
     if (error || !reports) {
-      return []; // Nếu có lỗi hoặc không có dữ liệu, trả về mảng rỗng
+      return [];
     }
     if (searchTerm) {
-      result = result.filter((report) =>
-        (report.reportId || "")
-          .toString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        (report.bookingDetailId || "")
-          .toString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        (report.areaName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (report.staffName || "").toLowerCase().includes(searchTerm.toLowerCase())
+      result = result.filter(
+        (report) =>
+          (report.reportId || "")
+            .toString()
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          (report.bookingDetailId || "")
+            .toString()
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          (report.areaName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (report.staffName || "").toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     return result;
@@ -93,6 +155,13 @@ const ManageReportList = () => {
           </div>
         </div>
 
+        {/* SignalR Error */}
+        {signalRError && (
+          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+            {signalRError}
+          </div>
+        )}
+
         {/* Search */}
         <div className="mb-6 p-4 rounded-lg shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -109,7 +178,7 @@ const ManageReportList = () => {
         </div>
 
         {/* Loading State */}
-        {loading ? (
+        {(loading || isInitialLoading) ? (
           <div className="flex items-center justify-center py-6 mb-200">
             <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
             <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
@@ -129,16 +198,36 @@ const ManageReportList = () => {
               <table className="w-full text-left border-collapse">
                 <thead className="border-b bg-gray-400">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">#</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Mã Báo Cáo</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Mã Đặt Chỗ</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Vị Trí</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Phòng</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Khu Vực</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Loại Khu Vực</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Tên Nhân Viên</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Ngày Tạo</th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Thao Tác</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      #
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Mã Báo Cáo
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Mã Đặt Chỗ
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Vị Trí
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Phòng
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Khu Vực
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Loại Khu Vực
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Tên Nhân Viên
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Ngày Tạo
+                    </th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                      Thao Tác
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -150,30 +239,14 @@ const ManageReportList = () => {
                       <td className="px-4 py-4 text-center">
                         {(currentPage - 1) * reportsPerPage + index + 1}
                       </td>
-                      <td className="px-4 py-4 text-center">
-                        RP-{report.reportId || "N/A"}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        DXL-{report.bookingDetailId || "N/A"}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {report.position || "N/A"}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {report.roomName || "N/A"}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {report.areaName || "N/A"}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {report.areaTypeName || "N/A"}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {report.staffName || "N/A"}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {formatDate(report.createdDate)}
-                      </td>
+                      <td className="px-4 py-4 text-center">RP-{report.reportId || "N/A"}</td>
+                      <td className="px-4 py-4 text-center">DXL-{report.bookingDetailId || "N/A"}</td>
+                      <td className="px-4 py-4 text-center">{report.position || "N/A"}</td>
+                      <td className="px-4 py-4 text-center">{report.roomName || "N/A"}</td>
+                      <td className="px-4 py-4 text-center">{report.areaName || "N/A"}</td>
+                      <td className="px-4 py-4 text-center">{report.areaTypeName || "N/A"}</td>
+                      <td className="px-4 py-4 text-center">{report.staffName || "N/A"}</td>
+                      <td className="px-4 py-4 text-center">{formatDate(report.createdDate)}</td>
                       <td className="px-4 py-4 text-center">
                         <Link
                           to={`/dashboard/report/${report.reportId}`}
@@ -204,7 +277,7 @@ const ManageReportList = () => {
                     <p className="text-sm text-gray-700">
                       <span className="font-medium">ID Báo Cáo:</span>{" "}
                       <Link
-                        to={`/manage/report/${report.reportId}`}
+                        to={`/dashboard/report/${report.reportId}`}
                         className="text-orange-500 hover:text-orange-600"
                       >
                         {report.reportId}
@@ -215,16 +288,14 @@ const ManageReportList = () => {
                       {report.bookingDetailId || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Vị Trí:</span>{" "}
-                      {report.position || "N/A"}
+                      <span className="font-medium">Vị Trí:</span> {report.position || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Khu Vực:</span>{" "}
-                      {report.areaName || "N/A"}
+                      <span className="font-medium">Khu Vực:</span> {report.areaName || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Loại Khu Vực:</span>{" "}
-                      {report.areaType || "N/A"}
+                      {report.areaTypeName || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Tên Nhân Viên:</span>{" "}
@@ -235,7 +306,7 @@ const ManageReportList = () => {
                       {formatDate(report.createdDate)}
                     </p>
                     <Link
-                      to={`/manage/report/${report.reportId}`}
+                      to={`/dashboard/report/${report.reportId}`}
                       className="bg-blue-100 text-blue-700 hover:bg-blue-200 p-2 rounded-lg flex items-center justify-center w-10 h-10 mt-2 mx-auto"
                     >
                       <Eye className="w-4 h-4" />
