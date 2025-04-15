@@ -22,6 +22,8 @@ const CreateAreaType = () => {
 
   const [imagePreviews, setImagePreviews] = useState([]);
   const [failedImages, setFailedImages] = useState(new Set());
+  const { areaTypeCategories } = useSelector((state) => state.areaCategory);
+  console.log("areaTypeCategories", areaTypeCategories);
 
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -123,8 +125,8 @@ const CreateAreaType = () => {
     <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-4xl rounded-xl border shadow-2xl p-8 transition-all duration-300 hover:shadow-3xl">
         <div>
-          <h2 className="text-3xl font-bold text-center text-orange-500">Thêm Loại Khu Vực</h2>
-          <p className="mt-2 text-sm text-center text-gray-600">Tạo mới một loại khu vực cho hệ thống</p>
+          <h2 className="text-3xl font-bold text-center text-orange-500">Thêm Kiểu Khu Vực</h2>
+          <p className="mt-2 text-sm text-center text-gray-600">Tạo mới một kiểu khu vực cho hệ thống</p>
         </div>
         <form onSubmit={handleSubmit} className="mt-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -133,7 +135,7 @@ const CreateAreaType = () => {
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
                   <span className="flex items-center">
-                    <Building className="mr-2 text-orange-500" /> Tên Loại Khu Vực
+                    <Building className="mr-2 text-orange-500" /> Tên Kiểu Khu Vực
                   </span>
                 </label>
                 <input
@@ -141,7 +143,7 @@ const CreateAreaType = () => {
                   name="areaTypeName"
                   value={areaTypeData.areaTypeName}
                   onChange={handleChange}
-                  placeholder="Nhập tên loại khu vực"
+                  placeholder="Nhập tên kiểu khu vực"
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
                   required
                 />
@@ -202,7 +204,7 @@ const CreateAreaType = () => {
                   name="areaDescription"
                   value={areaTypeData.areaDescription}
                   onChange={handleChange}
-                  placeholder="Nhập mô tả loại khu vực"
+                  placeholder="Nhập mô tả kiểu khu vực"
                   className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out min-h-[50px]"
                   required
                 />
@@ -210,7 +212,7 @@ const CreateAreaType = () => {
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
                   <span className="flex items-center">
-                    <Map className="mr-2 text-orange-500" /> Danh Mục Khu Vực
+                    <Map className="mr-2 text-orange-500" /> Danh Mục Loại Khu Vực
                   </span>
                 </label>
                 <select
@@ -219,8 +221,12 @@ const CreateAreaType = () => {
                   onChange={handleCategoryChange}
                   className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 duration-150 ease-in-out h-12"
                 >
-                  <option value={1}>Khu vực cá nhân</option>
-                  <option value={2}>Khu vực nhóm</option>
+                  {areaTypeCategories.map((category) => (
+                    <option key={category.id} value={category.categoryId}>
+                      {category.title}
+                    </option>
+                  ))}
+                  
                 </select>
               </div>
               <div className="flex flex-col">
@@ -295,7 +301,7 @@ const CreateAreaType = () => {
                 </svg>
               ) : (
                 <>
-                  <Check className="mr-2" /> Thêm Loại Khu Vực
+                  <Check className="mr-2" /> Thêm Kiểu Khu Vực
                 </>
               )}
             </button>

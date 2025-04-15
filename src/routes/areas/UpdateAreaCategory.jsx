@@ -20,11 +20,12 @@ const UpdateAreaCategory = () => {
 
   // Get loading and areaTypeCategories from Redux store
   const { loading, areaTypeCategories, error } = useSelector((state) => state.areaCategory);
-
+  console.log(areaTypeCategories);
   // Find current category from store
   const currentCategory = areaTypeCategories.find(
     (cat) => cat.categoryId === parseInt(id)
   );  
+
 
   // Form state
   const [formData, setFormData] = useState({
@@ -279,7 +280,7 @@ const UpdateAreaCategory = () => {
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
                   <span className="flex items-center">
-                    <Building className="mr-2 text-orange-500" /> Tên Danh Mục{" "}
+                    <Building className="mr-2 text-orange-500" /> Tên Loại Danh Mục{" "}
                     <span className="text-red-500">*</span>
                   </span>
                 </label>

@@ -136,12 +136,12 @@ export const navbarLinks = [
         path: "/dashboard",
       },
       {
-        label: "Quản lý khu vực",
+        label: "Quản lý loại khu vực",
         icon: Map, 
         path: "/dashboard/area",
       },
       {
-        label: "Quản lý loại khu vực",
+        label: "Quản lý kiểu khu vực",
         icon: Tag, 
         path: "/dashboard/areaType",
       },
