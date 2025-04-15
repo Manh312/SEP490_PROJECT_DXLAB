@@ -24,21 +24,14 @@ const Notification = () => {
   const menuRefs = useRef({}); // Ref cho các menu thông báo
   const headerMenuRef = useRef(null); // Ref cho menu header
 
-  // Kiểm tra dữ liệu notifications
-  useEffect(() => {
-    console.log("Notifications:", notifications);
-  }, [notifications]);
-
-  // Đóng menu khi nhấp ra ngoài
+  // Thêm useEffect để đóng menu khi nhấp ra ngoài
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Đóng menu thông báo
       if (menuOpen !== null && menuRefs.current[menuOpen]) {
         if (!menuRefs.current[menuOpen].contains(event.target)) {
           setMenuOpen(null);
         }
       }
-      // Đóng menu header
       if (headerMenuOpen && headerMenuRef.current) {
         if (!headerMenuRef.current.contains(event.target)) {
           setHeaderMenuOpen(false);
@@ -78,13 +71,14 @@ const Notification = () => {
     }
   };
 
-  // Count unread notifications
-  const unreadCount = notifications.filter((notif) => !notif.isRead).length;
+  // Count unread notifications với kiểm tra an toàn
+  const unreadCount = notifications?.filter((notif) => !notif.isRead)?.length || 0;
 
-  // Lọc thông báo theo tab
-  const filteredNotifications = activeTab === "all"
-    ? notifications
-    : notifications.filter((notif) => !notif.isRead);
+  // Lọc thông báo theo tab với kiểm tra an toàn
+  const filteredNotifications =
+    activeTab === "all"
+      ? notifications || []
+      : (notifications || []).filter((notif) => !notif.isRead);
 
   // Sắp xếp thông báo chỉ theo thời gian (mới nhất lên trên)
   const sortedNotifications = [...filteredNotifications].sort((a, b) => {
@@ -258,7 +252,10 @@ const Notification = () => {
                   )}
 
                   {/* Menu ba chấm */}
-                  <div className="flex-shrink-0 relative">
+                  <div
+                    className="flex-shrink-0 relative"
+                    onClick={(e) => e.stopPropagation()} // Ngăn sự kiện lan truyền
+                  >
                     <button
                       onClick={() => setMenuOpen(menuOpen === notif.id ? null : notif.id)}
                       className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"

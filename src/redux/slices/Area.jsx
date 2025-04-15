@@ -8,53 +8,49 @@ export const fetchAreas = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get(API_URL);
-      return response.data.data; // Chỉ lấy mảng data
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.message || "Không thể lấy danh sách khu vực");
     }
   }
 );
 
-// Thêm mới
 export const fetchFacilitiesByAreaId = createAsyncThunk(
   'areas/fetchFacilitiesByAreaId',
   async (areaId, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get(`${API_URL}/faciinare?areaid=${areaId}`);
-      return response.data.data; // Mảng facility
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.message || "Không thể lấy danh sách thiết bị");
     }
   }
 );
 
-// Lấy toàn bộ danh sách thiết bị
 export const fetchAllFacilities = createAsyncThunk(
   'areas/fetchAllFacilities',
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get(`/area/allfacistatus`);
-      return response.data.data; // Mảng thiết bị
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.message || "Không thể lấy danh sách thiết bị tổng");
     }
   }
 );
 
-// Lấy danh sách thiết bị đang sử dụng
 export const fetchFacilitiesList = createAsyncThunk(
   'areas/fetchFacilitiesList',
   async (_, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.get(`/area/allusingfaci`);
-      return response.data.data; // Mảng thiết bị
+      return response.data.data;
     } catch (error) {
       return rejectWithValue(error.message || "Không thể lấy danh sách thiết bị tổng");
     }
   }
 );
 
-// ✅ POST: Thêm thiết bị vào khu vực
 export const addFacilityToArea = createAsyncThunk(
   'areas/addFacilityToArea',
   async ({ id, data }, { rejectWithValue }) => {
@@ -71,7 +67,6 @@ export const addFacilityToArea = createAsyncThunk(
   }
 );
 
-// ✅ POST: Xoá thiết bị khỏi khu vực
 export const removeFacilityFromArea = createAsyncThunk(
   'areas/removeFacilityFromArea',
   async (data, { rejectWithValue }) => {
@@ -84,6 +79,70 @@ export const removeFacilityFromArea = createAsyncThunk(
   }
 );
 
+export const updateArea = createAsyncThunk(
+  'areas/updateArea',
+  async ({ areaId, data }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.patch(
+        `${API_URL}/area?areaid=${areaId}`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || "Lỗi khi cập nhật khu vực");
+    }
+  }
+);
+
+export const fetchAreaInRoomForManagement = createAsyncThunk(
+  'areas/fetchAreaInRoomForManagement',
+  async (roomId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(
+        `${API_URL}/areainroomformanagement?roomId=${roomId}`
+      );
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.message || "Không thể lấy thông tin khu vực và phòng");
+    }
+  }
+);
+
+export const removeAllFacilitiesFromArea = createAsyncThunk(
+  'areas/removeAllFacilitiesFromArea',
+  async (areaId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.delete(
+        `${API_URL}/faciremoveall?areaid=${areaId}`
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error || "Lỗi khi xóa tất cả thiết bị trong khu vực");
+    }
+  }
+);
+
+// ✅ POST: Tạo khu vực mới
+export const addAreaToRoom = createAsyncThunk(
+  'areas/addAreasToRoom',
+  async ({ roomId, areas }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post(
+        `${API_URL}/newarea?roomId=${roomId}`,
+        areas, // Send the array of area objects directly
+        {
+          headers: {
+            "Content-Type": "application/json-patch+json",
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
 const areaSlice = createSlice({
   name: 'areas',
   initialState: {
@@ -91,23 +150,37 @@ const areaSlice = createSlice({
     loading: false,
     error: null,
 
-    facilities: [], // danh sách thiết bị theo khu vực
+    facilities: [],
     facilitiesLoading: false,
     facilitiesError: null,
 
-    allFacilities: [], // danh sách tất cả thiết bị
+    allFacilities: [],
     allFacilitiesLoading: false,
     allFacilitiesError: null,
 
-    facilitiesList: [], // danh sách thiết bị đang sử dụng
+    facilitiesList: [],
     facilitiesListLoading: false,
     facilitiesListError: null,
 
     addFacilityLoading: false,
     addFacilityError: null,
 
-    removeFacilityLoading: false, // Thêm trạng thái cho removeFacility
+    removeFacilityLoading: false,
     removeFacilityError: null,
+
+    updateAreaLoading: false,
+    updateAreaError: null,
+
+    areaInRoom: [],
+    areaInRoomLoading: false,
+    areaInRoomError: null,
+
+    removeAllFacilitiesLoading: false,
+    removeAllFacilitiesError: null,
+
+    // Trạng thái cho tạo khu vực mới
+    createAreaLoading: false,
+    createAreaError: null,
   },
   extraReducers: (builder) => {
     builder
@@ -191,6 +264,67 @@ const areaSlice = createSlice({
       .addCase(removeFacilityFromArea.rejected, (state, action) => {
         state.removeFacilityLoading = false;
         state.removeFacilityError = action.payload;
+      })
+
+      // updateArea
+      .addCase(updateArea.pending, (state) => {
+        state.updateAreaLoading = true;
+        state.updateAreaError = null;
+      })
+      .addCase(updateArea.fulfilled, (state, action) => {
+        state.updateAreaLoading = false;
+        const updatedArea = action.payload.data;
+        const index = state.areas.findIndex(area => area.areaId === updatedArea.areaId);
+        if (index !== -1) {
+          state.areas[index] = updatedArea;
+        }
+      })
+      .addCase(updateArea.rejected, (state, action) => {
+        state.updateAreaLoading = false;
+        state.updateAreaError = action.payload;
+      })
+
+      // fetchAreaInRoomForManagement
+      .addCase(fetchAreaInRoomForManagement.pending, (state) => {
+        state.areaInRoomLoading = true;
+        state.areaInRoomError = null;
+      })
+      .addCase(fetchAreaInRoomForManagement.fulfilled, (state, action) => {
+        state.areaInRoomLoading = false;
+        state.areaInRoom = action.payload;
+      })
+      .addCase(fetchAreaInRoomForManagement.rejected, (state, action) => {
+        state.areaInRoomLoading = false;
+        state.areaInRoomError = action.payload;
+      })
+
+      // removeAllFacilitiesFromArea
+      .addCase(removeAllFacilitiesFromArea.pending, (state) => {
+        state.removeAllFacilitiesLoading = true;
+        state.removeAllFacilitiesError = null;
+      })
+      .addCase(removeAllFacilitiesFromArea.fulfilled, (state) => {
+        state.removeAllFacilitiesLoading = false;
+      })
+      .addCase(removeAllFacilitiesFromArea.rejected, (state, action) => {
+        state.removeAllFacilitiesLoading = false;
+        state.removeAllFacilitiesError = action.payload;
+      })
+
+      // createArea
+      .addCase(addAreaToRoom.pending, (state) => {
+        state.createAreaLoading = true;
+        state.createAreaError = null;
+      })
+      .addCase(addAreaToRoom.fulfilled, (state, action) => {
+        state.createAreaLoading = false;
+        if (action.payload.data) {
+          state.areas.push(...action.payload.data); // API should return an array of created areas
+        }
+      })
+      .addCase(addAreaToRoom.rejected, (state, action) => {
+        state.createAreaLoading = false;
+        state.createAreaError = action.payload;
       });
   },
 });

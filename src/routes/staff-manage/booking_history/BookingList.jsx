@@ -7,6 +7,7 @@ import { fetchBookingHistory } from "../../../redux/slices/BookingHistory";
 import { Tooltip } from "react-tooltip";
 import debounce from "lodash/debounce";
 import { FaSpinner } from "react-icons/fa";
+import Pagination from "../../../hooks/use-pagination"; // Import Pagination component
 
 const BookingList = () => {
   const theme = useTheme();
@@ -32,6 +33,15 @@ const BookingList = () => {
     booking.bookingId.toString().includes(searchTerm.toLowerCase()) ||
     booking.userName.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Reset currentPage khi danh sách bookings trống hoặc không hợp lệ
+  useEffect(() => {
+    if (filteredBookings.length === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    } else if (currentPage > Math.ceil(filteredBookings.length / itemsPerPage)) {
+      setCurrentPage(Math.max(1, Math.ceil(filteredBookings.length / itemsPerPage)));
+    }
+  }, [filteredBookings, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
   const currentBookings = filteredBookings.slice(
@@ -174,31 +184,11 @@ const BookingList = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center space-x-2 mt-4">
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
-                  disabled={currentPage === 1}
-                >
-                  «
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentPage(i + 1)}
-                    className={`px-3 py-1 rounded ${currentPage === i + 1 ? "bg-blue-500 text-white" : "bg-gray-300"}`}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
-                  disabled={currentPage === totalPages}
-                >
-                  »
-                </button>
-              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                setCurrentPage={setCurrentPage}
+              />
             )}
           </>
         )}

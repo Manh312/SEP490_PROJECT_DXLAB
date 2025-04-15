@@ -37,7 +37,6 @@ export const createAreaType = createAsyncThunk(
   async ({ newAreaType, files }, { rejectWithValue }) => {
     try {
       const formData = new FormData();
-
       formData.append("AreaTypeName", newAreaType.AreaTypeName);
       formData.append("AreaCategory", newAreaType.AreaCategory);
       formData.append("AreaDescription", newAreaType.AreaDescription);
@@ -65,14 +64,15 @@ export const createAreaType = createAsyncThunk(
 
 // Cập nhật loại khu vực theo API `PATCH`
 export const updateAreaType = createAsyncThunk(
-  'areaTypes/updateAreaType',
+  "areaTypes/updateAreaType",
   async ({ areaTypeId, patchDoc }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.patch(
         `${API_URL}/${areaTypeId}`,
-        patchDoc , {
+        patchDoc,
+        {
           headers: {
-            'Content-Type': 'application/json-patch+json',
+            "Content-Type": "application/json-patch+json",
           },
         }
       );
@@ -130,14 +130,13 @@ export const deleteAreaTypeImage = createAsyncThunk(
   "areaTypes/deleteAreaTypeImage",
   async ({ areaTypeId, imageUrl }, { rejectWithValue }) => {
     try {
-      // The API expects a JSON body with the image URL to delete
       await axiosInstance.delete(`${API_URL}/Images?id=${areaTypeId}`, {
         headers: {
           "Content-Type": "application/json-patch+json",
         },
-        data: [imageUrl], // Send the image URL as a JSON array
+        data: [imageUrl],
       });
-      return { areaTypeId, imageUrl }; // Return the areaTypeId and deleted image URL for state update
+      return { areaTypeId, imageUrl };
     } catch (error) {
       return rejectWithValue(error.response?.data || "Lỗi khi xóa ảnh của loại khu vực");
     }
@@ -149,10 +148,27 @@ const areaTypeSlice = createSlice({
   initialState: {
     areaTypes: [],
     selectedAreaType: null,
+    selectedAreaIds: [], // New state to track selected area IDs
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    // Action to toggle a single area selection
+    toggleAreaSelection: (state, action) => {
+      const areaId = action.payload;
+      state.selectedAreaIds = state.selectedAreaIds.includes(areaId)
+        ? state.selectedAreaIds.filter((id) => id !== areaId)
+        : [...state.selectedAreaIds, areaId];
+    },
+    // Action to select/deselect all areas
+    setAllAreaSelections: (state, action) => {
+      state.selectedAreaIds = action.payload;
+    },
+    // Action to clear selections
+    clearAreaSelections: (state) => {
+      state.selectedAreaIds = [];
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Fetch danh sách loại khu vực
@@ -188,7 +204,7 @@ const areaTypeSlice = createSlice({
       .addCase(deleteAreaType.pending, (state) => {
         state.loading = true;
       })
-      .addCase(deleteAreaType.fulfilled, (state, action) => {
+      .addCase(deleteAreaType.fulfilled, (state, afterrorction) => {
         state.loading = false;
         state.areaTypes = state.areaTypes.filter((type) => type.areaTypeId !== action.payload);
       })
@@ -218,13 +234,9 @@ const areaTypeSlice = createSlice({
       })
       .addCase(updateAreaType.fulfilled, (state, action) => {
         state.loading = false;
-
-        // Cập nhật dữ liệu nếu đang ở trang chi tiết
         if (state.selectedAreaType?.areaTypeId === action.payload.data?.areaTypeId) {
           state.selectedAreaType = action.payload.data;
         }
-
-        // Cập nhật dữ liệu trong danh sách
         state.areaTypes = state.areaTypes.map((type) =>
           type.areaTypeId === action.payload.data?.areaTypeId ? action.payload.data : type
         );
@@ -240,13 +252,9 @@ const areaTypeSlice = createSlice({
       })
       .addCase(updateAreaTypeImages.fulfilled, (state, action) => {
         state.loading = false;
-
-        // Cập nhật dữ liệu nếu đang ở trang chi tiết
         if (state.selectedAreaType?.areaTypeId === action.payload.data?.areaTypeId) {
           state.selectedAreaType = action.payload.data;
         }
-
-        // Cập nhật dữ liệu trong danh sách
         state.areaTypes = state.areaTypes.map((type) =>
           type.areaTypeId === action.payload.data?.areaTypeId ? action.payload.data : type
         );
@@ -263,8 +271,6 @@ const areaTypeSlice = createSlice({
       .addCase(deleteAreaTypeImage.fulfilled, (state, action) => {
         state.loading = false;
         const { areaTypeId, imageUrl } = action.payload;
-
-        // Cập nhật danh sách areaTypes
         state.areaTypes = state.areaTypes.map((type) => {
           if (type.areaTypeId === areaTypeId) {
             return {
@@ -274,8 +280,6 @@ const areaTypeSlice = createSlice({
           }
           return type;
         });
-
-        // Cập nhật selectedAreaType nếu đang ở trang chi tiết
         if (state.selectedAreaType?.areaTypeId === areaTypeId) {
           state.selectedAreaType.images = state.selectedAreaType.images.filter(
             (img) => img !== imageUrl
@@ -289,4 +293,5 @@ const areaTypeSlice = createSlice({
   },
 });
 
+export const { toggleAreaSelection, setAllAreaSelections, clearAreaSelections } = areaTypeSlice.actions;
 export default areaTypeSlice.reducer;

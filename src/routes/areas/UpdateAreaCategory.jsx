@@ -19,7 +19,7 @@ const UpdateAreaCategory = () => {
   const fileInputRef = useRef(null); // Ref for file input
 
   // Get loading and areaTypeCategories from Redux store
-  const { loading, areaTypeCategories, error } = useSelector((state) => state.areaCategory);
+  const { loading, areaTypeCategories, error } = useSelector((state) => state.areaCategory);  
 
   // Find current category from store
   const currentCategory = areaTypeCategories.find(

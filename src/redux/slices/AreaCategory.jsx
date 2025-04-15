@@ -156,14 +156,14 @@ const areaCategorySlice = createSlice({
         state.loading = false;
         // Update the list
         state.areaTypeCategories = state.areaTypeCategories.map((category) =>
-          category.areaTypeCategoryId === action.payload.data?.areaTypeCategoryId
+          category.categoryId === action.payload.data?.categoryId
             ? action.payload.data
             : category
         );
         // Update selected category if applicable
         if (
-          state.selectedAreaTypeCategory?.areaTypeCategoryId ===
-          action.payload.data?.areaTypeCategoryId
+          state.selectedAreaTypeCategory?.categoryId ===
+          action.payload.data?.categoryId
         ) {
           state.selectedAreaTypeCategory = action.payload.data;
         }

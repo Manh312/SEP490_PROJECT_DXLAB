@@ -6,13 +6,38 @@ const CostStatistics = ({ jobs, period, year, month }) => {
   const { theme } = useTheme();
   const EXPENSE_COLORS = ["#3b82f6", "#ef4444"]; // Blue for "Bàn" (faciCategory 1), red for "Ghế" (faciCategory 0)
 
+  // Tính tổng chi phí cho note
+  const calculateTotalExpenses = () => {
+    if (!jobs || jobs.length === 0) return 0;
+
+    return jobs.reduce((total, job) => {
+      if (!job || !job.summaryDate || job.amount === undefined) return total;
+
+      const date = new Date(job.summaryDate);
+      if (isNaN(date.getTime())) return total;
+
+      const jobYear = date.getFullYear();
+      const jobMonth = date.getMonth();
+
+      if (jobYear !== parseInt(year)) return total;
+
+      if (period === "tháng" && month) {
+        const selectedMonth = parseInt(month) - 1;
+        if (jobMonth !== selectedMonth) return total;
+      }
+
+      return total + (job.amount || 0);
+    }, 0);
+  };
+
   // Tạo danh sách các tháng: nếu period là "tháng", chỉ hiển thị tháng được chọn
   const months = period === "tháng" && month
-    ? [{ name: `Tháng ${month}`, table: 0, chair: 0 }]
+    ? [{ name: `Tháng ${month}`, table: 0, chair: 0, total: 0 }]
     : Array.from({ length: 12 }, (_, i) => ({
         name: `Tháng ${i + 1}`,
         table: 0, // Chi phí cho Bàn (faciCategory 1)
         chair: 0, // Chi phí cho Ghế (faciCategory 0)
+        total: 0, // Tổng chi phí
       }));
 
   // Nhóm dữ liệu theo tháng và faciCategory
@@ -21,14 +46,11 @@ const CostStatistics = ({ jobs, period, year, month }) => {
       return months; // Trả về dữ liệu mặc định
     }
 
-    // Nhóm chi phí theo tháng và faciCategory
     jobs.forEach(job => {
-      // Kiểm tra job và summaryDate có tồn tại và hợp lệ không
       if (!job || !job.summaryDate) {
         return; // Bỏ qua job này
       }
 
-      // Trích xuất năm và tháng từ summaryDate
       const date = new Date(job.summaryDate);
       if (isNaN(date.getTime())) {
         return; // Bỏ qua job nếu ngày không hợp lệ
@@ -37,31 +59,30 @@ const CostStatistics = ({ jobs, period, year, month }) => {
       const jobYear = date.getFullYear();
       const jobMonth = date.getMonth(); // getMonth() trả về 0-11
 
-      // Lọc theo năm
       if (jobYear !== parseInt(year)) {
         return; // Bỏ qua job nếu không thuộc năm được chọn
       }
 
-      // Nếu period là "tháng", chỉ xử lý nếu job thuộc tháng được chọn
       if (period === "tháng" && month) {
-        const selectedMonth = parseInt(month) - 1; // Chuyển month về dạng 0-11 để so sánh
+        const selectedMonth = parseInt(month) - 1;
         if (jobMonth !== selectedMonth) {
           return; // Bỏ qua job nếu không thuộc tháng được chọn
         }
       }
 
-      const monthIndex = period === "tháng" ? 0 : jobMonth; // Nếu period là "tháng", chỉ dùng index 0
+      const monthIndex = period === "tháng" ? 0 : jobMonth;
       const category = job.faciCategory === 1 ? "table" : "chair";
       const amount = job.amount || 0;
 
-      // Cộng dồn chi phí vào tháng tương ứng
+      // Cộng dồn chi phí
       months[monthIndex][category] += amount;
+      months[monthIndex].total += amount;
     });
 
     return months;
   };
 
-  // Tính toán dữ liệu cho Pie Chart (phân bổ chi phí theo faciCategory)
+  // Tính toán dữ liệu cho Pie Chart
   const expenseData = () => {
     if (!jobs || jobs.length === 0) {
       return [
@@ -72,15 +93,15 @@ const CostStatistics = ({ jobs, period, year, month }) => {
 
     const categoryTotals = jobs.reduce(
       (acc, job) => {
-        if (!job) return acc; // Bỏ qua nếu job không hợp lệ
+        if (!job) return acc;
         const date = new Date(job.summaryDate);
         if (isNaN(date.getTime()) || date.getFullYear() !== parseInt(year)) {
-          return acc; // Bỏ qua nếu không thuộc năm được chọn
+          return acc;
         }
         if (period === "tháng" && month) {
           const selectedMonth = parseInt(month) - 1;
           if (date.getMonth() !== selectedMonth) {
-            return acc; // Bỏ qua nếu không thuộc tháng được chọn
+            return acc;
           }
         }
         const category = job.faciCategory === 1 ? "table" : "chair";
@@ -99,7 +120,7 @@ const CostStatistics = ({ jobs, period, year, month }) => {
   // Tính toán Y-axis domain và ticks động dựa trên dữ liệu
   const calculateYAxisProps = (data) => {
     const maxValue = Math.max(
-      ...data.map(item => Math.max(item.table || 0, item.chair || 0)),
+      ...data.map(item => item.total || 0),
       1000 // Đảm bảo giá trị tối thiểu cho visibility
     );
     const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
@@ -116,8 +137,42 @@ const CostStatistics = ({ jobs, period, year, month }) => {
     };
   };
 
+  // Custom Tooltip cho Area Chart
+  const CustomTooltip = ({ active, payload, label }) => {
+    CustomTooltip.propTypes = {
+      active: PropTypes.bool,
+      payload: PropTypes.array,
+      label: PropTypes.string,
+    };
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div
+          className={`p-4 rounded-lg shadow-lg border ${
+            theme === "dark"
+              ? "bg-gray-800 text-white border-gray-700"
+              : "bg-white text-gray-900 border-gray-200"
+          }`}
+        >
+          <p className="font-semibold mb-2">{label}</p>
+          <p className="text-sm">
+            Ghế: {data.chair.toLocaleString()} DXLAB Coin
+          </p>
+          <p className="text-sm">
+            Bàn: {data.table.toLocaleString()} DXLAB Coin
+          </p>
+          <p className="text-sm font-medium mt-2">
+            Tổng: {data.total.toLocaleString()} DXLAB Coin
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   const pieData = expenseData();
-  const areaData = processDataByMonth(); // Dữ liệu cho Area Chart, nhóm theo tháng
+  const areaData = processDataByMonth();
+  const totalExpenses = calculateTotalExpenses();
   const { minY, maxY, ticks } = calculateYAxisProps(areaData);
 
   return (
@@ -151,87 +206,30 @@ const CostStatistics = ({ jobs, period, year, month }) => {
           {pieData.every(item => item.value === 0) ? (
             <p className={`text-center text-gray-500 dark:text-gray-400`}>Không có dữ liệu chi phí</p>
           ) : (
-            <ResponsiveContainer width="100%" height={350}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={110}
-                  fill="#8884d8"
-                  dataKey="value"
-                  labelLine={false}
-                  label={({ name, value }) =>
-                    `${name}: ${value.toLocaleString()} DXLAB Coin`
-                  }
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={EXPENSE_COLORS[index % EXPENSE_COLORS.length]}
-                      className="transition-all duration-300 hover:opacity-80"
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value) => `${value.toLocaleString()} DXLAB Coin`}
-                  contentStyle={{
-                    backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
-                    color: theme === "dark" ? "#ffffff" : "#1f2937",
-                    borderRadius: "8px",
-                    border: `1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"}`,
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    padding: "8px 12px",
-                  }}
-                />
-                <Legend
-                  verticalAlign="bottom"
-                  height={36}
-                  formatter={(value) => (
-                    <span
-                      className={`text-sm ${
-                        theme === "dark" ? "text-gray-300" : "text-gray-600"
-                      }`}
-                    >
-                      {value}
-                    </span>
-                  )}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-
-        {/* Area Chart for "Bàn" and "Ghế" Expenses theo tháng - Chỉ hiển thị khi period là "năm" */}
-        {period === "năm" && (
-          <div className="flex flex-col animate-fade-in">
-            <h3
-              className={`text-xl font-medium mb-4 ${
-                theme === "dark" ? "text-gray-200" : "text-gray-700"
-              }`}
-            >
-              Biểu đồ thống kê chi phí bỏ ra
-            </h3>
-            {areaData.every(item => item.table === 0 && item.chair === 0) ? (
-              <p className={`text-center text-gray-500 dark:text-gray-400`}>Không có dữ liệu chi phí</p>
-            ) : (
-              <ResponsiveContainer width="100%" height={500}>
-                <AreaChart
-                  data={areaData}
-                  margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
-                >
-                  <defs>
-                    <linearGradient id="colorTable" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.9} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1} />
-                    </linearGradient>
-                    <linearGradient id="colorChair" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.9} />
-                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1} />
-                    </linearGradient>
-                  </defs>
+            <>
+              <ResponsiveContainer width="100%" height={350}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={110}
+                    fill="#8884d8"
+                    dataKey="value"
+                    labelLine={false}
+                    label={({ name, value }) =>
+                      `${name}: ${value.toLocaleString()} DXLAB Coin`
+                    }
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={EXPENSE_COLORS[index % EXPENSE_COLORS.length]}
+                        className="transition-all duration-300 hover:opacity-80"
+                      />
+                    ))}
+                  </Pie>
                   <Tooltip
-                    cursor={{ stroke: theme === "dark" ? "#4b5563" : "#e5e7eb", strokeWidth: 1 }}
                     formatter={(value) => `${value.toLocaleString()} DXLAB Coin`}
                     contentStyle={{
                       backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
@@ -242,44 +240,8 @@ const CostStatistics = ({ jobs, period, year, month }) => {
                       padding: "8px 12px",
                     }}
                   />
-                  <XAxis
-                    dataKey="name"
-                    strokeWidth={0}
-                    stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                    tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
-                  />
-                  <YAxis
-                    strokeWidth={0}
-                    stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                    tickFormatter={(value) => `${value} DXLAB Coin`}
-                    tickMargin={20}
-                    domain={[minY, maxY]}
-                    ticks={ticks}
-                    width={100}
-                    tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="table"
-                    name="Bàn"
-                    stroke="#3b82f6"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorTable)"
-                    activeDot={{ r: 6, fill: "#3b82f6", stroke: theme === "dark" ? "#1f2937" : "#ffffff" }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="chair"
-                    name="Ghế"
-                    stroke="#ef4444"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorChair)"
-                    activeDot={{ r: 6, fill: "#ef4444", stroke: theme === "dark" ? "#1f2937" : "#ffffff" }}
-                  />
                   <Legend
-                    verticalAlign="top"
+                    verticalAlign="bottom"
                     height={36}
                     formatter={(value) => (
                       <span
@@ -290,6 +252,85 @@ const CostStatistics = ({ jobs, period, year, month }) => {
                         {value}
                       </span>
                     )}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              {/* Total Expenses Note */}
+              <div
+                className={`w-full mt-4 p-3 rounded-lg border ${
+                  theme === "dark"
+                    ? "bg-gray-800 border-gray-700 text-gray-200"
+                    : "bg-gray-100 border-gray-200 text-gray-800"
+                }`}
+              >
+                <p className="text-sm font-semibold">
+                  Tổng chi phí bỏ ra:{" "}
+                  <span className="text-base font-bold">
+                    {totalExpenses.toLocaleString()} DXLAB Coin
+                  </span>
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Area Chart for Total Expenses */}
+        {period === "năm" && (
+          <div className="flex flex-col animate-fade-in">
+            <h3
+              className={`text-xl font-medium mb-4 ${
+                theme === "dark" ? "text-gray-200" : "text-gray-700"
+              }`}
+            >
+              Biểu đồ thống kê chi phí bỏ ra (theo DXLAB Coin)
+            </h3>
+            {areaData.every(item => item.total === 0) ? (
+              <p className={`text-center text-gray-500 dark:text-gray-400`}>Không có dữ liệu chi phí</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={500}>
+                <AreaChart
+                  data={areaData}
+                  margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
+                >
+                  <defs>
+                    <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.9} />
+                      <stop offset="95%" stopColor="#f97316" stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <Tooltip
+                    cursor={{ stroke: theme === "dark" ? "#4b5563" : "#e5e7eb", strokeWidth: 1 }}
+                    content={<CustomTooltip />}
+                  />
+                  <XAxis
+                    dataKey="name"
+                    strokeWidth={0}
+                    stroke={theme === "light" ? "#64748b" : "#94a3b8"}
+                    angle={-45}
+                    textAnchor="end"
+                    height={70}
+                    interval={0}
+                    tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+                  />
+                  <YAxis
+                    strokeWidth={0}
+                    stroke={theme === "light" ? "#64748b" : "#94a3b8"}
+                    tickFormatter={(value) => `${value.toLocaleString()} DXLAB Coin`}
+                    tickMargin={20}
+                    domain={[minY, maxY]}
+                    ticks={ticks}
+                    width={100}
+                    tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="total"
+                    name="Tổng"
+                    stroke="#f97316"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorTotal)"
+                    activeDot={{ r: 6, fill: "#f97316", stroke: theme === "dark" ? "#1f2937" : "#ffffff" }}
                   />
                 </AreaChart>
               </ResponsiveContainer>

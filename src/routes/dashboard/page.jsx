@@ -184,6 +184,32 @@ const Page = () => {
   const totalRevenue = yearlyStats ? yearlyStats.totalRevenue || 0 : 0;
   const avgStudentPercentage = yearlyStats ? yearlyStats.studentPercentage || 0 : 0;
 
+
+  const calculateTotalDepreciation = () => {
+    const dataSource = period === "năm" ? depreciationsByYear : depreciations;
+
+    if (!dataSource || dataSource.length === 0) return 0;
+
+    return dataSource.reduce((total, item) => {
+      if (!item || !item.sumDate || item.depreciationAmount === undefined) return total;
+
+      const date = new Date(item.sumDate);
+      if (isNaN(date.getTime())) return total;
+
+      const itemYear = date.getFullYear();
+      const itemMonth = date.getMonth();
+
+      if (itemYear !== parseInt(year)) return total;
+
+      if (period === "tháng" && month) {
+        const selectedMonth = parseInt(month) - 1;
+        if (itemMonth !== selectedMonth) return total;
+      }
+
+      return total + (item.depreciationAmount || 0);
+    }, 0);
+  };
+
   // Calculate expense distribution (same logic as in CostStatistics)
   const expenseData = () => {
     // Sử dụng jobsByYear khi period là "năm", jobs khi period là "tháng"
@@ -478,14 +504,14 @@ const Page = () => {
                 <p
                   className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}
                 >
-                  Tổng số người dùng
+                  Tổng chi phí khấu hao
                 </p>
               </div>
               <div className="card-body">
                 <p
                   className={`text-2xl font-bold transition-colors ${theme === "dark" ? "text-white" : "text-black"}`}
                 >
-                  Chưa có dữ liệu
+                  {calculateTotalDepreciation().toLocaleString()} DXLAB Coin
                 </p>
                 <span
                   className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
