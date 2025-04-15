@@ -18,6 +18,9 @@ const UpdateAreaType = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { areaTypeCategories } = useSelector((state) => state.areaCategory);
+  console.log("areaTypeCategories", areaTypeCategories);
+
 
   // State cho Tabs
   const [activeTab, setActiveTab] = useState("update");
@@ -527,8 +530,12 @@ const UpdateAreaType = () => {
                     onChange={handleNumberChange}
                     className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 duration-150 ease-in-out h-12"
                   >
-                    <option value="1">Khu vực cá nhân</option>
-                    <option value="2">Khu vực nhóm</option>
+                    {areaTypeCategories.map((category) => (
+                      <option key={category.id} value={category.categoryId}>
+                        {category.title}
+                      </option>
+                    ))}
+                  
                   </select>
                 </div>
 

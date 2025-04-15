@@ -26,6 +26,7 @@ const UpdateAreaCategory = () => {
     (cat) => cat.categoryId === parseInt(id)
   );  
 
+
   // Form state
   const [formData, setFormData] = useState({
     title: "",
@@ -279,7 +280,7 @@ const UpdateAreaCategory = () => {
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
                   <span className="flex items-center">
-                    <Building className="mr-2 text-orange-500" /> Tên Danh Mục{" "}
+                    <Building className="mr-2 text-orange-500" /> Tên Loại Danh Mục{" "}
                     <span className="text-red-500">*</span>
                   </span>
                 </label>

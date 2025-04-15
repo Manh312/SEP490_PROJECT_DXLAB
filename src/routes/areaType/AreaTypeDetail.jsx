@@ -98,7 +98,7 @@ const AreaTypeDetail = () => {
     <div className="max-w-6xl mx-auto mt-10 mb-20 p-6 bg-white rounded-xl shadow-2xl transition-all">
       {/* Title */}
       <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 bg-gradient-to-r from-orange-500 to-orange-700 text-transparent bg-clip-text">
-        Chi Tiết Loại Khu Vực
+        Chi Tiết Kiểu Khu Vực
       </h2>
 
       {/* Main Layout: Images on the left, details on the right */}
