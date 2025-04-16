@@ -61,6 +61,7 @@ import AreaDetailAdmin from "./routes/areas/AreaDetailAdmin";
 import CreateReport from "./routes/staff-manage/report-management/CreateReport";
 import ManageReportList from "./routes/report/ManageReportList";
 import ManageReportDetail from "./routes/report/ManageReportDetail";
+import ManageFacilitiesInArea from "./routes/room/ManageFacilitiesInArea";
 
 
 
@@ -181,6 +182,10 @@ const router = createBrowserRouter([
       {
         path: "dashboard/room/create",
         element: <ProtectedRoute allowedRoles={["Admin"]}><CreateRoom /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/room/update/:id/addFacilities/:areaId",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><ManageFacilitiesInArea /></ProtectedRoute>,
       },
 
 

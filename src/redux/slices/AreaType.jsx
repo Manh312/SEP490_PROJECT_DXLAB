@@ -204,7 +204,7 @@ const areaTypeSlice = createSlice({
       .addCase(deleteAreaType.pending, (state) => {
         state.loading = true;
       })
-      .addCase(deleteAreaType.fulfilled, (state, afterrorction) => {
+      .addCase(deleteAreaType.fulfilled, (state, action) => {
         state.loading = false;
         state.areaTypes = state.areaTypes.filter((type) => type.areaTypeId !== action.payload);
       })

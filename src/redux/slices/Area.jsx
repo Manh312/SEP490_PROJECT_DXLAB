@@ -122,14 +122,13 @@ export const removeAllFacilitiesFromArea = createAsyncThunk(
   }
 );
 
-// ✅ POST: Tạo khu vực mới
 export const addAreaToRoom = createAsyncThunk(
   'areas/addAreasToRoom',
   async ({ roomId, areas }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(
         `${API_URL}/newarea?roomId=${roomId}`,
-        areas, // Send the array of area objects directly
+        areas,
         {
           headers: {
             "Content-Type": "application/json-patch+json",
@@ -137,6 +136,19 @@ export const addAreaToRoom = createAsyncThunk(
         }
       );
       return response.data;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
+// New thunk for deleting an area
+export const deleteArea = createAsyncThunk(
+  'areas/deleteArea',
+  async (areaId, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.patch(`${API_URL}/area?areaid=${areaId}`);
+      return { areaId, data: response.data };
     } catch (error) {
       return rejectWithValue(error);
     }
@@ -178,13 +190,15 @@ const areaSlice = createSlice({
     removeAllFacilitiesLoading: false,
     removeAllFacilitiesError: null,
 
-    // Trạng thái cho tạo khu vực mới
     createAreaLoading: false,
     createAreaError: null,
+
+    // Add states for deleteArea
+    deleteAreaLoading: false,
+    deleteAreaError: null,
   },
   extraReducers: (builder) => {
     builder
-      // fetchAreas
       .addCase(fetchAreas.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -198,7 +212,6 @@ const areaSlice = createSlice({
         state.error = action.error.message;
       })
 
-      // fetchFacilitiesByAreaId
       .addCase(fetchFacilitiesByAreaId.pending, (state) => {
         state.facilitiesLoading = true;
         state.facilitiesError = null;
@@ -212,7 +225,6 @@ const areaSlice = createSlice({
         state.facilitiesError = action.payload;
       })
 
-      // fetchAllFacilities
       .addCase(fetchAllFacilities.pending, (state) => {
         state.allFacilitiesLoading = true;
         state.allFacilitiesError = null;
@@ -226,7 +238,6 @@ const areaSlice = createSlice({
         state.allFacilitiesError = action.payload;
       })
 
-      // fetchFacilitiesList
       .addCase(fetchFacilitiesList.pending, (state) => {
         state.facilitiesListLoading = true;
         state.facilitiesListError = null;
@@ -240,7 +251,6 @@ const areaSlice = createSlice({
         state.facilitiesListError = action.payload;
       })
 
-      // addFacilityToArea
       .addCase(addFacilityToArea.pending, (state) => {
         state.addFacilityLoading = true;
         state.addFacilityError = null;
@@ -253,7 +263,6 @@ const areaSlice = createSlice({
         state.addFacilityError = action.payload;
       })
 
-      // removeFacilityFromArea
       .addCase(removeFacilityFromArea.pending, (state) => {
         state.removeFacilityLoading = true;
         state.removeFacilityError = null;
@@ -266,7 +275,6 @@ const areaSlice = createSlice({
         state.removeFacilityError = action.payload;
       })
 
-      // updateArea
       .addCase(updateArea.pending, (state) => {
         state.updateAreaLoading = true;
         state.updateAreaError = null;
@@ -284,7 +292,6 @@ const areaSlice = createSlice({
         state.updateAreaError = action.payload;
       })
 
-      // fetchAreaInRoomForManagement
       .addCase(fetchAreaInRoomForManagement.pending, (state) => {
         state.areaInRoomLoading = true;
         state.areaInRoomError = null;
@@ -298,7 +305,6 @@ const areaSlice = createSlice({
         state.areaInRoomError = action.payload;
       })
 
-      // removeAllFacilitiesFromArea
       .addCase(removeAllFacilitiesFromArea.pending, (state) => {
         state.removeAllFacilitiesLoading = true;
         state.removeAllFacilitiesError = null;
@@ -311,7 +317,6 @@ const areaSlice = createSlice({
         state.removeAllFacilitiesError = action.payload;
       })
 
-      // createArea
       .addCase(addAreaToRoom.pending, (state) => {
         state.createAreaLoading = true;
         state.createAreaError = null;
@@ -319,12 +324,28 @@ const areaSlice = createSlice({
       .addCase(addAreaToRoom.fulfilled, (state, action) => {
         state.createAreaLoading = false;
         if (action.payload.data) {
-          state.areas.push(...action.payload.data); // API should return an array of created areas
+          state.areas.push(...action.payload.data);
         }
       })
       .addCase(addAreaToRoom.rejected, (state, action) => {
         state.createAreaLoading = false;
         state.createAreaError = action.payload;
+      })
+
+      // Add cases for deleteArea
+      .addCase(deleteArea.pending, (state) => {
+        state.deleteAreaLoading = true;
+        state.deleteAreaError = null;
+      })
+      .addCase(deleteArea.fulfilled, (state, action) => {
+        state.deleteAreaLoading = false;
+        const { areaId } = action.payload;
+        state.areaInRoom = state.areaInRoom.filter(area => area.areaId !== areaId);
+        state.areas = state.areas.filter(area => area.areaId !== areaId);
+      })
+      .addCase(deleteArea.rejected, (state, action) => {
+        state.deleteAreaLoading = false;
+        state.deleteAreaError = action.payload;
       });
   },
 });

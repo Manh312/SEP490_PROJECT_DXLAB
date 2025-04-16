@@ -7,15 +7,13 @@ import {
   updateRoomImages,
   deleteRoomImage,
 } from "../../redux/slices/Room";
-import { fetchAreaInRoomForManagement, addAreaToRoom } from "../../redux/slices/Area";
+import { fetchAreaInRoomForManagement, addAreaToRoom, deleteArea } from "../../redux/slices/Area";
 import {
   fetchAreaTypes,
-  toggleAreaSelection,
-  setAllAreaSelections,
   clearAreaSelections,
 } from "../../redux/slices/AreaType";
 import { toast } from "react-toastify";
-import { Building, Image, FileText, Check, X, ArrowLeft, Plus } from "lucide-react";
+import { Building, Image, FileText, Check, X, ArrowLeft, Plus, Trash } from "lucide-react";
 
 const BACKEND_URL = "https://localhost:9999";
 
@@ -26,10 +24,10 @@ const UpdateRoom = () => {
   const fileInputRef = useRef(null);
 
   const { selectedRoom, loading, error } = useSelector((state) => state.rooms);
-  const { areaInRoom, areaInRoomLoading, areaInRoomError } = useSelector(
+  const { areaInRoom, areaInRoomLoading, areaInRoomError, deleteAreaLoading } = useSelector(
     (state) => state.areas || {}
   );
-  const { areaTypes, selectedAreaIds } = useSelector((state) => state.areaTypes);
+  const { areaTypes } = useSelector((state) => state.areaTypes);
 
   const [formData, setFormData] = useState({
     roomName: "",
@@ -46,6 +44,8 @@ const UpdateRoom = () => {
   const [imagesToDelete, setImagesToDelete] = useState([]);
   const [failedImages, setFailedImages] = useState(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedAreaTypeId, setSelectedAreaTypeId] = useState("");
+  const [customAreaName, setCustomAreaName] = useState("");
 
   useEffect(() => {
     const roomId = parseInt(id);
@@ -83,6 +83,8 @@ const UpdateRoom = () => {
   useEffect(() => {
     if (isModalOpen) {
       dispatch(fetchAreaTypes("0"));
+      setSelectedAreaTypeId("");
+      setCustomAreaName("");
     }
   }, [isModalOpen, dispatch]);
 
@@ -200,7 +202,7 @@ const UpdateRoom = () => {
           });
         }
         if (selectedRoom.isDeleted !== formData.isDeleted) {
-          patchDoc.push({ op: "replace", path: "isDeleted", value: formData.isDeleted });
+          patchDoc.push({ op: "replace", path: "isDeleted сведения", value: formData.isDeleted });
         }
 
         if (patchDoc.length > 0) {
@@ -239,36 +241,57 @@ const UpdateRoom = () => {
   };
 
   const handleAddAreaToRoom = async () => {
-    if (selectedAreaIds.length === 0) {
-      toast.error("Vui lòng chọn ít nhất một khu vực để thêm!");
+    if (!selectedAreaTypeId) {
+      toast.error("Vui lòng chọn một khu vực để thêm!");
+      return;
+    }
+
+    const trimmedCustomName = customAreaName.trim();
+    if (!trimmedCustomName) {
+      toast.error("Tên khu vực không được để trống!");
       return;
     }
 
     try {
       const roomId = parseInt(id);
-      // Map selectedAreaIds to an array of area objects with areaTypeId and areaName
-      const areasToAdd = selectedAreaIds.map((areaTypeId) => {
-        const areaType = areaTypes.find((at) => at.areaTypeId === areaTypeId);
-        return {
-          areaTypeId: areaTypeId,
-          areaName: areaType ? `${areaType.areaTypeName} - Room ${roomId}` : `Area ${areaTypeId}`,
-        };
-      });
+      const areaToAdd = {
+        areaTypeId: parseInt(selectedAreaTypeId),
+        areaName: trimmedCustomName,
+      };
 
       await dispatch(
         addAreaToRoom({
           roomId,
-          areas: areasToAdd,
+          areas: [areaToAdd],
         })
       ).unwrap();
 
       toast.success("Thêm khu vực vào phòng thành công!");
       setIsModalOpen(false);
-      dispatch(clearAreaSelections());
+      setSelectedAreaTypeId("");
+      setCustomAreaName("");
       dispatch(fetchAreaInRoomForManagement(roomId));
     } catch (err) {
       const errorMessage = err.message || "Lỗi khi thêm khu vực vào phòng";
       toast.error(errorMessage);
+    }
+  };
+
+  const handleEditArea = (areaId) => {
+    navigate(`/dashboard/room/update/${id}/addFacilities/${areaId}`);
+  };
+
+  const handleDeleteArea = async (areaId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa khu vực này không?")) {
+      try {
+        console.log("Deleting area with ID:", areaId);
+        const res = await dispatch(deleteArea(areaId)).unwrap();
+        toast.success(res.data.message || "Xóa khu vực thành công!");
+        dispatch(fetchAreaInRoomForManagement(parseInt(id)));
+      } catch (err) {
+        const errorMessage = err?.message;
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -297,29 +320,29 @@ const UpdateRoom = () => {
   }
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8 mb-10 bg-gray-100 min-h-screen">
-      <div className="w-full max-w-5xl mx-auto rounded-2xl border bg-white shadow-lg p-8 transition-all duration-300">
+    <div className="py-6 px-4 sm:px-6 lg:px-8 mb-10 bg-gray-100 min-h-screen">
+      <div className="w-full max-w-6xl mx-auto rounded-2xl border bg-white shadow-lg p-6 sm:p-8 transition-all duration-300">
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8">
           <div className="flex items-center space-x-3 mb-4 sm:mb-0">
             <Building className="h-8 w-8 text-orange-600" />
-            <h2 className="text-3xl font-semibold text-gray-800">Quản Lý Phòng {id}</h2>
+            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800">Quản Lý Phòng {id}</h2>
           </div>
           <button
             onClick={() => navigate("/dashboard/room")}
-            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-md"
+            className="flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-md"
           >
             <ArrowLeft size={20} />
-            <span className="hidden sm:inline font-medium">Quay Lại</span>
+            <span className="text-sm sm:text-base sm:inline font-medium">Quay Lại</span>
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="mb-8">
-          <nav className="flex space-x-4 border-b-2 border-gray-200">
+        <div className="mb-6 sm:mb-8">
+          <nav className="flex flex-col sm:flex-row sm:space-x-4 border-b-2 border-gray-200">
             <button
               onClick={() => setActiveTab("update")}
-              className={`relative py-4 px-6 text-sm font-medium transition-all duration-300 ${
+              className={`relative py-3 px-4 sm:py-4 sm:px-6 text-sm font-medium transition-all duration-300 ${
                 activeTab === "update"
                   ? "text-orange-500 border-b-2 border-orange-500"
                   : "text-gray-500 hover:text-gray-700"
@@ -332,7 +355,7 @@ const UpdateRoom = () => {
             </button>
             <button
               onClick={() => setActiveTab("manage-areas")}
-              className={`relative py-4 px-6 text-sm font-medium transition-all duration-300 ${
+              className={`relative py-3 px-4 sm:py-4 sm:px-6 text-sm font-medium transition-all duration-300 ${
                 activeTab === "manage-areas"
                   ? "text-orange-500 border-b-2 border-orange-500"
                   : "text-gray-500 hover:text-gray-700"
@@ -348,8 +371,8 @@ const UpdateRoom = () => {
 
         {/* Tab Content */}
         {activeTab === "update" && (
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-6">
                 {/* Room Name */}
                 <div className="flex flex-col">
@@ -402,7 +425,7 @@ const UpdateRoom = () => {
                     name="roomDescription"
                     value={formData.roomDescription}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800 placeholder-gray-400 min-h-[120px]"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800 placeholder-gray-400 min-h-[100px] sm:min-h-[120px]"
                     placeholder="Nhập mô tả phòng"
                     required
                   />
@@ -416,7 +439,7 @@ const UpdateRoom = () => {
                     </span>
                   </label>
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-4 flex-wrap">
+                    <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
                       {imagePreviews.length > 0 &&
                         imagePreviews.map((preview, index) => (
                           <div key={index} className="relative group">
@@ -427,7 +450,7 @@ const UpdateRoom = () => {
                                   : preview
                               }
                               alt={`Room preview ${index}`}
-                              className="w-24 h-24 object-cover rounded-lg shadow-md transition-all duration-300 group-hover:shadow-lg"
+                              className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg shadow-md transition-all duration-300 group-hover:shadow-lg"
                               onError={() => handleImageError(index)}
                             />
                             <button
@@ -442,9 +465,9 @@ const UpdateRoom = () => {
                       <button
                         type="button"
                         onClick={() => fileInputRef.current.click()}
-                        className="border-dashed border-2 border-gray-300 rounded-lg p-4 text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all duration-300 flex items-center justify-center w-24 h-24"
+                        className="border-dashed border-2 border-gray-300 rounded-lg p-4 text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all duration-300 flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24"
                       >
-                        <span className="text-sm font-medium">Chọn tệp</span>
+                        <span className="text-xs sm:text-sm font-medium">Chọn tệp</span>
                       </button>
                       <input
                         type="file"
@@ -461,7 +484,7 @@ const UpdateRoom = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="mt-10 flex justify-between gap-4">
+            <div className="mt-8 flex flex-col sm:flex-row justify-between gap-4">
               <button
                 type="button"
                 onClick={() => navigate("/dashboard/room")}
@@ -505,14 +528,14 @@ const UpdateRoom = () => {
 
         {activeTab === "manage-areas" && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-xl font-semibold text-gray-800">Danh Sách Khu Vực</h3>
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800">Danh Sách Khu Vực</h3>
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
               >
                 <Plus size={20} />
-                <span className="font-medium">Thêm Khu Vực</span>
+                <span className="text-sm sm:text-base font-medium">Thêm Khu Vực</span>
               </button>
             </div>
             {areaInRoomLoading ? (
@@ -524,83 +547,186 @@ const UpdateRoom = () => {
                 <p className="text-red-500 text-lg">{areaInRoomError}</p>
               </div>
             ) : Array.isArray(areaInRoom) && areaInRoom.length > 0 ? (
-              <div className="overflow-x-auto shadow-lg rounded-lg border border-gray-200">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                    <tr>
-                      <th
-                        scope="col"
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-                      >
-                        STT
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-                      >
-                        Tên Khu Vực
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-                      >
-                        Loại Khu Vực
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-                      >
-                        Danh Mục
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-                      >
-                        Số Lượng Thiết Bị
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-                      >
-                        Kích Thước
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-                      >
-                        Trạng Thái
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {areaInRoom.map((area, index) => (
-                      <tr
-                        key={area.areaId}
-                        className={`transition-colors duration-200 ${
-                          index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                        } hover:bg-orange-50`}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {index + 1}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {area.areaName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {area.areaTypeName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              <>
+                {/* Table for Desktop */}
+                <div className="hidden sm:block shadow-lg rounded-lg border border-gray-200 overflow-x-auto">
+                  <table className="w-full divide-y divide-gray-200 table-auto">
+                    <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                      <tr>
+                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          STT
+                        </th>
+                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Tên Khu Vực
+                        </th>
+                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Loại Khu Vực
+                        </th>
+                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Danh Mục
+                        </th>
+                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Số Lượng Thiết Bị
+                        </th>
+                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Kích Thước
+                        </th>
+                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Trạng Thái
+                        </th>
+                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Hành động
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {areaInRoom.map((area, index) => (
+                        <tr
+                          key={area.areaId}
+                          className={`transition-colors duration-200 ${
+                            index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                          } hover:bg-orange-50`}
+                        >
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {index + 1}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {area.areaName}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {area.areaTypeName}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {area.categoryId === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {area.faciAmount}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {area.size}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                area.isAvail
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {area.isAvail ? "Có sẵn" : "Không có sẵn"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleEditArea(area.areaId)}
+                                className="inline-flex items-center justify-center bg-yellow-200 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg transition-colors w-10 h-10"
+                              >
+                                <Plus className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteArea(area.areaId)}
+                                disabled={deleteAreaLoading}
+                                className="inline-flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors w-10 h-10 disabled:bg-gray-300 disabled:text-gray-500"
+                              >
+                                {deleteAreaLoading ? (
+                                  <svg
+                                    className="animate-spin h-4 w-4 text-red-700"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <circle
+                                      className="opacity-25"
+                                      cx="12"
+                                      cy="12"
+                                      r="10"
+                                      stroke="currentColor"
+                                      strokeWidth="4"
+                                    />
+                                    <path
+                                      className="opacity-75"
+                                      fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    />
+                                  </svg>
+                                ) : (
+                                  <Trash className="w-4 h-4" />
+                                )}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Card Layout for Mobile */}
+                <div className="block sm:hidden space-y-4">
+                  {areaInRoom.map((area, index) => (
+                    <div
+                      key={area.areaId}
+                      className="border border-gray-200 rounded-lg p-4 bg-white shadow-md"
+                    >
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="text-sm font-semibold text-gray-900">
+                          {index + 1}. {area.areaName}
+                        </h4>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditArea(area.areaId)}
+                            className="inline-flex items-center justify-center bg-yellow-200 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg transition-colors w-8 h-8"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteArea(area.areaId)}
+                            disabled={deleteAreaLoading}
+                            className="inline-flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors w-8 h-8 disabled:bg-gray-300 disabled:text-gray-500"
+                          >
+                            {deleteAreaLoading ? (
+                              <svg
+                                className="animate-spin h-4 w-4 text-red-700"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                />
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                />
+                              </svg>
+                            ) : (
+                              <Trash className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-600 space-y-1">
+                        <p>
+                          <span className="font-medium">Loại Khu Vực:</span> {area.areaTypeName}
+                        </p>
+                        <p>
+                          <span className="font-medium">Danh Mục:</span>{" "}
                           {area.categoryId === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        </p>
+                        <p>
+                          <span className="font-medium">Số Lượng Thiết Bị:</span>{" "}
                           {area.faciAmount}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {area.size}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        </p>
+                        <p>
+                          <span className="font-medium">Kích Thước:</span> {area.size}
+                        </p>
+                        <p>
+                          <span className="font-medium">Trạng Thái:</span>{" "}
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${
                               area.isAvail
                                 ? "bg-green-100 text-green-800"
                                 : "bg-red-100 text-red-800"
@@ -608,12 +734,12 @@ const UpdateRoom = () => {
                           >
                             {area.isAvail ? "Có sẵn" : "Không có sẵn"}
                           </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
               <div className="flex items-center justify-center py-8">
                 <p className="text-gray-500 text-lg">Không có khu vực nào trong phòng này.</p>
@@ -624,10 +750,10 @@ const UpdateRoom = () => {
 
         {/* Modal for Adding Areas */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-0">
+            <div className="bg-gray-300 rounded-2xl shadow-lg p-6 w-full max-w-md sm:w-full sm:max-w-md h-full sm:h-auto">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-gray-800">Thêm Khu Vực Vào Phòng</h3>
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-800">Thêm Khu Vực Vào Phòng</h3>
                 <button
                   onClick={() => setIsModalOpen(false)}
                   className="text-gray-500 hover:text-gray-700 transition-colors duration-200"
@@ -636,82 +762,44 @@ const UpdateRoom = () => {
                 </button>
               </div>
 
-              {Array.isArray(areaTypes) && areaTypes.length > 0 ? (
-                <div className="space-y-4">
-                  {/* Select All Checkbox */}
-                  <div className="flex items-center p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-200">
-                    <input
-                      type="checkbox"
-                      id="select-all"
-                      checked={
-                        areaTypes.length > 0 &&
-                        areaTypes.every((area) => selectedAreaIds.includes(area.areaTypeId))
-                      }
-                      onChange={() => {
-                        if (
-                          areaTypes.every((area) => selectedAreaIds.includes(area.areaTypeId))
-                        ) {
-                          dispatch(setAllAreaSelections([]));
-                        } else {
-                          dispatch(setAllAreaSelections(areaTypes.map((area) => area.areaTypeId)));
-                        }
-                      }}
-                      className="h-5 w-5 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
-                    />
-                    <label
-                      htmlFor="select-all"
-                      className="ml-4 text-sm font-medium text-gray-900 cursor-pointer"
-                    >
-                      Chọn tất cả
-                    </label>
-                  </div>
+              <div className="space-y-4">
+                {/* Trường chọn khu vực */}
+                <div className="flex flex-col">
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Chọn Khu Vực <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={selectedAreaTypeId}
+                    onChange={(e) => setSelectedAreaTypeId(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800"
+                  >
+                    <option value="">-- Chọn khu vực --</option>
+                    {Array.isArray(areaTypes) && areaTypes.length > 0 ? (
+                      areaTypes.map((area) => (
+                        <option key={area.areaTypeId} value={area.areaTypeId}>
+                          {area.areaTypeName} (Danh mục: {area.areaCategory}, Kích thước: {area.size})
+                        </option>
+                      ))
+                    ) : (
+                      <option disabled>Không có khu vực nào</option>
+                    )}
+                  </select>
+                </div>
 
-                  {/* Individual Area Checkboxes */}
-                  {areaTypes.map((area) => (
-                    <div
-                      key={area.areaTypeId}
-                      className={`flex items-center p-4 rounded-lg border transition-all duration-200 ${
-                        selectedAreaIds.includes(area.areaTypeId)
-                          ? "border-orange-500 bg-orange-50 shadow-sm"
-                          : "border-gray-200 hover:bg-gray-50"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        id={`area-${area.areaTypeId}`}
-                        checked={selectedAreaIds.includes(area.areaTypeId)}
-                        onChange={() => dispatch(toggleAreaSelection(area.areaTypeId))}
-                        className="h-5 w-5 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
-                      />
-                      <label
-                        htmlFor={`area-${area.areaTypeId}`}
-                        className="ml-4 flex-1 cursor-pointer"
-                      >
-                        <p className="text-sm font-medium text-gray-900">{area.areaTypeName}</p>
-                        <p className="text-sm text-gray-500">Loại: {area.areaTypeName}</p>
-                        <p className="text-sm text-gray-500">Danh mục: {area.areaCategory}</p>
-                        <p className="text-sm text-gray-500">Kích thước: {area.size}</p>
-                        <p className="text-sm">
-                          Trạng thái:{" "}
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              area.isDeleted === false
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {area.isDeleted === false ? "Có sẵn" : "Không có sẵn"}
-                          </span>
-                        </p>
-                      </label>
-                    </div>
-                  ))}
+                {/* Trường nhập tên khu vực tùy chỉnh */}
+                <div className="flex flex-col">
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    Tên Khu Vực <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={customAreaName}
+                    onChange={(e) => setCustomAreaName(e.target.value)}
+                    placeholder="Nhập tên khu vực"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800 placeholder-gray-400"
+                  />
                 </div>
-              ) : (
-                <div className="flex items-center justify-center py-6">
-                  <p className="text-gray-500 text-lg">Không có khu vực nào để thêm.</p>
-                </div>
-              )}
+              </div>
 
               <div className="mt-6 flex justify-end gap-3">
                 <button
