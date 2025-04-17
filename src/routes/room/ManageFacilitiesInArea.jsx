@@ -5,10 +5,10 @@ import {
   fetchAllFacilities,
   addFacilityToArea,
   removeFacilityFromArea,
-  removeAllFacilitiesFromArea, // Import the new thunk
+  removeAllFacilitiesFromArea,
 } from "../../redux/slices/Area";
 import { toast } from "react-toastify";
-import { Search, Plus, X, ArrowLeft, Trash2 } from "lucide-react"; // Add Trash2 icon for "Delete All"
+import { Search, Plus, X, ArrowLeft, Trash2 } from "lucide-react";
 import PropTypes from "prop-types";
 import { Link, useParams } from "react-router-dom";
 
@@ -23,7 +23,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
     allFacilitiesError,
     addFacilityLoading,
     removeFacilityLoading,
-    removeAllFacilitiesLoading, // Add loading state for delete all
+    removeAllFacilitiesLoading,
   } = useSelector((state) => state.areas);
 
   const [showModal, setShowModal] = useState(false);
@@ -33,7 +33,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [facilityToDelete, setFacilityToDelete] = useState(null);
   const [deleteQuantity, setDeleteQuantity] = useState("");
-  const [deleteAllModal, setDeleteAllModal] = useState(false); // State for "Delete All" confirmation modal
+  const [deleteAllModal, setDeleteAllModal] = useState(false);
 
   const { id, areaId } = useParams();
 
@@ -55,6 +55,11 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
     }
 
     const quantityToAdd = parseInt(quantity);
+    if (isNaN(quantityToAdd) || quantityToAdd <= 0) {
+      toast.error("Số lượng phải là một số dương!");
+      return;
+    }
+
     if (quantityToAdd > selectedFacility.quantity) {
       toast.error(`Số lượng vượt quá số lượng khả dụng (${selectedFacility.quantity})!`);
       return;
@@ -66,17 +71,20 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
       importDate: selectedFacility.importDate,
       quantity: quantityToAdd,
     };
+    const facilityStatus = selectedFacility.status;
 
     try {
-      const res = await dispatch(addFacilityToArea({ id: areaId, data: body })).unwrap();
+      const res = await dispatch(
+        addFacilityToArea({ id: areaId, data: body, status: facilityStatus })
+      ).unwrap();
       toast.success(res.message || "Thêm thiết bị thành công!");
-      await dispatch(fetchFacilitiesByAreaId(areaId)).unwrap();
       setShowModal(false);
       setSelectedFacility(null);
       setQuantity("");
       setSearchTerm("");
+      await dispatch(fetchFacilitiesByAreaId(areaId)).unwrap();
     } catch (error) {
-      toast.error(error || "Lỗi khi thêm thiết bị!");
+      toast.error(error.message);
     }
   };
 
@@ -110,57 +118,57 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
       setFacilityToDelete(null);
       setDeleteQuantity("");
     } catch (err) {
-      toast.error(err || "Lỗi khi xóa thiết bị!");
+      toast.error(err.message);
     }
   };
 
-  // New handler for "Delete All"
   const handleDeleteAllFacilities = async () => {
     try {
       const res = await dispatch(removeAllFacilitiesFromArea(areaId)).unwrap();
       toast.success(res.message || "Đã xóa tất cả thiết bị trong khu vực!");
-      await dispatch(fetchFacilitiesByAreaId(areaId)).unwrap(); // Refresh the facilities list
+      await dispatch(fetchFacilitiesByAreaId(areaId)).unwrap();
       setDeleteAllModal(false);
     } catch (err) {
       toast.error(err || "Lỗi khi xóa tất cả thiết bị!");
     }
   };
 
-  const filteredFacilities = allFacilities.filter((faci) =>
-    faci.facilityName.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredFacilities = allFacilities.filter(
+    (faci) =>
+      faci.facilityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      faci.quantity > 0
   );
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8 mb-10 bg-gray-100 min-h-screen">
-      <div className="w-full max-w-6xl mx-auto rounded-2xl border bg-white shadow-lg p-8 transition-all duration-300">
+    <div className="py-4 px-4 sm:px-6 lg:px-8 mb-10 bg-gray-100 min-h-screen">
+      <div className="w-full max-w-6xl mx-auto rounded-2xl border bg-white shadow-lg p-4 sm:p-6 lg:p-8 transition-all duration-300">
         {/* Header Section with Back Button, Add Facility, and Delete All Button */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-3">
           <Link
             to={{
               pathname: `/dashboard/room/update/${id}`,
               state: { activeTab: "manage-areas" },
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all shadow-md"
+            className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all shadow-md w-full sm:w-auto"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span className="hidden sm:inline font-medium">Quay Lại</span>
+            <span className="text-sm sm:text-base">Quay Lại</span>
           </Link>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
             <button
               onClick={openModal}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all shadow-md"
+              className="flex items-center gap-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all shadow-md w-full sm:w-auto"
             >
               <Plus className="w-5 h-5" />
-              Thêm Thiết Bị
+              <span className="text-sm sm:text-base">Thêm Thiết Bị</span>
             </button>
-            {/* New "Delete All" Button */}
             <button
               onClick={() => setDeleteAllModal(true)}
               disabled={facilities.length === 0 || removeAllFacilitiesLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition-all shadow-md"
+              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition-all shadow-md w-full sm:w-auto"
             >
               <Trash2 className="w-5 h-5" />
-              Xóa Tất Cả
+              <span className="text-sm sm:text-base">Xóa Tất Cả</span>
             </button>
           </div>
         </div>
@@ -177,68 +185,122 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
             Không có thiết bị nào trong {entityType === "area" ? "khu vực" : "phòng"} này.
           </p>
         ) : (
-          <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-            <table className="w-full divide-y divide-gray-200 table-auto">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
-                    #
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[25%]">
-                    Tên Thiết Bị
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[20%]">
-                    Lô
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
-                    Số Lượng
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[25%]">
-                    Ngày Nhập
-                  </th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
-                    Hành Động
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {facilities.map((item, index) => (
-                  <tr key={item.usingFacilityId} className="hover:bg-gray-50 transition">
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
-                      {index + 1}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden sm:block bg-white shadow-lg rounded-lg overflow-x-auto">
+              <table className="w-full divide-y divide-gray-200 table-auto">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      #
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tên Thiết Bị
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Lô
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Số Lượng
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ngày Nhập
+                    </th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Hành Động
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {facilities.map((item, index) => (
+                    <tr key={item.usingFacilityId} className="hover:bg-gray-50 transition">
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
+                        {index + 1}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {item.facilityTitle || "N/A"}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.batchNumber || "N/A"}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.quantity || 0}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.importDate
+                          ? new Date(item.importDate).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end">
+                        <button
+                          onClick={() => {
+                            setFacilityToDelete(item);
+                            setDeleteModal(true);
+                          }}
+                          className="text-red-600 hover:text-red-800 transition"
+                        >
+                          <X size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="block sm:hidden space-y-4">
+              {facilities.map((item, index) => (
+                <div
+                  key={item.usingFacilityId}
+                  className="border rounded-lg p-4 shadow-sm hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between">
+                      <span className="font-semibold text-sm text-gray-700">
+                        #{index + 1}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Tên Thiết Bị:</span>{" "}
                       {item.facilityTitle || "N/A"}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Lô:</span>{" "}
                       {item.batchNumber || "N/A"}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantity || 0}</td>
-                    <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.importDate ? new Date(item.importDate).toLocaleDateString() : "N/A"}
-                    </td>
-                    <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end">
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Số Lượng:</span>{" "}
+                      {item.quantity || 0}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Ngày Nhập:</span>{" "}
+                      {item.importDate
+                        ? new Date(item.importDate).toLocaleDateString()
+                        : "N/A"}
+                    </p>
+                    <div className="flex justify-center mt-2">
                       <button
                         onClick={() => {
                           setFacilityToDelete(item);
                           setDeleteModal(true);
                         }}
-                        className="text-red-600 hover:text-red-800 transition"
+                        className="bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                       >
-                        <X size={18} />
+                        <X size={18} /> Xóa
                       </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Delete Facility Modal */}
         {deleteModal && facilityToDelete && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md space-y-4">
+            <div className="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-md space-y-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-red-600">Xóa Thiết Bị</h2>
                 <button
@@ -290,10 +352,10 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
           </div>
         )}
 
-        {/* New "Delete All" Confirmation Modal */}
+        {/* Delete All Confirmation Modal */}
         {deleteAllModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md space-y-4">
+            <div className="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-md space-y-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold text-red-600">Xóa Tất Cả Thiết Bị</h2>
                 <button
@@ -328,9 +390,9 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
         {/* Add Facility Modal */}
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-4xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-xl shadow-2xl p-4 sm:p-6 w-11/12 max-w-4xl space-y-4 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-orange-600">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-orange-600">
                   Thêm Thiết Bị Vào {entityType === "area" ? "Khu Vực" : "Phòng"}
                 </h2>
                 <button
@@ -342,7 +404,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                   }}
                   className="text-gray-500 hover:text-gray-700"
                 >
-                  <X size={24} />
+                  <X size={20} />
                 </button>
               </div>
 
@@ -354,7 +416,10 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                   placeholder="Tìm kiếm thiết bị..."
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 pl-10"
                 />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  size={20}
+                />
               </div>
 
               {allFacilitiesLoading ? (
@@ -362,56 +427,112 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                   <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
                 </div>
               ) : allFacilitiesError ? (
-                <p className="text-center text-red-500 bg-red-50 p-4 rounded-lg">{allFacilitiesError}</p>
+                <p className="text-center text-red-500 bg-red-50 p-4 rounded-lg">
+                  {allFacilitiesError}
+                </p>
               ) : filteredFacilities.length === 0 ? (
                 <p className="text-center text-gray-500 bg-gray-50 p-4 rounded-lg">
                   Không tìm thấy thiết bị nào.
                 </p>
               ) : (
-                <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Tên Thiết Bị
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Lô
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Số Lượng Khả Dụng
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Ngày Nhập
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredFacilities.map((faci) => (
-                        <tr
-                          key={faci.facilityId}
-                          onClick={() => setSelectedFacility(faci)}
-                          className={`cursor-pointer hover:bg-orange-50 transition ${
-                            selectedFacility?.facilityId === faci.facilityId ? "bg-orange-100" : ""
-                          }`}
-                        >
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {faci.facilityName}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {faci.batchNumber}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {faci.quantity}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(faci.importDate).toLocaleDateString()}
-                          </td>
+                <>
+                  {/* Desktop Table View in Modal */}
+                  <div className="hidden sm:block bg-white shadow-lg rounded-lg overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Tên Thiết Bị
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Lô
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Số Lượng Khả Dụng
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Ngày Nhập
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Trạng Thái
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {filteredFacilities.map((faci) => (
+                          <tr
+                            key={`${faci.facilityId}-${faci.batchNumber}-${faci.importDate}-${faci.status}`}
+                            onClick={() => setSelectedFacility(faci)}
+                            className={`cursor-pointer hover:bg-orange-50 transition ${
+                              selectedFacility?.facilityId === faci.facilityId &&
+                              selectedFacility?.batchNumber === faci.batchNumber &&
+                              selectedFacility?.importDate === faci.importDate &&
+                              selectedFacility?.status === faci.status
+                                ? "bg-orange-100"
+                                : ""
+                            }`}
+                          >
+                            <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {faci.facilityName}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {faci.batchNumber}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {faci.quantity}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {new Date(faci.importDate).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {faci.status === 0 ? "Chưa sử dụng" : "Đã sử dụng"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Card View in Modal */}
+                  <div className="block sm:hidden space-y-4">
+                    {filteredFacilities.map((faci) => (
+                      <div
+                        key={`${faci.facilityId}-${faci.batchNumber}-${faci.importDate}-${faci.status}`}
+                        onClick={() => setSelectedFacility(faci)}
+                        className={`border rounded-lg p-4 shadow-sm hover:bg-orange-50 transition-colors cursor-pointer ${
+                          selectedFacility?.facilityId === faci.facilityId &&
+                          selectedFacility?.batchNumber === faci.batchNumber &&
+                          selectedFacility?.importDate === faci.importDate &&
+                          selectedFacility?.status === faci.status
+                            ? "bg-orange-100"
+                            : ""
+                        }`}
+                      >
+                        <div className="flex flex-col gap-2">
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Tên Thiết Bị:</span>{" "}
+                            {faci.facilityName}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Lô:</span> {faci.batchNumber}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Số Lượng Khả Dụng:</span>{" "}
+                            {faci.quantity}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Ngày Nhập:</span>{" "}
+                            {new Date(faci.importDate).toLocaleDateString()}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-medium">Trạng Thái:</span>{" "}
+                            {faci.status === 0 ? "Chưa sử dụng" : "Đã sử dụng"}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
 
               {selectedFacility && (
@@ -448,7 +569,9 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                   onClick={handleAddFacility}
                   className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-400 transition"
                 >
-                  {addFacilityLoading ? "Đang thêm..." : `Thêm vào ${entityType === "area" ? "khu vực" : "phòng"}`}
+                  {addFacilityLoading
+                    ? "Đang thêm..."
+                    : `Thêm vào ${entityType === "area" ? "khu vực" : "phòng"}`}
                 </button>
               </div>
             </div>

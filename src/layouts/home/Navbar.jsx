@@ -8,7 +8,6 @@ import { ConnectWallet, useAddress, useContract, useDisconnect, useTokenBalance 
 import { useDispatch, useSelector } from "react-redux";
 import { clearAuthData, fetchRoleByID } from "../../redux/slices/Authentication";
 import { FaUserCircle } from "react-icons/fa";
-import { toast } from "react-toastify";
 import Notification from "../../hooks/use-notification"; // Cập nhật import
 
 const Navbar = () => {
@@ -22,7 +21,7 @@ const Navbar = () => {
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
   const { user } = useSelector((state) => state.auth);
-  const { contract } = useContract("0x1745A6155d7A0eD49f87F6554560a6b19D431706");
+  const { contract } = useContract("0xc597d627a7E28B896d43a4eC50703f35Ba259378");
   const { data: balance } = useTokenBalance(contract, address);
 
   // Fetch roleName based on roleId
@@ -131,7 +130,7 @@ const Navbar = () => {
                       style={{ width: "100%" }}
                     />
                   </div>
-                  <span className="ml-2 mb-4">Số dư: {balance?.displayValue} DXLAB Coin</span>
+                  <span className="ml-2 mb-4">Số dư: {balance?.displayValue} DXL</span>
                   <ul className="space-y-2">
                     {roleName === "Student" && (
                       <li>
@@ -223,7 +222,7 @@ const Navbar = () => {
                   />
                 </div>
                 <div className="mt-3 ml-1">
-                  <span>Số dư: {balance?.displayValue} DXLAB Coin</span>
+                  <span>Số dư: {balance?.displayValue} DXL</span>
                 </div>
               </div>
             ) : (

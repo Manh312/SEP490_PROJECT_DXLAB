@@ -53,10 +53,10 @@ export const fetchFacilitiesList = createAsyncThunk(
 
 export const addFacilityToArea = createAsyncThunk(
   'areas/addFacilityToArea',
-  async ({ id, data }, { rejectWithValue }) => {
+  async ({ id, status, data }, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(
-        `${API_URL}/faci?areaid=${id}&status=0`,
+        `${API_URL}/faci?areaid=${id}&status=${status}`,
         data
       );
       return response.data;

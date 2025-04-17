@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Package, X } from "lucide-react";
 import { addFacility, fetchFacilities } from "../../redux/slices/Facilities";
-import { FaTag, FaCalendarAlt, FaBox, FaDollarSign, FaFileAlt } from "react-icons/fa";
+import { FaTag, FaCalendarAlt, FaBox, FaDollarSign } from "react-icons/fa";
 
 const CreateFacilities = () => {
   const dispatch = useDispatch();
@@ -139,7 +139,7 @@ const CreateFacilities = () => {
                     required
                   />
                   <span className="flex items-center gap-1 text-sm text-gray-500 font-medium whitespace-nowrap">
-                    DXLAB Coin
+                    DXL
                   </span>
                 </div>
               </div>

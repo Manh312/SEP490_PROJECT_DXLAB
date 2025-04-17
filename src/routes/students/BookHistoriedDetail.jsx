@@ -96,7 +96,7 @@ const BookHistoriedDetail = () => {
               <div className="font-medium ">Số tiền</div>
               <div className="font-medium">
                 {(bookingDetail.data.totalPrice || 0).toLocaleString("vi-VN")}{" "}
-                <span className="text-sm">DXLAB Coin</span>
+                <span className="text-sm">DXL</span>
               </div>
               <div className="font-medium ">Ngày đặt</div>
               <div className="font-medium">

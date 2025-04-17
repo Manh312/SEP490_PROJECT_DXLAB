@@ -156,13 +156,13 @@ const CostStatistics = ({ jobs, period, year, month }) => {
         >
           <p className="font-semibold mb-2">{label}</p>
           <p className="text-sm">
-            Ghế: {data.chair.toLocaleString()} DXLAB Coin
+            Ghế: {data.chair.toLocaleString()} DXL
           </p>
           <p className="text-sm">
-            Bàn: {data.table.toLocaleString()} DXLAB Coin
+            Bàn: {data.table.toLocaleString()} DXL
           </p>
           <p className="text-sm font-medium mt-2">
-            Tổng: {data.total.toLocaleString()} DXLAB Coin
+            Tổng: {data.total.toLocaleString()} DXL
           </p>
         </div>
       );
@@ -218,7 +218,7 @@ const CostStatistics = ({ jobs, period, year, month }) => {
                     dataKey="value"
                     labelLine={false}
                     label={({ name, value }) =>
-                      `${name}: ${value.toLocaleString()} DXLAB Coin`
+                      `${name}: ${value.toLocaleString()} DXL`
                     }
                   >
                     {pieData.map((entry, index) => (
@@ -230,7 +230,7 @@ const CostStatistics = ({ jobs, period, year, month }) => {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value) => `${value.toLocaleString()} DXLAB Coin`}
+                    formatter={(value) => `${value.toLocaleString()} DXL`}
                     contentStyle={{
                       backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
                       color: theme === "dark" ? "#ffffff" : "#1f2937",
@@ -266,7 +266,7 @@ const CostStatistics = ({ jobs, period, year, month }) => {
                 <p className="text-sm font-semibold">
                   Tổng chi phí bỏ ra:{" "}
                   <span className="text-base font-bold">
-                    {totalExpenses.toLocaleString()} DXLAB Coin
+                    {totalExpenses.toLocaleString()} DXL
                   </span>
                 </p>
               </div>
@@ -282,7 +282,7 @@ const CostStatistics = ({ jobs, period, year, month }) => {
                 theme === "dark" ? "text-gray-200" : "text-gray-700"
               }`}
             >
-              Biểu đồ thống kê chi phí bỏ ra (theo DXLAB Coin)
+              Biểu đồ thống kê chi phí bỏ ra (theo DXL)
             </h3>
             {areaData.every(item => item.total === 0) ? (
               <p className={`text-center text-gray-500 dark:text-gray-400`}>Không có dữ liệu chi phí</p>
@@ -315,7 +315,7 @@ const CostStatistics = ({ jobs, period, year, month }) => {
                   <YAxis
                     strokeWidth={0}
                     stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                    tickFormatter={(value) => `${value.toLocaleString()} DXLAB Coin`}
+                    tickFormatter={(value) => `${value.toLocaleString()} DXL`}
                     tickMargin={20}
                     domain={[minY, maxY]}
                     ticks={ticks}

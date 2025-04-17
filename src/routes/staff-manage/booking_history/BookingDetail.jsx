@@ -149,7 +149,7 @@ const BookingDetail = () => {
             </div>
             <div>
               <p className="text-sm">Tổng Tiền</p>
-              <p className="text-lg font-medium text-green-500 dark:text-green-400">{booking.totalPrice} DXLAB Coin</p>
+              <p className="text-lg font-medium text-green-500 dark:text-green-400">{booking.totalPrice} DXL</p>
             </div>
           </div>
         </div>

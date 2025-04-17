@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useMemo, useState } from "react";
 import { fetchRooms } from "../../redux/slices/Room";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { PencilLine, Hotel, Filter, Search, Home, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
@@ -238,8 +238,6 @@ const RoomList = () => {
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hình Ảnh</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Phòng</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Khu Vực</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Loại Khu Vực</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Sức Chứa</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Trạng Thái</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành Động</th>
@@ -256,20 +254,6 @@ const RoomList = () => {
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {room.roomName}
-                      </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {room.area_DTO.map((area, idx) => (
-                          <span key={idx} className="block">
-                            {area.areaName}
-                          </span>
-                        ))}
-                      </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {room.area_DTO.map((area, idx) => (
-                          <span key={idx} className="block">
-                            {area.areaTypeName}
-                          </span>
-                        ))}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {room.capacity} người
@@ -334,22 +318,6 @@ const RoomList = () => {
                       {renderImages(room.images, room.roomId)}
                       <p className="text-sm">
                         <span className="font-medium">Tên Phòng:</span> {room.roomName}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Tên Khu Vực:</span>{" "}
-                        {room.area_DTO.map((area, idx) => (
-                          <span key={idx} className="block">
-                            {area.areaName}
-                          </span>
-                        ))}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Loại Khu Vực:</span>{" "}
-                        {room.area_DTO.map((area, idx) => (
-                          <span key={idx} className="block">
-                            {area.areaTypeName}
-                          </span>
-                        ))}
                       </p>
                       <p className="text-sm">
                         <span className="font-medium">Sức Chứa:</span> {room.capacity} người

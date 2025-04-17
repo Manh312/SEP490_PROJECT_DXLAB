@@ -124,7 +124,7 @@ const BookingList = () => {
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {new Intl.DateTimeFormat("vi-VN").format(new Date(booking.bookingCreatedDate))}
                       </td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{booking.totalPrice} DXLAB Coin</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{booking.totalPrice} DXL</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{booking.totalBookingDetail}</td>
                       <td className="px-2 py-3 md:px-4 md:py-4 flex justify-center gap-2">
                         <NavLink
@@ -164,7 +164,7 @@ const BookingList = () => {
                       {new Intl.DateTimeFormat("vi-VN").format(new Date(booking.bookingCreatedDate))}
                     </p>
                     <p className="text-sm">
-                      <span className="font-medium">Tổng Giá:</span> {booking.totalPrice} DXLAB Coin
+                      <span className="font-medium">Tổng Giá:</span> {booking.totalPrice} DXL
                     </p>
                     <p className="text-sm">
                       <span className="font-medium">Tổng Chi Tiết Đơn:</span> {booking.totalBookingDetail}

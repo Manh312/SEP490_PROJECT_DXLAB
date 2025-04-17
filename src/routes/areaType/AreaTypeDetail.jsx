@@ -147,7 +147,7 @@ const AreaTypeDetail = () => {
           {/* Price */}
           <div className="flex items-center gap-2">
             <span className="font-semibold text-gray-700">Giá:</span>
-            <span className="text-gray-800">{price.toLocaleString()} DXLAB Coin</span>
+            <span className="text-gray-800">{price.toLocaleString()} DXL</span>
           </div>
 
           {/* Description */}

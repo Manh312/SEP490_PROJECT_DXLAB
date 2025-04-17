@@ -300,7 +300,7 @@ const AreaTypeList = () => {
                         {`${type.areaCategory === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}`}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {`${type.price} DXLAB Coin`}
+                        {`${type.price} DXL`}
                       </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
@@ -374,7 +374,7 @@ const AreaTypeList = () => {
                       </p>
                       <p className="text-sm">
                         <span className="font-medium">Giá:</span>{" "}
-                        {type.price ? `${type.price} DXLAB Coin` : "N/A"}
+                        {type.price ? `${type.price} DXL` : "N/A"}
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <button

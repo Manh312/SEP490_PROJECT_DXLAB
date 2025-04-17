@@ -351,7 +351,7 @@ const AreaDetail = () => {
             >
               {groupAreas.map((area) => (
                 <option key={area.value[0].areaTypeId} value={area.value[0].areaTypeId}>
-                  {area.value[0].areaTypeName} (Kích thước: {area.value[0].size}, Giá: {area.value[0].price} DXLAB Coin)
+                  {area.value[0].areaTypeName} (Kích thước: {area.value[0].size}, Giá: {area.value[0].price} DXL)
                 </option>
               ))}
             </select>
@@ -422,7 +422,7 @@ const AreaDetail = () => {
         </button>
         <div className="mb-4">
           <p className="text-lg">
-            Tổng chi phí: <span className="text-orange-500">{calculateTotalPrice()} DXLAB Coin</span>
+            Tổng chi phí: <span className="text-orange-500">{calculateTotalPrice()} DXL</span>
           </p>
         </div>
         <div className="flex justify-between">

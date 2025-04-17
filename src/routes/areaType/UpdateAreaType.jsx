@@ -474,7 +474,7 @@ const UpdateAreaType = () => {
                       required
                     />
                     <span className="flex items-center gap-1 text-sm text-gray-500 font-medium whitespace-nowrap">
-                      DXLAB Coin
+                      DXL
                     </span>
                   </div>
                 </div>

@@ -409,7 +409,7 @@ const Page = () => {
                 <p
                   className={`text-2xl font-bold transition-colors ${theme === "dark" ? "text-white" : "text-black"}`}
                 >
-                  {totalRevenue.toLocaleString()} DXLAB Coin
+                  {totalRevenue.toLocaleString()} DXL
                 </p>
                 <span
                   className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
@@ -477,7 +477,7 @@ const Page = () => {
                 <p
                   className={`text-2xl font-bold transition-colors ${theme === "dark" ? "text-white" : "text-black"}`}
                 >
-                  {totalExpenses.toLocaleString()} DXLAB Coin
+                  {totalExpenses.toLocaleString()} DXL
                 </p>
                 <span
                   className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
@@ -511,7 +511,7 @@ const Page = () => {
                 <p
                   className={`text-2xl font-bold transition-colors ${theme === "dark" ? "text-white" : "text-black"}`}
                 >
-                  {calculateTotalDepreciation().toLocaleString()} DXLAB Coin
+                  {calculateTotalDepreciation().toLocaleString()} DXL
                 </p>
                 <span
                   className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${

@@ -124,7 +124,7 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
                   formatter={(value, name) =>
                     name === "studentPercentage"
                       ? `${value}%`
-                      : [`${value.toLocaleString()} DXLAB Coin`, "Doanh thu"]
+                      : [`${value.toLocaleString()} DXL`, "Doanh thu"]
                   }
                   contentStyle={{
                     backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
@@ -149,7 +149,7 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
                   dataKey="studentRevenue"
                   strokeWidth={0}
                   stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                  tickFormatter={(value) => `${value.toLocaleString()} DXLAB Coin`}
+                  tickFormatter={(value) => `${value.toLocaleString()} DXL`}
                   tickMargin={20}
                   domain={[revenueMinY, revenueMaxY]}
                   ticks={revenueYTicks}

@@ -750,7 +750,7 @@ const UpdateRoom = () => {
 
         {/* Modal for Adding Areas */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-0">
+          <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4 sm:p-0">
             <div className="bg-gray-300 rounded-2xl shadow-lg p-6 w-full max-w-md sm:w-full sm:max-w-md h-full sm:h-auto">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg sm:text-xl font-semibold text-gray-800">Thêm Khu Vực Vào Phòng</h3>

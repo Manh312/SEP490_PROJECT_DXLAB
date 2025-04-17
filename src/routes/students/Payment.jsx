@@ -152,7 +152,7 @@ const Payment = () => {
           )}
           <p>
             <strong>Tổng chi phí:</strong>{' '}
-            <span className="text-orange-500">{calculateTotalPrice()} DXLAB Coin</span>
+            <span className="text-orange-500">{calculateTotalPrice()} DXL</span>
           </p>
         </div>
         <div className="flex flex-col gap-4 mt-6">

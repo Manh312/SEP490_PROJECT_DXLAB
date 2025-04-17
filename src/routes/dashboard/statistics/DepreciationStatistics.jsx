@@ -194,13 +194,13 @@ const DepreciationStatistics = ({ depreciations, period, year, month }) => {
         >
           <p className="font-semibold mb-2">{label}</p>
           <p className="text-sm">
-            Ghế: {data["Ghế"].toLocaleString()} DXLAB Coin
+            Ghế: {data["Ghế"].toLocaleString()} DXL
           </p>
           <p className="text-sm">
-            Bàn: {data["Bàn"].toLocaleString()} DXLAB Coin
+            Bàn: {data["Bàn"].toLocaleString()} DXL
           </p>
           <p className="text-sm font-medium mt-2">
-            Tổng: {data.total.toLocaleString()} DXLAB Coin
+            Tổng: {data.total.toLocaleString()} DXL
           </p>
         </div>
       );
@@ -259,7 +259,7 @@ const DepreciationStatistics = ({ depreciations, period, year, month }) => {
                     dataKey="value"
                     labelLine={false}
                     label={({ name, value }) =>
-                      `${name}: ${value.toLocaleString()} DXLAB Coin`
+                      `${name}: ${value.toLocaleString()} DXL`
                     }
                   >
                     {pieData.map((entry, index) => (
@@ -271,7 +271,7 @@ const DepreciationStatistics = ({ depreciations, period, year, month }) => {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value) => `${value.toLocaleString()} DXLAB Coin`}
+                    formatter={(value) => `${value.toLocaleString()} DXL`}
                     contentStyle={{
                       backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
                       color: theme === "dark" ? "#ffffff" : "#1f2937",
@@ -309,7 +309,7 @@ const DepreciationStatistics = ({ depreciations, period, year, month }) => {
                 <p className="text-sm font-semibold">
                   Tổng chi phí khấu hao:{" "}
                   <span className="text-base font-bold">
-                    {totalDepreciation.toLocaleString()} DXLAB Coin
+                    {totalDepreciation.toLocaleString()} DXL
                   </span>
                 </p>
               </div>
@@ -325,7 +325,7 @@ const DepreciationStatistics = ({ depreciations, period, year, month }) => {
                 theme === "dark" ? "text-gray-200" : "text-gray-700"
               }`}
             >
-              Biểu đồ thống kê khấu hao (theo DXLAB Coin)
+              Biểu đồ thống kê khấu hao (theo DXL)
             </h3>
             {areaData.every((item) => item.total === 0) ? (
               <p className={`text-center text-gray-500 dark:text-gray-400`}>
@@ -364,7 +364,7 @@ const DepreciationStatistics = ({ depreciations, period, year, month }) => {
                     strokeWidth={0}
                     stroke={theme === "light" ? "#64748b" : "#94a3b8"}
                     tickFormatter={(value) =>
-                      `${value.toLocaleString()} DXLAB Coin`
+                      `${value.toLocaleString()} DXL`
                     }
                     tickMargin={20}
                     domain={[minY, maxY]}

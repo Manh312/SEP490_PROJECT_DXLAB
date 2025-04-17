@@ -195,7 +195,7 @@ const ViewBookingHistory = () => {
                         })}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {tx.amount.toLocaleString("vi-VN")} DXLAB Coin
+                        {tx.amount.toLocaleString("vi-VN")} DXL
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         <span
@@ -255,7 +255,7 @@ const ViewBookingHistory = () => {
                       })}
                     </p>
                     <p className="text-sm">
-                      <span className="font-medium">Số Tiền:</span> {tx.amount.toLocaleString("vi-VN")} DXLAB Coin
+                      <span className="font-medium">Số Tiền:</span> {tx.amount.toLocaleString("vi-VN")} DXL
                     </p>
                     <div className="flex justify-center mt-2">
                       <Link

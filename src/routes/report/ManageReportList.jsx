@@ -9,7 +9,6 @@ import { FaSpinner } from "react-icons/fa";
 import Pagination from "../../hooks/use-pagination";
 import { startSignalRConnection, stopSignalRConnection } from "../../utils/signalR/connection";
 import {registerSignalREvent, unregisterSignalREvent,} from "../../utils/signalR/event"
-import { toast } from "react-toastify";
 
 // Utility để tránh thông báo trùng lặp
 const notificationTracker = new Set();
@@ -53,9 +52,6 @@ const ManageReportList = () => {
                   timestamp: new Date().toISOString(),
                 })
               );
-              toast.info(`Báo cáo mới: "${report.reportId}" từ nhân viên "${report.staffName}"!`, {
-                position: "top-right",
-              });
               notificationTracker.delete(notificationKey);
             }
             // Cập nhật danh sách báo cáo
