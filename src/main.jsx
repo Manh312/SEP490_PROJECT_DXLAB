@@ -178,7 +178,7 @@ const RootApp = () => {
             },
           }),
         ]}
-        autoConnect={true}
+        // autoConnect={true}
       >
         <PersistGate loading={null} persistor={persistor}>
           <AppWithWallet />

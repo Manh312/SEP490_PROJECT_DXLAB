@@ -3,8 +3,8 @@ import { useEffect, useState, useMemo } from "react";
 import { fetchFacilities, addFacilityFromExcel, moveToStorage } from "../../redux/slices/Facilities";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { FaPlus, FaFileExcel, FaFilter, FaSpinner } from "react-icons/fa";
-import { Edit, Search, Trash2 } from "lucide-react";
+import { FaFileExcel, FaFilter, FaSpinner } from "react-icons/fa";
+import { PlusCircle, Search, Trash2 } from "lucide-react";
 import { MdChair } from "react-icons/md";
 import { format } from "date-fns";
 import debounce from "lodash/debounce";
@@ -23,6 +23,7 @@ const FacilitiesList = () => {
     expiredDateEnd: "",
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [fileInputKey, setFileInputKey] = useState(Date.now()); // Add state for file input key
   const postsPerPage = 6;
 
   const debouncedSearch = debounce((value) => {
@@ -88,9 +89,10 @@ const FacilitiesList = () => {
       const res = await dispatch(addFacilityFromExcel(formData)).unwrap();
       toast.success(res.message || "Nhập file Excel thành công!");
       dispatch(fetchFacilities());
-      event.target.value = null;
+      setFileInputKey(Date.now()); // Update the key to remount the input
     } catch (err) {
       toast.error(err?.message);
+      setFileInputKey(Date.now()); // Update the key even on error to allow retry
     }
   };
 
@@ -148,6 +150,7 @@ const FacilitiesList = () => {
               <FaFileExcel className="h-5 w-5" />
               <span className="hidden sm:inline">Thêm từ Excel</span>
               <input
+                key={fileInputKey} // Add key to remount the input
                 type="file"
                 accept=".xlsx, .xls"
                 onChange={handleImportExcel}
@@ -156,9 +159,9 @@ const FacilitiesList = () => {
             </label>
             <button
               onClick={() => navigate("/dashboard/facilities/create")}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
             >
-              <FaPlus className="h-5 w-5" />
+              <PlusCircle className="h-5 w-5" />
               <span className="hidden sm:inline">Thêm mới</span>
             </button>
           </div>
@@ -270,7 +273,6 @@ const FacilitiesList = () => {
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ngày hết hạn</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Giá trị còn lại</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Chất lượng</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -301,20 +303,6 @@ const FacilitiesList = () => {
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.remainingValue || 0}</td>
                         <td className={`px-2 py-3 md:px-3 md:py-4 text-center ${color}`}>
                           {status}
-                        </td>
-                        <td className="px-2 py-3 md:px-3 md:py-4 flex justify-center gap-2">
-                          <button
-                            onClick={() => handleSoftDelete(facility.id)}
-                            className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                          {/* <Link
-                            to={`/dashboard/facilities/update/${facility.id}`}
-                            className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Link> */}
                         </td>
                       </tr>
                     );

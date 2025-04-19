@@ -14,6 +14,7 @@ export const listSlots = createAsyncThunk(
   }
 );
 
+// Tạo slot mới
 export const createSlot = createAsyncThunk(
   "slots/createSlot",
   async (slot, { rejectWithValue }) => {
@@ -21,8 +22,20 @@ export const createSlot = createAsyncThunk(
       const response = await axios.post('/slot/create', slot);
       return response.data;
     } catch (error) {
-      // console.log(error.response.data);
       return rejectWithValue(error);
+    }
+  }
+);
+
+// Cập nhật slot
+export const updateSlot = createAsyncThunk(
+  "slots/updateSlot",
+  async ({ id, slotData }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`/slot/${id}`, slotData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Không thể cập nhật slot");
     }
   }
 );
@@ -65,6 +78,24 @@ const slotSlice = createSlice({
         state.loading = false;
       })
       .addCase(createSlot.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Xử lý cập nhật slot
+      .addCase(updateSlot.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateSlot.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedSlot = action.payload;
+        const index = state.slots.findIndex(slot => slot.id === updatedSlot.id);
+        if (index !== -1) {
+          state.slots[index] = updatedSlot;
+        }
+      })
+      .addCase(updateSlot.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

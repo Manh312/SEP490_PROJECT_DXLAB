@@ -6,8 +6,10 @@ import {
   fetchStudentGroupStats,
   fetchJobsByYearAndMonth,
   fetchJobsByYear,
-  fetchDepreciationsByYearAndMonth, // Thêm import
-  fetchDepreciationsByYear, // Thêm import
+  fetchDepreciationsByYearAndMonth,
+  fetchDepreciationsByYear,
+  fetchUtilizationRateByYearAndMonth,
+  fetchUtilizationRateByYear,
   resetStats,
 } from "../../redux/slices/Statistics";
 import { FaSpinner } from "react-icons/fa";
@@ -23,9 +25,9 @@ import { toast } from "react-toastify";
 const Page = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
-  const { jobs, jobsByYear, depreciations, depreciationsByYear, loading, error } = useSelector(
+  const { jobs, jobsByYear, depreciations, depreciationsByYear, utilizationRates, utilizationRatesByYear, loading, error } = useSelector(
     (state) => state.statistics
-  ); // Thêm depreciations và depreciationsByYear vào useSelector
+  );
 
   const [period, setPeriod] = useState("năm");
   const [year, setYear] = useState("2025");
@@ -36,9 +38,29 @@ const Page = () => {
   const [yearlyStats, setYearlyStats] = useState(null);
   const [detailedStats, setDetailedStats] = useState([]);
   const [yearlyData, setYearlyData] = useState([]);
+  const [performanceData, setPerformanceData] = useState([]);
+  const [performanceMinY, setPerformanceMinY] = useState(0);
+  const [performanceMaxY, setPerformanceMaxY] = useState(100);
+  const [performanceYTicks, setPerformanceYTicks] = useState([0, 20, 40, 60, 80, 100]);
 
   const years = Array.from({ length: 10 }, (_, i) => (2025 - i).toString());
   const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
+
+  // Vietnamese month names
+  const vietnameseMonths = [
+    "Tháng 1",
+    "Tháng 2",
+    "Tháng 3",
+    "Tháng 4",
+    "Tháng 5",
+    "Tháng 6",
+    "Tháng 7",
+    "Tháng 8",
+    "Tháng 9",
+    "Tháng 10",
+    "Tháng 11",
+    "Tháng 12",
+  ];
 
   const getDaysInMonth = (month, year) => {
     return new Date(year, month, 0).getDate();
@@ -61,10 +83,19 @@ const Page = () => {
     });
   }, [dispatch, year]);
 
+  const generateYTicks = (maxValue, minValue = 0) => {
+    if (maxValue === 0) return [0, 20, 40, 60, 80, 100];
+    const roundedMax = Math.ceil(maxValue / 20) * 20;
+    const roundedMin = Math.floor(minValue / 20) * 20;
+    const step = (roundedMax - roundedMin) / 5;
+    return Array.from({ length: 6 }, (_, i) => Math.round(roundedMin + i * step));
+  };
+
   const handleSearch = () => {
     dispatch(resetStats());
     setYearlyStats(null);
     setDetailedStats([]);
+    setPerformanceData([]);
     setShowCharts(false);
 
     if (period === "năm") {
@@ -88,7 +119,7 @@ const Page = () => {
                 revenue: { totalRevenue: 0, studentRevenue: 0, studentPercentage: 0 },
               };
             return {
-              name: `Tháng ${month}`,
+              name: vietnameseMonths[i], // Use Vietnamese month name
               totalRevenue: item.revenue.totalRevenue || 0,
               studentRevenue: item.revenue.studentRevenue || 0,
               studentPercentage: item.revenue.studentPercentage || 0,
@@ -106,7 +137,7 @@ const Page = () => {
           setDetailedStats(monthlyData);
         } else {
           const monthlyData = Array.from({ length: 12 }, (_, i) => ({
-            name: `Tháng ${i + 1}`,
+            name: vietnameseMonths[i], // Use Vietnamese month name
             totalRevenue: 0,
             studentRevenue: 0,
             studentPercentage: 0,
@@ -114,12 +145,51 @@ const Page = () => {
           setYearlyStats({ totalRevenue: 0, studentPercentage: 0 });
           setDetailedStats(monthlyData);
         }
+
+        // Process utilizationRatesByYear for monthly performance data
+        const monthlyPerformanceData = Array.from({ length: 12 }, (_, i) => ({
+          name: vietnameseMonths[i], // Use Vietnamese month name
+        })).map((monthEntry, i) => {
+          const entries = utilizationRatesByYear.filter((entry) => {
+            const date = new Date(entry.theDate);
+            return date.getMonth() === i; // Match month index
+          });
+          const areaTotals = entries.reduce((acc, entry) => {
+            const areaName = entry.areaName || "Unknown Area";
+            const areaKey = areaName.replace(/\s+/g, "");
+            const rate = entry.rate || 0;
+            if (!acc[areaKey]) {
+              acc[areaKey] = { totalRate: 0, count: 0 };
+            }
+            acc[areaKey].totalRate += rate * 100; // Convert to percentage
+            acc[areaKey].count += 1;
+            return acc;
+          }, {});
+          const entry = { name: monthEntry.name };
+          Object.keys(areaTotals).forEach((key) => {
+            if (areaTotals[key].count > 0) {
+              entry[key] = Math.round((areaTotals[key].totalRate / areaTotals[key].count) * 100) / 100;
+            } else {
+              entry[key] = 0;
+            }
+          });
+          return entry;
+        });
+
+        setPerformanceData(monthlyPerformanceData);
+        const rates = monthlyPerformanceData.flatMap((d) => Object.values(d).filter((v) => typeof v === "number"));
+        const minRate = rates.length > 0 ? Math.min(...rates) : 0;
+        const maxRate = rates.length > 0 ? Math.max(...rates) : 100;
+        setPerformanceMinY(Math.floor(minRate / 20) * 20);
+        setPerformanceMaxY(Math.ceil(maxRate / 20) * 20);
+        setPerformanceYTicks(generateYTicks(maxRate, minRate));
+
         setShowCharts(true);
       });
 
-      // Gọi API để lấy jobs và depreciations cho cả năm
       dispatch(fetchJobsByYear({ year }));
-      dispatch(fetchDepreciationsByYear({ year })); // Thêm gọi API khấu hao theo năm
+      dispatch(fetchDepreciationsByYear({ year }));
+      dispatch(fetchUtilizationRateByYear({ year }));
     } else if (period === "tháng") {
       if (!month || !year) {
         toast.error("Vui lòng chọn tháng và năm!");
@@ -172,18 +242,57 @@ const Page = () => {
           setYearlyStats({ totalRevenue: 0, studentPercentage: monthStudentPercentage });
           setDetailedStats(dailyData);
         }
+
+        // Process utilizationRates for daily performance data
+        const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
+        const dailyPerformance = Array.from({ length: daysInMonth }, (_, i) => ({
+          name: (i + 1).toString().padStart(2, "0"),
+        })).map((dayEntry) => {
+          const entries = utilizationRates.filter((entry) => {
+            const date = new Date(entry.theDate);
+            return date.getDate().toString().padStart(2, "0") === dayEntry.name;
+          });
+          const areaTotals = entries.reduce((acc, entry) => {
+            const areaName = entry.areaName || "Unknown Area";
+            const areaKey = areaName.replace(/\s+/g, "");
+            const rate = entry.rate || 0;
+            if (!acc[areaKey]) {
+              acc[areaKey] = { totalRate: 0, count: 0 };
+            }
+            acc[areaKey].totalRate += rate * 100; // Convert to percentage
+            acc[areaKey].count += 1;
+            return acc;
+          }, {});
+          const entry = { name: dayEntry.name };
+          Object.keys(areaTotals).forEach((key) => {
+            if (areaTotals[key].count > 0) {
+              entry[key] = Math.round((areaTotals[key].totalRate / areaTotals[key].count) * 100) / 100;
+            } else {
+              entry[key] = 0;
+            }
+          });
+          return entry;
+        });
+
+        setPerformanceData(dailyPerformance);
+        const rates = dailyPerformance.flatMap((d) => Object.values(d).filter((v) => typeof v === "number"));
+        const minRate = rates.length > 0 ? Math.min(...rates) : 0;
+        const maxRate = rates.length > 0 ? Math.max(...rates) : 100;
+        setPerformanceMinY(Math.floor(minRate / 20) * 20);
+        setPerformanceMaxY(Math.ceil(maxRate / 20) * 20);
+        setPerformanceYTicks(generateYTicks(maxRate, minRate));
+
         setShowCharts(true);
       });
 
-      // Gọi API để lấy jobs và depreciations cho tháng được chọn
       dispatch(fetchJobsByYearAndMonth({ year, month }));
-      dispatch(fetchDepreciationsByYearAndMonth({ year, month })); // Thêm gọi API khấu hao theo tháng
+      dispatch(fetchDepreciationsByYearAndMonth({ year, month }));
+      dispatch(fetchUtilizationRateByYearAndMonth({ year, month }));
     }
   };
 
   const totalRevenue = yearlyStats ? yearlyStats.totalRevenue || 0 : 0;
   const avgStudentPercentage = yearlyStats ? yearlyStats.studentPercentage || 0 : 0;
-
 
   const calculateTotalDepreciation = () => {
     const dataSource = period === "năm" ? depreciationsByYear : depreciations;
@@ -210,9 +319,7 @@ const Page = () => {
     }, 0);
   };
 
-  // Calculate expense distribution (same logic as in CostStatistics)
   const expenseData = () => {
-    // Sử dụng jobsByYear khi period là "năm", jobs khi period là "tháng"
     const dataSource = period === "năm" ? jobsByYear : jobs;
 
     if (!dataSource || dataSource.length === 0) {
@@ -225,7 +332,7 @@ const Page = () => {
     const categoryTotals = dataSource.reduce(
       (acc, job) => {
         const category = job.faciCategory === 1 ? "table" : "chair";
-        acc[category] += job.amount || 0; // Sửa "amout" thành "amount"
+        acc[category] += job.amount || 0;
         return acc;
       },
       { table: 0, chair: 0 }
@@ -240,7 +347,6 @@ const Page = () => {
   const expenses = expenseData();
   const totalExpenses = expenses.reduce((sum, item) => sum + item.value, 0);
 
-  // Data for the participation pie chart
   const participationPieData = [
     { name: "Sinh viên tham gia", value: avgStudentPercentage },
     { name: "Không tham gia", value: 100 - avgStudentPercentage },
@@ -255,7 +361,7 @@ const Page = () => {
             studentPercentage: stat.studentPercentage || 0,
           }))
         : Array.from({ length: 12 }, (_, i) => ({
-            name: `Tháng ${i + 1}`,
+            name: vietnameseMonths[i], // Use Vietnamese month name
             studentRevenue: 0,
             studentPercentage: 0,
           }));
@@ -278,21 +384,6 @@ const Page = () => {
     return [];
   };
 
-  // Hàm tính toán yTicks động dựa trên maxValue
-  const generateYTicks = (maxValue) => {
-    if (maxValue === 0) return [0, 200, 400, 600, 800, 1000];
-
-    const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
-    const roundedMax = Math.ceil(maxValue / magnitude) * magnitude;
-    const step = roundedMax / 4;
-    const ticks = [];
-    for (let i = 0; i <= 4; i++) {
-      ticks.push(Math.round(i * step));
-    }
-    return ticks;
-  };
-
-  // Tính maxY và yTicks cho biểu đồ doanh thu
   const revenueAreaData = areaData();
   const maxRevenue = Math.max(...revenueAreaData.map((d) => d.studentRevenue), 1000);
   const revenueYTicks = generateYTicks(maxRevenue);
@@ -372,21 +463,10 @@ const Page = () => {
         </div>
       )}
 
-      {/* Error State */}
-      {!loading && error && (
-        <div className="flex items-center justify-center py-6 mr-5">
-          <p
-            className={`text-lg font-medium ${theme === "dark" ? "text-red-400" : "text-red-600"}`}
-          >
-            Lỗi: {error}
-          </p>
-        </div>
-      )}
-
       {/* Show Charts if Search is Performed */}
       {!loading && !error && showCharts && (
         <div className="mr-5">
-          {/* Overview Section (Above Tabs) */}
+          {/* Overview Section */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-6">
             <div
               className={`card ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} transition-colors`}
@@ -585,7 +665,7 @@ const Page = () => {
 
             {activeTab === "cost" && (
               <CostStatistics
-                jobs={period === "năm" ? jobsByYear : jobs} // Truyền jobsByYear khi period là "năm", jobs khi period là "tháng"
+                jobs={period === "năm" ? jobsByYear : jobs}
                 period={period}
                 year={year}
                 month={month}
@@ -594,14 +674,26 @@ const Page = () => {
 
             {activeTab === "depreciation" && (
               <DepreciationStatistics
-                depreciations={period === "năm" ? depreciationsByYear : depreciations} // Truyền dữ liệu khấu hao
+                depreciations={period === "năm" ? depreciationsByYear : depreciations}
                 period={period}
                 year={year}
                 month={month}
               />
             )}
 
-            {activeTab === "performance" && <PerformanceStatistics />}
+            {activeTab === "performance" && (
+              <PerformanceStatistics
+                period={period}
+                year={year}
+                month={month}
+                utilizationRates={utilizationRates}
+                utilizationRatesByYear={utilizationRatesByYear}
+                performanceData={performanceData}
+                performanceMinY={performanceMinY}
+                performanceMaxY={performanceMaxY}
+                performanceYTicks={performanceYTicks}
+              />
+            )}
           </div>
         </div>
       )}

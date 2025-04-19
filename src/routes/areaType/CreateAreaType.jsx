@@ -16,7 +16,7 @@ const CreateAreaType = () => {
     areaDescription: "",
     size: "",
     price: "",
-    isDeleted: false,
+    status: 1,
     images: [],
   });
 
@@ -81,7 +81,7 @@ const CreateAreaType = () => {
     e.preventDefault();
 
     if (!areaTypeData.areaTypeName.trim()) {
-      toast.error("Tên loại khu vực là bắt buộc!");
+      toast.error("Tên dịch vụ là bắt buộc!");
       return;
     }
     if (!areaTypeData.areaDescription.trim()) {
@@ -107,17 +107,17 @@ const CreateAreaType = () => {
       AreaDescription: areaTypeData.areaDescription,
       Size: areaTypeData.size,
       Price: areaTypeData.price,
-      IsDeleted: areaTypeData.isDeleted,
+      Status: areaTypeData.status,
     };
 
     const files = areaTypeData.images;
 
     try {
       await dispatch(createAreaType({ newAreaType, files })).unwrap();
-      toast.success("Tạo loại khu vực thành công!");
+      toast.success("Tạo dịch vụ thành công!");
       navigate("/dashboard/areaType");
     } catch (error) {
-      toast.error(error.message || "Lỗi khi tạo loại khu vực!");
+      toast.error(error.message || "Lỗi khi tạo dịch vụ!");
     }
   };
 
@@ -212,7 +212,7 @@ const CreateAreaType = () => {
               <div className="flex flex-col">
                 <label className="block text-sm font-medium mb-1">
                   <span className="flex items-center">
-                    <Map className="mr-2 text-orange-500" /> Danh Mục Loại Khu Vực
+                    <Map className="mr-2 text-orange-500" /> Dịch vụ
                   </span>
                 </label>
                 <select

@@ -134,7 +134,7 @@ const CreateRoom = () => {
       toast.success("Tạo phòng thành công!");
       navigate("/dashboard/room", { state: { successMessage: res.message } });
     } catch (error) {
-      toast.error(error.message || "Lỗi khi tạo phòng!");
+      toast.error(error.message);
     }
   };
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Package, X } from "lucide-react";
+import { Package } from "lucide-react";
 import { addFacility, fetchFacilities } from "../../redux/slices/Facilities";
 import { FaTag, FaCalendarAlt, FaBox, FaDollarSign } from "react-icons/fa";
 

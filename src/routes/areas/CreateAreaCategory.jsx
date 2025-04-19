@@ -68,7 +68,7 @@ const CreateAreaCategory = () => {
     const trimmedDescription = formData.categoryDescription.trim();
 
     if (!trimmedTitle) {
-      toast.error("Tên loại khu vực là bắt buộc!");
+      toast.error("Tên dịch vụ là bắt buộc!");
       return;
     }
     if (!trimmedDescription) {
@@ -98,7 +98,7 @@ const CreateAreaCategory = () => {
       toast.success("Tạo khu vực thành công!");
       navigate("/dashboard/area");
     } catch (err) {
-      toast.error(err.message || "Lỗi khi tạo loại khu vực");
+      toast.error(err.message || "Lỗi khi tạo dịch vụ");
       console.error("Failed to create area type category:", err);
     }
   };
@@ -110,7 +110,7 @@ const CreateAreaCategory = () => {
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
-              Thêm Loại Khu Vực Mới
+              Thêm dịch vụ Mới
             </h2>
           </div>
         </div>
@@ -120,7 +120,7 @@ const CreateAreaCategory = () => {
           {/* Title */}
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-              Tên Loại Khu Vực
+              Tên dịch vụ
             </label>
             <input
               type="text"
@@ -129,7 +129,7 @@ const CreateAreaCategory = () => {
               value={formData.title}
               onChange={handleInputChange}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-              placeholder="Nhập tên loại khu vực"
+              placeholder="Nhập tên dịch vụ"
               required
             />
           </div>
@@ -145,7 +145,7 @@ const CreateAreaCategory = () => {
               value={formData.categoryDescription}
               onChange={handleInputChange}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm"
-              placeholder="Nhập mô tả loại khu vực"
+              placeholder="Nhập mô tả dịch vụ"
               rows="4"
               required
             />
@@ -205,7 +205,7 @@ const CreateAreaCategory = () => {
               className={`bg-orange-500 hover:bg-orange-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-all ${loading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
             >
-              {loading ? "Đang tạo..." : "Tạo Loại Khu Vực"}
+              {loading ? "Đang tạo..." : "Tạo dịch vụ"}
             </button>
           </div>
         </form>

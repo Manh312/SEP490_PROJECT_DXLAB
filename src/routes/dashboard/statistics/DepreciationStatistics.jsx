@@ -29,29 +29,6 @@ const DepreciationStatistics = ({ depreciations, period, year, month }) => {
     1: "Bàn",
   };
 
-  // Tính tổng khấu hao cho note
-  const calculateTotalDepreciation = () => {
-    if (!depreciations || depreciations.length === 0) return 0;
-
-    return depreciations.reduce((total, item) => {
-      if (!item || !item.sumDate || item.depreciationAmount === undefined) return total;
-
-      const date = new Date(item.sumDate);
-      if (isNaN(date.getTime())) return total;
-
-      const itemYear = date.getFullYear();
-      const itemMonth = date.getMonth();
-
-      if (itemYear !== parseInt(year)) return total;
-
-      if (period === "tháng" && month) {
-        const selectedMonth = parseInt(month) - 1;
-        if (itemMonth !== selectedMonth) return total;
-      }
-
-      return total + (item.depreciationAmount || 0);
-    }, 0);
-  };
 
   // Tính toán dữ liệu cho Pie Chart
   const calculatePieData = () => {
@@ -210,7 +187,6 @@ const DepreciationStatistics = ({ depreciations, period, year, month }) => {
 
   const pieData = calculatePieData();
   const areaData = processAreaData();
-  const totalDepreciation = calculateTotalDepreciation();
   const { minY, maxY, ticks } = calculateYAxisProps(areaData);
 
   return (
@@ -298,21 +274,6 @@ const DepreciationStatistics = ({ depreciations, period, year, month }) => {
                   />
                 </PieChart>
               </ResponsiveContainer>
-              {/* Enhanced Total Depreciation Note */}
-              <div
-                className={`w-full mt-4 p-3 rounded-lg border ${
-                  theme === "dark"
-                    ? "bg-gray-800 border-gray-700 text-gray-200"
-                    : "bg-gray-100 border-gray-200 text-gray-800"
-                }`}
-              >
-                <p className="text-sm font-semibold">
-                  Tổng chi phí khấu hao:{" "}
-                  <span className="text-base font-bold">
-                    {totalDepreciation.toLocaleString()} DXL
-                  </span>
-                </p>
-              </div>
             </>
           )}
         </div>

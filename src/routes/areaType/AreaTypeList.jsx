@@ -81,13 +81,13 @@ const AreaTypeList = () => {
       toast.error("Không thể xóa: ID không hợp lệ!");
       return;
     }
-    if (window.confirm("Bạn có chắc chắn muốn xóa loại khu vực này?")) {
+    if (window.confirm("Bạn có chắc chắn muốn xóa dịch vụ này?")) {
       try {
         const res = await dispatch(deleteAreaType(areaTypeId)).unwrap();
-        toast.success(res.message || "Xóa loại khu vực thành công");
+        toast.success(res.message || "Xóa dịch vụ thành công");
         dispatch(fetchAreaTypes());
       } catch (err) {
-        toast.error(err?.message || "Lỗi khi xóa loại khu vực");
+        toast.error(err?.message || "Lỗi khi xóa dịch vụ");
       }
     }
   };
@@ -104,12 +104,12 @@ const AreaTypeList = () => {
   const getEmptyStateMessage = () => {
     if (statusFilter === "All") {
       return searchTerm
-        ? "Không tìm thấy loại khu vực nào khớp với tìm kiếm"
-        : "Hiện tại không có loại khu vực nào";
+        ? "Không tìm thấy dịch vụ nào khớp với tìm kiếm"
+        : "Hiện tại không có dịch vụ nào";
     }
     return searchTerm
-      ? `Không tìm thấy loại khu vực nào thuộc trạng thái "${statusFilter}" khớp với tìm kiếm`
-      : `Không có loại khu vực nào thuộc trạng thái "${statusFilter}"`;
+      ? `Không tìm thấy dịch vụ nào thuộc trạng thái "${statusFilter}" khớp với tìm kiếm`
+      : `Không có dịch vụ nào thuộc trạng thái "${statusFilter}"`;
   };
 
   const getFilterBgClass = () => {
@@ -213,7 +213,7 @@ const AreaTypeList = () => {
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => navigate("/dashboard/areaType/create")}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
             >
               <PlusCircle className="h-5 w-5" />
               <span className="hidden sm:inline">Thêm Kiểu Khu Vực</span>

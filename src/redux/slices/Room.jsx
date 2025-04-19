@@ -58,8 +58,7 @@ export const createRoom = createAsyncThunk(
 
       return response.data; // Chỉ lấy data
     } catch (error) {
-      console.error("Error creating room:", error.response?.data || error.message);
-      return rejectWithValue(error.response?.data || "Không thể tạo phòng");
+      return rejectWithValue(error);
     }
   }
 );
@@ -74,8 +73,8 @@ export const updateRoom = createAsyncThunk(
       });
       return response.data; // Trả về dữ liệu phòng đã cập nhật
     } catch (error) {
-      console.error("Error updating room:", error.response?.data || error.message);
-      return rejectWithValue(error.response?.data || "Cập nhật phòng thất bại");
+      console.error(error);
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -134,10 +133,10 @@ export const deleteRoom = createAsyncThunk(
   "room/delete",
   async (roomId, { rejectWithValue }) => {
     try {
-      await axiosInstance.delete(`${API_URL}/${roomId}`);
+      await axiosInstance.put(`${API_URL}/room?roomId=${roomId}`);
       return roomId;
     } catch (error) {
-      return rejectWithValue(error.message || "Xóa phòng thất bại");
+      return rejectWithValue(error);
     }
   }
 );

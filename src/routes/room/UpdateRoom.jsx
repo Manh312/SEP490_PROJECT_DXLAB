@@ -13,7 +13,7 @@ import {
   clearAreaSelections,
 } from "../../redux/slices/AreaType";
 import { toast } from "react-toastify";
-import { Building, Image, FileText, Check, X, ArrowLeft, Plus, Trash } from "lucide-react";
+import { Building, Image, FileText, Check, X, ArrowLeft, Plus, Trash, PlusCircle } from "lucide-react";
 
 const BACKEND_URL = "https://localhost:9999";
 
@@ -23,7 +23,7 @@ const UpdateRoom = () => {
   const { id } = useParams();
   const fileInputRef = useRef(null);
 
-  const { selectedRoom, loading, error } = useSelector((state) => state.rooms);
+  const { selectedRoom, loading } = useSelector((state) => state.rooms);
   const { areaInRoom, areaInRoomLoading, areaInRoomError, deleteAreaLoading } = useSelector(
     (state) => state.areas || {}
   );
@@ -32,7 +32,6 @@ const UpdateRoom = () => {
   const [formData, setFormData] = useState({
     roomName: "",
     roomDescription: "",
-    isDeleted: false,
     images: [],
   });
 
@@ -46,6 +45,10 @@ const UpdateRoom = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAreaTypeId, setSelectedAreaTypeId] = useState("");
   const [customAreaName, setCustomAreaName] = useState("");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State for delete modal
+  const [areaIdToDelete, setAreaIdToDelete] = useState(null); // Store areaId to delete
+  const [areaName, setAreaName] = useState(""); // Store area name for modal
+  const [loadingId, setLoadingId] = useState(null); // Track loading state for delete
 
   useEffect(() => {
     const roomId = parseInt(id);
@@ -64,7 +67,6 @@ const UpdateRoom = () => {
       setFormData({
         roomName: selectedRoom.roomName || "",
         roomDescription: selectedRoom.roomDescription || "",
-        isDeleted: selectedRoom.isDeleted !== undefined ? selectedRoom.isDeleted : false,
         images: [],
       });
 
@@ -98,7 +100,7 @@ const UpdateRoom = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "isDeleted" ? (value === "true" ? true : false) : value,
+      [name]: name === "status" ? (value === "true" ? true : false) : value,
     }));
     setHasDetailsChange(true);
   };
@@ -201,9 +203,6 @@ const UpdateRoom = () => {
             value: trimmedDescription,
           });
         }
-        if (selectedRoom.isDeleted !== formData.isDeleted) {
-          patchDoc.push({ op: "replace", path: "isDeleted сведения", value: formData.isDeleted });
-        }
 
         if (patchDoc.length > 0) {
           await dispatch(
@@ -234,9 +233,7 @@ const UpdateRoom = () => {
       await dispatch(getRoomById(parseInt(id))).unwrap();
       navigate("/dashboard/room", { state: { successMessage: "Cập nhật phòng thành công!" } });
     } catch (err) {
-      const errorMessage = err.message || "Lỗi khi cập nhật phòng";
-      toast.error(errorMessage);
-      console.error("Update error:", err);
+      toast.error(err);
     }
   };
 
@@ -281,17 +278,36 @@ const UpdateRoom = () => {
     navigate(`/dashboard/room/update/${id}/addFacilities/${areaId}`);
   };
 
-  const handleDeleteArea = async (areaId) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa khu vực này không?")) {
-      try {
-        console.log("Deleting area with ID:", areaId);
-        const res = await dispatch(deleteArea(areaId)).unwrap();
-        toast.success(res.data.message || "Xóa khu vực thành công!");
-        dispatch(fetchAreaInRoomForManagement(parseInt(id)));
-      } catch (err) {
-        const errorMessage = err?.message;
-        toast.error(errorMessage);
-      }
+  const handleOpenDeleteModal = (areaId, areaName) => {
+    setAreaIdToDelete(areaId);
+    setAreaName(areaName || "N/A");
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setAreaIdToDelete(null);
+    setAreaName("");
+  };
+
+  const handleDeleteArea = async () => {
+    if (!areaIdToDelete) {
+      toast.error("Không tìm thấy ID khu vực để xóa!");
+      return;
+    }
+    setLoadingId(areaIdToDelete);
+    try {
+      await dispatch(deleteArea(areaIdToDelete)).unwrap();
+      toast.success("Xóa khu vực thành công!");
+      dispatch(fetchAreaInRoomForManagement(parseInt(id)));
+    } catch (err) {
+      const errorMessage = err?.message || "Lỗi khi xóa khu vực";
+      toast.error(errorMessage);
+    } finally {
+      setLoadingId(null);
+      setIsDeleteModalOpen(false);
+      setAreaIdToDelete(null);
+      setAreaName("");
     }
   };
 
@@ -299,14 +315,6 @@ const UpdateRoom = () => {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
         <p className="text-gray-600 text-lg animate-pulse">Đang tải dữ liệu...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <p className="text-red-500 text-lg">{error}</p>
       </div>
     );
   }
@@ -342,11 +350,10 @@ const UpdateRoom = () => {
           <nav className="flex flex-col sm:flex-row sm:space-x-4 border-b-2 border-gray-200">
             <button
               onClick={() => setActiveTab("update")}
-              className={`relative py-3 px-4 sm:py-4 sm:px-6 text-sm font-medium transition-all duration-300 ${
-                activeTab === "update"
+              className={`relative py-3 px-4 sm:py-4 sm:px-6 text-sm font-medium transition-all duration-300 ${activeTab === "update"
                   ? "text-orange-500 border-b-2 border-orange-500"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               Cập Nhật Phòng
               {activeTab === "update" && (
@@ -355,11 +362,10 @@ const UpdateRoom = () => {
             </button>
             <button
               onClick={() => setActiveTab("manage-areas")}
-              className={`relative py-3 px-4 sm:py-4 sm:px-6 text-sm font-medium transition-all duration-300 ${
-                activeTab === "manage-areas"
+              className={`relative py-3 px-4 sm:py-4 sm:px-6 text-sm font-medium transition-all duration-300 ${activeTab === "manage-areas"
                   ? "text-orange-500 border-b-2 border-orange-500"
                   : "text-gray-500 hover:text-gray-700"
-              }`}
+                }`}
             >
               Quản Lý Khu Vực Trong Phòng
               {activeTab === "manage-areas" && (
@@ -392,24 +398,6 @@ const UpdateRoom = () => {
                     required
                   />
                 </div>
-
-                {/* Status */}
-                <div className="flex flex-col">
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    <span className="flex items-center">
-                      <Check className="mr-2 h-5 w-5 text-orange-500" /> Trạng Thái
-                    </span>
-                  </label>
-                  <select
-                    name="isDeleted"
-                    value={formData.isDeleted}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800"
-                  >
-                    <option value={false}>Hoạt động</option>
-                    <option value={true}>Đã xóa</option>
-                  </select>
-                </div>
               </div>
 
               <div className="space-y-6">
@@ -425,7 +413,7 @@ const UpdateRoom = () => {
                     name="roomDescription"
                     value={formData.roomDescription}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800 placeholder-gray-400 min-h-[100px] sm:min-h-[120px]"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800 placeholder-gray-400 min-h-[100px] sm:min-h-[50px]"
                     placeholder="Nhập mô tả phòng"
                     required
                   />
@@ -534,7 +522,7 @@ const UpdateRoom = () => {
                 onClick={() => setIsModalOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
               >
-                <Plus size={20} />
+                <PlusCircle className="h-5 w-5" />
                 <span className="text-sm sm:text-base font-medium">Thêm Khu Vực</span>
               </button>
             </div>
@@ -560,13 +548,16 @@ const UpdateRoom = () => {
                           Tên Khu Vực
                         </th>
                         <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Loại Khu Vực
+                          dịch vụ
                         </th>
                         <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Danh Mục
                         </th>
                         <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Số Lượng Thiết Bị
+                          Số Lượng Bàn
+                        </th>
+                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Số Lượng Ghế
                         </th>
                         <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Kích Thước
@@ -583,9 +574,8 @@ const UpdateRoom = () => {
                       {areaInRoom.map((area, index) => (
                         <tr
                           key={area.areaId}
-                          className={`transition-colors duration-200 ${
-                            index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                          } hover:bg-orange-50`}
+                          className={`transition-colors duration-200 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                            } hover:bg-orange-50`}
                         >
                           <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {index + 1}
@@ -600,20 +590,22 @@ const UpdateRoom = () => {
                             {area.categoryId === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {area.faciAmount}
+                            {area.faciAmount} bàn
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {area.faciAmountCh} ghế
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                             {area.size}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm">
                             <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                area.isAvail
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${area.status
                                   ? "bg-green-100 text-green-800"
                                   : "bg-red-100 text-red-800"
-                              }`}
+                                }`}
                             >
-                              {area.isAvail ? "Có sẵn" : "Không có sẵn"}
+                              {area.status ? "Có sẵn" : "Không có sẵn"}
                             </span>
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -625,11 +617,11 @@ const UpdateRoom = () => {
                                 <Plus className="w-4 h-4" />
                               </button>
                               <button
-                                onClick={() => handleDeleteArea(area.areaId)}
-                                disabled={deleteAreaLoading}
+                                onClick={() => handleOpenDeleteModal(area.areaId, area.areaName)}
+                                disabled={loadingId === area.areaId}
                                 className="inline-flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors w-10 h-10 disabled:bg-gray-300 disabled:text-gray-500"
                               >
-                                {deleteAreaLoading ? (
+                                {loadingId === area.areaId ? (
                                   <svg
                                     className="animate-spin h-4 w-4 text-red-700"
                                     viewBox="0 0 24 24"
@@ -679,11 +671,11 @@ const UpdateRoom = () => {
                             <Plus className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDeleteArea(area.areaId)}
-                            disabled={deleteAreaLoading}
+                            onClick={() => handleOpenDeleteModal(area.areaId, area.areaName)}
+                            disabled={loadingId === area.areaId}
                             className="inline-flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors w-8 h-8 disabled:bg-gray-300 disabled:text-gray-500"
                           >
-                            {deleteAreaLoading ? (
+                            {loadingId === area.areaId ? (
                               <svg
                                 className="animate-spin h-4 w-4 text-red-700"
                                 viewBox="0 0 24 24"
@@ -710,7 +702,7 @@ const UpdateRoom = () => {
                       </div>
                       <div className="text-sm text-gray-600 space-y-1">
                         <p>
-                          <span className="font-medium">Loại Khu Vực:</span> {area.areaTypeName}
+                          <span className="font-medium">dịch vụ:</span> {area.areaTypeName}
                         </p>
                         <p>
                           <span className="font-medium">Danh Mục:</span>{" "}
@@ -726,13 +718,12 @@ const UpdateRoom = () => {
                         <p>
                           <span className="font-medium">Trạng Thái:</span>{" "}
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              area.isAvail
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${area.status
                                 ? "bg-green-100 text-green-800"
                                 : "bg-red-100 text-red-800"
-                            }`}
+                              }`}
                           >
-                            {area.isAvail ? "Có sẵn" : "Không có sẵn"}
+                            {area.status ? "Có sẵn" : "Không có sẵn"}
                           </span>
                         </p>
                       </div>
@@ -813,6 +804,40 @@ const UpdateRoom = () => {
                   className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl text-sm font-medium hover:from-orange-700 hover:to-orange-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-300"
                 >
                   Thêm Khu Vực
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {isDeleteModalOpen && (
+          <div
+            className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50"
+            onClick={handleCloseDeleteModal}
+          >
+            <div
+              className="bg-neutral-300 rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-semibold text-red-600 mb-4">Xác nhận xóa khu vực</h2>
+              <p className="text-gray-600 mb-6">
+                Bạn có chắc chắn muốn xóa khu vực <strong>"{areaName}"</strong> không? Hành động này không thể hoàn tác.
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={handleCloseDeleteModal}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors cursor-pointer"
+                  disabled={loadingId === areaIdToDelete}
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleDeleteArea}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer"
+                  disabled={loadingId === areaIdToDelete}
+                >
+                  {loadingId === areaIdToDelete ? "Đang xóa..." : "Xóa khu vực"}
                 </button>
               </div>
             </div>

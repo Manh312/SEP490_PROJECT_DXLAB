@@ -29,7 +29,7 @@ const AreaTypeDetail = () => {
   if (!selectedAreaType)
     return (
       <p className="text-red-500 text-center mt-10">
-        Không tìm thấy loại khu vực có ID {id}!
+        Không tìm thấy dịch vụ có ID {id}!
       </p>
     );
 
@@ -113,7 +113,7 @@ const AreaTypeDetail = () => {
             <h3 className="text-xl md:text-2xl font-semibold text-gray-800">
               {areaTypeName}
             </h3>
-            <p className="text-sm text-gray-500 mt-1">Mã Loại Khu Vực: {areaTypeId}</p>
+            <p className="text-sm text-gray-500 mt-1">Mã dịch vụ: {areaTypeId}</p>
           </div>
 
           {/* Status */}

@@ -62,6 +62,7 @@ import CreateReport from "./routes/staff-manage/report-management/CreateReport";
 import ManageReportList from "./routes/report/ManageReportList";
 import ManageReportDetail from "./routes/report/ManageReportDetail";
 import ManageFacilitiesInArea from "./routes/room/ManageFacilitiesInArea";
+import UpdateSlot from "./routes/slot/UpdateSLot";
 
 
 
@@ -196,6 +197,10 @@ const router = createBrowserRouter([
       {
         path: "dashboard/slot/create",
         element: <ProtectedRoute allowedRoles={["Admin"]}>< CreateSlot /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/slot/update/:id",
+        element: <ProtectedRoute allowedRoles={["Admin"]}>< UpdateSlot /></ProtectedRoute>,
       },
       {
         path: "dashboard/account",

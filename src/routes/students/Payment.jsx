@@ -124,7 +124,7 @@ const Payment = () => {
             <strong>Phòng:</strong> {selectedRoom?.roomName || 'Chưa chọn'}
           </p>
           <p>
-            <strong>Loại khu vực:</strong>{' '}
+            <strong>dịch vụ:</strong>{' '}
             {selectedArea?.key?.categoryId === 2 ? 'Khu vực nhóm' : 'Khu vực cá nhân'}
           </p>
           <p>

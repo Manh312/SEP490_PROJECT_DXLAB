@@ -8,52 +8,42 @@ import {
   deleteAreaTypeCategoryImage,
 } from "../../redux/slices/AreaCategory";
 import { toast } from "react-toastify";
-import { Building, Image, FileText, Check, X, ArrowLeft } from "lucide-react";
+import "react-toastify/dist/ReactToastify.css";
+import { Building, Image, FileText, Check, X, Plus } from "lucide-react";
 
-const BACKEND_URL = "https://localhost:9999"; // Define your backend URL
+const BACKEND_URL = "https://localhost:9999";
 
 const UpdateAreaCategory = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { id } = useParams(); // Get ID from URL params
-  const fileInputRef = useRef(null); // Ref for file input
+  const { id } = useParams();
+  const fileInputRef = useRef(null);
 
-  // Get loading and areaTypeCategories from Redux store
-  const { loading, areaTypeCategories, error } = useSelector((state) => state.areaCategory);  
-
-  // Find current category from store
+  const { loading, areaTypeCategories, error } = useSelector((state) => state.areaCategory);
   const currentCategory = areaTypeCategories.find(
     (cat) => cat.categoryId === parseInt(id)
-  );  
+  );
 
-
-  // Form state
   const [formData, setFormData] = useState({
     title: "",
     categoryDescription: "",
     status: 1,
-    images: [], // New images to upload
+    images: [],
   });
-
-  const [hasDetailsChange, setHasDetailsChange] = useState(false); // Track changes in details
-  const [hasImageChange, setHasImageChange] = useState(false); // Track changes in images
+  const [hasDetailsChange, setHasDetailsChange] = useState(false);
+  const [hasImageChange, setHasImageChange] = useState(false);
   const [imagePreviews, setImagePreviews] = useState([]);
-  const [existingImages, setExistingImages] = useState([]); // Existing image URLs from backend
-  const [imagesToDelete, setImagesToDelete] = useState([]); // Images marked for deletion
-  const [failedImages, setFailedImages] = useState(new Set()); // Track failed image loads
+  const [existingImages, setExistingImages] = useState([]);
+  const [imagesToDelete, setImagesToDelete] = useState([]);
+  const [failedImages, setFailedImages] = useState(new Set());
 
-  // Initialize formData with current category data
   useEffect(() => {
     if (!currentCategory) {
-      // Fetch categories if not loaded
       dispatch(fetchAllAreaTypeCategories());
     } else {
-      // Normalize images to array
       const images = Array.isArray(currentCategory.images)
         ? currentCategory.images
         : [currentCategory.images].filter(Boolean);
-
-      // Prepend BACKEND_URL to relative image paths
       const existing = images.map((img) =>
         img.startsWith("http") ? img : `${BACKEND_URL}${img}`
       );
@@ -62,7 +52,7 @@ const UpdateAreaCategory = () => {
         title: currentCategory.title || "",
         categoryDescription: currentCategory.categoryDescription || "",
         status: currentCategory.status !== undefined ? currentCategory.status : 1,
-        images: [], // New images start empty
+        images: [],
       });
 
       setExistingImages(existing);
@@ -70,17 +60,15 @@ const UpdateAreaCategory = () => {
     }
   }, [currentCategory, dispatch]);
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: name === "status" ? parseInt(value) : value,
     }));
-    setHasDetailsChange(true); // Mark details as changed
+    setHasDetailsChange(true);
   };
 
-  // Handle file input change
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
@@ -90,11 +78,10 @@ const UpdateAreaCategory = () => {
       }));
       const previews = files.map((file) => URL.createObjectURL(file));
       setImagePreviews((prev) => [...prev, ...previews]);
-      setHasImageChange(true); // Mark images as changed
+      setHasImageChange(true);
     }
   };
 
-  // Handle image removal
   const handleRemoveImage = (index) => {
     const isExistingImage = index < existingImages.length;
     let updatedPreviews = [...imagePreviews];
@@ -102,10 +89,7 @@ const UpdateAreaCategory = () => {
     let updatedExistingImages = [...existingImages];
 
     if (isExistingImage) {
-      // Get the image URL to delete
       let imageUrl = existingImages[index];
-
-      // Normalize the imageUrl for backend (remove BACKEND_URL and ensure correct path)
       imageUrl = imageUrl.replace(BACKEND_URL, "");
       if (!imageUrl.startsWith("/")) {
         imageUrl = "/" + imageUrl;
@@ -115,17 +99,13 @@ const UpdateAreaCategory = () => {
         imageUrl = `/Images/${filename}`;
       }
 
-      // Add to imagesToDelete
       setImagesToDelete((prev) => [...prev, imageUrl]);
-
-      // Update existingImages and previews
       updatedExistingImages = updatedExistingImages.filter((_, i) => i !== index);
       updatedPreviews = updatedPreviews.filter((_, i) => i !== index);
 
       setExistingImages(updatedExistingImages);
       setImagePreviews(updatedPreviews);
     } else {
-      // Remove new image (not yet uploaded)
       const fileIndex = index - existingImages.length;
       updatedPreviews = updatedPreviews.filter((_, i) => i !== index);
       updatedImages = updatedImages.filter((_, i) => i !== fileIndex);
@@ -137,24 +117,21 @@ const UpdateAreaCategory = () => {
       }));
     }
 
-    setHasImageChange(true); // Mark images as changed
+    setHasImageChange(true);
   };
 
-  // Handle image load errors
   const handleImageError = (index) => {
     setFailedImages((prev) => new Set(prev).add(index));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
     const trimmedTitle = formData.title.trim();
     const trimmedDescription = formData.categoryDescription.trim();
 
     if (!trimmedTitle) {
-      toast.error("Tên loại khu vực là bắt buộc!");
+      toast.error("Tên dịch vụ là bắt buộc!");
       return;
     }
     if (!trimmedDescription) {
@@ -163,7 +140,6 @@ const UpdateAreaCategory = () => {
     }
 
     try {
-      // Step 1: Delete images marked for deletion
       if (imagesToDelete.length > 0) {
         for (const imageUrl of imagesToDelete) {
           await dispatch(
@@ -177,9 +153,7 @@ const UpdateAreaCategory = () => {
         setImagesToDelete([]);
       }
 
-      // Step 2: Update category details if changed
       if (hasDetailsChange) {
-        // Create JSON Patch document
         const patchDoc = [];
         if (currentCategory.title !== trimmedTitle) {
           patchDoc.push({ op: "replace", path: "title", value: trimmedTitle });
@@ -206,7 +180,6 @@ const UpdateAreaCategory = () => {
         }
       }
 
-      // Step 3: Update new images if changed
       if (hasImageChange && formData.images.length > 0) {
         await dispatch(
           updateAreaTypeCategoryImages({
@@ -217,58 +190,50 @@ const UpdateAreaCategory = () => {
         toast.success("Cập nhật ảnh thành công!");
       }
 
-      // If no changes, inform user
       if (!hasDetailsChange && !hasImageChange && imagesToDelete.length === 0) {
         toast.info("Không có thay đổi nào để cập nhật!");
         return;
       }
 
-      // Refresh category list and navigate back
       await dispatch(fetchAllAreaTypeCategories()).unwrap();
       navigate("/dashboard/area");
     } catch (err) {
-      const errorMessage = err.message || "Lỗi khi cập nhật danh mục loại khu vực";
+      const errorMessage = err.message || "Lỗi khi cập nhật danh mục dịch vụ";
       toast.error(errorMessage);
-      console.error("Update error:", err);
     }
   };
 
-  // Loading state
   if (loading || !currentCategory) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <p className="text-gray-600 text-lg animate-pulse">Đang tải dữ liệu...</p>
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <p className="text-lg sm:text-xl font-semibold text-gray-600 animate-pulse text-center">
+          Đang tải dữ liệu...
+        </p>
       </div>
     );
   }
 
-  // Error state
   if (error) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <p className="text-red-500 text-lg">{error}</p>
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <p className="text-red-500 text-lg sm:text-xl font-semibold text-center">
+          {error}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="py-12 px-4 sm:px-6 lg:px-8 mb-10">
-      <div className="w-full max-w-4xl mx-auto rounded-xl border shadow-2xl p-8 transition-all duration-300 hover:shadow-3xl">
+    <div className="min-h-screen py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full border max-w-4xl mx-auto rounded-2xl shadow-xl p-6 sm:p-8 transform transition-all duration-300 hover:shadow-2xl">
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-6">
-          <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <Building className="h-6 w-6 text-orange-500" />
-            <h2 className="text-3xl font-bold text-gray-800">
-              Cập Nhật Danh Mục Loại Khu Vực {id}
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8">
+          <div className="flex items-center space-x-3 mb-4 sm:mb-0">
+            <Building className="h-8 w-8 text-orange-600" />
+            <h2 className="text-2xl sm:text-3xl font-bold">
+              Cập Nhật Danh Mục dịch vụ {id}
             </h2>
           </div>
-          <button
-            onClick={() => navigate("/dashboard/area")}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-all shadow-md"
-          >
-            <ArrowLeft size={20} />
-            <span className="hidden sm:inline">Quay Lại</span>
-          </button>
         </div>
 
         {/* Form Section */}
@@ -278,18 +243,17 @@ const UpdateAreaCategory = () => {
             <div className="space-y-6">
               {/* Title */}
               <div className="flex flex-col">
-                <label className="block text-sm font-medium mb-1">
-                  <span className="flex items-center">
-                    <Building className="mr-2 text-orange-500" /> Tên Loại Danh Mục{" "}
-                    <span className="text-red-500">*</span>
-                  </span>
+                <label className="flex items-center text-sm font-medium mb-2">
+                  <Building className="mr-2 h-5 w-5 text-orange-600" />
+                  Tên Danh Mục
+                  <span className="text-red-500 ml-1">*</span>
                 </label>
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-orange-500 transition duration-150 ease-in-out"
                   placeholder="Nhập tên danh mục"
                   required
                 />
@@ -297,16 +261,15 @@ const UpdateAreaCategory = () => {
 
               {/* Status */}
               <div className="flex flex-col">
-                <label className="block text-sm font-medium mb-1">
-                  <span className="flex items-center">
-                    <Check className="mr-2 text-orange-500" /> Trạng Thái
-                  </span>
+                <label className="flex items-center text-sm font-medium mb-2">
+                  <Check className="mr-2 h-5 w-5 text-orange-600" />
+                  Trạng Thái
                 </label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 duration-150 ease-in-out h-12"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-orange-500 transition duration-150 ease-in-out"
                 >
                   <option value={1}>Hoạt động</option>
                   <option value={0}>Không hoạt động</option>
@@ -318,17 +281,16 @@ const UpdateAreaCategory = () => {
             <div className="space-y-6">
               {/* Description */}
               <div className="flex flex-col">
-                <label className="block text-sm font-medium mb-1">
-                  <span className="flex items-center">
-                    <FileText className="mr-2 text-orange-500" /> Mô Tả{" "}
-                    <span className="text-red-500">*</span>
-                  </span>
+                <label className="flex items-center text-sm font-medium mb-2">
+                  <FileText className="mr-2 h-5 w-5 text-orange-600" />
+                  Mô Tả
+                  <span className="text-red-500 ml-1">*</span>
                 </label>
                 <textarea
                   name="categoryDescription"
                   value={formData.categoryDescription}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out min-h-[100px]"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-orange-500 transition duration-150 ease-in-out min-h-[100px]"
                   placeholder="Nhập mô tả danh mục"
                   required
                 />
@@ -336,13 +298,12 @@ const UpdateAreaCategory = () => {
 
               {/* Images */}
               <div className="flex flex-col">
-                <label className="block text-sm font-medium mb-1">
-                  <span className="flex items-center">
-                    <Image className="mr-2 text-orange-500" /> Hình Ảnh
-                  </span>
+                <label className="flex items-center text-sm font-medium mb-2">
+                  <Image className="mr-2 h-5 w-5 text-orange-600" />
+                  Hình Ảnh
                 </label>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center gap-4 flex-wrap">
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-wrap gap-4">
                     {imagePreviews.length > 0 &&
                       imagePreviews.map((preview, index) => (
                         <div key={index} className="relative">
@@ -353,24 +314,24 @@ const UpdateAreaCategory = () => {
                                 : preview
                             }
                             alt={`Category preview ${index}`}
-                            className="w-24 h-24 object-cover rounded-lg shadow-sm"
+                            className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg shadow-sm"
                             onError={() => handleImageError(index)}
                           />
                           <button
                             type="button"
                             onClick={() => handleRemoveImage(index)}
-                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center shadow-md hover:bg-red-600 transition"
                           >
-                            <X size={16} />
+                            <X size={14} />
                           </button>
                         </div>
                       ))}
                     <button
                       type="button"
                       onClick={() => fileInputRef.current.click()}
-                      className="border-dashed border-2 border-gray-400 rounded-lg p-4 text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all"
+                      className="w-20 h-20 sm:w-24 sm:h-24 border-dashed border-2 border-gray-300 rounded-lg flex items-center justify-center text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all"
                     >
-                      Chọn tệp
+                      <Plus size={24} />
                     </button>
                     <input
                       type="file"
@@ -387,18 +348,18 @@ const UpdateAreaCategory = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="mt-8 flex justify-between gap-4">
+          <div className="mt-8 flex flex-col sm:flex-row justify-between gap-4">
             <button
               type="button"
               onClick={() => navigate("/dashboard/area")}
-              className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out"
+              className="w-full sm:w-auto py-3 px-6 border border-gray-300 rounded-lg shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out"
             >
               Hủy
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+              className="w-full sm:w-auto flex justify-center items-center py-3 px-6 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-400 disabled:cursor-not-allowed transition duration-150 ease-in-out"
             >
               {loading ? (
                 <svg
@@ -421,7 +382,8 @@ const UpdateAreaCategory = () => {
                 </svg>
               ) : (
                 <>
-                  <Check className="mr-2" /> Cập Nhật
+                  <Check className="mr-2 h-5 w-5" />
+                  Cập Nhật
                 </>
               )}
             </button>

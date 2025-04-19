@@ -213,7 +213,7 @@ const ManageReportList = () => {
                       Khu Vực
                     </th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
-                      Loại Khu Vực
+                      dịch vụ
                     </th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
                       Tên Nhân Viên
@@ -290,7 +290,7 @@ const ManageReportList = () => {
                       <span className="font-medium">Khu Vực:</span> {report.areaName || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Loại Khu Vực:</span>{" "}
+                      <span className="font-medium">dịch vụ:</span>{" "}
                       {report.areaTypeName || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600">

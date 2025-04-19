@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { ClipboardList } from "lucide-react"; // Icon báo cáo
+import { ClipboardList } from "lucide-react";
 
 const ManageReportDetail = () => {
-  const { id } = useParams(); // Lấy ID báo cáo từ URL
-  const { reports, loading, error } = useSelector((state) => state.reports); // Lấy reports từ Redux
+  const { id } = useParams();
+  const { reports, loading, error } = useSelector((state) => state.reports);
   const [report, setReport] = useState(null);
 
-  // Định dạng ngày
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, "0");
@@ -20,77 +19,102 @@ const ManageReportDetail = () => {
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
 
-  // Lọc báo cáo từ reports dựa trên reportId
   useEffect(() => {
     if (reports) {
       const selectedReport = reports.find((r) => r.reportId === parseInt(id));
       if (selectedReport) {
         setReport(selectedReport);
-      };
+      }
     }
   }, [id, reports]);
 
-  if (loading) return <p className="text-center text-lg font-bold">Đang tải dữ liệu...</p>;
-  if (error) return <p className="text-red-500 text-center">Lỗi: {error}</p>;
-  if (!report) return <p className="text-red-500 text-center">Không tìm thấy báo cáo!</p>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-screen px-4">
+        <p className="text-lg sm:text-xl font-semibold text-gray-600 animate-pulse text-center">
+          Đang tải dữ liệu...
+        </p>
+      </div>
+    );
+  if (error)
+    return (
+      <div className="flex justify-center items-center h-screen px-4">
+        <p className="text-red-500 text-lg sm:text-xl font-semibold text-center">
+          Lỗi: {error}
+        </p>
+      </div>
+    );
+  if (!report)
+    return (
+      <div className="flex justify-center items-center h-screen px-4">
+        <p className="text-red-500 text-lg sm:text-xl font-semibold text-center">
+          Không tìm thấy báo cáo!
+        </p>
+      </div>
+    );
 
   return (
-    <div
-      className={`flex justify-center items-center mb-20 p-6`}
-    >
-      <div
-        className={`w-full max-w-2xl border p-6 rounded-lg shadow-lg`}
-      >
-        {/* Header với icon */}
-        <div className="flex items-center justify-center mb-6">
-          <ClipboardList className="w-8 h-8 mr-2" />
-          <h2 className="text-3xl font-bold text-center">Chi Tiết Báo Cáo RP-{report.reportId}</h2>
+    <div className="min-h-screen bg-gray-100 flex justify-center items-start py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-xl p-6 sm:p-8 transform transition-all duration-300 hover:shadow-2xl">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-center justify-center mb-6 sm:mb-8">
+          <ClipboardList className="w-8 h-8 sm:w-10 sm:h-10 text-orange-600 mb-4 sm:mb-0 sm:mr-3" />
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 text-center">
+            Chi Tiết Báo Cáo RP-{report.reportId}
+          </h2>
         </div>
 
-        {/* Thông tin báo cáo */}
-        <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-3 border-b border-gray-300 pb-2">
+        {/* Report Information */}
+        <div className="mb-6 sm:mb-8">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-3 sm:mb-4 border-b border-gray-200 pb-2">
             Thông Tin Báo Cáo
           </h3>
-          <div className="text-md space-y-2">
-            <p>
-              <strong>Mã Báo Cáo:</strong> RP-{report.reportId}
-            </p>
-            <p>
-              <strong>Tên Nhân Viên:</strong> {report.staffName || "N/A"}
-            </p>
-            <p>
-              <strong>Ngày Tạo:</strong> {formatDate(report.createdDate)}
-            </p>
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 text-gray-600 text-sm sm:text-base">
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className="font-medium sm:w-36 mb-1 sm:mb-0">Mã Báo Cáo:</span>
+              <span>RP-{report.reportId}</span>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className="font-medium sm:w-36 mb-1 sm:mb-0">Tên Nhân Viên:</span>
+              <span>{report.staffName || "N/A"}</span>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className="font-medium sm:w-36 mb-1 sm:mb-0">Ngày Tạo:</span>
+              <span>{formatDate(report.createdDate)}</span>
+            </div>
           </div>
         </div>
 
-        {/* Thông tin liên quan */}
-        <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-3 border-b border-gray-300 pb-2">
+        {/* Related Information */}
+        <div className="mb-6 sm:mb-8">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mb-3 sm:mb-4 border-b border-gray-200 pb-2">
             Thông Tin Liên Quan
           </h3>
-          <div className="text-md space-y-2">
-            <p>
-              <strong>Mã Đặt Chỗ:</strong> DXL-{report.bookingDetailId || "N/A"}
-            </p>
-            <p>
-              <strong>Vị Trí:</strong> {report.position || "N/A"}
-            </p>
-            <p>
-              <strong>Khu Vực:</strong> {report.areaName || "N/A"}
-            </p>
-            <p>
-              <strong>Loại Khu Vực:</strong> {report.areaTypeName || "N/A"}
-            </p>
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 text-gray-600 text-sm sm:text-base">
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className="font-medium sm:w-36 mb-1 sm:mb-0">Mã Đặt Chỗ:</span>
+              <span>DXL-{report.bookingDetailId || "N/A"}</span>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className="font-medium sm:w-36 mb-1 sm:mb-0">Vị Trí:</span>
+              <span>{report.position || "N/A"}</span>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className="font-medium sm:w-36 mb-1 sm:mb-0">Khu Vực:</span>
+              <span>{report.areaName || "N/A"}</span>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center">
+              <span className="font-medium sm:w-36 mb-1 sm:mb-0">dịch vụ:</span>
+              <span>{report.areaTypeName || "N/A"}</span>
+            </div>
           </div>
         </div>
 
-        {/* Nút Quay lại */}
-        <div className="flex justify-end mt-6">
+        {/* Back Button */}
+        <div className="flex justify-end">
           <Link
             to="/dashboard/report"
-            className="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
+            className="inline-flex items-center px-4 py-2 sm:px-6 sm:py-3 bg-orange-600 text-white font-semibold rounded-lg shadow-md hover:bg-orange-700 transition-colors duration-200 text-sm sm:text-base"
           >
             Quay Lại
           </Link>

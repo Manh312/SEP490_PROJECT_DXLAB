@@ -35,7 +35,7 @@ const ViewRoom = () => {
     };
   }, [rooms]);
 
-  const activeRooms = rooms.filter((room) => room.isDeleted === false);
+  const activeRooms = rooms.filter((room) => room.status === 1);
 
   const renderImages = (images, roomId) => {
     const validImages = Array.isArray(images) && images.length > 0 ? images : [];

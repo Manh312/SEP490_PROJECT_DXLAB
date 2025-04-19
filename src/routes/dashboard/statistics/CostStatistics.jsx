@@ -6,29 +6,6 @@ const CostStatistics = ({ jobs, period, year, month }) => {
   const { theme } = useTheme();
   const EXPENSE_COLORS = ["#3b82f6", "#ef4444"]; // Blue for "Bàn" (faciCategory 1), red for "Ghế" (faciCategory 0)
 
-  // Tính tổng chi phí cho note
-  const calculateTotalExpenses = () => {
-    if (!jobs || jobs.length === 0) return 0;
-
-    return jobs.reduce((total, job) => {
-      if (!job || !job.summaryDate || job.amount === undefined) return total;
-
-      const date = new Date(job.summaryDate);
-      if (isNaN(date.getTime())) return total;
-
-      const jobYear = date.getFullYear();
-      const jobMonth = date.getMonth();
-
-      if (jobYear !== parseInt(year)) return total;
-
-      if (period === "tháng" && month) {
-        const selectedMonth = parseInt(month) - 1;
-        if (jobMonth !== selectedMonth) return total;
-      }
-
-      return total + (job.amount || 0);
-    }, 0);
-  };
 
   // Tạo danh sách các tháng: nếu period là "tháng", chỉ hiển thị tháng được chọn
   const months = period === "tháng" && month
@@ -172,7 +149,6 @@ const CostStatistics = ({ jobs, period, year, month }) => {
 
   const pieData = expenseData();
   const areaData = processDataByMonth();
-  const totalExpenses = calculateTotalExpenses();
   const { minY, maxY, ticks } = calculateYAxisProps(areaData);
 
   return (
@@ -255,21 +231,6 @@ const CostStatistics = ({ jobs, period, year, month }) => {
                   />
                 </PieChart>
               </ResponsiveContainer>
-              {/* Total Expenses Note */}
-              <div
-                className={`w-full mt-4 p-3 rounded-lg border ${
-                  theme === "dark"
-                    ? "bg-gray-800 border-gray-700 text-gray-200"
-                    : "bg-gray-100 border-gray-200 text-gray-800"
-                }`}
-              >
-                <p className="text-sm font-semibold">
-                  Tổng chi phí bỏ ra:{" "}
-                  <span className="text-base font-bold">
-                    {totalExpenses.toLocaleString()} DXL
-                  </span>
-                </p>
-              </div>
             </>
           )}
         </div>

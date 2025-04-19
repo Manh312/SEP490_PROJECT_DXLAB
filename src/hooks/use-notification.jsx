@@ -24,24 +24,6 @@ const Notification = () => {
   const menuRefs = useRef({}); // Ref cho các menu thông báo
   const headerMenuRef = useRef(null); // Ref cho menu header
 
-  // Thêm useEffect để đóng menu khi nhấp ra ngoài
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuOpen !== null && menuRefs.current[menuOpen]) {
-        if (!menuRefs.current[menuOpen].contains(event.target)) {
-          setMenuOpen(null);
-        }
-      }
-      if (headerMenuOpen && headerMenuRef.current) {
-        if (!headerMenuRef.current.contains(event.target)) {
-          setHeaderMenuOpen(false);
-        }
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [menuOpen, headerMenuOpen]);
-
   // Format timestamp
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
@@ -231,7 +213,7 @@ const Notification = () => {
 
                   {/* Content */}
                   <div
-                    className="flex-1 overflow-x-hidden"
+                    className="flex-1"
                     onClick={() => handleNotificationClick(notif.id, notif.isRead)}
                   >
                     <p

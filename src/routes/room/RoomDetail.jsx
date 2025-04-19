@@ -37,7 +37,7 @@ const RoomDetail = () => {
     roomName,
     roomDescription,
     capacity,
-    isDeleted,
+    status,
     images,
     area_DTO,
   } = selectedRoom;
@@ -128,12 +128,12 @@ const RoomDetail = () => {
             <span className="font-semibold text-gray-700">Trạng Thái:</span>
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
-                isDeleted
+                status === 0
                   ? "bg-red-100 text-red-700"
                   : "bg-green-100 text-green-700"
               }`}
             >
-              {isDeleted ? "Đã xóa" : "Đang hoạt động"}
+              {status === 0 ? "Chưa sẵn sàng" : "Sẵn sàng"}
             </span>
           </div>
 

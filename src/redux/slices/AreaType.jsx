@@ -3,7 +3,7 @@ import axiosInstance from "../../utils/axios";
 
 const API_URL = "/areatype";
 
-// Fetch danh sách loại khu vực với filter tùy chọn
+// Fetch danh sách dịch vụ với filter tùy chọn
 export const fetchAreaTypes = createAsyncThunk(
   "areaTypes/fetchAreaTypes",
   async (fil = "", { rejectWithValue }) => {
@@ -18,7 +18,7 @@ export const fetchAreaTypes = createAsyncThunk(
   }
 );
 
-// Fetch loại khu vực theo id
+// Fetch dịch vụ theo id
 export const fetchAreaTypeById = createAsyncThunk(
   "areaTypes/fetchAreaTypeById",
   async (id, { rejectWithValue }) => {
@@ -26,12 +26,12 @@ export const fetchAreaTypeById = createAsyncThunk(
       const response = await axiosInstance.get(`/areatype/${id}`);
       return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi lấy chi tiết loại khu vực");
+      return rejectWithValue(error.response?.data || "Lỗi khi lấy chi tiết dịch vụ");
     }
   }
 );
 
-// Thêm loại khu vực mới
+// Thêm dịch vụ mới
 export const createAreaType = createAsyncThunk(
   "areaTypes/createAreaType",
   async ({ newAreaType, files }, { rejectWithValue }) => {
@@ -42,7 +42,7 @@ export const createAreaType = createAsyncThunk(
       formData.append("AreaDescription", newAreaType.AreaDescription);
       formData.append("Size", newAreaType.Size);
       formData.append("Price", newAreaType.Price);
-      formData.append("IsDeleted", newAreaType.IsDeleted);
+      formData.append("Status", newAreaType.Status);
 
       if (files && files.length > 0) {
         files.forEach((file) => {
@@ -57,12 +57,12 @@ export const createAreaType = createAsyncThunk(
       return response.data;
     } catch (error) {
       console.log(error.response.data);
-      return rejectWithValue(error.response?.data || "Lỗi khi tạo loại khu vực");
+      return rejectWithValue(error.response?.data || "Lỗi khi tạo dịch vụ");
     }
   }
 );
 
-// Cập nhật loại khu vực theo API `PATCH`
+// Cập nhật dịch vụ theo API `PATCH`
 export const updateAreaType = createAsyncThunk(
   "areaTypes/updateAreaType",
   async ({ areaTypeId, patchDoc }, { rejectWithValue }) => {
@@ -112,7 +112,7 @@ export const updateAreaTypeImages = createAsyncThunk(
   }
 );
 
-// Xóa loại khu vực
+// Xóa dịch vụ
 export const deleteAreaType = createAsyncThunk(
   "areaTypes/deleteAreaType",
   async (areaTypeId, { rejectWithValue }) => {
@@ -120,12 +120,12 @@ export const deleteAreaType = createAsyncThunk(
       await axiosInstance.delete(`${API_URL}/${areaTypeId}`);
       return areaTypeId;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi xóa loại khu vực");
+      return rejectWithValue(error.response?.data || "Lỗi khi xóa dịch vụ");
     }
   }
 );
 
-// Xóa ảnh của loại khu vực
+// Xóa ảnh của dịch vụ
 export const deleteAreaTypeImage = createAsyncThunk(
   "areaTypes/deleteAreaTypeImage",
   async ({ areaTypeId, imageUrl }, { rejectWithValue }) => {
@@ -138,7 +138,7 @@ export const deleteAreaTypeImage = createAsyncThunk(
       });
       return { areaTypeId, imageUrl };
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi xóa ảnh của loại khu vực");
+      return rejectWithValue(error.response?.data || "Lỗi khi xóa ảnh của dịch vụ");
     }
   }
 );
@@ -171,7 +171,7 @@ const areaTypeSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Fetch danh sách loại khu vực
+      // Fetch danh sách dịch vụ
       .addCase(fetchAreaTypes.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -185,7 +185,7 @@ const areaTypeSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Fetch loại khu vực theo id
+      // Fetch dịch vụ theo id
       .addCase(fetchAreaTypeById.pending, (state) => {
         state.loading = true;
         state.selectedAreaType = null;
@@ -200,7 +200,7 @@ const areaTypeSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Xóa loại khu vực
+      // Xóa dịch vụ
       .addCase(deleteAreaType.pending, (state) => {
         state.loading = true;
       })
@@ -213,7 +213,7 @@ const areaTypeSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Thêm loại khu vực
+      // Thêm dịch vụ
       .addCase(createAreaType.pending, (state) => {
         state.loading = true;
       })
@@ -228,7 +228,7 @@ const areaTypeSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Cập nhật loại khu vực
+      // Cập nhật dịch vụ
       .addCase(updateAreaType.pending, (state) => {
         state.loading = true;
       })
@@ -246,7 +246,7 @@ const areaTypeSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Cập nhật ảnh loại khu vực
+      // Cập nhật ảnh dịch vụ
       .addCase(updateAreaTypeImages.pending, (state) => {
         state.loading = true;
       })
@@ -264,7 +264,7 @@ const areaTypeSlice = createSlice({
         state.error = action.payload;
       })
 
-      // Xóa ảnh của loại khu vực
+      // Xóa ảnh của dịch vụ
       .addCase(deleteAreaTypeImage.pending, (state) => {
         state.loading = true;
       })

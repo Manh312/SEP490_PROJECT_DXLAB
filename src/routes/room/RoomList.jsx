@@ -1,12 +1,14 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useMemo, useState } from "react";
-import { fetchRooms } from "../../redux/slices/Room";
+import { fetchRooms, deleteRoom } from "../../redux/slices/Room";
 import { useNavigate } from "react-router-dom";
-import { PencilLine, Hotel, Filter, Search, Home, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { PencilLine, Hotel, Filter, Search, Home, Eye, ChevronLeft, ChevronRight, Trash, PlusCircle } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
 import Pagination from "../../hooks/use-pagination";
 import debounce from "lodash/debounce";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const RoomList = () => {
   const dispatch = useDispatch();
@@ -16,17 +18,19 @@ const RoomList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [imageIndices, setImageIndices] = useState({}); // To track the current image index for each room
+  const [imageIndices, setImageIndices] = useState({});
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State for modal
+  const [roomIdToDelete, setRoomIdToDelete] = useState(null); // Store roomId to delete
+  const [roomName, setRoomName] = useState(""); // Store room name for modal
+  const [loadingId, setLoadingId] = useState(null); // Track loading state for delete
   const roomsPerPage = 5;
-  const baseUrl = "https://localhost:9999"; // Base URL for image paths, matching BlogList
+  const baseUrl = "https://localhost:9999";
 
-  // Debounced search function
   const debouncedSearch = debounce((value) => {
     setSearchQuery(value);
     setCurrentPage(1);
   }, 300);
 
-  // Lọc và tìm kiếm danh sách phòng
   const filteredRooms = useMemo(() => {
     if (!Array.isArray(rooms)) return [];
 
@@ -34,8 +38,8 @@ const RoomList = () => {
       if (!room || typeof room !== "object" || !room.roomId || !room.roomName) return false;
       const matchesStatus =
         statusFilter === "All" ||
-        (statusFilter === "Hoạt động" && !room.isDeleted) ||
-        (statusFilter === "Đã xóa" && room.isDeleted);
+        (statusFilter === "Hoạt động" && !room.status) ||
+        (statusFilter === "Đã xóa" && room.status);
       return matchesStatus;
     });
 
@@ -91,7 +95,6 @@ const RoomList = () => {
     }
   };
 
-  // Function to render multiple images with navigation, similar to BlogList
   const renderImages = (images, roomId) => {
     const validImages = Array.isArray(images) && images.length > 0 ? images : [];
     if (!validImages.length) {
@@ -123,7 +126,7 @@ const RoomList = () => {
       typeof imageSrc === "string"
         ? imageSrc.startsWith("http")
           ? imageSrc
-          : `${baseUrl}/${imageSrc}` // Prepend baseUrl if the image path doesn't start with http
+          : `${baseUrl}/${imageSrc}`
         : "/placeholder-image.jpg";
 
     return (
@@ -132,7 +135,7 @@ const RoomList = () => {
           src={displaySrc}
           alt={`Room image ${currentIndex}`}
           className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
-          onError={(e) => (e.target.src = "/placeholder-image.jpg")} // Fallback image on error
+          onError={(e) => (e.target.src = "/placeholder-image.jpg")}
         />
         {validImages.length > 1 && (
           <>
@@ -152,9 +155,7 @@ const RoomList = () => {
               {validImages.map((_, idx) => (
                 <span
                   key={idx}
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    idx === currentIndex ? "bg-white" : "bg-gray-400"
-                  }`}
+                  className={`w-1.5 h-1.5 rounded-full ${idx === currentIndex ? "bg-white" : "bg-gray-400"}`}
                 />
               ))}
             </div>
@@ -164,11 +165,42 @@ const RoomList = () => {
     );
   };
 
+  const handleOpenDeleteModal = (roomId, roomName) => {
+    setRoomIdToDelete(roomId);
+    setRoomName(roomName || "N/A");
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalOpen(false);
+    setRoomIdToDelete(null);
+    setRoomName("");
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!roomIdToDelete) {
+      toast.error("Không tìm thấy ID phòng để xóa!");
+      return;
+    }
+    setLoadingId(roomIdToDelete);
+    try {
+      await dispatch(deleteRoom(roomIdToDelete)).unwrap();
+      toast.success("Xóa phòng thành công!");
+      dispatch(fetchRooms());
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setLoadingId(null);
+      setIsDeleteModalOpen(false);
+      setRoomIdToDelete(null);
+      setRoomName("");
+    }
+  };
+
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
       <Tooltip id="action-tooltip" />
       <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
-        {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <Home className="h-6 w-6 text-orange-500" />
@@ -179,17 +211,16 @@ const RoomList = () => {
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => navigate("/dashboard/room/create")}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
             >
+              <PlusCircle className="h-5 w-5" />
               <span className="hidden sm:inline">Thêm Phòng</span>
             </button>
           </div>
         </div>
 
-        {/* Search and Filter Section */}
         <div className="mb-6 p-4 rounded-lg shadow-sm">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            {/* Search Input */}
             <div className="relative w-full sm:w-1/2 lg:w-1/3">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
@@ -200,7 +231,6 @@ const RoomList = () => {
               />
             </div>
 
-            {/* Filter Dropdown */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <Filter className="h-5 w-5 text-orange-500" />
               <span className="font-medium text-sm sm:text-base">Lọc theo trạng thái:</span>
@@ -217,7 +247,6 @@ const RoomList = () => {
           </div>
         </div>
 
-        {/* Loading or Empty State */}
         {loading ? (
           <div className="flex items-center justify-center py-6 mb-200">
             <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
@@ -230,7 +259,6 @@ const RoomList = () => {
           </div>
         ) : (
           <>
-            {/* Table for Desktop */}
             <div className="hidden md:block border rounded-lg overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead className="border-b items-center bg-gray-400">
@@ -250,7 +278,7 @@ const RoomList = () => {
                         {(currentPage - 1) * roomsPerPage + index + 1}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {renderImages(room.images, room.roomId)} {/* Use renderImages for multiple images */}
+                        {renderImages(room.images, room.roomId)}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {room.roomName}
@@ -260,11 +288,9 @@ const RoomList = () => {
                       </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${
-                            room.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${room.status === 0 ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
                         >
-                          {room.isDeleted ? "Đã xóa" : "Hoạt động"}
+                          {room.status === 0 ? "Chưa sẵn sàng" : "Sẵn sàng"}
                         </span>
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
@@ -272,7 +298,7 @@ const RoomList = () => {
                           <button
                             onClick={() => navigate(`/dashboard/room/${room.roomId}`)}
                             data-tooltip-id="action-tooltip"
-                            data-tooltip-content="Xem chi tiết"
+                            data-tooltip-content="Xem chi tiết phòng"
                             className="bg-orange-100 text-orange-700 ml-2 hover:bg-orange-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                           >
                             <Eye className="w-4 h-4" />
@@ -280,10 +306,23 @@ const RoomList = () => {
                           <button
                             onClick={() => navigate(`/dashboard/room/update/${room.roomId}`)}
                             data-tooltip-id="action-tooltip"
-                            data-tooltip-content="Cập nhật"
+                            data-tooltip-content="Cập nhật phòng"
                             className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                           >
                             <PencilLine className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleOpenDeleteModal(room.roomId, room.roomName)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Xóa phòng"
+                            className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                            disabled={loadingId === room.roomId}
+                          >
+                            {loadingId === room.roomId ? (
+                              <FaSpinner className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash className="w-4 h-4" />
+                            )}
                           </button>
                         </div>
                       </td>
@@ -293,7 +332,6 @@ const RoomList = () => {
               </table>
             </div>
 
-            {/* Mobile View */}
             <div className="block md:hidden space-y-4">
               {currentRooms.length > 0 ? (
                 currentRooms.map((room, index) => (
@@ -307,14 +345,11 @@ const RoomList = () => {
                           #{(currentPage - 1) * roomsPerPage + index + 1}
                         </span>
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${
-                            room.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${room.status ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
                         >
-                          {room.isDeleted ? "Đã xóa" : "Hoạt động"}
+                          {room.status ? "Đã xóa" : "Hoạt động"}
                         </span>
                       </div>
-                      {/* Add image rendering in mobile view */}
                       {renderImages(room.images, room.roomId)}
                       <p className="text-sm">
                         <span className="font-medium">Tên Phòng:</span> {room.roomName}
@@ -334,6 +369,18 @@ const RoomList = () => {
                           className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                         >
                           <PencilLine className="w-4 h-4" /> Cập nhật
+                        </button>
+                        <button
+                          onClick={() => handleOpenDeleteModal(room.roomId, room.roomName)}
+                          className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                          disabled={loadingId === room.roomId}
+                        >
+                          {loadingId === room.roomId ? (
+                            <FaSpinner className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Trash className="w-4 h-4" />
+                          )}
+                          Xóa
                         </button>
                       </div>
                     </div>
@@ -355,6 +402,39 @@ const RoomList = () => {
               />
             )}
           </>
+        )}
+
+        {isDeleteModalOpen && (
+          <div
+            className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50"
+            onClick={handleCloseDeleteModal}
+          >
+            <div
+              className="bg-neutral-300 rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-semibold text-red-600 mb-4">Xác nhận xóa phòng</h2>
+              <p className="text-gray-600 mb-6">
+                Bạn có chắc chắn muốn xóa phòng <strong>"{roomName}"</strong> không? Hành động này không thể hoàn tác.
+              </p>
+              <div className="flex justify-end gap-4">
+                <button
+                  onClick={handleCloseDeleteModal}
+                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors cursor-pointer"
+                  disabled={loadingId === roomIdToDelete}
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleDeleteRoom}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer"
+                  disabled={loadingId === roomIdToDelete}
+                >
+                  {loadingId === roomIdToDelete ? "Đang xóa..." : "Xóa phòng"}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

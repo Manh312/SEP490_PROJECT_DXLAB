@@ -11,7 +11,7 @@ export const fetchAllAreaTypeCategories = createAsyncThunk(
       const response = await axiosInstance.get(`${API_URL}/allAreaTypeCategory`);
       return response.data.data; // Assuming the API returns data in a similar structure
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi lấy danh sách danh mục loại khu vực");
+      return rejectWithValue(error.response?.data || "Lỗi khi lấy danh sách danh mục dịch vụ");
     }
   }
 );
@@ -35,7 +35,7 @@ export const createAreaTypeCategory = createAsyncThunk(
       const response = await axiosInstance.post(`${API_URL}/newareatypecategory`, formData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi tạo danh mục loại khu vực");
+      return rejectWithValue(error.response?.data || "Lỗi khi tạo danh mục dịch vụ");
     }
   }
 );
@@ -56,7 +56,7 @@ export const updateAreaTypeCategory = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi cập nhật danh mục loại khu vực");
+      return rejectWithValue(error.response?.data || "Lỗi khi cập nhật danh mục dịch vụ");
     }
   }
 );
@@ -103,7 +103,7 @@ export const deleteAreaTypeCategoryImage = createAsyncThunk(
       });
       return { categoryId, imageUrl }; // Return the areaTypeCategoryId and deleted image URL
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi xóa ảnh của loại khu vực");
+      return rejectWithValue(error.response?.data || "Lỗi khi xóa ảnh của dịch vụ");
     }
   }
 );

@@ -95,7 +95,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
     }
 
     const quantityToDelete = parseInt(deleteQuantity);
-    const currentFacility = facilities.find((f) => f.usingFacilityId === facilityToDelete.usingFacilityId);
+    const currentFacility = facilities.find((f) => f.facilityId === facilityToDelete.facilityId);
     const currentQuantity = currentFacility ? currentFacility.quantity : 0;
 
     if (quantityToDelete > currentQuantity) {
@@ -105,7 +105,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
 
     const body = {
       areaId: parseInt(areaId),
-      facilityId: facilityToDelete.usingFacilityId,
+      facilityId: facilityToDelete.facilityId,
       quantity: quantityToDelete,
       status: 2,
     };

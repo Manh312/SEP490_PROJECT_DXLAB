@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Clock10Icon, PlusCircle } from "lucide-react";
+import { Clock10Icon, PencilLine, PlusCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { listSlots } from "../../redux/slices/Slot";
 import { useTheme } from "../../hooks/use-theme";
@@ -36,7 +36,7 @@ const SlotList = () => {
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
-              className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-x-2 shadow-md hover:bg-orange-600 transition"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
               onClick={handleAddSlot}
             >
               <PlusCircle size={20} /> Thêm Slot
@@ -78,6 +78,12 @@ const SlotList = () => {
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
                       Giờ Kết Thúc
                     </th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
+                      Trạng Thái
+                    </th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
+                      Hành Động
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -93,6 +99,17 @@ const SlotList = () => {
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{slot.startTime}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{slot.endTime}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{slot.status === 0 ? "Không hoạt động" : "Hoạt động"}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        <button
+                          onClick={() => navigate(`/dashboard/slot/update/${slot.slotId}`)}
+                          data-tooltip-id="action-tooltip"
+                          data-tooltip-content="Cập nhật slot"
+                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <PencilLine className="w-4 h-4" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

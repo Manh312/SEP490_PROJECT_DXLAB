@@ -55,7 +55,7 @@ const AreaDetailAdmin = () => {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <MapPin className="h-12 w-12 text-gray-400 mb-4" />
-        <p className="text-gray-500 text-lg">Không tìm thấy khu vực.</p>
+        <p className="text-gray-500 text-lg">Không tìm thấy dịch vụ.</p>
       </div>
     );
   }
@@ -68,7 +68,7 @@ const AreaDetailAdmin = () => {
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
             <Map className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">
-              Chi Tiết Khu Vực: {areaDetail.title}
+              Chi Tiết Dịch Vụ: {areaDetail.title}
             </h2>
           </div>
           <div className="flex gap-3">
@@ -135,7 +135,7 @@ const AreaDetailAdmin = () => {
           {/* Right Section: Details */}
           <div className="space-y-4">
             <div className="border-b pb-4">
-              <h3 className="text-lg font-semibold text-gray-700">Tên Khu Vực</h3>
+              <h3 className="text-lg font-semibold text-gray-700">Tên Dịch Vụ</h3>
               <p className="text-gray-600">{areaDetail.title}</p>
             </div>
 
