@@ -8,6 +8,7 @@ import {
   Map,
   Clock10Icon,
   ClipboardList,
+  Package,
 } from "lucide-react";
 
 import ProfileImage from "../assets/profile-image.jpg";
@@ -19,7 +20,6 @@ import images1 from "../assets/dxlab_images1.jpg";
 import images3 from "../assets/dxlab_images3.jpg";
 import images4 from "../assets/dxlab_images4.jpg";
 import canhan from "../assets/CanhanDxlab.jpg";
-import { MdChair } from "react-icons/md";
 
 
 
@@ -147,7 +147,7 @@ export const navbarLinks = [
       },
       {
         label: "Quản lý cơ sở vật chất",
-        icon: MdChair, // Thay NotepadText bằng Wrench
+        icon: Package, // Thay NotepadText bằng Wrench
         path: "/dashboard/facilities",
       },
       {

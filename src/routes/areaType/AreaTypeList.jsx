@@ -186,9 +186,8 @@ const AreaTypeList = () => {
               {validImages.map((_, idx) => (
                 <span
                   key={idx}
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    idx === currentIndex ? "bg-white" : "bg-gray-400"
-                  }`}
+                  className={`w-1.5 h-1.5 rounded-full ${idx === currentIndex ? "bg-white" : "bg-gray-400"
+                    }`}
                 />
               ))}
             </div>
@@ -254,9 +253,9 @@ const AreaTypeList = () => {
 
         {/* Loading or Empty State */}
         {loading ? (
-          <div className="flex items-center justify-center py-6">
+          <div className="flex items-center justify-center py-6 mb-200">
             <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
-            <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
+            <p className="text-orange-500 text-base sm:text-lg font-medium">Đang tải dữ liệu...</p>
           </div>
         ) : filteredAreaTypes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
@@ -289,12 +288,7 @@ const AreaTypeList = () => {
                         {renderImages(type.images, type.areaTypeId)}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        <Link
-                          to={`/dashboard/areaType/${type.areaTypeId}`}
-                          className="hover:text-neutral-300 inline-block"
-                        >
-                          {type.areaTypeName || "N/A"}
-                        </Link>
+                        {type.areaTypeName || "N/A"}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {`${type.areaCategory === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}`}
@@ -304,15 +298,17 @@ const AreaTypeList = () => {
                       </td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${
-                            type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                            }`}
                         >
                           {type.isDeleted ? "Không hoạt động" : "Hoạt động"}
                         </span>
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         <div className="flex justify-center items-center gap-2 h-full">
+                          <button onClick={() => navigate(`/dashboard/areaType/${type.areaTypeId}`)} data-tooltip-id="action-tooltip" data-tooltip-content="Xem chi tiết kiểu khu vực" className="bg-orange-100 text-orange-700 hover:bg-orange-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer">
+                            <Eye className="w-4 h-4" />
+                          </button>
                           <button
                             onClick={() => navigate(`/dashboard/areaType/update/${type.areaTypeId}`)}
                             data-tooltip-id="action-tooltip"
@@ -351,9 +347,8 @@ const AreaTypeList = () => {
                           #{(currentPage - 1) * areaTypesPerPage + index + 1}
                         </span>
                         <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${
-                            type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-                          }`}
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${type.isDeleted ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
+                            }`}
                         >
                           {type.isDeleted ? "Đã xóa" : "Hoạt động"}
                         </span>

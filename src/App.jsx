@@ -16,7 +16,6 @@ import BlogListOfStaff from './routes/blog-manage/BlogListOfStaff';
 import CreateFacilities from './routes/facilities/CreateFacilities';
 import FacilitiesDetail from './routes/facilities/FacilitiesDetail';
 import DeleteFacilities from './routes/facilities/DeleteFacilities';
-import CreateAccount from './routes/account/CreateAccount';
 import UpdateAccount from "./routes/account/UpdateAccount";
 import DeleteAccount from './routes/account/DeleteAccount';
 import NotFound from './layouts/home/NotFound';
@@ -209,10 +208,6 @@ const router = createBrowserRouter([
       {
         path: "dashboard/account/:id",
         element: <ProtectedRoute allowedRoles={["Admin"]}><AccountDetail /></ProtectedRoute>,
-      },
-      {
-        path: "dashboard/account/create",
-        element: <ProtectedRoute allowedRoles={["Admin"]}><CreateAccount /></ProtectedRoute>,
       },
       {
         path: "dashboard/account/update/:id",

@@ -3,7 +3,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { updateSlot } from "../../redux/slices/Slot";
 import { toast } from "react-toastify";
-import { Clock, Check, ArrowLeft, Calendar } from "lucide-react";
+import { Clock, Check, ArrowLeft, Calendar, Power } from "lucide-react";
+import { motion } from "framer-motion";
+import { FaSpinner } from "react-icons/fa";
 
 const UpdateSlot = () => {
   const navigate = useNavigate();
@@ -13,7 +15,6 @@ const UpdateSlot = () => {
   const { slots, loading, error } = useSelector((state) => state.slots);
 
   const [formData, setFormData] = useState({
-    slotName: "",
     startTime: "",
     endTime: "",
     status: true,
@@ -28,13 +29,11 @@ const UpdateSlot = () => {
     if (slot) {
       setCurrentSlot(slot);
       setFormData({
-        slotName: slot.slotName || "",
         startTime: slot.startTime || "",
         endTime: slot.endTime || "",
         status: slot.status !== undefined ? slot.status : true,
       });
     } else {
-      // If slot is not found, show an error and redirect
       toast.error("Không tìm thấy slot với ID này!");
       navigate("/dashboard/slots");
     }
@@ -52,14 +51,9 @@ const UpdateSlot = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const trimmedSlotName = formData.slotName.trim();
     const trimmedStartTime = formData.startTime.trim();
     const trimmedEndTime = formData.endTime.trim();
 
-    if (!trimmedSlotName) {
-      toast.error("Tên slot là bắt buộc!");
-      return;
-    }
     if (!trimmedStartTime) {
       toast.error("Thời gian bắt đầu là bắt buộc!");
       return;
@@ -70,7 +64,6 @@ const UpdateSlot = () => {
     }
 
     const slotData = {
-      slotName: trimmedSlotName,
       startTime: trimmedStartTime,
       endTime: trimmedEndTime,
       status: formData.status,
@@ -79,135 +72,158 @@ const UpdateSlot = () => {
     try {
       await dispatch(updateSlot({ id: parseInt(id), slotData })).unwrap();
       toast.success("Cập nhật slot thành công!");
-      navigate("/dashboard/slot"); // Adjust the route as per your app's routing
+      navigate("/dashboard/slot");
     } catch (err) {
       toast.error(err.message || "Lỗi khi cập nhật slot");
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <p className="text-gray-600 text-lg animate-pulse">Đang tải dữ liệu...</p>
-      </div>
-    );
-  }
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, staggerChildren: 0.15 } },
+  };
 
-  if (!currentSlot) {
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  };
+
+  if (loading || !currentSlot) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <p className="text-gray-600 text-lg animate-pulse">Đang tải dữ liệu...</p>
+      <div className="flex items-center justify-center py-6 mt-50 mb-200">
+        <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+        <p className="text-orange-500 font-medium text-base sm:text-lg">
+          Đang tải dữ liệu...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="py-6 px-4 sm:px-6 lg:px-8 mb-10 bg-gray-100 min-h-screen">
-      <div className="w-full max-w-4xl mx-auto rounded-2xl border bg-white shadow-lg p-6 sm:p-8 transition-all duration-300">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8">
-          <div className="flex items-center space-x-3 mb-4 sm:mb-0">
-            <Clock className="h-8 w-8 text-orange-600" />
-            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800">Cập Nhật Slot {id}</h2>
+    <div className="min-h-screen py-4 px-3 sm:px-6 lg:px-8 overflow-x-hidden">
+      <motion.div
+        className="w-full max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        {/* Header với gradient */}
+        <div className="bg-gradient-to-r from-orange-500 to-orange-700 p-4 sm:p-6">
+          <div className="flex flex-col items-center gap-2">
+            <Clock className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+            <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-white text-center">
+              Cập Nhật Slot
+            </h2>
           </div>
         </div>
 
         {/* Form Section */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Slot Name */}
-            <div className="flex flex-col">
-              <label className="block text-sm font-medium mb-2 text-gray-700">
-                <span className="flex items-center">
-                  <Clock className="mr-2 h-5 w-5 text-orange-500" /> Tên Slot{" "}
-                  <span className="text-red-500">*</span>
-                </span>
-              </label>
-              <input
-                type="text"
-                name="slotName"
-                value={formData.slotName}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800 placeholder-gray-400"
-                placeholder="Nhập tên slot"
-                required
-              />
-            </div>
-
-            {/* Start Time */}
-            <div className="flex flex-col">
-              <label className="block text-sm font-medium mb-2 text-gray-700">
-                <span className="flex items-center">
-                  <Calendar className="mr-2 h-5 w-5 text-orange-500" /> Thời Gian Bắt Đầu{" "}
-                  <span className="text-red-500">*</span>
-                </span>
-              </label>
-              <input
-                type="time"
-                name="startTime"
-                value={formData.startTime}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800"
-                required
-              />
-            </div>
-
-            {/* End Time */}
-            <div className="flex flex-col">
-              <label className="block text-sm font-medium mb-2 text-gray-700">
-                <span className="flex items-center">
-                  <Calendar className="mr-2 h-5 w-5 text-orange-500" /> Thời Gian Kết Thúc{" "}
-                  <span className="text-red-500">*</span>
-                </span>
-              </label>
-              <input
-                type="time"
-                name="endTime"
-                value={formData.endTime}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800"
-                required
-              />
-            </div>
-
-            {/* Status */}
-            <div className="flex flex-col">
-              <label className="block text-sm font-medium mb-2 text-gray-700">
-                <span className="flex items-center">
-                  <Check className="mr-2 h-5 w-5 text-orange-500" /> Trạng Thái{" "}
-                  <span className="text-red-500">*</span>
-                </span>
-              </label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800"
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            {/* Left Column */}
+            <div className="space-y-4 sm:space-y-6">
+              {/* Thời Gian Bắt Đầu */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
               >
-                <option value={true}>Hoạt động</option>
-                <option value={false}>Không hoạt động</option>
-              </select>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Thời Gian Bắt Đầu <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="time"
+                      name="startTime"
+                      value={formData.startTime}
+                      onChange={handleInputChange}
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      required
+                    />
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Thời Gian Kết Thúc */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Thời Gian Kết Thúc <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="time"
+                      name="endTime"
+                      value={formData.endTime}
+                      onChange={handleInputChange}
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      required
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-4 sm:space-y-6">
+              {/* Trạng Thái */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Power className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Trạng Thái <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                    >
+                      <option value={true}>Hoạt động</option>
+                      <option value={false}>Không hoạt động</option>
+                    </select>
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="mt-8 flex flex-col sm:flex-row justify-between gap-4">
+          <motion.div
+            className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8"
+            variants={itemVariants}
+          >
             <button
               type="button"
-              onClick={() => navigate("/dashboard/slot")} // Adjust the route as per your app's routing
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-300"
+              onClick={() => navigate("/dashboard/slot")}
+              className="w-full sm:w-auto bg-gray-500 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:bg-gray-600 transition-all shadow-md text-sm sm:text-base font-normal"
             >
-              <ArrowLeft size={20} className="mr-2" />
-              <span className="text-sm sm:text-base font-medium">Quay Lại</span>
+              <ArrowLeft size={14} className="sm:w-4 sm:h-4" /> Quay Lại
             </button>
             <button
               type="submit"
               disabled={loading || !hasChanges}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-700 hover:to-orange-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 disabled:cursor-not-allowed transition-all duration-300"
+              className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-orange-700 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:from-orange-600 hover:to-orange-800 transition-all shadow-md disabled:bg-orange-300 disabled:cursor-not-allowed text-sm sm:text-base font-normal"
             >
               {loading ? (
                 <svg
-                  className="animate-spin h-5 w-5 mr-2 text-white"
+                  className="animate-spin h-4 w-4 sm:h-5 sm:w-5 mr-2 text-white"
                   viewBox="0 0 24 24"
                 >
                   <circle
@@ -226,20 +242,23 @@ const UpdateSlot = () => {
                 </svg>
               ) : (
                 <>
-                  <Check className="mr-2 h-5 w-5" /> Cập Nhật
+                  <Check size={14} className="sm:w-4 sm:h-4" /> Cập Nhật
                 </>
               )}
             </button>
-          </div>
-        </form>
+          </motion.div>
 
-        {/* Error Message */}
-        {error && (
-          <p className="text-red-600 bg-red-50 p-4 rounded-lg mt-6 text-center text-sm sm:text-base">
-            Lỗi: {error.message || "Đã xảy ra lỗi không xác định"}
-          </p>
-        )}
-      </div>
+          {/* Error Message */}
+          {error && (
+            <motion.div
+              className="mt-6 sm:mt-8 text-red-500 text-base sm:text-lg font-normal text-center"
+              variants={itemVariants}
+            >
+              Lỗi: {error.message || "Đã xảy ra lỗi không xác định"}
+            </motion.div>
+          )}
+        </form>
+      </motion.div>
     </div>
   );
 };

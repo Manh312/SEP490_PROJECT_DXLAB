@@ -13,7 +13,9 @@ import {
   clearAreaSelections,
 } from "../../redux/slices/AreaType";
 import { toast } from "react-toastify";
-import { Building, Image, FileText, Check, X, ArrowLeft, Plus, Trash, PlusCircle } from "lucide-react";
+import { Building, Image, FileText, Check, X, ArrowLeft, Plus, Trash, PlusCircle, House } from "lucide-react";
+import { motion } from "framer-motion";
+import { FaSpinner } from "react-icons/fa";
 
 const BACKEND_URL = "https://localhost:9999";
 
@@ -24,7 +26,7 @@ const UpdateRoom = () => {
   const fileInputRef = useRef(null);
 
   const { selectedRoom, loading } = useSelector((state) => state.rooms);
-  const { areaInRoom, areaInRoomLoading, areaInRoomError, deleteAreaLoading } = useSelector(
+  const { areaInRoom, areaInRoomLoading, areaInRoomError } = useSelector(
     (state) => state.areas || {}
   );
   const { areaTypes } = useSelector((state) => state.areaTypes);
@@ -45,10 +47,10 @@ const UpdateRoom = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAreaTypeId, setSelectedAreaTypeId] = useState("");
   const [customAreaName, setCustomAreaName] = useState("");
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State for delete modal
-  const [areaIdToDelete, setAreaIdToDelete] = useState(null); // Store areaId to delete
-  const [areaName, setAreaName] = useState(""); // Store area name for modal
-  const [loadingId, setLoadingId] = useState(null); // Track loading state for delete
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [areaIdToDelete, setAreaIdToDelete] = useState(null);
+  const [areaName, setAreaName] = useState("");
+  const [loadingId, setLoadingId] = useState(null);
 
   useEffect(() => {
     const roomId = parseInt(id);
@@ -154,6 +156,11 @@ const UpdateRoom = () => {
     }
 
     setHasImageChange(true);
+    setFailedImages((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(index);
+      return newSet;
+    });
   };
 
   const handleImageError = (index) => {
@@ -311,6 +318,17 @@ const UpdateRoom = () => {
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, staggerChildren: 0.15 } },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  };
+
   if (loading) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
@@ -328,13 +346,13 @@ const UpdateRoom = () => {
   }
 
   return (
-    <div className="py-6 px-4 sm:px-6 lg:px-8 mb-10 bg-gray-100 min-h-screen">
-      <div className="w-full max-w-6xl mx-auto rounded-2xl border bg-white shadow-lg p-6 sm:p-8 transition-all duration-300">
+    <div className="py-6 px-4 sm:px-6 lg:px-8 mb-10 min-h-screen">
+      <div className="w-full max-w-6xl mx-auto rounded-2xl border shadow-lg p-6 sm:p-8 transition-all duration-300">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8">
           <div className="flex items-center space-x-3 mb-4 sm:mb-0">
-            <Building className="h-8 w-8 text-orange-600" />
-            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800">Quản Lý Phòng {id}</h2>
+            <House className="h-8 w-8 text-orange-600" />
+            <h2 className="text-2xl sm:text-3xl font-semibold">Quản Lý Phòng {selectedRoom.roomName}</h2>
           </div>
           <button
             onClick={() => navigate("/dashboard/room")}
@@ -377,147 +395,194 @@ const UpdateRoom = () => {
 
         {/* Tab Content */}
         {activeTab === "update" && (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                {/* Room Name */}
-                <div className="flex flex-col">
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    <span className="flex items-center">
-                      <Building className="mr-2 h-5 w-5 text-orange-500" /> Tên Phòng{" "}
-                      <span className="text-red-500">*</span>
-                    </span>
-                  </label>
-                  <input
-                    type="text"
-                    name="roomName"
-                    value={formData.roomName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800 placeholder-gray-400"
-                    placeholder="Nhập tên phòng"
-                    required
-                  />
+          <div className="min-h-screen py-4 px-3 sm:px-6 lg:px-8 overflow-x-hidden">
+            <motion.div
+              className="w-full max-w-3xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden"
+              initial="hidden"
+              animate="visible"
+              variants={containerVariants}
+            >
+              {/* Header với gradient */}
+              <div className="bg-gradient-to-r from-orange-500 to-orange-700 p-4 sm:p-6">
+                <div className="flex flex-col items-center gap-2">
+                  <House className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+                  <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-white text-center">
+                    Cập Nhật Phòng
+                  </h2>
                 </div>
               </div>
 
-              <div className="space-y-6">
-                {/* Description */}
-                <div className="flex flex-col">
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    <span className="flex items-center">
-                      <FileText className="mr-2 h-5 w-5 text-orange-500" /> Mô Tả{" "}
-                      <span className="text-red-500">*</span>
-                    </span>
-                  </label>
-                  <textarea
-                    name="roomDescription"
-                    value={formData.roomDescription}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-300 bg-gray-50 text-gray-800 placeholder-gray-400 min-h-[100px] sm:min-h-[50px]"
-                    placeholder="Nhập mô tả phòng"
-                    required
-                  />
-                </div>
+              {/* Form Section */}
+              <form onSubmit={handleSubmit} className="p-4 sm:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  {/* Left Column */}
+                  <div className="space-y-4 sm:space-y-6">
+                    {/* Room Name */}
+                    <motion.div
+                      className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                      variants={itemVariants}
+                    >
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="bg-orange-100 rounded-full p-2">
+                          <House className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                            Tên Phòng <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="roomName"
+                            value={formData.roomName}
+                            onChange={handleInputChange}
+                            className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                            placeholder="Nhập tên phòng"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
 
-                {/* Images */}
-                <div className="flex flex-col">
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    <span className="flex items-center">
-                      <Image className="mr-2 h-5 w-5 text-orange-500" /> Hình Ảnh
-                    </span>
-                  </label>
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
-                      {imagePreviews.length > 0 &&
-                        imagePreviews.map((preview, index) => (
-                          <div key={index} className="relative group">
-                            <img
-                              src={
-                                failedImages.has(index)
-                                  ? "/placeholder-image.jpg"
-                                  : preview
-                              }
-                              alt={`Room preview ${index}`}
-                              className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg shadow-md transition-all duration-300 group-hover:shadow-lg"
-                              onError={() => handleImageError(index)}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveImage(index)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                            >
-                              <X size={16} />
-                            </button>
+                  {/* Right Column */}
+                  <div className="space-y-4 sm:space-y-6">
+                    {/* Description */}
+                    <motion.div
+                      className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                      variants={itemVariants}
+                    >
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <div className="bg-orange-100 rounded-full p-2">
+                          <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                            Mô Tả <span className="text-red-500">*</span>
+                          </label>
+                          <textarea
+                            name="roomDescription"
+                            value={formData.roomDescription}
+                            onChange={handleInputChange}
+                            className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out min-h-[50px] max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                            placeholder="Nhập mô tả phòng"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {/* Images */}
+                    <motion.div
+                      className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                      variants={itemVariants}
+                    >
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        <div className="bg-orange-100 rounded-full p-2">
+                          <Image className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                            Hình Ảnh
+                          </label>
+                          <div className="flex flex-col gap-2 sm:gap-4 mt-2">
+                            <div className="flex flex-wrap gap-2 sm:gap-4">
+                              {imagePreviews.length > 0 &&
+                                imagePreviews.map((preview, index) => (
+                                  <div key={index} className="relative">
+                                    <img
+                                      src={
+                                        failedImages.has(index)
+                                          ? "/placeholder-image.jpg"
+                                          : preview
+                                      }
+                                      alt={`Room preview ${index}`}
+                                      className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg shadow-sm"
+                                      onError={() => handleImageError(index)}
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveImage(index)}
+                                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center shadow-md hover:bg-red-600 transition"
+                                    >
+                                      <X size={12} className="sm:w-4 sm:h-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                              <button
+                                type="button"
+                                onClick={() => fileInputRef.current.click()}
+                                className="w-16 h-16 sm:w-20 sm:h-20 border-dashed border-2 border-gray-300 rounded-lg flex items-center justify-center text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all"
+                              >
+                                <Plus size={20} className="sm:w-6 sm:h-6" />
+                              </button>
+                              <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                              />
+                            </div>
                           </div>
-                        ))}
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current.click()}
-                        className="border-dashed border-2 border-gray-300 rounded-lg p-4 text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all duration-300 flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24"
-                      >
-                        <span className="text-xs sm:text-sm font-medium">Chọn tệp</span>
-                      </button>
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                      />
-                    </div>
+                        </div>
+                      </div>
+                    </motion.div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="mt-8 flex flex-col sm:flex-row justify-between gap-4">
-              <button
-                type="button"
-                onClick={() => navigate("/dashboard/room")}
-                className="w-full py-3 px-4 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-300"
-              >
-                Hủy
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-orange-700 hover:from-orange-700 hover:to-orange-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 disabled:cursor-not-allowed transition-all duration-300"
-              >
-                {loading ? (
-                  <svg
-                    className="animate-spin h-5 w-5 mr-2 text-white"
-                    viewBox="0 0 24 24"
+                {/* Action Buttons */}
+                <motion.div
+                  className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8"
+                  variants={itemVariants}
+                >
+                  <button
+                    type="button"
+                    onClick={() => navigate("/dashboard/room")}
+                    className="w-full sm:w-auto bg-gray-500 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:bg-gray-600 transition-all shadow-md text-sm sm:text-base font-normal"
                   >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                ) : (
-                  <>
-                    <Check className="mr-2 h-5 w-5" /> Cập Nhật
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
+                    <ArrowLeft size={14} className="sm:w-4 sm:h-4" /> Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-orange-700 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:from-orange-600 hover:to-orange-800 transition-all shadow-md disabled:bg-orange-300 disabled:cursor-not-allowed text-sm sm:text-base font-normal"
+                  >
+                    {loading ? (
+                      <svg
+                        className="animate-spin h-4 w-4 sm:h-5 sm:w-5 mr-2 text-white"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                    ) : (
+                      <>
+                        <Check size={14} className="sm:w-4 sm:h-4" /> Cập Nhật
+                      </>
+                    )}
+                  </button>
+                </motion.div>
+              </form>
+            </motion.div>
+          </div>
         )}
 
         {activeTab === "manage-areas" && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-800">Danh Sách Khu Vực</h3>
+              <h3 className="text-lg sm:text-xl font-semibold">Danh Sách Khu Vực</h3>
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
@@ -527,8 +592,9 @@ const UpdateRoom = () => {
               </button>
             </div>
             {areaInRoomLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <p className="text-gray-500 text-lg animate-pulse">Đang tải dữ liệu...</p>
+              <div className="flex items-center justify-center py-6 mb-200">
+                <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+                <p className="text-orange-500 text-base sm:text-lg font-medium">Đang tải dữ liệu...</p>
               </div>
             ) : areaInRoomError ? (
               <div className="flex items-center justify-center py-8">
@@ -548,7 +614,7 @@ const UpdateRoom = () => {
                           Tên Khu Vực
                         </th>
                         <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          dịch vụ
+                          Dịch Vụ
                         </th>
                         <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Danh Mục
@@ -566,7 +632,7 @@ const UpdateRoom = () => {
                           Trạng Thái
                         </th>
                         <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Hành động
+                          Hành Động
                         </th>
                       </tr>
                     </thead>
@@ -574,8 +640,7 @@ const UpdateRoom = () => {
                       {areaInRoom.map((area, index) => (
                         <tr
                           key={area.areaId}
-                          className={`transition-colors duration-200 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                            } hover:bg-orange-50`}
+                          className={`transition-colors duration-200 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"} hover:bg-orange-50`}
                         >
                           <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {index + 1}
@@ -600,9 +665,7 @@ const UpdateRoom = () => {
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm">
                             <span
-                              className={`px-3 py-1 rounded-full text-xs font-medium ${area.status
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-red-100 text-red-800"
+                              className={`px-3 py-1 rounded-full text-xs font-medium ${area.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                                 }`}
                             >
                               {area.status ? "Có sẵn" : "Không có sẵn"}
@@ -702,7 +765,7 @@ const UpdateRoom = () => {
                       </div>
                       <div className="text-sm text-gray-600 space-y-1">
                         <p>
-                          <span className="font-medium">dịch vụ:</span> {area.areaTypeName}
+                          <span className="font-medium">Dịch Vụ:</span> {area.areaTypeName}
                         </p>
                         <p>
                           <span className="font-medium">Danh Mục:</span>{" "}
@@ -718,9 +781,7 @@ const UpdateRoom = () => {
                         <p>
                           <span className="font-medium">Trạng Thái:</span>{" "}
                           <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${area.status
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${area.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                               }`}
                           >
                             {area.status ? "Có sẵn" : "Không có sẵn"}

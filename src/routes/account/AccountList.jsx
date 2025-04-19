@@ -9,7 +9,7 @@ import {
 } from "../../redux/slices/Account";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Trash2, Edit, Users, Filter, Search } from "lucide-react";
+import { Trash2, Edit, Users, Filter, Search, Eye } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaFileExcel, FaSpinner } from "react-icons/fa";
 import Pagination from "../../hooks/use-pagination";
@@ -226,9 +226,7 @@ const AccountList = () => {
                     <tr key={user.id} className="border-b hover:bg-gray-400 transition-colors">
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{(currentPage - 1) * postsPerPage + index + 1}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        <Link to={`/dashboard/account/${user.userId}`} className="hover:text-neutral-300 inline-block">
-                          {user.fullName || "N/A"}
-                        </Link>
+                        {user.fullName || "N/A"}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{user.email || "N/A"}</td>
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
@@ -241,23 +239,31 @@ const AccountList = () => {
                       </td>
                       <td className="px-2 py-3 justify-center md:px-4 md:py-4 flex gap-2">
                         <button
-                          onClick={() => handleSoftDelete(user.userId)}
+                          onClick={() => navigate(`/dashboard/account/${user.userId}`)}
                           data-tooltip-id="action-tooltip"
-                          data-tooltip-content="Xóa mềm"
-                          className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
-                          disabled={!user.userId}
+                          data-tooltip-content="Xem chi tiết tài khoản"
+                          className="bg-orange-100 text-orange-700 hover:bg-orange-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Eye className="w-4 h-4" />
                         </button>
                         <Link
                           to={`/dashboard/account/update/${user.userId || ""}`}
                           data-tooltip-id="action-tooltip"
-                          data-tooltip-content="Cập nhật"
+                          data-tooltip-content="Cập nhật tài khoản"
                           className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                           disabled={!user.userId}
                         >
                           <Edit className="w-4 h-4" />
                         </Link>
+                        <button
+                          onClick={() => handleSoftDelete(user.userId)}
+                          data-tooltip-id="action-tooltip"
+                          data-tooltip-content="Xóa mềm tài khoản"
+                          className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                          disabled={!user.userId}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </td>
                     </tr>
                   ))}

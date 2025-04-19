@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { PlusCircle, Filter, Search, Edit, ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { PlusCircle, Filter, Search, Eye, ChevronLeft, ChevronRight, FileText, Edit } from "lucide-react";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchBlogsByStatus, setStatusFilter } from "../../../redux/slices/Blog";
-import { addNotification } from "../../../redux/slices/Notification"; // Import action
+import { addNotification } from "../../../redux/slices/Notification";
 import Pagination from "../../../hooks/use-pagination";
 import { FaSpinner } from "react-icons/fa";
 import { startSignalRConnection, stopSignalRConnection } from "../../../utils/signalR/connection";
@@ -16,6 +16,7 @@ const notificationTracker = new Set();
 
 const BlogList = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { blogs, statusFilter, error, loading } = useSelector((state) => state.blogs);
   const { token } = useSelector((state) => state.auth);
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,91 +32,130 @@ const BlogList = () => {
     setCurrentPage(1);
   }, 300);
 
-  // SignalR Setup
+  // SignalR Setup with Retry Mechanism
   useEffect(() => {
     let mounted = true;
-  
+    let connection = null;
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = 3000; // 3 seconds
+
     const setupSignalR = async () => {
-      try {
-        // Khởi tạo kết nối tới blogHub
-        await startSignalRConnection("blogHub", token);
-  
-        if (mounted) {
-          // Đăng ký sự kiện ReceiveBlogStatus
-          registerSignalREvent("blogHub", "ReceiveBlogStatus", (blog) => {
-            console.log("Nhận được cập nhật trạng thái blog:", blog);
-            const message = `Blog "${blog.blogTitle}" đã cập nhật trạng thái thành: ${getStatusDisplayName(blog.status)}`;
-            const notificationKey = `ReceiveBlogStatus-${blog.blogId}`;
-            if (!notificationTracker.has(notificationKey)) {
-              notificationTracker.add(notificationKey);
-              dispatch(
-                addNotification({
-                  id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-                  message,
-                  type: "info",
-                  timestamp: new Date().toISOString(),
-                })
-              );
-              notificationTracker.delete(notificationKey);
-            }
-            dispatch(fetchBlogsByStatus(statusFilter)).unwrap().catch((err) => {
-              console.error("Lỗi khi làm mới danh sách blog:", err);
-            });
-          });
-  
-          // Đăng ký sự kiện ReceiveBlogDeleted
-          registerSignalREvent("blogHub", "ReceiveBlogDeleted", (blogId) => {
-            console.log("Nhận được thông báo xóa blog:", blogId);
-            const message = `Blog với ID ${blogId} đã bị xóa bởi Admin!`;
-            const notificationKey = `ReceiveBlogDeleted-${blogId}`;
-            if (!notificationTracker.has(notificationKey)) {
-              notificationTracker.add(notificationKey);
-              dispatch(
-                addNotification({
-                  id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-                  message,
-                  type: "warning",
-                  timestamp: new Date().toISOString(),
-                })
-              );
-              setTimeout(() => notificationTracker.delete(notificationKey), 5000);
-            }
-            dispatch(fetchBlogsByStatus(statusFilter)).unwrap().catch((err) => {
-              console.error("Lỗi khi làm mới danh sách blog:", err);
-            });
-          });
-        }
-  
-        // Fetch initial blogs
+      const connectWithRetry = async () => {
         try {
-          const fetchPromise = dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
-          await Promise.all([
-            fetchPromise,
-            new Promise((resolve) => setTimeout(resolve, 500)),
-          ]);
-        } catch (err) {
-          console.error("Lỗi khi lấy danh sách blog:", err);
-        } finally {
+          connection = await startSignalRConnection("blogHub", token);
+          setSignalRError(null);
+          retryCount = 0; // Reset retry count on successful connection
+
           if (mounted) {
-            setInitialLoading(false);
+            // Đăng ký sự kiện ReceiveBlogStatus
+            registerSignalREvent("blogHub", "ReceiveBlogStatus", (blog) => {
+              console.log("Received ReceiveBlogStatus event:", blog);
+              const message = `Blog "${blog.blogTitle}" đã cập nhật trạng thái thành: ${getStatusDisplayName(blog.status)}`;
+              const notificationKey = `ReceiveBlogStatus-${blog.blogId}`;
+              if (!notificationTracker.has(notificationKey)) {
+                notificationTracker.add(notificationKey);
+                dispatch(
+                  addNotification({
+                    id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                    message,
+                    type: "info",
+                    timestamp: new Date().toISOString(),
+                  })
+                );
+                setTimeout(() => notificationTracker.delete(notificationKey), 5000);
+              }
+              // Refresh blog list regardless of current statusFilter
+              dispatch(fetchBlogsByStatus(statusFilter)).unwrap().catch((err) => {
+                console.error("Lỗi khi làm mới danh sách blog:", err);
+              });
+            });
+
+            // Đăng ký sự kiện ReceiveBlogDeleted
+            registerSignalREvent("blogHub", "ReceiveBlogDeleted", (blogId) => {
+              console.log("Received ReceiveBlogDeleted event:", blogId);
+              const message = `Blog với ID ${blogId} đã bị xóa bởi Admin!`;
+              const notificationKey = `ReceiveBlogDeleted-${blogId}`;
+              if (!notificationTracker.has(notificationKey)) {
+                notificationTracker.add(notificationKey);
+                dispatch(
+                  addNotification({
+                    id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                    message,
+                    type: "warning",
+                    timestamp: new Date().toISOString(),
+                  })
+                );
+                setTimeout(() => notificationTracker.delete(notificationKey), 5000);
+              }
+              dispatch(fetchBlogsByStatus(statusFilter)).unwrap().catch((err) => {
+                console.error("Lỗi khi làm mới danh sách blog:", err);
+              });
+            });
+
+            // Đăng ký sự kiện ReceiveBlogCanceled (fallback)
+            registerSignalREvent("blogHub", "ReceiveBlogCanceled", (blog) => {
+              console.log("Received ReceiveBlogCanceled event:", blog);
+              const message = `Blog "${blog.blogTitle}" đã bị hủy bởi Admin!`;
+              const notificationKey = `ReceiveBlogCanceled-${blog.blogId}`;
+              if (!notificationTracker.has(notificationKey)) {
+                notificationTracker.add(notificationKey);
+                dispatch(
+                  addNotification({
+                    id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                    message,
+                    type: "warning",
+                    timestamp: new Date().toISOString(),
+                  })
+                );
+                setTimeout(() => notificationTracker.delete(notificationKey), 5000);
+              }
+              dispatch(fetchBlogsByStatus(statusFilter)).unwrap().catch((err) => {
+                console.error("Lỗi khi làm mới danh sách blog:", err);
+              });
+            });
+          }
+
+          // Fetch initial blogs
+          try {
+            const fetchPromise = dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
+            await Promise.all([fetchPromise]);
+          } catch (err) {
+            console.error("Lỗi khi lấy danh sách blog:", err);
+          } finally {
+            if (mounted) {
+              setInitialLoading(false);
+            }
+          }
+        } catch (err) {
+          console.error("Lỗi khi thiết lập SignalR:", err);
+          if (mounted) {
+            if (retryCount < maxRetries) {
+              retryCount++;
+              console.log(`Retrying SignalR connection (${retryCount}/${maxRetries})...`);
+              setTimeout(connectWithRetry, retryDelay);
+            } else {
+              setSignalRError(`Không thể kết nối SignalR sau ${maxRetries} lần thử: ${err.message}`);
+              setInitialLoading(false);
+            }
           }
         }
-      } catch (err) {
-        console.error("Lỗi khi thiết lập SignalR:", err);
-        if (mounted) {
-          setSignalRError(`Không thể kết nối SignalR: ${err.message}`);
-        }
-      }
+      };
+
+      connectWithRetry();
     };
-  
+
     setupSignalR();
-  
+
     return () => {
       mounted = false;
       console.log("Dọn dẹp kết nối SignalR...");
       unregisterSignalREvent("blogHub", "ReceiveBlogStatus");
       unregisterSignalREvent("blogHub", "ReceiveBlogDeleted");
-      stopSignalRConnection("blogHub");
+      unregisterSignalREvent("blogHub", "ReceiveBlogCanceled");
+      if (connection) {
+        stopSignalRConnection("blogHub");
+      }
     };
   }, [token, dispatch, statusFilter]);
 
@@ -159,10 +199,6 @@ const BlogList = () => {
     (currentPage - 1) * blogsPerPage,
     currentPage * blogsPerPage
   );
-
-  const hasCancelledBlogs = useMemo(() => {
-    return filteredBlogs.some((blog) => blog.status === 0);
-  }, [filteredBlogs]);
 
   const getStatusDisplayName = (status) => {
     switch (status) {
@@ -218,8 +254,8 @@ const BlogList = () => {
     const validImages = Array.isArray(images) && images.length > 0 ? images : [];
     if (!validImages.length) {
       return (
-        <div className="w-20 h-20 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
-          <span className="text-gray-500 text-sm">Không có ảnh</span>
+        <div className="w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center bg-gray-200 rounded-lg mx-auto">
+          <span className="text-gray-500 text-xs sm:text-sm">Không có ảnh</span>
         </div>
       );
     }
@@ -249,11 +285,11 @@ const BlogList = () => {
         : "/placeholder-image.jpg";
 
     return (
-      <div className="relative w-40 h-40 mx-auto group">
+      <div className="relative w-24 h-24 sm:w-28 sm:h-28 mx-auto group">
         <img
           src={displaySrc}
           alt={`Blog image ${currentIndex}`}
-          className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover rounded-lg shadow-sm transition-transform duration-300 group-hover:scale-105"
           onError={(e) => (e.target.src = "/placeholder-image.jpg")}
         />
         {validImages.length > 1 && (
@@ -274,9 +310,7 @@ const BlogList = () => {
               {validImages.map((_, idx) => (
                 <span
                   key={idx}
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    idx === currentIndex ? "bg-white" : "bg-gray-400"
-                  }`}
+                  className={`w-1.5 h-1.5 rounded-full ${idx === currentIndex ? "bg-white" : "bg-gray-400"}`}
                 />
               ))}
             </div>
@@ -287,47 +321,45 @@ const BlogList = () => {
   };
 
   return (
-    <div className="py-4 px-2 sm:px-4 lg:px-6 xl:px-8 mb-10">
+    <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
       <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
-        {/* Header */}
-        <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
-          <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <FileText className="h-6 w-6 text-orange-500" />
-            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
-              Danh Sách Blog
-            </h2>
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8">
+          <div className="flex items-center space-x-3 mb-4 sm:mb-0">
+            <FileText className="h-8 w-8 text-orange-500" />
+            <h2 className="text-2xl sm:text-3xl font-bold">Danh Sách Blog</h2>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 items-center">
-            <NavLink
-              to="create"
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-md"
-            >
-              <PlusCircle className="h-5 w-5" />
-              <span className="hidden sm:inline">Tạo Blog</span>
-            </NavLink>
-            {/* Removed <Notification /> */}
-          </div>
+          <NavLink
+            to="create"
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
+          >
+            <PlusCircle className="h-5 w-5" />
+            <span className="text-sm sm:text-base">Tạo Blog</span>
+          </NavLink>
         </div>
 
-        {/* Filter and Search */}
-        <div className="mb-6 p-4 rounded-lg shadow-sm">
+        {/* Search and Filter Section */}
+        <div className="mb-6 p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            {/* Search Input */}
             <div className="relative w-full sm:w-1/2 lg:w-1/3">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
                 placeholder="Tìm kiếm theo tiêu đề"
                 onChange={(e) => debouncedSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm sm:text-base shadow-sm"
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 text-sm sm:text-base shadow-sm"
               />
             </div>
+
+            {/* Filter Dropdown */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Filter className="h-5 w-5 text-orange-500" />
-              <span className="font-medium text-sm sm:text-base">Lọc:</span>
+              <Filter className="h-5 w-5 text-orange-600" />
+              <span className="font-medium text-sm sm:text-base">Lọc theo trạng thái:</span>
               <select
                 value={statusFilter}
                 onChange={(e) => dispatch(setStatusFilter(e.target.value))}
-                className={`w-full sm:w-auto px-3 py-2 border rounded-lg text-sm sm:text-base ${getFilterBgClass()} shadow-sm`}
+                className={`w-full sm:w-auto px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg text-sm sm:text-base ${getFilterBgClass()} focus:outline-none focus:border-orange-500 transition duration-150 ease-in-out`}
               >
                 <option value="2">Đã xuất bản</option>
                 <option value="1">Đang chờ</option>
@@ -346,14 +378,14 @@ const BlogList = () => {
 
         {/* Loading State */}
         {(initialLoading || loading) ? (
-          <div className="flex items-center justify-center py-6 mb-200">
+          <div className="flex items-center justify-center py-6">
             <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
-            <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
+            <p className="text-orange-500 text-base sm:text-lg font-medium">Đang tải dữ liệu...</p>
           </div>
         ) : filteredBlogs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
             <FileText className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-500 text-lg">
+            <p className="text-lg sm:text-xl text-gray-600 text-center">
               {searchTerm
                 ? `Không tìm thấy blog nào với trạng thái "${getStatusDisplayName(
                     Number(statusFilter)
@@ -366,82 +398,83 @@ const BlogList = () => {
         ) : (
           <>
             {/* Desktop Table */}
-            <div className="hidden md:block border rounded-lg overflow-x-auto">
+            <div className="hidden md:block border border-gray-200 rounded-lg overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead className="border-b bg-gray-400">
+                <thead className="bg-gray-400">
                   <tr>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                    <th className="px-4 py-3 font-semibold text-sm sm:text-base uppercase tracking-wide text-center">
                       #
                     </th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                    <th className="px-4 py-3 font-semibold text-sm sm:text-base uppercase tracking-wide text-center">
                       Ảnh
                     </th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                    <th className="px-4 py-3 font-semibold text-sm sm:text-base uppercase tracking-wide text-center w-[20%]">
                       Tiêu đề
                     </th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                    <th className="px-4 py-3 font-semibold text-sm sm:text-base uppercase tracking-wide text-center">
                       Nội dung
                     </th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                    <th className="px-4 py-3 font-semibold text-sm sm:text-base uppercase tracking-wide text-center">
                       Ngày tạo
                     </th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
+                    <th className="px-4 py-3 font-semibold text-sm sm:text-base uppercase tracking-wide text-center w-[15%]">
                       Trạng thái
                     </th>
-                    {hasCancelledBlogs && (
-                      <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
-                        Thao tác
-                      </th>
-                    )}
+                    <th className="px-4 py-3 font-semibold text-sm sm:text-base uppercase tracking-wide text-center w-[15%]">
+                      Hành động
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {displayedBlogs.map((blog, index) => (
                     <tr
                       key={blog.blogId}
-                      className="border-b hover:bg-gray-500 transition-colors"
+                      className="border-b hover:bg-gray-400 transition-colors"
                     >
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-4 text-center text-sm sm:text-base">
                         {(currentPage - 1) * blogsPerPage + index + 1}
                       </td>
                       <td className="px-4 py-4 text-center">
                         {renderImages(blog.images, blog.blogId)}
                       </td>
-                      <td className="px-4 py-4 text-center">
-                        <Link
-                          to={`/manage/blog/${blog.blogId}`}
-                          className="hover:text-orange-400 transition-colors"
-                        >
-                          {blog.blogTitle}
-                        </Link>
+                      <td className="px-4 py-4 text-center text-sm sm:text-base">
+                        {blog.blogTitle}
                       </td>
-                      <td className="px-4 py-4 text-center truncate max-w-xs">
+                      <td className="px-4 py-4 text-center text-sm sm:text-base truncate max-w-xs">
                         {blog.blogContent}
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-4 text-center text-sm sm:text-base">
                         {formatDate(blog.blogCreatedDate)}
                       </td>
                       <td className="px-4 py-4 text-center">
                         <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-sm ${getStatusClass(
+                          className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full font-medium text-xs sm:text-sm ${getStatusClass(
                             blog.status
                           )}`}
                         >
                           {getStatusDisplayName(blog.status)}
                         </span>
                       </td>
-                      {hasCancelledBlogs && (
-                        <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-4 text-center">
+                        <div className="flex justify-center items-center gap-2">
+                          <button
+                            onClick={() => navigate(`/manage/blog/${blog.blogId}`)}
+                            className="bg-orange-100 text-orange-700 hover:bg-orange-400 p-1.5 sm:p-2 rounded-lg transition-colors"
+                            title="Xem chi tiết"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
                           {blog.status === 0 && (
-                            <Link
-                              to={`/manage/blog/update/${blog.blogId}`}
-                              className="inline-flex items-center justify-center bg-yellow-100 text-yellow-700 hover:bg-yellow-200 p-2 rounded-lg transition-colors w-10 h-10"
+                            <button
+                              onClick={() => navigate(`/manage/blog/update/${blog.blogId}`)}
+                              className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 sm:p-2 rounded-lg transition-colors"
+                              title="Cập nhật"
                             >
                               <Edit className="w-4 h-4" />
-                            </Link>
+                            </button>
                           )}
-                        </td>
-                      )}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -453,9 +486,9 @@ const BlogList = () => {
               {displayedBlogs.map((blog, index) => (
                 <div
                   key={blog.blogId}
-                  className="border rounded-lg p-4 shadow-sm hover:bg-gray-50 transition-colors"
+                  className="border border-gray-200 rounded-lg p-4 shadow-sm hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3">
                     <div className="flex justify-between items-center">
                       <span className="font-semibold text-sm text-gray-700">
                         #{(currentPage - 1) * blogsPerPage + index + 1}
@@ -468,32 +501,41 @@ const BlogList = () => {
                         {getStatusDisplayName(blog.status)}
                       </span>
                     </div>
-                    {renderImages(blog.images, blog.blogId)}
-                    <p className="text-sm text-gray-700">
-                      <span className="font-medium">Tiêu đề:</span>{" "}
-                      <Link
-                        to={`/manage/blog/${blog.blogId}`}
-                        className="text-orange-500 hover:text-orange-600"
-                      >
+                    <div className="flex justify-center">
+                      {renderImages(blog.images, blog.blogId)}
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-sm">
+                        <span className="font-medium">Tiêu đề:</span>{" "}
                         {blog.blogTitle}
-                      </Link>
-                    </p>
-                    <p className="text-sm text-gray-600 truncate">
-                      <span className="font-medium">Nội dung:</span>{" "}
-                      {blog.blogContent}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Ngày tạo:</span>{" "}
-                      {formatDate(blog.blogCreatedDate)}
-                    </p>
-                    {blog.status === 0 && (
-                      <Link
-                        to={`/manage/blog/update/${blog.blogId}`}
-                        className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 p-2 rounded-lg flex items-center justify-center w-10 h-10 mt-2 mx-auto"
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Nội dung:</span>{" "}
+                        {blog.blogContent}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-medium">Ngày tạo:</span>{" "}
+                        {formatDate(blog.blogCreatedDate)}
+                      </p>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => navigate(`/manage/blog/${blog.blogId}`)}
+                        className="bg-orange-100 text-orange-700 hover:bg-orange-200 p-2 rounded-lg transition-colors"
+                        title="Xem chi tiết"
                       >
-                        <Edit className="w-4 h-4" />
-                      </Link>
-                    )}
+                        <Eye className="w-5 h-5" />
+                      </button>
+                      {blog.status === 0 && (
+                        <button
+                          onClick={() => navigate(`/manage/blog/update/${blog.blogId}`)}
+                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 p-2 rounded-lg transition-colors"
+                          title="Cập nhật"
+                        >
+                          <Edit className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -501,11 +543,13 @@ const BlogList = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                setCurrentPage={setCurrentPage}
-              />
+              <div className="mt-6">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  setCurrentPage={setCurrentPage}
+                />
+              </div>
             )}
           </>
         )}

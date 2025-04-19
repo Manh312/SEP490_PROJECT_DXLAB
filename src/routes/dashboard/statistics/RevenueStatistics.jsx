@@ -1,8 +1,9 @@
 import { useTheme } from "../../../hooks/use-theme";
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, ReferenceLine, CartesianGrid } from "recharts";
 import PropTypes from "prop-types";
+import { useState, useEffect } from "react";
 
-const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueYTicks, participationPieData }) => {
+const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueYTicks, participationPieData, period, year, month }) => {
   const { theme } = useTheme();
   const COLORS = ["#f97316", "#94a3b8"]; // Orange for participating students, gray for non-participating
 
@@ -14,18 +15,72 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
     entry => entry.studentRevenue > 0
   );
 
+  // Check if screen is large for ReferenceLine
+  const [isLargeScreen, setIsLargeScreen] = useState(typeof window !== "undefined" ? window.innerWidth > 768 : false);
+
+  useEffect(() => {
+    const handleResize = () => setIsLargeScreen(window.innerWidth > 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Utility to get days in month
+  const getDaysInMonth = (month, year) => {
+    const parsedMonth = parseInt(month);
+    const parsedYear = parseInt(year);
+    if (isNaN(parsedMonth) || isNaN(parsedYear)) return 0;
+    return new Date(parsedYear, parsedMonth, 0).getDate();
+  };
+
+  // Dynamic X-axis interval to avoid label clutter
+  const maxLabels = 10;
+  const xAxisInterval = period === "tháng" && revenueAreaData.length > maxLabels ? Math.ceil(revenueAreaData.length / maxLabels) : 0;
+
+  // Reference lines for monthly view (only on large screens)
+  const daysInMonth = period === "tháng" && month && year ? getDaysInMonth(month, year) : 0;
+  const referenceLines = isLargeScreen && period === "tháng" && daysInMonth > 0 ? (
+    <>
+      <ReferenceLine
+        x="Ngày 1"
+        stroke="#3b82f6"
+        strokeDasharray="3 3"
+        label={{ value: "Đầu tháng", position: "top", fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+      />
+      <ReferenceLine
+        x="Ngày 15"
+        stroke="#ef4444"
+        strokeDasharray="3 3"
+        label={{ value: "Giữa tháng", position: "top", fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+      />
+      <ReferenceLine
+        x={`Ngày ${daysInMonth}`}
+        stroke="#10b981"
+        strokeDasharray="3 3"
+        label={{ value: "Cuối tháng", position: "top", fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+      />
+    </>
+  ) : null;
+
+  // Thêm log để kiểm tra
+  console.log("RevenueStatistics - period:", period);
+  console.log("RevenueStatistics - year:", year);
+  console.log("RevenueStatistics - month:", month);
+  console.log("RevenueStatistics - revenueAreaData length:", revenueAreaData.length);
+  console.log("RevenueStatistics - xAxisInterval:", xAxisInterval);
+  console.log("RevenueStatistics - isLargeScreen:", isLargeScreen);
+  console.log("RevenueStatistics - daysInMonth:", daysInMonth);
+  console.log("RevenueStatistics - referenceLines:", referenceLines ? "Present" : "Not Present");
+
   return (
     <div
-      className={`card col-span-1 md:col-span-2 lg:col-span-4 rounded-xl shadow-lg transition-all duration-300 ${
-        theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
-      }`}
+      className={`card col-span-1 md:col-span-2 lg:col-span-4 rounded-xl shadow-lg transition-all duration-300 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+        }`}
     >
       {/* Card Header */}
       <div className="card-header border-b border-gray-200 dark:border-gray-700">
         <p
-          className={`card-title text-2xl font-semibold p-6 ${
-            theme === "dark" ? "text-white" : "text-gray-900"
-          }`}
+          className={`card-title text-2xl font-semibold p-6 ${theme === "dark" ? "text-white" : "text-gray-900"
+            }`}
         >
           Thống kê doanh thu
         </p>
@@ -36,9 +91,8 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
         {/* Pie Chart for Student Participation Rate */}
         <div className="flex flex-col items-center animate-fade-in">
           <h3
-            className={`text-xl font-medium mb-4 ${
-              theme === "dark" ? "text-gray-200" : "text-gray-700"
-            }`}
+            className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"
+              }`}
           >
             Tỷ lệ sinh viên tham gia
           </h3>
@@ -81,9 +135,8 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
                   height={36}
                   formatter={(value) => (
                     <span
-                      className={`text-sm ${
-                        theme === "dark" ? "text-gray-300" : "text-gray-600"
-                      }`}
+                      className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-600"
+                        }`}
                     >
                       {value}
                     </span>
@@ -101,9 +154,8 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
         {/* Area Chart for Revenue Trends */}
         <div className="flex flex-col animate-fade-in">
           <h3
-            className={`text-xl font-medium mb-4 ${
-              theme === "dark" ? "text-gray-200" : "text-gray-700"
-            }`}
+            className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"
+              }`}
           >
             Biểu đồ thống kê doanh thu
           </h3>
@@ -113,6 +165,12 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
                 data={revenueAreaData}
                 margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
               >
+                <CartesianGrid
+                  stroke={theme === "dark" ? "#4b5563" : "#e5e7eb"}
+                  strokeDasharray="3 3"
+                  horizontal={true}
+                  vertical={false}
+                />
                 <defs>
                   <linearGradient id="colorTotalOverview" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#f97316" stopOpacity={0.9} />
@@ -142,7 +200,7 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
                   angle={-45}
                   textAnchor="end"
                   height={70}
-                  interval={0}
+                  interval={xAxisInterval}
                   tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
                 />
                 <YAxis
@@ -165,6 +223,7 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
                   fill="url(#colorTotalOverview)"
                   activeDot={{ r: 6, fill: "#f97316", stroke: theme === "dark" ? "#1f2937" : "#ffffff" }}
                 />
+                {referenceLines}
               </AreaChart>
             </ResponsiveContainer>
           ) : (
@@ -189,6 +248,9 @@ RevenueStatistics.propTypes = {
       value: PropTypes.number.isRequired,
     })
   ).isRequired,
+  period: PropTypes.oneOf(["năm", "tháng"]).isRequired,
+  year: PropTypes.string.isRequired,
+  month: PropTypes.string,
 };
 
 export default RevenueStatistics;

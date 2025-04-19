@@ -9,6 +9,7 @@ import {
   Trash,
   ChevronLeft,
   ChevronRight,
+  FileText,
 } from "lucide-react";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
@@ -452,7 +453,7 @@ const BlogListOfStaff = () => {
           </div>
         ) : filteredBlogs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <PlusCircle className="h-12 w-12 text-gray-400 mb-4" />
+            <FileText className="h-12 w-12 text-gray-400 mb-4" />
             <p className="text-gray-500 text-lg text-center">
               {searchTerm
                 ? `Không tìm thấy blog nào với trạng thái "${adminStatusFilter === "All" ? "Tất cả" : mapStatusToString(adminStatusFilter === "Approved" ? 2 : 1)}" khớp với tìm kiếm`

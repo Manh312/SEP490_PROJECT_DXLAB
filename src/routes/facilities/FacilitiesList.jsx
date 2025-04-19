@@ -4,8 +4,7 @@ import { fetchFacilities, addFacilityFromExcel, moveToStorage } from "../../redu
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FaFileExcel, FaFilter, FaSpinner } from "react-icons/fa";
-import { PlusCircle, Search, Trash2 } from "lucide-react";
-import { MdChair } from "react-icons/md";
+import { Eye, Package, PlusCircle, Search, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import debounce from "lodash/debounce";
 import Pagination from "../../hooks/use-pagination";
@@ -23,7 +22,7 @@ const FacilitiesList = () => {
     expiredDateEnd: "",
   });
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [fileInputKey, setFileInputKey] = useState(Date.now()); // Add state for file input key
+  const [fileInputKey, setFileInputKey] = useState(Date.now());
   const postsPerPage = 6;
 
   const debouncedSearch = debounce((value) => {
@@ -89,10 +88,10 @@ const FacilitiesList = () => {
       const res = await dispatch(addFacilityFromExcel(formData)).unwrap();
       toast.success(res.message || "Nhập file Excel thành công!");
       dispatch(fetchFacilities());
-      setFileInputKey(Date.now()); // Update the key to remount the input
+      setFileInputKey(Date.now());
     } catch (err) {
       toast.error(err?.message);
-      setFileInputKey(Date.now()); // Update the key even on error to allow retry
+      setFileInputKey(Date.now());
     }
   };
 
@@ -122,15 +121,15 @@ const FacilitiesList = () => {
   // Function to determine quality status based on remainingValue
   const getQualityStatus = (facility) => {
     const remainingValue = facility.remainingValue || 0;
-    const originalValue = facility.quantity; // Assuming quantity is the original value
-    const threshold = originalValue / 10; // 1/10 of the original value
+    const originalValue = facility.quantity;
+    const threshold = originalValue / 10;
 
     if (remainingValue === 0) {
-      return { status: "Hết hạn", color: "text-red-600" };
+      return { status: "Hết hạn", class: "bg-red-100 text-red-800" };
     } else if (remainingValue <= threshold) {
-      return { status: "Sắp hết hạn", color: "text-orange-600" };
+      return { status: "Sắp hết hạn", class: "bg-yellow-100 text-yellow-800" };
     } else {
-      return { status: "Bình thường", color: "text-green-600" };
+      return { status: "Bình thường", class: "bg-green-100 text-green-800" };
     }
   };
 
@@ -140,7 +139,7 @@ const FacilitiesList = () => {
         {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <MdChair className="h-6 w-6 text-orange-500" />
+            <Package className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
               Danh Sách Cơ Sở Vật Chất
             </h2>
@@ -150,7 +149,7 @@ const FacilitiesList = () => {
               <FaFileExcel className="h-5 w-5" />
               <span className="hidden sm:inline">Thêm từ Excel</span>
               <input
-                key={fileInputKey} // Add key to remount the input
+                key={fileInputKey}
                 type="file"
                 accept=".xlsx, .xls"
                 onChange={handleImportExcel}
@@ -250,7 +249,7 @@ const FacilitiesList = () => {
           </div>
         ) : filteredFacilities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <MdChair className="h-12 w-12 text-gray-400 mb-4" />
+            <Package className="h-12 w-12 text-gray-400 mb-4" />
             <p className="text-gray-500 text-lg">Không có dữ liệu để hiển thị</p>
           </div>
         ) : (
@@ -273,23 +272,19 @@ const FacilitiesList = () => {
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ngày hết hạn</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Giá trị còn lại</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Chất lượng</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentPosts.map((facility, index) => {
-                    const { status, color } = getQualityStatus(facility);
+                    const { status, class: statusClass } = getQualityStatus(facility);
                     return (
                       <tr key={facility.id} className="border-b hover:bg-gray-400 transition-colors">
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                           {(currentPage - 1) * postsPerPage + index + 1}
                         </td>
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                          <Link
-                            to={`/dashboard/facilities/${facility.facilityId}`}
-                            className="hover:text-neutral-300 inline-block"
-                          >
-                            {facility.batchNumber}
-                          </Link>
+                          {facility.batchNumber}
                         </td>
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.facilityTitle}</td>
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.cost}</td>
@@ -301,8 +296,19 @@ const FacilitiesList = () => {
                           {format(new Date(facility.expiredTime), "dd/MM/yyyy")}
                         </td>
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.remainingValue || 0}</td>
-                        <td className={`px-2 py-3 md:px-3 md:py-4 text-center ${color}`}>
-                          {status}
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-sm ${statusClass}`}>
+                            {status}
+                          </span>
+                        </td>
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                          <button
+                            onClick={() => navigate(`/dashboard/facilities/${facility.facilityId}`)}
+                            className="bg-orange-100 text-orange-700 hover:bg-orange-400 p-1.5 sm:p-2 rounded-lg transition-colors"
+                            title="Xem chi tiết cơ sở vật chất"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     );
@@ -314,7 +320,7 @@ const FacilitiesList = () => {
             {/* Card View for Mobile */}
             <div className="block md:hidden space-y-4">
               {currentPosts.map((facility, index) => {
-                const { status, color } = getQualityStatus(facility);
+                const { status, class: statusClass } = getQualityStatus(facility);
                 return (
                   <div
                     key={facility.id}
@@ -355,8 +361,11 @@ const FacilitiesList = () => {
                       <p className="text-sm">
                         <span className="font-medium">Giá trị còn lại:</span> {facility.remainingValue || 0}
                       </p>
-                      <p className={`text-sm ${color}`}>
-                        <span className="font-medium">Chất lượng:</span> {status}
+                      <p className="text-sm">
+                        <span className="font-medium">Chất lượng:</span>{" "}
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-sm ${statusClass}`}>
+                          {status}
+                        </span>
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <button
@@ -365,12 +374,6 @@ const FacilitiesList = () => {
                         >
                           <Trash2 className="w-4 h-4" /> Xóa mềm
                         </button>
-                        {/* <Link
-                          to={`/dashboard/facilities/update/${facility.id}`}
-                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
-                        >
-                          <Edit className="w-4 h-4" /> Cập nhật
-                        </Link> */}
                       </div>
                     </div>
                   </div>

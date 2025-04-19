@@ -1,5 +1,5 @@
 import { useTheme } from "../../../hooks/use-theme";
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, CartesianGrid, ReferenceLine } from "recharts";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, ReferenceLine } from "recharts";
 import PropTypes from "prop-types";
 import { useMemo, useState, useEffect } from "react";
 
@@ -10,6 +10,9 @@ const PerformanceStatistics = ({
   utilizationRates,
   utilizationRatesByYear,
   performanceData,
+  performanceMinY,
+  performanceMaxY,
+  performanceYTicks,
 }) => {
   const { theme } = useTheme();
   const COLORS = ["#3b82f6", "#ef4444"]; // Colors for pie chart
@@ -25,17 +28,21 @@ const PerformanceStatistics = ({
 
   // Normalize performanceData to ensure values are in percentage (e.g., 0.11 -> 11)
   const normalizedPerformanceData = useMemo(() => {
-    return performanceData.map((entry) => {
+    if (!performanceData || performanceData.length === 0) return [];
+    const normalized = performanceData.map((entry) => {
       const normalizedEntry = { name: entry.name };
       Object.keys(entry).forEach((key) => {
         if (key !== "name") {
           const value = entry[key];
-          // If value is between 0 and 1, assume it's a fraction and convert to percentage
-          normalizedEntry[key] = typeof value === "number" && value > 0 && value < 1 ? value * 100 : value || 0;
+          // Nếu giá trị nằm trong khoảng (0, 1), nhân với 100 để chuyển thành phần trăm
+          normalizedEntry[key] = typeof value === "number" && value > 0 && value <= 1 ? value * 100 : value || 0;
         }
       });
       return normalizedEntry;
     });
+    console.log("performanceData:", performanceData);
+    console.log("normalizedPerformanceData:", normalized);
+    return normalized;
   }, [performanceData]);
 
   // Get list of areas dynamically
@@ -55,11 +62,25 @@ const PerformanceStatistics = ({
 
   // Compute average utilization rate for pie chart
   const avgUtilizationRate = useMemo(() => {
-    if (!hasPerformanceData) return 0;
-    return normalizedPerformanceData.reduce((sum, entry) => {
-      const areaValues = areas.reduce((areaSum, area) => areaSum + (entry[area] || 0), 0);
-      return sum + areaValues / areas.length;
-    }, 0) / normalizedPerformanceData.length;
+    if (!hasPerformanceData || areas.length === 0) return 0;
+
+    // Tính tổng tất cả các rate và đếm tổng số bản ghi
+    let totalRate = 0;
+    let totalEntries = 0;
+
+    normalizedPerformanceData.forEach((entry) => {
+      areas.forEach((area) => {
+        const rate = entry[area] || 0;
+        if (rate > 0) {
+          totalRate += rate;
+          totalEntries += 1;
+        }
+      });
+    });
+
+    const avgRate = totalEntries > 0 ? totalRate / totalEntries : 0;
+    console.log("totalRate:", totalRate, "totalEntries:", totalEntries, "avgUtilizationRate:", avgRate);
+    return avgRate;
   }, [hasPerformanceData, normalizedPerformanceData, areas]);
 
   const utilizationPieData = [
@@ -77,7 +98,7 @@ const PerformanceStatistics = ({
 
   // Process area data to include total (average across areas)
   const processAreaData = useMemo(() => {
-    if (!hasPerformanceData) {
+    if (!hasPerformanceData || areas.length === 0) {
       if (period === "năm") {
         return Array.from({ length: 12 }, (_, i) => ({
           name: `Tháng ${i + 1}`,
@@ -99,16 +120,14 @@ const PerformanceStatistics = ({
     if (period === "tháng" && month && year) {
       const daysInMonth = getDaysInMonth(month, year);
       if (daysInMonth === 0) return [];
-      // Initialize all days
       const dailyData = Array.from({ length: daysInMonth }, (_, i) => ({
         name: `Ngày ${i + 1}`,
         total: 0,
         ...areas.reduce((acc, area) => ({ ...acc, [area]: 0 }), {}),
       }));
 
-      // Map normalizedPerformanceData (daily entries) to dailyData
       normalizedPerformanceData.forEach((entry) => {
-        const day = parseInt(entry.name, 10) - 1; // Convert "01" to 0, etc.
+        const day = parseInt(entry.name, 10) - 1;
         if (day >= 0 && day < daysInMonth) {
           const areaValues = areas.reduce((sum, area) => sum + (entry[area] || 0), 0);
           const total = areas.length > 0 ? areaValues / areas.length : 0;
@@ -123,7 +142,6 @@ const PerformanceStatistics = ({
       return dailyData;
     }
 
-    // Yearly view: process monthly data
     return normalizedPerformanceData.map((entry) => {
       const areaValues = areas.reduce((sum, area) => sum + (entry[area] || 0), 0);
       const total = areas.length > 0 ? areaValues / areas.length : 0;
@@ -135,24 +153,10 @@ const PerformanceStatistics = ({
     });
   }, [hasPerformanceData, period, month, year, normalizedPerformanceData, areas]);
 
-  // Calculate Y-axis props based on total
-  const calculateYAxisProps = useMemo(() => {
-    const maxValue = Math.max(
-      ...processAreaData.map((item) => item.total || 0),
-      10
-    );
-    const roundedMax = Math.ceil(maxValue / 20) * 20;
-    const step = roundedMax / 4;
-    const ticks = [];
-    for (let i = 0; i <= 4; i++) {
-      ticks.push(Math.round(i * step));
-    }
-    return {
-      minY: 0,
-      maxY: roundedMax,
-      ticks: ticks,
-    };
-  }, [processAreaData]);
+  // Use props for Y-axis
+  const minY = performanceMinY;
+  const maxY = performanceMaxY;
+  const ticks = performanceYTicks;
 
   // Custom Tooltip for Area Chart
   const CustomTooltip = ({ active, payload, label }) => {
@@ -187,10 +191,9 @@ const PerformanceStatistics = ({
   };
 
   const areaData = processAreaData;
-  const { minY, maxY, ticks } = calculateYAxisProps;
 
   // Dynamic X-axis interval to avoid label clutter
-  const maxLabels = 10; // Maximum number of labels to display
+  const maxLabels = 10;
   const xAxisInterval = period === "tháng" && areaData.length > maxLabels ? Math.ceil(areaData.length / maxLabels) : 0;
 
   // Reference lines for monthly view (only on large screens)
@@ -249,7 +252,7 @@ const PerformanceStatistics = ({
           </h3>
           {utilizationPieData.every((item) => item.value === 0) ? (
             <p className={`text-center text-gray-500 dark:text-gray-400`}>
-              Không có dữ liệu hiệu suất
+              Không có dữ liệu hiệu suất cho {period === "năm" ? `năm ${year}` : `tháng ${month}/${year}`}
             </p>
           ) : (
             <ResponsiveContainer width="100%" height={350}>
@@ -310,9 +313,9 @@ const PerformanceStatistics = ({
           >
             Biểu đồ thống kê hiệu suất (theo %)
           </h3>
-          {areaData.every((item) => item.total === 0) ? (
+          {areaData.length === 0 || areaData.every((item) => item.total === 0) ? (
             <p className={`text-center text-gray-500 dark:text-gray-400`}>
-              Không có dữ liệu hiệu suất
+              Không có dữ liệu hiệu suất cho {period === "năm" ? `năm ${year}` : `tháng ${month}/${year}`}
             </p>
           ) : (
             <ResponsiveContainer width="100%" height={500}>
@@ -320,12 +323,6 @@ const PerformanceStatistics = ({
                 data={areaData}
                 margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
               >
-                <CartesianGrid
-                  stroke={theme === "dark" ? "#4b5563" : "#e5e7eb"}
-                  strokeDasharray="3 3"
-                  horizontal={true}
-                  vertical={false}
-                />
                 <defs>
                   <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#f97316" stopOpacity={0.9} />
@@ -409,6 +406,9 @@ PerformanceStatistics.propTypes = {
     })
   ).isRequired,
   performanceData: PropTypes.array.isRequired,
+  performanceMinY: PropTypes.number.isRequired,
+  performanceMaxY: PropTypes.number.isRequired,
+  performanceYTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
 };
 
 export default PerformanceStatistics;

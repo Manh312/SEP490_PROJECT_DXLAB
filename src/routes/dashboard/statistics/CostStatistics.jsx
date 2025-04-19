@@ -11,11 +11,11 @@ const CostStatistics = ({ jobs, period, year, month }) => {
   const months = period === "tháng" && month
     ? [{ name: `Tháng ${month}`, table: 0, chair: 0, total: 0 }]
     : Array.from({ length: 12 }, (_, i) => ({
-        name: `Tháng ${i + 1}`,
-        table: 0, // Chi phí cho Bàn (faciCategory 1)
-        chair: 0, // Chi phí cho Ghế (faciCategory 0)
-        total: 0, // Tổng chi phí
-      }));
+      name: `Tháng ${i + 1}`,
+      table: 0, // Chi phí cho Bàn (faciCategory 1)
+      chair: 0, // Chi phí cho Ghế (faciCategory 0)
+      total: 0, // Tổng chi phí
+    }));
 
   // Nhóm dữ liệu theo tháng và faciCategory
   const processDataByMonth = () => {
@@ -125,11 +125,10 @@ const CostStatistics = ({ jobs, period, year, month }) => {
       const data = payload[0].payload;
       return (
         <div
-          className={`p-4 rounded-lg shadow-lg border ${
-            theme === "dark"
+          className={`p-4 rounded-lg shadow-lg border ${theme === "dark"
               ? "bg-gray-800 text-white border-gray-700"
               : "bg-white text-gray-900 border-gray-200"
-          }`}
+            }`}
         >
           <p className="font-semibold mb-2">{label}</p>
           <p className="text-sm">
@@ -153,16 +152,14 @@ const CostStatistics = ({ jobs, period, year, month }) => {
 
   return (
     <div
-      className={`card col-span-1 md:col-span-2 lg:col-span-4 rounded-xl shadow-lg transition-all duration-300 ${
-        theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
-      }`}
+      className={`card col-span-1 md:col-span-2 lg:col-span-4 rounded-xl shadow-lg transition-all duration-300 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
+        }`}
     >
       {/* Card Header */}
       <div className="card-header border-b border-gray-200 dark:border-gray-700">
         <p
-          className={`card-title text-2xl font-semibold p-6 ${
-            theme === "dark" ? "text-white" : "text-gray-900"
-          }`}
+          className={`card-title text-2xl font-semibold p-6 ${theme === "dark" ? "text-white" : "text-gray-900"
+            }`}
         >
           Thống kê chi phí bỏ ra
         </p>
@@ -173,9 +170,8 @@ const CostStatistics = ({ jobs, period, year, month }) => {
         {/* Pie Chart for Expense Distribution by faciCategory */}
         <div className="flex flex-col items-center animate-fade-in">
           <h3
-            className={`text-xl font-medium mb-4 ${
-              theme === "dark" ? "text-gray-200" : "text-gray-700"
-            }`}
+            className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"
+              }`}
           >
             Phân bổ chi phí bỏ ra theo hạng mục - {period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}
           </h3>
@@ -221,9 +217,8 @@ const CostStatistics = ({ jobs, period, year, month }) => {
                     height={36}
                     formatter={(value) => (
                       <span
-                        className={`text-sm ${
-                          theme === "dark" ? "text-gray-300" : "text-gray-600"
-                        }`}
+                        className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-600"
+                          }`}
                       >
                         {value}
                       </span>
@@ -239,9 +234,8 @@ const CostStatistics = ({ jobs, period, year, month }) => {
         {period === "năm" && (
           <div className="flex flex-col animate-fade-in">
             <h3
-              className={`text-xl font-medium mb-4 ${
-                theme === "dark" ? "text-gray-200" : "text-gray-700"
-              }`}
+              className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"
+                }`}
             >
               Biểu đồ thống kê chi phí bỏ ra (theo DXL)
             </h3>

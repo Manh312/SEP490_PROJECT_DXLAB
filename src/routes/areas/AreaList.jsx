@@ -5,6 +5,7 @@ import debounce from "lodash/debounce";
 import Pagination from "../../hooks/use-pagination";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllAreaTypeCategories } from "../../redux/slices/AreaCategory";
+import { FaSpinner } from "react-icons/fa";
 
 const AreaList = () => {
   const navigate = useNavigate();
@@ -182,8 +183,8 @@ const AreaList = () => {
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
             {/* Search Input */}
             <div className="relative w-full sm:w-1/2 lg:w-1/3">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
                 type="text"
                 placeholder="Tìm kiếm theo tên dịch vụ"
                 onChange={(e) => debouncedSearch(e.target.value)}
@@ -210,10 +211,9 @@ const AreaList = () => {
 
         {/* Loading, Error, or Table/Empty State */}
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <p className="text-lg sm:text-xl font-semibold text-gray-600 animate-pulse">
-              Đang tải dữ liệu...
-            </p>
+          <div className="flex items-center justify-center py-6">
+            <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+            <p className="text-orange-500 text-base sm:text-lg font-medium">Đang tải dữ liệu...</p>
           </div>
         ) : filteredAreas.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
@@ -263,17 +263,17 @@ const AreaList = () => {
                         <div className="flex justify-center items-center gap-2">
                           <Link
                             to={`/dashboard/area/${area.categoryId}`}
-                            className="bg-orange-100 text-orange-700 hover:bg-orange-200 p-1.5 sm:p-2 rounded-lg transition-colors"
+                            className="bg-orange-100 text-orange-700 hover:bg-orange-400 p-1.5 sm:p-2 rounded-lg transition-colors"
                             title="Xem chi tiết"
                           >
-                            <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <Eye className="w-4 h-4" />
                           </Link>
                           <button
                             onClick={() => navigate(`/dashboard/area/update/${area.categoryId}`)}
-                            className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 p-1.5 sm:p-2 rounded-lg transition-colors"
+                            className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 sm:p-2 rounded-lg transition-colors"
                             title="Cập nhật"
                           >
-                            <PencilLine className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <PencilLine className="w-4 h-4" />
                           </button>
                         </div>
                       </td>

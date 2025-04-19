@@ -2,13 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { createAreaType } from "../../redux/slices/AreaType";
-import { Map, X, Building, FileText, Users, Image, Check, Tag } from "lucide-react";
+import { Map, FileText, Power, Image, Check, ArrowLeft, Users, DollarSign, Plus, X } from "lucide-react";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { motion } from "framer-motion";
 
 const CreateAreaType = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.areaTypes);
+  const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  const { loading, areaTypeCategories } = useSelector((state) => state.areaCategory);
 
   const [areaTypeData, setAreaTypeData] = useState({
     areaTypeName: "",
@@ -22,43 +27,40 @@ const CreateAreaType = () => {
 
   const [imagePreviews, setImagePreviews] = useState([]);
   const [failedImages, setFailedImages] = useState(new Set());
-  const { areaTypeCategories } = useSelector((state) => state.areaCategory);
-  console.log("areaTypeCategories", areaTypeCategories);
-
-  const textareaRef = useRef(null);
-  const fileInputRef = useRef(null);
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      if (!areaTypeData.areaDescription.trim()) {
-        textareaRef.current.style.height = "50px";
-      } else {
-        textareaRef.current.style.height = "50px";
-        textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-      }
-    }
-  }, [areaTypeData.areaDescription]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setAreaTypeData({ ...areaTypeData, [name]: value });
+    setAreaTypeData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleNumberChange = (e) => {
     const { name, value } = e.target;
-    setAreaTypeData({ ...areaTypeData, [name]: value === "" ? "" : parseFloat(value) });
+    setAreaTypeData((prev) => ({
+      ...prev,
+      [name]: value === "" ? "" : parseFloat(value),
+    }));
   };
 
   const handleCategoryChange = (e) => {
-    setAreaTypeData({ ...areaTypeData, areaCategory: parseInt(e.target.value) });
+    setAreaTypeData((prev) => ({
+      ...prev,
+      areaCategory: parseInt(e.target.value),
+    }));
+  };
+
+  const handleStatusChange = (e) => {
+    setAreaTypeData((prev) => ({
+      ...prev,
+      status: parseInt(e.target.value),
+    }));
   };
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      setAreaTypeData((prevData) => ({
-        ...prevData,
-        images: [...prevData.images, ...files],
+      setAreaTypeData((prev) => ({
+        ...prev,
+        images: [...prev.images, ...files],
       }));
       const previews = files.map((file) => URL.createObjectURL(file));
       setImagePreviews((prev) => [...prev, ...previews]);
@@ -67,24 +69,44 @@ const CreateAreaType = () => {
 
   const handleRemoveImage = (index) => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-    setAreaTypeData((prevData) => ({
-      ...prevData,
-      images: prevData.images.filter((_, i) => i !== index),
+    setAreaTypeData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
     }));
+    setFailedImages((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(index);
+      return newSet;
+    });
   };
 
   const handleImageError = (index) => {
     setFailedImages((prev) => new Set(prev).add(index));
   };
 
+  const handleTextareaResize = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  };
+
+  useEffect(() => {
+    handleTextareaResize();
+  }, [areaTypeData.areaDescription]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!areaTypeData.areaTypeName.trim()) {
-      toast.error("Tên dịch vụ là bắt buộc!");
+    const trimmedName = areaTypeData.areaTypeName.trim();
+    const trimmedDescription = areaTypeData.areaDescription.trim();
+
+    if (!trimmedName) {
+      toast.error("Tên kiểu khu vực là bắt buộc!");
       return;
     }
-    if (!areaTypeData.areaDescription.trim()) {
+    if (!trimmedDescription) {
       toast.error("Mô tả là bắt buộc!");
       return;
     }
@@ -102,9 +124,9 @@ const CreateAreaType = () => {
     }
 
     const newAreaType = {
-      AreaTypeName: areaTypeData.areaTypeName,
+      AreaTypeName: trimmedName,
       AreaCategory: areaTypeData.areaCategory,
-      AreaDescription: areaTypeData.areaDescription,
+      AreaDescription: trimmedDescription,
       Size: areaTypeData.size,
       Price: areaTypeData.price,
       Status: areaTypeData.status,
@@ -114,185 +136,305 @@ const CreateAreaType = () => {
 
     try {
       await dispatch(createAreaType({ newAreaType, files })).unwrap();
-      toast.success("Tạo dịch vụ thành công!");
+      toast.success("Tạo kiểu khu vực thành công!");
       navigate("/dashboard/areaType");
     } catch (error) {
-      toast.error(error.message || "Lỗi khi tạo dịch vụ!");
+      toast.error(error.message || "Lỗi khi tạo kiểu khu vực!");
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, staggerChildren: 0.15 } },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  };
+
   return (
-    <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-4xl rounded-xl border shadow-2xl p-8 transition-all duration-300 hover:shadow-3xl">
-        <div>
-          <h2 className="text-3xl font-bold text-center text-orange-500">Thêm Kiểu Khu Vực</h2>
-          <p className="mt-2 text-sm text-center text-gray-600">Tạo mới một kiểu khu vực cho hệ thống</p>
+    <div className="min-h-screen py-4 px-3 sm:px-6 lg:px-8 overflow-x-hidden">
+      <motion.div
+        className="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        {/* Header với gradient */}
+        <div className="bg-gradient-to-r from-orange-500 to-orange-700 p-4 sm:p-6">
+          <div className="flex flex-col items-center gap-2">
+            <Map className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+            <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-white text-center">
+              Thêm Kiểu Khu Vực
+            </h2>
+          </div>
         </div>
-        <form onSubmit={handleSubmit} className="mt-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Cột bên trái */}
-            <div className="space-y-6">
-              <div className="flex flex-col">
-                <label className="block text-sm font-medium mb-1">
-                  <span className="flex items-center">
-                    <Building className="mr-2 text-orange-500" /> Tên Kiểu Khu Vực
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  name="areaTypeName"
-                  value={areaTypeData.areaTypeName}
-                  onChange={handleChange}
-                  placeholder="Nhập tên kiểu khu vực"
-                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
-                  required
-                />
-              </div>
-              <div className="flex flex-col">
-                <label className="block text-sm font-medium mb-1">
-                  <span className="flex items-center">
-                    <Users className="mr-2 text-orange-500" /> Số Ghế
-                  </span>
-                </label>
-                <input
-                  type="number"
-                  name="size"
-                  value={areaTypeData.size}
-                  min={1}
-                  onChange={handleNumberChange}
-                  placeholder="Nhập số ghế"
-                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
-                  required
-                />
-              </div>
-              <div className="flex flex-col space-y-1">
-                <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-                  <span className="flex items-center">
-                    <Tag className="mr-1.5 text-orange-500" /> Giá
-                  </span>
-                </label>
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="number"
-                    id="price"
-                    name="price"
-                    value={areaTypeData.price}
-                    min={0}
-                    step="0.01"
-                    onChange={handleNumberChange}
-                    className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out h-12"
-                    placeholder="Nhập giá"
-                    required
-                  />
-                  <span className="flex items-center gap-1 text-sm text-gray-500 font-medium whitespace-nowrap">
-                    DXL
-                  </span>
+
+        {/* Form Section */}
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            {/* Left Column */}
+            <div className="space-y-4 sm:space-y-6">
+              {/* Area Type Name */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Map className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Tên Kiểu Khu Vực <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="areaTypeName"
+                      value={areaTypeData.areaTypeName}
+                      onChange={handleChange}
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      placeholder="Nhập tên kiểu khu vực"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
+              </motion.div>
+
+              {/* Category */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Map className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Dịch Vụ <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="areaCategory"
+                      value={areaTypeData.areaCategory}
+                      onChange={handleCategoryChange}
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                    >
+                      {areaTypeCategories.map((category) => (
+                        <option key={category.categoryId} value={category.categoryId}>
+                          {category.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Size */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Số Lượng (Ghế) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="size"
+                      value={areaTypeData.size}
+                      min={1}
+                      onChange={handleNumberChange}
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      placeholder="Nhập số ghế"
+                      required
+                    />
+                  </div>
+                </div>
+              </motion.div>
             </div>
 
-            {/* Cột bên phải */}
-            <div className="space-y-6">
-              <div className="flex flex-col">
-                <label className="block text-sm font-medium mb-1">
-                  <span className="flex items-center">
-                    <FileText className="mr-2 text-orange-500" /> Mô Tả
-                  </span>
-                </label>
-                <textarea
-                  ref={textareaRef}
-                  name="areaDescription"
-                  value={areaTypeData.areaDescription}
-                  onChange={handleChange}
-                  placeholder="Nhập mô tả kiểu khu vực"
-                  className="w-full px-4 py-3 rounded-lg border focus:outline-none focus:border-orange-500 duration-150 ease-in-out min-h-[50px]"
-                  required
-                />
-              </div>
-              <div className="flex flex-col">
-                <label className="block text-sm font-medium mb-1">
-                  <span className="flex items-center">
-                    <Map className="mr-2 text-orange-500" /> Dịch vụ
-                  </span>
-                </label>
-                <select
-                  name="areaCategory"
-                  value={areaTypeData.areaCategory}
-                  onChange={handleCategoryChange}
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-500 focus:border-orange-500 duration-150 ease-in-out h-12"
-                >
-                  {areaTypeCategories.map((category) => (
-                    <option key={category.id} value={category.categoryId}>
-                      {category.title}
-                    </option>
-                  ))}
-                  
-                </select>
-              </div>
-              <div className="flex flex-col">
-                <label className="block text-sm font-medium mb-1">
-                  <span className="flex items-center">
-                    <Image className="mr-2 text-orange-500" /> Hình Ảnh
-                  </span>
-                </label>
-                <div className="flex flex-col gap-2">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current.click()}
-                    className="border-dashed border-2 border-gray-400 rounded-lg p-2 text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all"
-                  >
-                    Chọn tệp
-                  </button>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                  />
-                  {imagePreviews.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {imagePreviews.map((preview, index) => (
-                        <div key={index} className="relative">
-                          <img
-                            src={failedImages.has(index) ? "/placeholder-image.jpg" : preview}
-                            alt={`preview-${index}`}
-                            className="w-20 h-20 object-cover rounded-lg border"
-                            onError={() => handleImageError(index)}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveImage(index)}
-                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
-                      ))}
+            {/* Right Column */}
+            <div className="space-y-4 sm:space-y-6">
+              {/* Price */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Giá <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex items-center mt-1 sm:mt-2">
+                      <input
+                        type="number"
+                        name="price"
+                        value={areaTypeData.price}
+                        min={0}
+                        step="0.01"
+                        onChange={handleNumberChange}
+                        className="w-full px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                        placeholder="Nhập giá"
+                        required
+                      />
+                      <span className="ml-2 text-sm sm:text-base font-normal text-gray-500 whitespace-nowrap">DXL</span>
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
+              </motion.div>
+
+              {/* Description */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500">
+                      Mô Tả <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      ref={textareaRef}
+                      name="areaDescription"
+                      value={areaTypeData.areaDescription}
+                      onChange={handleChange}
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out min-h-[40px] sm:min-h-[48px] resize-none"
+                      placeholder="Nhập mô tả kiểu khu vực"
+                      required
+                    />
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Status */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Power className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Trạng Thái
+                    </label>
+                    <select
+                      name="status"
+                      value={areaTypeData.status}
+                      onChange={handleStatusChange}
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                    >
+                      <option value={1}>Hoạt động</option>
+                      <option value={0}>Không hoạt động</option>
+                    </select>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Images */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Image className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500">
+                      Hình Ảnh <span className="text-red-500">*</span>
+                    </label>
+                    <div className="flex flex-col gap-2 sm:gap-4 mt-2">
+                      <div className="flex flex-wrap gap-2 sm:gap-4">
+                        {imagePreviews.length > 0 &&
+                          imagePreviews.map((preview, index) => (
+                            <div key={index} className="relative">
+                              <img
+                                src={
+                                  failedImages.has(index)
+                                    ? "/placeholder-image.jpg"
+                                    : preview
+                                }
+                                alt={`AreaType preview ${index}`}
+                                className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg shadow-sm"
+                                onError={() => handleImageError(index)}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(index)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center shadow-md hover:bg-red-600 transition"
+                              >
+                                <X size={12} className="sm:w-4 sm:h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current.click()}
+                          className="w-16 h-16 sm:w-20 sm:h-20 border-dashed border-2 border-gray-300 rounded-lg flex items-center justify-center text-gray-500 hover:border-orange-500 hover:text-orange-500 transition-all"
+                        >
+                          <Plus size={20} className="sm:w-6 sm:h-6" />
+                        </button>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileChange}
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             </div>
           </div>
 
-          <div className="mt-8 flex justify-between gap-4">
+          {/* Action Buttons */}
+          <motion.div
+            className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8"
+            variants={itemVariants}
+          >
             <button
               type="button"
               onClick={() => navigate("/dashboard/areaType")}
-              className="w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition duration-150 ease-in-out"
+              className="w-full sm:w-auto bg-gray-500 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:bg-gray-600 transition-all shadow-md text-sm sm:text-base font-normal"
             >
-              Quay lại
+              <ArrowLeft size={14} className="sm:w-4 sm:h-4" /> Quay Lại
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:bg-orange-300 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+              className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-orange-700 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:from-orange-600 hover:to-orange-800 transition-all shadow-md disabled:bg-orange-300 disabled:cursor-not-allowed text-sm sm:text-base font-normal"
             >
               {loading ? (
-                <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <svg
+                  className="animate-spin h-4 w-4 sm:h-5 sm:w-5 mr-2 text-white"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
                   <path
                     className="opacity-75"
                     fill="currentColor"
@@ -300,14 +442,13 @@ const CreateAreaType = () => {
                   />
                 </svg>
               ) : (
-                <>
-                  <Check className="mr-2" /> Thêm Kiểu Khu Vực
-                </>
+                <Check size={14} className="sm:w-4 sm:h-4" />
               )}
+              Thêm Kiểu Khu Vực
             </button>
-          </div>
+          </motion.div>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 };

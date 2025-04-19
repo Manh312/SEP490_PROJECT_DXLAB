@@ -13,13 +13,10 @@ import {
   resetStats,
 } from "../../redux/slices/Statistics";
 import { FaSpinner } from "react-icons/fa";
-
-// Import the components
 import RevenueStatistics from "./statistics/RevenueStatistics";
 import CostStatistics from "./statistics/CostStatistics";
 import DepreciationStatistics from "./statistics/DepreciationStatistics";
 import PerformanceStatistics from "./statistics/PerformanceStatistics";
-
 import { toast } from "react-toastify";
 
 const Page = () => {
@@ -34,7 +31,6 @@ const Page = () => {
   const [month, setMonth] = useState("");
   const [showCharts, setShowCharts] = useState(false);
   const [activeTab, setActiveTab] = useState("revenue");
-
   const [yearlyStats, setYearlyStats] = useState(null);
   const [detailedStats, setDetailedStats] = useState([]);
   const [yearlyData, setYearlyData] = useState([]);
@@ -46,20 +42,9 @@ const Page = () => {
   const years = Array.from({ length: 10 }, (_, i) => (2025 - i).toString());
   const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
 
-  // Vietnamese month names
   const vietnameseMonths = [
-    "Tháng 1",
-    "Tháng 2",
-    "Tháng 3",
-    "Tháng 4",
-    "Tháng 5",
-    "Tháng 6",
-    "Tháng 7",
-    "Tháng 8",
-    "Tháng 9",
-    "Tháng 10",
-    "Tháng 11",
-    "Tháng 12",
+    "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+    "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
   ];
 
   const getDaysInMonth = (month, year) => {
@@ -83,6 +68,88 @@ const Page = () => {
     });
   }, [dispatch, year]);
 
+  // Process performanceData when utilizationRates or utilizationRatesByYear changes
+  useEffect(() => {
+    if (period === "năm" && utilizationRatesByYear.length > 0) {
+      const monthlyPerformanceData = Array.from({ length: 12 }, (_, i) => ({
+        name: vietnameseMonths[i],
+      })).map((monthEntry, i) => {
+        const entries = utilizationRatesByYear.filter((entry) => {
+          const date = new Date(entry.theDate);
+          return date.getMonth() === i;
+        });
+        const areaTotals = entries.reduce((acc, entry) => {
+          const areaName = entry.areaName || "Unknown Area";
+          const areaKey = areaName.replace(/\s+/g, "");
+          const rate = entry.rate || 0;
+          if (!acc[areaKey]) {
+            acc[areaKey] = { totalRate: 0, count: 0 };
+          }
+          acc[areaKey].totalRate += rate * 100; // Convert to percentage
+          acc[areaKey].count += 1;
+          return acc;
+        }, {});
+        const entry = { name: monthEntry.name };
+        Object.keys(areaTotals).forEach((key) => {
+          if (areaTotals[key].count > 0) {
+            entry[key] = Math.round((areaTotals[key].totalRate / areaTotals[key].count) * 100) / 100;
+          } else {
+            entry[key] = 0;
+          }
+        });
+        return entry;
+      });
+
+      setPerformanceData(monthlyPerformanceData);
+      const rates = monthlyPerformanceData.flatMap((d) => Object.values(d).filter((v) => typeof v === "number"));
+      const minRate = rates.length > 0 ? Math.min(...rates) : 0;
+      const maxRate = rates.length > 0 ? Math.max(...rates) : 100;
+      setPerformanceMinY(Math.floor(minRate / 20) * 20);
+      setPerformanceMaxY(Math.ceil(maxRate / 20) * 20);
+      setPerformanceYTicks(generateYTicks(maxRate, minRate));
+    } else if (period === "tháng" && utilizationRates.length > 0 && month && year) {
+      const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
+      const dailyPerformance = Array.from({ length: daysInMonth }, (_, i) => ({
+        name: (i + 1).toString().padStart(2, "0"),
+      })).map((dayEntry) => {
+        const entries = utilizationRates.filter((entry) => {
+          const date = new Date(entry.theDate);
+          return date.getDate().toString().padStart(2, "0") === dayEntry.name;
+        });
+        const areaTotals = entries.reduce((acc, entry) => {
+          const areaName = entry.areaName || "Unknown Area";
+          const areaKey = areaName.replace(/\s+/g, "");
+          const rate = entry.rate || 0;
+          if (!acc[areaKey]) {
+            acc[areaKey] = { totalRate: 0, count: 0 };
+          }
+          acc[areaKey].totalRate += rate * 100; // Convert to percentage
+          acc[areaKey].count += 1;
+          return acc;
+        }, {});
+        const entry = { name: dayEntry.name };
+        Object.keys(areaTotals).forEach((key) => {
+          if (areaTotals[key].count > 0) {
+            entry[key] = Math.round((areaTotals[key].totalRate / areaTotals[key].count) * 100) / 100;
+          } else {
+            entry[key] = 0;
+          }
+        });
+        return entry;
+      });
+
+      setPerformanceData(dailyPerformance);
+      const rates = dailyPerformance.flatMap((d) => Object.values(d).filter((v) => typeof v === "number"));
+      const minRate = rates.length > 0 ? Math.min(...rates) : 0;
+      const maxRate = rates.length > 0 ? Math.max(...rates) : 100;
+      setPerformanceMinY(Math.floor(minRate / 20) * 20);
+      setPerformanceMaxY(Math.ceil(maxRate / 20) * 20);
+      setPerformanceYTicks(generateYTicks(maxRate, minRate));
+    } else {
+      setPerformanceData([]);
+    }
+  }, [utilizationRates, utilizationRatesByYear, period, month, year]);
+
   const generateYTicks = (maxValue, minValue = 0) => {
     if (maxValue === 0) return [0, 20, 40, 60, 80, 100];
     const roundedMax = Math.ceil(maxValue / 20) * 20;
@@ -91,23 +158,24 @@ const Page = () => {
     return Array.from({ length: 6 }, (_, i) => Math.round(roundedMin + i * step));
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     dispatch(resetStats());
     setYearlyStats(null);
     setDetailedStats([]);
     setPerformanceData([]);
     setShowCharts(false);
 
-    if (period === "năm") {
-      dispatch(
-        fetchStudentGroupStats({
-          period: "năm",
-          year: year,
-          month: null,
-        })
-      ).then((response) => {
-        if (response.payload && response.payload.data) {
-          const { details } = response.payload.data;
+    try {
+      if (period === "năm") {
+        const [studentStatsResponse] = await Promise.all([
+          dispatch(fetchStudentGroupStats({ period: "năm", year: year, month: null })),
+          dispatch(fetchJobsByYear({ year })),
+          dispatch(fetchDepreciationsByYear({ year })),
+          dispatch(fetchUtilizationRateByYear({ year })),
+        ]);
+
+        if (studentStatsResponse.payload && studentStatsResponse.payload.data) {
+          const { details } = studentStatsResponse.payload.data;
           const totalRevenue = details.reduce(
             (sum, item) => sum + (item.revenue.totalRevenue || 0),
             0
@@ -119,7 +187,7 @@ const Page = () => {
                 revenue: { totalRevenue: 0, studentRevenue: 0, studentPercentage: 0 },
               };
             return {
-              name: vietnameseMonths[i], // Use Vietnamese month name
+              name: vietnameseMonths[i],
               totalRevenue: item.revenue.totalRevenue || 0,
               studentRevenue: item.revenue.studentRevenue || 0,
               studentPercentage: item.revenue.studentPercentage || 0,
@@ -127,8 +195,7 @@ const Page = () => {
           });
           const totalStudentPercentage =
             monthlyData.length > 0
-              ? monthlyData.reduce((sum, item) => sum + (item.studentPercentage || 0), 0) /
-                monthlyData.length
+              ? monthlyData.reduce((sum, item) => sum + (item.studentPercentage || 0), 0) / monthlyData.length
               : 0;
           setYearlyStats({
             totalRevenue,
@@ -137,7 +204,7 @@ const Page = () => {
           setDetailedStats(monthlyData);
         } else {
           const monthlyData = Array.from({ length: 12 }, (_, i) => ({
-            name: vietnameseMonths[i], // Use Vietnamese month name
+            name: vietnameseMonths[i],
             totalRevenue: 0,
             studentRevenue: 0,
             studentPercentage: 0,
@@ -146,68 +213,25 @@ const Page = () => {
           setDetailedStats(monthlyData);
         }
 
-        // Process utilizationRatesByYear for monthly performance data
-        const monthlyPerformanceData = Array.from({ length: 12 }, (_, i) => ({
-          name: vietnameseMonths[i], // Use Vietnamese month name
-        })).map((monthEntry, i) => {
-          const entries = utilizationRatesByYear.filter((entry) => {
-            const date = new Date(entry.theDate);
-            return date.getMonth() === i; // Match month index
-          });
-          const areaTotals = entries.reduce((acc, entry) => {
-            const areaName = entry.areaName || "Unknown Area";
-            const areaKey = areaName.replace(/\s+/g, "");
-            const rate = entry.rate || 0;
-            if (!acc[areaKey]) {
-              acc[areaKey] = { totalRate: 0, count: 0 };
-            }
-            acc[areaKey].totalRate += rate * 100; // Convert to percentage
-            acc[areaKey].count += 1;
-            return acc;
-          }, {});
-          const entry = { name: monthEntry.name };
-          Object.keys(areaTotals).forEach((key) => {
-            if (areaTotals[key].count > 0) {
-              entry[key] = Math.round((areaTotals[key].totalRate / areaTotals[key].count) * 100) / 100;
-            } else {
-              entry[key] = 0;
-            }
-          });
-          return entry;
-        });
-
-        setPerformanceData(monthlyPerformanceData);
-        const rates = monthlyPerformanceData.flatMap((d) => Object.values(d).filter((v) => typeof v === "number"));
-        const minRate = rates.length > 0 ? Math.min(...rates) : 0;
-        const maxRate = rates.length > 0 ? Math.max(...rates) : 100;
-        setPerformanceMinY(Math.floor(minRate / 20) * 20);
-        setPerformanceMaxY(Math.ceil(maxRate / 20) * 20);
-        setPerformanceYTicks(generateYTicks(maxRate, minRate));
-
         setShowCharts(true);
-      });
+      } else if (period === "tháng") {
+        if (!month || !year) {
+          toast.error("Vui lòng chọn tháng và năm!");
+          return;
+        }
 
-      dispatch(fetchJobsByYear({ year }));
-      dispatch(fetchDepreciationsByYear({ year }));
-      dispatch(fetchUtilizationRateByYear({ year }));
-    } else if (period === "tháng") {
-      if (!month || !year) {
-        toast.error("Vui lòng chọn tháng và năm!");
-        return;
-      }
-      const monthData = yearlyData.find((d) => d.periodNumber === parseInt(month));
-      const monthStudentPercentage = monthData
-        ? monthData.revenue.studentPercentage || 0
-        : 0;
-      dispatch(
-        fetchStudentGroupStats({
-          period: "tháng",
-          year: year,
-          month: month,
-        })
-      ).then((response) => {
-        if (response.payload && response.payload.data) {
-          const { details } = response.payload.data;
+        const [studentStatsResponse] = await Promise.all([
+          dispatch(fetchStudentGroupStats({ period: "tháng", year: year, month: month })),
+          dispatch(fetchJobsByYearAndMonth({ year, month })),
+          dispatch(fetchDepreciationsByYearAndMonth({ year, month })),
+          dispatch(fetchUtilizationRateByYearAndMonth({ year, month })),
+        ]);
+
+        const monthData = yearlyData.find((d) => d.periodNumber === parseInt(month));
+        const monthStudentPercentage = monthData ? monthData.revenue.studentPercentage || 0 : 0;
+
+        if (studentStatsResponse.payload && studentStatsResponse.payload.data) {
+          const { details } = studentStatsResponse.payload.data;
           const totalRevenue = details.reduce(
             (sum, item) => sum + (item.revenue.totalRevenue || 0),
             0
@@ -243,51 +267,12 @@ const Page = () => {
           setDetailedStats(dailyData);
         }
 
-        // Process utilizationRates for daily performance data
-        const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
-        const dailyPerformance = Array.from({ length: daysInMonth }, (_, i) => ({
-          name: (i + 1).toString().padStart(2, "0"),
-        })).map((dayEntry) => {
-          const entries = utilizationRates.filter((entry) => {
-            const date = new Date(entry.theDate);
-            return date.getDate().toString().padStart(2, "0") === dayEntry.name;
-          });
-          const areaTotals = entries.reduce((acc, entry) => {
-            const areaName = entry.areaName || "Unknown Area";
-            const areaKey = areaName.replace(/\s+/g, "");
-            const rate = entry.rate || 0;
-            if (!acc[areaKey]) {
-              acc[areaKey] = { totalRate: 0, count: 0 };
-            }
-            acc[areaKey].totalRate += rate * 100; // Convert to percentage
-            acc[areaKey].count += 1;
-            return acc;
-          }, {});
-          const entry = { name: dayEntry.name };
-          Object.keys(areaTotals).forEach((key) => {
-            if (areaTotals[key].count > 0) {
-              entry[key] = Math.round((areaTotals[key].totalRate / areaTotals[key].count) * 100) / 100;
-            } else {
-              entry[key] = 0;
-            }
-          });
-          return entry;
-        });
-
-        setPerformanceData(dailyPerformance);
-        const rates = dailyPerformance.flatMap((d) => Object.values(d).filter((v) => typeof v === "number"));
-        const minRate = rates.length > 0 ? Math.min(...rates) : 0;
-        const maxRate = rates.length > 0 ? Math.max(...rates) : 100;
-        setPerformanceMinY(Math.floor(minRate / 20) * 20);
-        setPerformanceMaxY(Math.ceil(maxRate / 20) * 20);
-        setPerformanceYTicks(generateYTicks(maxRate, minRate));
-
         setShowCharts(true);
-      });
-
-      dispatch(fetchJobsByYearAndMonth({ year, month }));
-      dispatch(fetchDepreciationsByYearAndMonth({ year, month }));
-      dispatch(fetchUtilizationRateByYearAndMonth({ year, month }));
+      }
+    } catch (err) {
+      console.log("Error fetching data:", err);
+      toast.error("Đã xảy ra lỗi khi tải dữ liệu!");
+      setShowCharts(false);
     }
   };
 
@@ -361,7 +346,7 @@ const Page = () => {
             studentPercentage: stat.studentPercentage || 0,
           }))
         : Array.from({ length: 12 }, (_, i) => ({
-            name: vietnameseMonths[i], // Use Vietnamese month name
+            name: vietnameseMonths[i],
             studentRevenue: 0,
             studentPercentage: 0,
           }));
@@ -390,6 +375,14 @@ const Page = () => {
   const revenueMaxY = revenueYTicks[revenueYTicks.length - 1];
   const revenueMinY = 0;
 
+  // Thêm log để kiểm tra dữ liệu
+  console.log("Page.jsx - period:", period);
+  console.log("Page.jsx - year:", year);
+  console.log("Page.jsx - month:", month);
+  console.log("Page.jsx - showCharts:", showCharts);
+  console.log("Page.jsx - revenueAreaData length:", revenueAreaData.length);
+  console.log("Page.jsx - revenueAreaData:", revenueAreaData);
+
   return (
     <div className="flex flex-col gap-y-4 mb-20 pl-5">
       <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">Thống kê</h2>
@@ -405,6 +398,7 @@ const Page = () => {
               onChange={(e) => {
                 setPeriod(e.target.value);
                 setMonth("");
+                setShowCharts(false);
               }}
               className="w-full p-2 border rounded-md"
             >
@@ -417,7 +411,10 @@ const Page = () => {
             <label className="block font-medium mb-2">Năm:</label>
             <select
               value={year}
-              onChange={(e) => setYear(e.target.value)}
+              onChange={(e) => {
+                setYear(e.target.value);
+                setShowCharts(false);
+              }}
               className="w-full p-2 border rounded-md"
             >
               {years.map((y) => (
@@ -433,7 +430,10 @@ const Page = () => {
               <label className="block font-medium mb-2">Tháng:</label>
               <select
                 value={month}
-                onChange={(e) => setMonth(e.target.value)}
+                onChange={(e) => {
+                  setMonth(e.target.value);
+                  setShowCharts(false);
+                }}
                 className="w-full p-2 border rounded-md"
               >
                 <option value="">Chọn tháng</option>
@@ -660,6 +660,9 @@ const Page = () => {
                 revenueMaxY={revenueMaxY}
                 revenueYTicks={revenueYTicks}
                 participationPieData={participationPieData}
+                period={period}
+                year={year}
+                month={month}
               />
             )}
 
