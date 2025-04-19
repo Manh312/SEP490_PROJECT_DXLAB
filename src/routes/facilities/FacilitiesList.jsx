@@ -290,7 +290,7 @@ const FacilitiesList = () => {
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.facilityTitle}</td>
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.cost}</td>
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                          {format(new Date(facility.importDate), "dd/MM/yyyy")}
+                          {format(new Date(facility.importDate), "dd/MM/yyyy HH:mm:ss")}
                         </td>
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.quantity}</td>
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">

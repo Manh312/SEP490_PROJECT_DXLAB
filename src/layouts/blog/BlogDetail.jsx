@@ -50,8 +50,7 @@ const BlogDetail = () => {
 
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
-      console.warn(`Invalid date string: ${dateString}`);
-      return 'Không xác định';
+            return 'Không xác định';
     }
 
     const day = String(date.getDate()).padStart(2, '0');

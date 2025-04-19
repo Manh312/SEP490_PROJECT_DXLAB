@@ -17,9 +17,6 @@ const SlotList = () => {
     dispatch(listSlots());
   }, [dispatch]);
 
-  console.log("Slots data:", JSON.stringify(slots, null, 2));
-  console.log("Error:", error);
-
   const handleAddSlot = () => {
     navigate("/dashboard/slot/create");
   };

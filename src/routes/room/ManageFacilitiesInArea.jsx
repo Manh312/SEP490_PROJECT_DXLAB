@@ -48,6 +48,22 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
     setShowModal(true);
   };
 
+  const handleNumberChange = (e) => {
+    const value = e.target.value;
+    // Chỉ chấp nhận số nguyên dương
+    if (value === "" || /^[0-9]+$/.test(value)) {
+      setDeleteQuantity(value);
+    }
+  };
+
+  const handleQuantityChange = (e) => {
+    const value = e.target.value;
+    // Chỉ chấp nhận số nguyên dương
+    if (value === "" || /^[0-9]+$/.test(value)) {
+      setQuantity(value);
+    }
+  };
+
   const handleAddFacility = async () => {
     if (!selectedFacility || !quantity) {
       toast.error("Vui lòng chọn thiết bị và nhập số lượng!");
@@ -322,12 +338,14 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
               </p>
               <input
                 type="number"
+                name="quantity"
                 min={1}
                 max={facilityToDelete.quantity || 0}
                 value={deleteQuantity}
-                onChange={(e) => setDeleteQuantity(e.target.value)}
-                placeholder="Nhập số lượng muốn xóa"
+                onChange={handleNumberChange}
+                placeholder="VD: 10"
                 className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                step="1"
               />
               <div className="flex justify-end gap-2">
                 <button
@@ -545,9 +563,10 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                     min={1}
                     max={selectedFacility.quantity}
                     value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
+                    onChange={handleQuantityChange}
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                     placeholder="VD: 10"
+                    step="1"
                   />
                 </div>
               )}

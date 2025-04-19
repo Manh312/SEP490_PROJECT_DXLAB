@@ -61,7 +61,6 @@ export const addFacilityToArea = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      console.log(error);
       return rejectWithValue(error || 'Lỗi khi thêm thiết bị');
     }
   }

@@ -41,6 +41,8 @@ const Page = () => {
 
   const years = Array.from({ length: 10 }, (_, i) => (2025 - i).toString());
   const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
+  console.log(typeof utilizationRatesByYear);
+  
 
   const vietnameseMonths = [
     "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",

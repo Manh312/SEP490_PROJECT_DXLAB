@@ -235,7 +235,7 @@ const ManageReportList = () => {
                       <td className="px-4 py-4 text-center">
                         {(currentPage - 1) * reportsPerPage + index + 1}
                       </td>
-                      <td className="px-4 py-4 text-center">RP-{report.reportId || "N/A"}</td>
+                      <td className="px-4 py-4 text-center">RP-{report.reportId}</td>
                       <td className="px-4 py-4 text-center">DXL-{report.bookingDetailId || "N/A"}</td>
                       <td className="px-4 py-4 text-center">{report.position || "N/A"}</td>
                       <td className="px-4 py-4 text-center">{report.roomName || "N/A"}</td>
