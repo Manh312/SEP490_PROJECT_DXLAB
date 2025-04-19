@@ -392,17 +392,8 @@ const BlogListOfStaff = () => {
 
   const formatTitle = (title) => {
     if (typeof title !== "string") return "Untitled";
-    const words = title.split(" ");
-    if (words.length > 15) {
-      const firstLine = words.slice(0, 15).join(" ");
-      const secondLine = words.slice(15).join(" ");
-      return (
-        <>
-          {firstLine}
-          <br />
-          {secondLine}
-        </>
-      );
+    if (title.length > 30) {
+      return `${title.slice(0, 30)}...`;
     }
     return title;
   };
