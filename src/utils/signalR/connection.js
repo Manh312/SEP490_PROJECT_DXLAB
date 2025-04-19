@@ -39,6 +39,12 @@ export const startSignalRConnection = async (hubName, accessToken) => {
     return connections[hubName];
   }
 
+  // Nếu có kết nối nhưng không ở trạng thái Connected, dừng nó
+  if (connections[hubName]) {
+    console.log(`Stopping existing SignalR connection for ${hubName} (state: ${connections[hubName].state})...`);
+    await stopSignalRConnection(hubName);
+  }
+
   // Kiểm tra accessToken
   if (!accessToken) {
     throw new Error("Access token is required for SignalR connection");
@@ -68,9 +74,6 @@ export const startSignalRConnection = async (hubName, accessToken) => {
     delete connections[hubName]; // Xóa kết nối khi đóng
   });
 
-  // Lưu kết nối
-  connections[hubName] = connection;
-
   // Thử kết nối với retry
   try {
     await retryWithBackoff(
@@ -79,10 +82,11 @@ export const startSignalRConnection = async (hubName, accessToken) => {
       signalRConfig.retry.baseDelay
     );
     console.log(`SignalR Connected to ${hubName}! Connection ID:`, connection.connectionId || "Unknown");
+    // Lưu kết nối SAU KHI start thành công
+    connections[hubName] = connection;
     return connection;
   } catch (err) {
     console.error(`SignalR Connection Error (${hubName}):`, err);
-    delete connections[hubName];
     throw new Error(`Failed to connect to ${hubName}: ${err.message}`);
   }
 };
@@ -114,5 +118,7 @@ export const getSignalRConnection = (hubName) => {
     console.error(`Invalid hubName: ${hubName}`);
     return null;
   }
-  return connections[hubName] || null;
+  const connection = connections[hubName] || null;
+  console.log(`Retrieving SignalR connection for ${hubName}. State: ${connection ? connection.state : "Not found"}`);
+  return connection;
 };

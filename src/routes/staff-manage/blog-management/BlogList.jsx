@@ -7,7 +7,7 @@ import { fetchBlogsByStatus, setStatusFilter } from "../../../redux/slices/Blog"
 import { addNotification } from "../../../redux/slices/Notification";
 import Pagination from "../../../hooks/use-pagination";
 import { FaSpinner } from "react-icons/fa";
-import { startSignalRConnection, stopSignalRConnection } from "../../../utils/signalR/connection";
+import { startSignalRConnection, stopSignalRConnection, getSignalRConnection } from "../../../utils/signalR/connection";
 import { registerSignalREvent, unregisterSignalREvent } from "../../../utils/signalR/event";
 import { signalRConfig } from "../../../utils/signalR/config";
 
@@ -32,23 +32,41 @@ const BlogList = () => {
     setCurrentPage(1);
   }, 300);
 
-  // SignalR Setup with Retry Mechanism
+  // Wait for the connection to be in the "Connected" state
+  const waitForConnection = async (hubName, maxWaitTime = 10000, interval = 500) => {
+    const startTime = Date.now();
+    while (Date.now() - startTime < maxWaitTime) {
+      const connection = getSignalRConnection(hubName);
+      if (connection && connection.state === "Connected") {
+        return connection;
+      }
+      await new Promise((resolve) => setTimeout(resolve, interval));
+    }
+    throw new Error(`SignalR connection for ${hubName} did not reach Connected state within ${maxWaitTime / 1000} seconds.`);
+  };
+
+  // SignalR Setup (Run only once on mount)
   useEffect(() => {
     let mounted = true;
     let connection = null;
     let retryCount = 0;
     const maxRetries = 3;
-    const retryDelay = 3000; // 3 seconds
+    const retryDelay = 5000; // 5 seconds
 
     const setupSignalR = async () => {
       const connectWithRetry = async () => {
         try {
+          console.log("Attempting to start SignalR connection...");
           connection = await startSignalRConnection("blogHub", token);
           setSignalRError(null);
           retryCount = 0; // Reset retry count on successful connection
 
           if (mounted) {
-            // Đăng ký sự kiện ReceiveBlogStatus
+            // Wait for the connection to be fully in the "Connected" state
+            await waitForConnection("blogHub");
+
+            // Register SignalR events
+            console.log("Registering SignalR events...");
             registerSignalREvent("blogHub", "ReceiveBlogStatus", (blog) => {
               console.log("Received ReceiveBlogStatus event:", blog);
               const message = `Blog "${blog.blogTitle}" đã cập nhật trạng thái thành: ${getStatusDisplayName(blog.status)}`;
@@ -65,13 +83,11 @@ const BlogList = () => {
                 );
                 setTimeout(() => notificationTracker.delete(notificationKey), 5000);
               }
-              // Refresh blog list regardless of current statusFilter
               dispatch(fetchBlogsByStatus(statusFilter)).unwrap().catch((err) => {
-                console.error("Lỗi khi làm mới danh sách blog:", err);
+                console.error("Error refreshing blog list after ReceiveBlogStatus:", err);
               });
             });
 
-            // Đăng ký sự kiện ReceiveBlogDeleted
             registerSignalREvent("blogHub", "ReceiveBlogDeleted", (blogId) => {
               console.log("Received ReceiveBlogDeleted event:", blogId);
               const message = `Blog với ID ${blogId} đã bị xóa bởi Admin!`;
@@ -89,11 +105,10 @@ const BlogList = () => {
                 setTimeout(() => notificationTracker.delete(notificationKey), 5000);
               }
               dispatch(fetchBlogsByStatus(statusFilter)).unwrap().catch((err) => {
-                console.error("Lỗi khi làm mới danh sách blog:", err);
+                console.error("Error refreshing blog list after ReceiveBlogDeleted:", err);
               });
             });
 
-            // Đăng ký sự kiện ReceiveBlogCanceled (fallback)
             registerSignalREvent("blogHub", "ReceiveBlogCanceled", (blog) => {
               console.log("Received ReceiveBlogCanceled event:", blog);
               const message = `Blog "${blog.blogTitle}" đã bị hủy bởi Admin!`;
@@ -111,32 +126,19 @@ const BlogList = () => {
                 setTimeout(() => notificationTracker.delete(notificationKey), 5000);
               }
               dispatch(fetchBlogsByStatus(statusFilter)).unwrap().catch((err) => {
-                console.error("Lỗi khi làm mới danh sách blog:", err);
+                console.error("Error refreshing blog list after ReceiveBlogCanceled:", err);
               });
             });
           }
-
-          // Fetch initial blogs
-          try {
-            const fetchPromise = dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
-            await Promise.all([fetchPromise]);
-          } catch (err) {
-            console.error("Lỗi khi lấy danh sách blog:", err);
-          } finally {
-            if (mounted) {
-              setInitialLoading(false);
-            }
-          }
         } catch (err) {
-          console.error("Lỗi khi thiết lập SignalR:", err);
+          console.error("Error setting up SignalR:", err);
           if (mounted) {
             if (retryCount < maxRetries) {
               retryCount++;
-              console.log(`Retrying SignalR connection (${retryCount}/${maxRetries})...`);
+              console.log(`Retrying SignalR connection (${retryCount}/${maxRetries}) in ${retryDelay / 1000} seconds...`);
               setTimeout(connectWithRetry, retryDelay);
             } else {
               setSignalRError(`Không thể kết nối SignalR sau ${maxRetries} lần thử: ${err.message}`);
-              setInitialLoading(false);
             }
           }
         }
@@ -147,9 +149,25 @@ const BlogList = () => {
 
     setupSignalR();
 
+    // Fetch initial blogs (run once on mount)
+    const fetchInitialBlogs = async () => {
+      try {
+        setInitialLoading(true);
+        await dispatch(fetchBlogsByStatus(statusFilter)).unwrap();
+      } catch (err) {
+        console.error("Error fetching initial blogs:", err);
+      } finally {
+        if (mounted) {
+          setInitialLoading(false);
+        }
+      }
+    };
+
+    fetchInitialBlogs();
+
     return () => {
       mounted = false;
-      console.log("Dọn dẹp kết nối SignalR...");
+      console.log("Cleaning up SignalR connection...");
       unregisterSignalREvent("blogHub", "ReceiveBlogStatus");
       unregisterSignalREvent("blogHub", "ReceiveBlogDeleted");
       unregisterSignalREvent("blogHub", "ReceiveBlogCanceled");
@@ -157,7 +175,7 @@ const BlogList = () => {
         stopSignalRConnection("blogHub");
       }
     };
-  }, [token, dispatch, statusFilter]);
+  }, [token, dispatch]);
 
   // Refresh blog list when statusFilter changes
   useEffect(() => {
@@ -165,7 +183,7 @@ const BlogList = () => {
     dispatch(fetchBlogsByStatus(statusFilter))
       .unwrap()
       .catch((err) => {
-        console.error("Lỗi khi làm mới danh sách blog:", err);
+        console.error("Error refreshing blog list on statusFilter change:", err);
       })
       .finally(() => {
         setInitialLoading(false);

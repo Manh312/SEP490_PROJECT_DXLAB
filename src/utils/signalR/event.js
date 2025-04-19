@@ -3,11 +3,15 @@ import { getSignalRConnection } from "./connection";
 export const registerSignalREvent = (hubName, eventName, callback) => {
   const connection = getSignalRConnection(hubName);
   if (connection) {
-    connection.on(eventName, (...args) => {
-      console.log(`Received event ${eventName} on ${hubName}:`, args);
-      callback(...args);
-    });
-    console.log(`Registered SignalR event: ${eventName} on ${hubName}`);
+    if (connection.state === "Connected") {
+      connection.on(eventName, (...args) => {
+        console.log(`Received event ${eventName} on ${hubName}:`, args);
+        callback(...args);
+      });
+      console.log(`Registered SignalR event: ${eventName} on ${hubName}`);
+    } else {
+      console.warn(`SignalR connection for ${hubName} is not in Connected state. Current state: ${connection.state}`);
+    }
   } else {
     console.error(`SignalR connection not established for ${hubName}. Cannot register event: ${eventName}`);
   }
