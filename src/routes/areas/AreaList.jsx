@@ -6,6 +6,7 @@ import Pagination from "../../hooks/use-pagination";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllAreaTypeCategories } from "../../redux/slices/AreaCategory";
 import { FaSpinner } from "react-icons/fa";
+import { Tooltip } from "react-tooltip"; 
 
 const AreaList = () => {
   const navigate = useNavigate();
@@ -263,15 +264,17 @@ const AreaList = () => {
                         <div className="flex justify-center items-center gap-2">
                           <Link
                             to={`/dashboard/area/${area.categoryId}`}
-                            className="bg-orange-100 text-orange-700 hover:bg-orange-400 p-1.5 sm:p-2 rounded-lg transition-colors"
-                            title="Xem chi tiết"
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Xem chi tiết dịch vụ"
+                            className="bg-orange-100 text-orange-700 ml-2 hover:bg-orange-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                           >
                             <Eye className="w-4 h-4" />
                           </Link>
                           <button
                             onClick={() => navigate(`/dashboard/area/update/${area.categoryId}`)}
-                            className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 sm:p-2 rounded-lg transition-colors"
-                            title="Cập nhật"
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Cập nhật dịch vụ"
+                            className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                           >
                             <PencilLine className="w-4 h-4" />
                           </button>
@@ -346,6 +349,7 @@ const AreaList = () => {
           </>
         )}
       </div>
+      <Tooltip id="action-tooltip" />
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { createRoom } from "../../redux/slices/Room";
 import { fetchAreaTypes } from "../../redux/slices/AreaType";
-import { Home, X, ArrowLeft, Plus, Users, Map, FileText, Image } from "lucide-react";
+import { Home, X, ArrowLeft, Plus, Users, Map, FileText, Image, PlusCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 
@@ -173,8 +173,8 @@ const CreateRoom = () => {
       >
         {/* Header với gradient */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-700 p-4 sm:p-6">
-          <div className="flex flex-col items-center gap-2">
-            <Home className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+          <div className="flex flex-row justify-center items-center p-4 gap-2">
+            <PlusCircle className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-white text-center">
               Thêm Phòng Mới
             </h2>

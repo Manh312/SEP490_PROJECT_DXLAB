@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { fetchAreaTypeById, updateAreaType, updateAreaTypeImages, deleteAreaTypeImage } from "../../redux/slices/AreaType";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Building, FileText, Image, Check, Tag, X, Plus, ArrowLeft } from "lucide-react";
+import { FileText, Image, Check, Tag, X, Plus, ArrowLeft, Map, User, Users, Power, DollarSign } from "lucide-react";
 import { motion } from "framer-motion";
 import { FaSpinner } from "react-icons/fa";
 
@@ -238,10 +238,10 @@ const UpdateAreaType = () => {
       >
         {/* Header với gradient */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-700 p-4 sm:p-6">
-          <div className="flex flex-col items-center gap-2">
-            <Building className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+          <div className="flex flex-row justify-center items-center p-4 gap-2">
+            <Tag className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-white text-center">
-              Cập Nhật Dịch Vụ: {formData.areaTypeName || id}
+              Cập Nhật Kiểu Khu Vực: {formData.areaTypeName || id}
             </h2>
           </div>
         </div>
@@ -258,11 +258,11 @@ const UpdateAreaType = () => {
               >
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="bg-orange-100 rounded-full p-2">
-                    <Building className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                    <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Tên Dịch Vụ <span className="text-red-500">*</span>
+                      Tên Kiểu Khu Vực <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -284,7 +284,7 @@ const UpdateAreaType = () => {
               >
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="bg-orange-100 rounded-full p-2">
-                    <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
@@ -308,7 +308,7 @@ const UpdateAreaType = () => {
               >
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="bg-orange-100 rounded-full p-2">
-                    <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
@@ -341,7 +341,7 @@ const UpdateAreaType = () => {
               >
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="bg-orange-100 rounded-full p-2">
-                    <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                    <Power className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
@@ -395,11 +395,11 @@ const UpdateAreaType = () => {
               >
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="bg-orange-100 rounded-full p-2">
-                    <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                    <Map className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Danh Mục
+                      Dịch Vụ
                     </label>
                     <input
                       type="text"

@@ -350,7 +350,7 @@ const UpdateRoom = () => {
       <div className="w-full max-w-6xl mx-auto rounded-2xl border shadow-lg p-6 sm:p-8 transition-all duration-300">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8">
-          <div className="flex items-center space-x-3 mb-4 sm:mb-0">
+          <div className="flex flex-row justify-center items-center p-4 gap-2">
             <House className="h-8 w-8 text-orange-600" />
             <h2 className="text-2xl sm:text-3xl font-semibold">Quản Lý Phòng {selectedRoom.roomName}</h2>
           </div>
@@ -369,8 +369,8 @@ const UpdateRoom = () => {
             <button
               onClick={() => setActiveTab("update")}
               className={`relative py-3 px-4 sm:py-4 sm:px-6 text-sm font-medium transition-all duration-300 ${activeTab === "update"
-                  ? "text-orange-500 border-b-2 border-orange-500"
-                  : "text-gray-500 hover:text-gray-700"
+                ? "text-orange-500 border-b-2 border-orange-500"
+                : "text-gray-500 hover:text-gray-700"
                 }`}
             >
               Cập Nhật Phòng
@@ -381,8 +381,8 @@ const UpdateRoom = () => {
             <button
               onClick={() => setActiveTab("manage-areas")}
               className={`relative py-3 px-4 sm:py-4 sm:px-6 text-sm font-medium transition-all duration-300 ${activeTab === "manage-areas"
-                  ? "text-orange-500 border-b-2 border-orange-500"
-                  : "text-gray-500 hover:text-gray-700"
+                ? "text-orange-500 border-b-2 border-orange-500"
+                : "text-gray-500 hover:text-gray-700"
                 }`}
             >
               Quản Lý Khu Vực Trong Phòng

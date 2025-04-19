@@ -10,6 +10,7 @@ import { FaSpinner } from "react-icons/fa";
 import { startSignalRConnection, stopSignalRConnection, getSignalRConnection } from "../../../utils/signalR/connection";
 import { registerSignalREvent, unregisterSignalREvent } from "../../../utils/signalR/event";
 import { signalRConfig } from "../../../utils/signalR/config";
+import { Tooltip } from "react-tooltip"; // Import react-tooltip
 
 // Utility to track shown notifications
 const notificationTracker = new Set();
@@ -477,16 +478,18 @@ const BlogList = () => {
                         <div className="flex justify-center items-center gap-2">
                           <button
                             onClick={() => navigate(`/manage/blog/${blog.blogId}`)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Xem chi tiết"
                             className="bg-orange-100 text-orange-700 hover:bg-orange-400 p-1.5 sm:p-2 rounded-lg transition-colors"
-                            title="Xem chi tiết"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
                           {blog.status === 0 && (
                             <button
                               onClick={() => navigate(`/manage/blog/update/${blog.blogId}`)}
+                              data-tooltip-id="action-tooltip"
+                              data-tooltip-content="Cập nhật"
                               className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-1.5 sm:p-2 rounded-lg transition-colors"
-                              title="Cập nhật"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
@@ -499,65 +502,67 @@ const BlogList = () => {
               </table>
             </div>
 
-            {/* Mobile View */}
-            <div className="block md:hidden space-y-4">
-              {displayedBlogs.map((blog, index) => (
-                <div
-                  key={blog.blogId}
-                  className="border border-gray-200 rounded-lg p-4 shadow-sm hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex flex-col gap-3">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-sm text-gray-700">
-                        #{(currentPage - 1) * blogsPerPage + index + 1}
-                      </span>
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(
-                          blog.status
-                        )}`}
-                      >
-                        {getStatusDisplayName(blog.status)}
-                      </span>
-                    </div>
-                    <div className="flex justify-center">
-                      {renderImages(blog.images, blog.blogId)}
-                    </div>
-                    <div className="space-y-2">
-                      <p className="text-sm">
-                        <span className="font-medium">Tiêu đề:</span>{" "}
-                        {blog.blogTitle}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Nội dung:</span>{" "}
-                        {blog.blogContent}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Ngày tạo:</span>{" "}
-                        {formatDate(blog.blogCreatedDate)}
-                      </p>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => navigate(`/manage/blog/${blog.blogId}`)}
-                        className="bg-orange-100 text-orange-700 hover:bg-orange-200 p-2 rounded-lg transition-colors"
-                        title="Xem chi tiết"
-                      >
-                        <Eye className="w-5 h-5" />
-                      </button>
-                      {blog.status === 0 && (
-                        <button
-                          onClick={() => navigate(`/manage/blog/update/${blog.blogId}`)}
-                          className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 p-2 rounded-lg transition-colors"
-                          title="Cập nhật"
-                        >
-                          <Edit className="w-5 h-5" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+    {/* Mobile View */}
+<div className="block md:hidden space-y-4">
+  {displayedBlogs.map((blog, index) => (
+    <div
+      key={blog.blogId}
+      className="border border-gray-200 rounded-lg p-4 shadow-sm hover:bg-gray-50 transition-colors"
+    >
+      <div className="flex flex-col gap-3">
+        <div className="flex justify-between items-center">
+          <span className="font-semibold text-sm text-gray-700">
+            #{(currentPage - 1) * blogsPerPage + index + 1}
+          </span>
+          <span
+            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusClass(
+              blog.status
+            )}`}
+          >
+            {getStatusDisplayName(blog.status)}
+          </span>
+        </div>
+        <div className="flex justify-center">
+          {renderImages(blog.images, blog.blogId)}
+        </div>
+        <div className="space-y-2">
+          <p className="text-sm">
+            <span className="font-medium">Tiêu đề:</span>{" "}
+            {blog.blogTitle}
+          </p>
+          <p className="text-sm">
+            <span className="font-medium">Nội dung:</span>{" "}
+            {blog.blogContent}
+          </p>
+          <p className="text-sm">
+            <span className="font-medium">Ngày tạo:</span>{" "}
+            {formatDate(blog.blogCreatedDate)}
+          </p>
+        </div>
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => navigate(`/manage/blog/${blog.blogId}`)}
+            data-tooltip-id="action-tooltip"
+            data-tooltip-content="Xem chi tiết"
+            className="bg-orange-100 text-orange-700 hover:bg-orange-200 p-2 rounded-lg transition-colors"
+          >
+            <Eye className="w-5 h-5" />
+          </button>
+          {blog.status === 0 && (
+            <button
+              onClick={() => navigate(`/manage/blog/update/${blog.blogId}`)}
+              data-tooltip-id="action-tooltip"
+              data-tooltip-content="Cập nhật"
+              className="bg-yellow-100 text-yellow-700 hover:bg-yellow-200 p-2 rounded-lg transition-colors"
+            >
+              <Edit className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
 
             {/* Pagination */}
             {totalPages > 1 && (
@@ -572,6 +577,7 @@ const BlogList = () => {
           </>
         )}
       </div>
+      <Tooltip id="action-tooltip" />
     </div>
   );
 };

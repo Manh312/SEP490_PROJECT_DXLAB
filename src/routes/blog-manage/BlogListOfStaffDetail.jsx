@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchAdminBlogById,
@@ -11,23 +11,22 @@ import {
 } from "../../redux/slices/Blog";
 import { useTheme } from "../../hooks/use-theme";
 import { toast } from "react-toastify";
-import { Edit, ArrowLeft, ChevronLeft, ChevronRight, CheckCircle, XCircle, Trash } from "lucide-react";
+import { Edit, ArrowLeft, ChevronLeft, ChevronRight, FileText, Power, Users, CheckCircle, XCircle, Trash } from "lucide-react";
 import { FaSpinner } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 const BlogListOfStaffDetail = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { id } = useParams();
 
   const { adminSelectedBlog, adminLoading } = useSelector((state) => state.blogs);
-  const [mainImage, setMainImage] = useState(null);
+  const [imageIndex, setImageIndex] = useState(0);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [localLoading, setLocalLoading] = useState(false);
   const [blogIdToDelete, setBlogIdToDelete] = useState(null);
   const [blogTitle, setBlogTitle] = useState("");
-  const [imageIndex, setImageIndex] = useState(0);
-  const navigate = useNavigate();
-
   const baseUrl = "https://localhost:9999";
 
   useEffect(() => {
@@ -38,14 +37,11 @@ const BlogListOfStaffDetail = () => {
 
   useEffect(() => {
     if (adminSelectedBlog && adminSelectedBlog.images && adminSelectedBlog.images.length > 0) {
-      setMainImage(adminSelectedBlog.images[0]);
       setImageIndex(0);
     } else {
-      setMainImage(null);
       setImageIndex(0);
     }
   }, [adminSelectedBlog]);
-
 
   const mapStatusToString = (status) => {
     switch (Number(status)) {
@@ -57,9 +53,9 @@ const BlogListOfStaffDetail = () => {
 
   const getStatusClass = (status) => {
     switch (status) {
-      case "Đã duyệt": return "bg-green-100 text-green-800";
-      case "Đang chờ": return "bg-yellow-100 text-yellow-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "Đã duyệt": return "bg-green-100 text-green-800 hover:bg-green-200";
+      case "Đang chờ": return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
+      default: return "bg-gray-100 text-gray-800 hover:bg-gray-200";
     }
   };
 
@@ -86,7 +82,7 @@ const BlogListOfStaffDetail = () => {
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
-        dispatch(fetchAdminBlogById(id)), // Refresh current blog
+        dispatch(fetchAdminBlogById(id)),
       ]);
       navigate('/dashboard/blog');
     } catch (err) {
@@ -108,7 +104,7 @@ const BlogListOfStaffDetail = () => {
       await Promise.all([
         dispatch(fetchAdminPendingBlogs()),
         dispatch(fetchAdminApprovedBlogs()),
-        dispatch(fetchAdminBlogById(id)), // Refresh current blog
+        dispatch(fetchAdminBlogById(id)),
       ]);
       navigate('/dashboard/blog');
     } catch (err) {
@@ -154,115 +150,54 @@ const BlogListOfStaffDetail = () => {
     }
   };
 
-  const renderImages = (images) => {
-    if (!Array.isArray(images) || images.length === 0) {
-      return (
-        <div className={`w-full h-72 flex items-center justify-center rounded-xl border-2 border-dashed ${theme === "dark" ? "border-gray-700 bg-gray-800 text-gray-400" : "border-gray-200 bg-gray-50 text-gray-500"}`}>
-          <span className="text-base font-medium">Không có ảnh nào</span>
-        </div>
-      );
-    }
+  const validImages = Array.isArray(adminSelectedBlog?.images) && adminSelectedBlog.images.length > 0 ? adminSelectedBlog.images : [];
+  const prevImage = () => {
+    setImageIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
+  };
+  const nextImage = () => {
+    setImageIndex((prev) => (prev + 1) % validImages.length);
+  };
 
-    const prevImage = () => {
-      setImageIndex((prev) => (prev - 1 + images.length) % images.length);
-      setMainImage(images[(imageIndex - 1 + images.length) % images.length]);
-    };
+  const displayImageSrc = validImages.length > 0
+    ? typeof validImages[imageIndex] === "string"
+      ? validImages[imageIndex].startsWith("http")
+        ? validImages[imageIndex]
+        : `${baseUrl}/${validImages[imageIndex]}`
+      : "/placeholder-image.jpg"
+    : "/placeholder-image.jpg";
 
-    const nextImage = () => {
-      setImageIndex((prev) => (prev + 1) % images.length);
-      setMainImage(images[(imageIndex + 1) % images.length]);
-    };
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, staggerChildren: 0.15 } },
+  };
 
-    return (
-      <div className="space-y-4">
-        <div className="relative w-full h-96 rounded-xl overflow-hidden shadow-xl group transition-all duration-500 bg-neutral-300">
-          <img
-            src={
-              images[imageIndex].startsWith("http")
-                ? images[imageIndex]
-                : `${baseUrl}/${images[imageIndex]}`
-            }
-            alt={`Blog image ${imageIndex}`}
-            className="w-full h-full object-contain transition-all duration-300 ease-in-out animate-fadeIn"
-          />
-          {images.length > 1 && (
-            <>
-              <button
-                onClick={prevImage}
-                className={`absolute left-4 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-gradient-to-r from-gray-500 to-gray-600 text-white hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-md opacity-0 group-hover:opacity-100`}
-              >
-                <ChevronLeft className="h-6 w-6" />
-              </button>
-              <button
-                onClick={nextImage}
-                className={`absolute right-4 top-1/2 transform -translate-y-1/2 p-3 rounded-full bg-gradient-to-r from-gray-500 to-gray-600 text-white hover:from-gray-600 hover:to-gray-700 transition-all duration-200 shadow-md opacity-0 group-hover:opacity-100`}
-              >
-                <ChevronRight className="h-6 w-6" />
-              </button>
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-200 dark:bg-gray-700">
-                <div
-                  className="h-full bg-orange-500 transition-all duration-300"
-                  style={{ width: `${((imageIndex + 1) / images.length) * 100}%` }}
-                />
-              </div>
-              <div
-                className={`absolute bottom-2 right-2 px-3 py-1 rounded-full text-sm font-medium text-white bg-gradient-to-r from-orange-500 to-orange-600 shadow-sm`}
-              >
-                {imageIndex + 1}/{images.length}
-              </div>
-            </>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-3 overflow-x-auto py-2 justify-center">
-          {images.map((image, index) => (
-            <div
-              key={index}
-              className={`w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden cursor-pointer transition-all duration-300 border-2 ${
-                image === mainImage
-                  ? "border-orange-500 scale-105 shadow-lg"
-                  : theme === "dark"
-                  ? "border-gray-700 hover:border-orange-400"
-                  : "border-gray-200 hover:border-orange-300"
-              }`}
-              onClick={() => {
-                setMainImage(image);
-                setImageIndex(index);
-              }}
-            >
-              <img
-                src={image.startsWith("http") ? image : `${baseUrl}/${image}`}
-                alt={`Thumbnail ${index}`}
-                className="w-full h-full object-cover"
-                onError={(e) => (e.target.src = "/placeholder-image.jpg")}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+  const itemVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   };
 
   if (adminLoading || localLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2"/>
-        <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="flex items-center justify-center py-6">
+          <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+          <p className="text-orange-500 text-base sm:text-lg font-medium">Đang tải dữ liệu...</p>
+        </div>
       </div>
     );
   }
 
   if (!adminSelectedBlog) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <p className={`text-2xl font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>
-          Không tìm thấy blog!
-        </p>
-        <Link
-          to="/dashboard/blog"
-          className="mt-8 px-8 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-2 transition-all duration-300 shadow-lg"
+      <div className="min-h-screen flex flex-col items-center justify-center px-4">
+        <Edit className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mb-4" />
+        <p className="text-gray-500 text-base sm:text-lg font-normal">Không tìm thấy blog.</p>
+        <button
+          onClick={() => navigate("/dashboard/blog")}
+          className="mt-6 w-full sm:w-auto bg-gray-500 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:bg-gray-600 transition-all shadow-md text-sm sm:text-base font-normal"
         >
-          <ArrowLeft className="h-5 w-5" /> Quay lại danh sách
-        </Link>
+          <ArrowLeft size={14} className="sm:w-4 sm:h-4" /> Quay Lại
+        </button>
       </div>
     );
   }
@@ -270,88 +205,222 @@ const BlogListOfStaffDetail = () => {
   const statusDisplay = mapStatusToString(adminSelectedBlog.status);
 
   return (
-    <div className="py-4 px-2 sm:px-4 lg:px-6 xl:px-8 mb-10">
-      <div
-        className={`w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 ${
-          theme === "dark" ? "bg-gray-950 text-gray-100" : "bg-white text-gray-900"
+    <div className="min-h-screen py-4 px-3 sm:px-6 lg:px-8 overflow-x-hidden mb-20">
+      <motion.div
+        className={`w-full max-w-4xl mx-auto rounded-2xl shadow-lg overflow-hidden ${
+          theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-800"
         }`}
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
       >
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b pb-4 border-gray-200 dark:border-gray-800">
-          <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <Edit className="h-6 w-6 text-orange-500" />
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Chi Tiết Blog</h2>
+        {/* Header với gradient */}
+        <div className="bg-gradient-to-r from-orange-500 to-orange-700 p-4 sm:p-6">
+          <div className="flex flex-row justify-center items-center p-4 gap-2">
+            <Edit className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+            <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-white text-center">
+              Chi Tiết Blog
+            </h2>
           </div>
-          <Link
-            to="/dashboard/blog"
-            className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md hover:bg-orange-600 transition"
-          >
-            <ArrowLeft className="h-5 w-5" />
-            <span className="font-semibold">Quay lại</span>
-          </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-5">
-            <div className={`rounded-xl p-6 shadow-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-              <h3 className="text-xl font-semibold mb-4 text-orange-500">Ảnh Blog</h3>
-              {renderImages(adminSelectedBlog.images)}
-            </div>
-          </div>
+        {/* Main Content */}
+        <div className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {/* Left Section: Images */}
+            <motion.div className="flex flex-col items-center" variants={itemVariants}>
+              {validImages.length > 0 ? (
+                <>
+                  <div className="relative w-full max-w-md h-64 sm:h-80 lg:h-96 group">
+                    <img
+                      src={displayImageSrc}
+                      alt={`Blog image ${imageIndex}`}
+                      className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
+                      onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+                    />
+                    {validImages.length > 1 && (
+                      <>
+                        <button
+                          onClick={prevImage}
+                          className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-70 text-white p-2 sm:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-opacity-90"
+                        >
+                          <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
+                        </button>
+                        <button
+                          onClick={nextImage}
+                          className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-70 text-white p-2 sm:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-opacity-90"
+                        >
+                          <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
+                        </button>
+                        <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 flex gap-1 sm:gap-2">
+                          {validImages.map((_, idx) => (
+                            <span
+                              key={idx}
+                              className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${idx === imageIndex ? "bg-orange-500 scale-125" : "bg-gray-300"}`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {/* Thumbnails */}
+                  <div className="flex gap-2 overflow-x-auto w-full justify-center mt-2 sm:mt-3">
+                    {validImages.map((img, idx) => {
+                      const thumbnailSrc =
+                        typeof img === "string"
+                          ? img.startsWith("http")
+                            ? img
+                            : `${baseUrl}/${img}`
+                          : "/placeholder-image.jpg";
+                      return (
+                        <img
+                          key={idx}
+                          src={thumbnailSrc}
+                          alt={`Thumbnail ${idx}`}
+                          className={`w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-md cursor-pointer transition-all duration-300 border-2 ${idx === imageIndex ? "border-orange-500 opacity-100" : "border-gray-300 opacity-70 hover:opacity-100"}`}
+                          onClick={() => setImageIndex(idx)}
+                          onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+                        />
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <div
+                  className={`w-full max-w-md h-64 sm:h-80 lg:h-96 flex items-center justify-center rounded-lg border-2 border-dashed transition-all duration-300 ${
+                    theme === "dark" ? "border-gray-700 bg-gray-800 text-gray-400" : "border-gray-300 bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  <span className="text-sm sm:text-base font-normal">Không có ảnh</span>
+                </div>
+              )}
+              <p className="mt-2 sm:mt-3 text-xs sm:text-sm font-normal text-gray-500">
+                {validImages.length > 0 ? `Ảnh ${imageIndex + 1}/${validImages.length}` : "Không có ảnh"}
+              </p>
+            </motion.div>
 
-          <div className="lg:col-span-7">
-            <div className={`rounded-xl p-6 shadow-lg ${theme === "dark" ? "bg-gray-800" : "bg-gray-100"}`}>
-              <h3 className="text-xl font-semibold mb-6 text-orange-500">Thông Tin Blog</h3>
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-lg font-medium text-gray-500">Tiêu đề</label>
-                    <p className="mt-1 text-lg">{adminSelectedBlog.blogTitle}</p>
+            {/* Right Section: Details */}
+            <motion.div className="space-y-4 sm:space-y-6" variants={itemVariants}>
+              <motion.div
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                  theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+                }`}
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                   </div>
-                  <div>
-                    <label className="block text-lg font-medium text-gray-500">Ngày tạo</label>
-                    <p className="mt-1 text-lg">{formatDate(adminSelectedBlog.blogCreatedDate)}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-lg font-medium text-gray-500">Nội dung</label>
-                    <p className="mt-1 text-lg leading-relaxed break-words">{adminSelectedBlog.blogContent}</p>
-                  </div>
-                  <div>
-                    <label className="block text-lg font-medium text-gray-500">Người tạo</label>
-                    <p className="mt-1 text-lg leading-relaxed break-words">{adminSelectedBlog.userName}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Tiêu đề</p>
+                    <p className="text-sm sm:text-base font-normal truncate">{adminSelectedBlog.blogTitle}</p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-lg font-medium text-gray-500">Trạng thái</label>
-                    <p
-                      className={`text-base mt-1 inline-flex items-center px-3 py-1 rounded-full font-medium ${getStatusClass(
-                        statusDisplay
-                      )}`}
+              </motion.div>
+
+              <motion.div
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                  theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+                }`}
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Ngày tạo</p>
+                    <p className="text-sm sm:text-base font-normal">{formatDate(adminSelectedBlog.blogCreatedDate)}</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                  theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+                }`}
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500">Nội dung</p>
+                    <div className="max-h-32 sm:max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                      <p className="text-sm sm:text-base font-normal">{adminSelectedBlog.blogContent}</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                  theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+                }`}
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Người tạo</p>
+                    <p className="text-sm sm:text-base font-normal truncate">{adminSelectedBlog.userName}</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                  theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+                }`}
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Power className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Trạng Thái</p>
+                    <span
+                      className={`inline-flex items-center px-3 sm:px-4 py-1 sm:py-1.5 rounded-full font-normal text-xs sm:text-sm transition-all duration-300 ${getStatusClass(statusDisplay)}`}
                     >
                       {statusDisplay}
-                    </p>
+                    </span>
                   </div>
-                  <div>
-                    <label className="block text-lg font-medium text-gray-500">Hành động</label>
-                    <div className="flex gap-2 mt-2">
+                </div>
+              </motion.div>
+
+              <motion.div
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                  theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+                }`}
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Power className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Hành động</p>
+                    <div className="flex gap-2 sm:gap-3 mt-1 sm:mt-2">
                       {statusDisplay === "Đang chờ" && (
                         <>
                           <button
                             onClick={() => handleApprove(adminSelectedBlog.blogId)}
-                            className="bg-green-200 text-green-700 hover:bg-green-300 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                            className="bg-gradient-to-r from-green-500 to-green-700 text-white px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg flex items-center justify-center gap-x-1 sm:gap-x-2 hover:from-green-600 hover:to-green-800 transition-all shadow-md text-xs sm:text-sm font-normal"
                             disabled={localLoading}
                           >
-                            <CheckCircle className="w-4 h-4" />
+                            <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                             <span>Phê duyệt</span>
                           </button>
                           <button
                             onClick={() => handleCancel(adminSelectedBlog.blogId)}
-                            className="bg-red-200 text-red-700 hover:bg-red-300 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                            className="bg-gradient-to-r from-red-500 to-red-700 text-white px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg flex items-center justify-center gap-x-1 sm:gap-x-2 hover:from-red-600 hover:to-red-800 transition-all shadow-md text-xs sm:text-sm font-normal"
                             disabled={localLoading}
                           >
-                            <XCircle className="w-4 h-4" />
+                            <XCircle className="w-3 h-3 sm:w-4 sm:h-4" />
                             <span>Hủy</span>
                           </button>
                         </>
@@ -359,54 +428,74 @@ const BlogListOfStaffDetail = () => {
                       {statusDisplay === "Đã duyệt" && (
                         <button
                           onClick={() => handleOpenDeleteModal(adminSelectedBlog.blogId, adminSelectedBlog.blogTitle)}
-                          className="bg-red-200 text-red-700 hover:bg-red-300 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                          className="bg-gradient-to-r from-red-500 to-red-700 text-white px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg flex items-center justify-center gap-x-1 sm:gap-x-2 hover:from-red-600 hover:to-red-800 transition-all shadow-md text-xs sm:text-sm font-normal"
                           disabled={localLoading}
                         >
-                          <Trash className="w-4 h-4" />
+                          <Trash className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span>Xóa</span>
                         </button>
                       )}
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
+
+          {/* Buttons */}
+          <motion.div
+            className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8"
+            variants={itemVariants}
+          >
+            <button
+              onClick={() => navigate("/dashboard/blog")}
+              className="w-full sm:w-auto bg-gray-500 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:bg-gray-600 transition-all shadow-md text-sm sm:text-base font-normal"
+            >
+              <ArrowLeft size={14} className="sm:w-4 sm:h-4" /> Quay Lại
+            </button>
+          </motion.div>
         </div>
 
         {/* Delete Confirmation Modal */}
         {isDeleteModalOpen && (
           <div
-            className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
             onClick={handleCloseDeleteModal}
           >
             <div
-              className="bg-gray-300 rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100"
+              className={`rounded-lg shadow-2xl p-4 sm:p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100 ${
+                theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+              }`}
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-xl font-semibold text-red-600 mb-4">Xác nhận xóa</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-red-600 mb-3 sm:mb-4">Xác nhận xóa</h2>
+              <p className="text-sm sm:text-base mb-4 sm:mb-6">
                 Bạn có chắc chắn muốn xóa blog <strong>"{blogTitle}"</strong> không? Hành động này không thể hoàn tác.
               </p>
-              <div className="flex justify-end gap-4">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
                 <button
                   onClick={handleCloseDeleteModal}
-                  className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors cursor-pointer"
+                  className="w-full sm:w-auto bg-gray-500 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:bg-gray-600 transition-all shadow-md text-sm sm:text-base font-normal"
                 >
                   Hủy
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer"
+                  className="w-full sm:w-auto bg-gradient-to-r from-red-500 to-red-700 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:from-red-600 hover:to-red-800 transition-all shadow-md text-sm sm:text-base font-normal disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={localLoading}
                 >
+                  {localLoading ? (
+                    <FaSpinner className="animate-spin w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  ) : (
+                    <Trash size={14} className="sm:w-4 sm:h-4" />
+                  )}
                   {localLoading ? "Đang xóa..." : "Xóa"}
                 </button>
               </div>
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };

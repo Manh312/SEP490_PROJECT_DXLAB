@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { FileText, Power, Image, Check, X, Plus, Map, ArrowLeft } from "lucide-react";
+import { FileText, Power, Image, Check, X, Plus, Map, ArrowLeft, PlusCircle } from "lucide-react";
 import { createAreaTypeCategory } from "../../redux/slices/AreaCategory";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -134,8 +134,8 @@ const CreateAreaCategory = () => {
       >
         {/* Header với gradient */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-700 p-4 sm:p-6">
-          <div className="flex flex-col items-center gap-2">
-            <Map className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
+          <div className="flex flex-row justify-center items-center p-4 gap-2">
+            <PlusCircle className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
             <h2 className="text-base sm:text-lg md:text-2xl lg:text-3xl font-bold text-white text-center">
               Thêm Dịch Vụ Mới
             </h2>

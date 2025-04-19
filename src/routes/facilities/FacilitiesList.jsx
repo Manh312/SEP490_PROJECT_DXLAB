@@ -8,6 +8,7 @@ import { Eye, Package, PlusCircle, Search, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import debounce from "lodash/debounce";
 import Pagination from "../../hooks/use-pagination";
+import { Tooltip } from "react-tooltip"; // Import react-tooltip
 
 const FacilitiesList = () => {
   const dispatch = useDispatch();
@@ -304,8 +305,9 @@ const FacilitiesList = () => {
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                           <button
                             onClick={() => navigate(`/dashboard/facilities/${facility.facilityId}`)}
-                            className="bg-orange-100 text-orange-700 hover:bg-orange-400 p-1.5 sm:p-2 rounded-lg transition-colors"
-                            title="Xem chi tiết cơ sở vật chất"
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Xem chi tiết cơ sở vật chất"
+                            className="bg-orange-100 text-orange-700 ml-2 hover:bg-orange-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
@@ -391,6 +393,9 @@ const FacilitiesList = () => {
           </>
         )}
       </div>
+
+      {/* Add the Tooltip component */}
+      <Tooltip id="action-tooltip" />
     </div>
   );
 };

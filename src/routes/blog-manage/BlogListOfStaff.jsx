@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
-  PlusCircle,
   Filter,
   Search,
   CheckCircle,
@@ -10,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  Eye, // Added Eye icon for "Xem chi tiết"
 } from "lucide-react";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,7 +27,7 @@ import { FaSpinner } from "react-icons/fa";
 import { startSignalRConnection, stopSignalRConnection } from "../../utils/signalR/connection";
 import { toast } from "react-toastify";
 import { signalRConfig } from "../../utils/signalR/config";
-
+import { Tooltip } from "react-tooltip";
 
 // Utility to track shown notifications
 const notificationTracker = new Set();
@@ -60,7 +60,6 @@ const BlogListOfStaff = () => {
   useEffect(() => {
     let connection;
     const setupSignalR = async () => {
-
       try {
         connection = await startSignalRConnection("blogHub", token);
 
@@ -146,9 +145,8 @@ const BlogListOfStaff = () => {
 
   // Làm mới danh sách blog định kỳ
   useEffect(() => {
-      dispatch(fetchAdminPendingBlogs());
-      dispatch(fetchAdminApprovedBlogs());
-
+    dispatch(fetchAdminPendingBlogs());
+    dispatch(fetchAdminApprovedBlogs());
   }, [dispatch]);
 
   const mapStatusToString = (status) => {
@@ -414,8 +412,8 @@ const BlogListOfStaff = () => {
       <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <PlusCircle className="h-6 w-6 text-orange-500" />
-            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Danh Sách Blog (Admin)</h2>
+            <FileText className="h-6 w-6 text-orange-500" />
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Danh Sách Duyệt Blog</h2>
           </div>
         </div>
 
@@ -462,7 +460,7 @@ const BlogListOfStaff = () => {
           </div>
         ) : (
           <>
-            <div className="hidden lg:block border rounded-lg overflow-x-auto">
+            <div className="hidden lg:block border rounded Spruce Grove-lg overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead className="border-b bg-gray-400">
                   <tr>
@@ -472,6 +470,7 @@ const BlogListOfStaff = () => {
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Người tạo</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Ngày tạo</th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
+                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Xem chi tiết</th> {/* New column */}
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">Thao tác</th>
                   </tr>
                 </thead>
@@ -485,9 +484,7 @@ const BlogListOfStaff = () => {
                         {renderImages(blog.images, blog.blogId)}
                       </td>
                       <td className="px-4 py-3 text-center whitespace-pre-wrap break-words">
-                        <Link to={`/dashboard/blog/${blog.blogId}`} className="hover:text-orange-400 transition-colors">
-                          {formatTitle(blog.blogTitle)}
-                        </Link>
+                        {formatTitle(blog.blogTitle)} {/* Removed Link */}
                       </td>
                       <td className="px-4 py-3 text-center">{blog.userName}</td>
                       <td className="px-4 py-3 text-center">
@@ -498,21 +495,33 @@ const BlogListOfStaff = () => {
                           {blog.status}
                         </span>
                       </td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => navigate(`/dashboard/blog/${blog.blogId}`)}
+                          data-tooltip-id="action-tooltip"
+                          data-tooltip-content="Xem chi tiết"
+                          className="bg-orange-100 text-orange-700 hover:bg-orange-200 p-2 rounded-lg transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </td>
                       <td className="px-4 py-3 text-center space-x-2">
                         {blog.status === "Đang chờ" && (
                           <div className="flex justify-center items-center space-x-2">
                             <button
                               onClick={() => handleApprove(blog.blogId)}
+                              data-tooltip-id="action-tooltip"
+                              data-tooltip-content="Phê duyệt"
                               className="bg-green-100 text-green-700 hover:bg-green-200 p-2 rounded-lg transition-colors"
-                              title="Phê duyệt"
                               disabled={localLoading}
                             >
                               <CheckCircle className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleCancel(blog.blogId)}
+                              data-tooltip-id="action-tooltip"
+                              data-tooltip-content="Hủy phê duyệt"
                               className="bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors"
-                              title="Hủy"
                               disabled={localLoading}
                             >
                               <XCircle className="w-4 h-4" />
@@ -522,8 +531,9 @@ const BlogListOfStaff = () => {
                         {blog.status === "Đã duyệt" && (
                           <button
                             onClick={() => handleOpenDeleteModal(blog.blogId, blog.blogTitle)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Xóa"
                             className="bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors"
-                            title="Xóa"
                             disabled={localLoading}
                           >
                             <Trash className="w-4 h-4" />
@@ -544,6 +554,7 @@ const BlogListOfStaff = () => {
                     <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">Ảnh</th>
                     <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">Tiêu đề</th>
                     <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">Trạng thái</th>
+                    <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">Xem chi tiết</th> {/* New column */}
                     <th className="px-3 py-2 font-bold text-xs uppercase tracking-wide text-center text-gray-700">Thao tác</th>
                   </tr>
                 </thead>
@@ -557,30 +568,40 @@ const BlogListOfStaff = () => {
                         {renderImages(blog.images, blog.blogId)}
                       </td>
                       <td className="px-3 py-2 text-center text-xs">
-                        <Link to={`/dashboard/blog/${blog.blogId}`} className="hover:text-orange-400 transition-colors">
-                          {formatTitle(blog.blogTitle)}
-                        </Link>
+                        {formatTitle(blog.blogTitle)} {/* Removed Link */}
                       </td>
                       <td className="px-3 py-2 text-center">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-xs ${getStatusClass(blog.status)}`}>
                           {blog.status}
                         </span>
                       </td>
+                      <td className="px-3 py-2 text-center">
+                        <button
+                          onClick={() => navigate(`/dashboard/blog/${blog.blogId}`)}
+                          data-tooltip-id="action-tooltip"
+                          data-tooltip-content="Xem chi tiết"
+                          className="bg-orange-100 text-orange-700 hover:bg-orange-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Eye className="w-3 h-3" />
+                        </button>
+                      </td>
                       <td className="px-3 py-2 text-center space-x-1">
                         {blog.status === "Đang chờ" && (
                           <div className="flex items-center justify-center space-x-1">
                             <button
                               onClick={() => handleApprove(blog.blogId)}
-                              className="bg-green-100 text-green-700 hover:bg-green-200 p-1 rounded-lg transition-colors"
-                              title="Phê duyệt"
+                              data-tooltip-id="action-tooltip"
+                              data-tooltip-content="Phê duyệt"
+                              className="bg-green-100 text-green-700 hover:bg-green-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                               disabled={localLoading}
                             >
                               <CheckCircle className="w-3 h-3" />
                             </button>
                             <button
                               onClick={() => handleCancel(blog.blogId)}
-                              className="bg-red-100 text-red-700 hover:bg-red-200 p-1 rounded-lg transition-colors"
-                              title="Hủy"
+                              data-tooltip-id="action-tooltip"
+                              data-tooltip-content="Hủy phê duyệt"
+                              className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                               disabled={localLoading}
                             >
                               <XCircle className="w-3 h-3" />
@@ -590,8 +611,9 @@ const BlogListOfStaff = () => {
                         {blog.status === "Đã duyệt" && (
                           <button
                             onClick={() => handleOpenDeleteModal(blog.blogId, blog.blogTitle)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Xóa"
                             className="bg-red-100 text-red-700 hover:bg-red-200 p-1 rounded-lg transition-colors"
-                            title="Xóa"
                             disabled={localLoading}
                           >
                             <Trash className="w-3 h-3" />
@@ -619,9 +641,7 @@ const BlogListOfStaff = () => {
                     {renderImages(blog.images, blog.blogId)}
                     <p className="text-sm text-gray-700">
                       <span className="font-medium">Tiêu đề:</span>{" "}
-                      <Link to={`/dashboard/blog/${blog.blogId}`} className="text-orange-500 hover:text-orange-600">
-                        {formatTitle(blog.blogTitle)}
-                      </Link>
+                      {formatTitle(blog.blogTitle)} {/* Removed Link */}
                     </p>
                     <p className="text-sm text-gray-600 truncate">{blog.userName}</p>
                     <p className="text-sm text-gray-600">
@@ -629,11 +649,22 @@ const BlogListOfStaff = () => {
                       {formatDate(blog.blogCreatedDate)}
                     </p>
                     <div className="flex gap-2 justify-center mt-2">
+                      <button
+                        onClick={() => navigate(`/dashboard/blog/${blog.blogId}`)}
+                        data-tooltip-id="action-tooltip"
+                        data-tooltip-content="Xem chi tiết"
+                        className="bg-orange-100 text-orange-700 hover:bg-orange-200 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer text-xs flex items-center justify-center gap-2"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span>Xem chi tiết</span>
+                      </button>
                       {blog.status === "Đang chờ" && (
                         <>
                           <button
                             onClick={() => handleApprove(blog.blogId)}
-                            className="bg-green-200 text-green-700 hover:bg-green-300 p-2 rounded-lg flex items-center justify-center gap-2 text-xs"
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Phê duyệt"
+                            className="bg-green-100 text-green-700 hover:bg-green-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                             disabled={localLoading}
                           >
                             <CheckCircle className="w-4 h-4" />
@@ -641,7 +672,9 @@ const BlogListOfStaff = () => {
                           </button>
                           <button
                             onClick={() => handleCancel(blog.blogId)}
-                            className="bg-red-200 text-red-700 hover:bg-red-300 p-2 rounded-lg flex items-center justify-center gap-2 text-xs"
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Hủy phê duyệt"
+                            className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                             disabled={localLoading}
                           >
                             <XCircle className="w-4 h-4" />
@@ -652,6 +685,8 @@ const BlogListOfStaff = () => {
                       {blog.status === "Đã duyệt" && (
                         <button
                           onClick={() => handleOpenDeleteModal(blog.blogId, blog.blogTitle)}
+                          data-tooltip-id="action-tooltip"
+                          data-tooltip-content="Xóa"
                           className="bg-red-200 text-red-700 hover:bg-red-300 p-2 rounded-lg flex items-center justify-center gap-2 text-xs"
                           disabled={localLoading}
                         >
@@ -701,6 +736,7 @@ const BlogListOfStaff = () => {
           </div>
         )}
       </div>
+      <Tooltip id="action-tooltip" />
     </div>
   );
 };
