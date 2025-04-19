@@ -38,6 +38,7 @@ const Page = () => {
   const [performanceMinY, setPerformanceMinY] = useState(0);
   const [performanceMaxY, setPerformanceMaxY] = useState(100);
   const [performanceYTicks, setPerformanceYTicks] = useState([0, 20, 40, 60, 80, 100]);
+  const [isDataReady, setIsDataReady] = useState(false); // New state to track data readiness
 
   const years = Array.from({ length: 10 }, (_, i) => (2025 - i).toString());
   const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
@@ -65,6 +66,7 @@ const Page = () => {
       } else {
         setYearlyData([]);
       }
+      setIsDataReady(true); // Mark data as ready after fetch
     });
   }, [dispatch, year]);
 
@@ -164,6 +166,7 @@ const Page = () => {
     setDetailedStats([]);
     setPerformanceData([]);
     setShowCharts(false);
+    setIsDataReady(false); // Reset data readiness
 
     try {
       if (period === "năm") {
@@ -201,7 +204,7 @@ const Page = () => {
             totalRevenue,
             studentPercentage: totalStudentPercentage,
           });
-          setDetailedStats(monthlyData);
+          setDetailedStats(monthlyData || []);
         } else {
           const monthlyData = Array.from({ length: 12 }, (_, i) => ({
             name: vietnameseMonths[i],
@@ -214,6 +217,7 @@ const Page = () => {
         }
 
         setShowCharts(true);
+        setIsDataReady(true); // Mark data as ready after fetch
       } else if (period === "tháng") {
         if (!month || !year) {
           toast.error("Vui lòng chọn tháng và năm!");
@@ -254,7 +258,7 @@ const Page = () => {
             totalRevenue,
             studentPercentage: monthStudentPercentage,
           });
-          setDetailedStats(dailyData);
+          setDetailedStats(dailyData || []);
         } else {
           const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
           const dailyData = Array.from({ length: daysInMonth }, (_, i) => ({
@@ -268,11 +272,14 @@ const Page = () => {
         }
 
         setShowCharts(true);
+        setIsDataReady(true); // Mark data as ready after fetch
       }
     } catch (err) {
       console.log("Error fetching data:", err);
       toast.error("Đã xảy ra lỗi khi tải dữ liệu!");
       setShowCharts(false);
+      setDetailedStats([]);
+      setIsDataReady(true); // Mark data as ready even on error
     }
   };
 
@@ -351,6 +358,11 @@ const Page = () => {
             studentPercentage: 0,
           }));
     } else if (period === "tháng") {
+      const parsedMonth = parseInt(month);
+      const parsedYear = parseInt(year);
+      if (isNaN(parsedMonth) || isNaN(parsedYear)) {
+        return [];
+      }
       return detailedStats.length > 0
         ? detailedStats.map((stat) => ({
             name: stat.name,
@@ -358,7 +370,7 @@ const Page = () => {
             studentPercentage: stat.studentPercentage || 0,
           }))
         : Array.from(
-            { length: getDaysInMonth(parseInt(month), parseInt(year)) },
+            { length: getDaysInMonth(parsedMonth, parsedYear) },
             (_, i) => ({
               name: `Ngày ${i + 1}`,
               studentRevenue: 0,
@@ -369,10 +381,10 @@ const Page = () => {
     return [];
   };
 
-  const revenueAreaData = areaData();
-  const maxRevenue = Math.max(...revenueAreaData.map((d) => d.studentRevenue), 1000);
+  const revenueAreaData = areaData() || [];
+  const maxRevenue = revenueAreaData.length > 0 ? Math.max(...revenueAreaData.map((d) => d.studentRevenue || 0), 1000) : 1000;
   const revenueYTicks = generateYTicks(maxRevenue);
-  const revenueMaxY = revenueYTicks[revenueYTicks.length - 1];
+  const revenueMaxY = revenueYTicks.length > 0 ? revenueYTicks[revenueYTicks.length - 1] : 1000;
   const revenueMinY = 0;
 
   // Thêm log để kiểm tra dữ liệu
@@ -380,8 +392,8 @@ const Page = () => {
   console.log("Page.jsx - year:", year);
   console.log("Page.jsx - month:", month);
   console.log("Page.jsx - showCharts:", showCharts);
-  console.log("Page.jsx - revenueAreaData length:", revenueAreaData.length);
-  console.log("Page.jsx - revenueAreaData:", revenueAreaData);
+  console.log("Page.jsx - revenueAreaData length:", revenueAreaData ? revenueAreaData.length : "undefined");
+  console.log("Page.jsx - revenueAreaData:", revenueAreaData || "undefined");
 
   return (
     <div className="flex flex-col gap-y-4 mb-20 pl-5">
@@ -463,8 +475,8 @@ const Page = () => {
         </div>
       )}
 
-      {/* Show Charts if Search is Performed */}
-      {!loading && !error && showCharts && (
+      {/* Show Charts if Search is Performed and Data is Ready */}
+      {!loading && !error && showCharts && isDataReady && (
         <div className="mr-5">
           {/* Overview Section */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-6">
@@ -653,7 +665,7 @@ const Page = () => {
 
           {/* Tab Content */}
           <div className="mt-6">
-            {activeTab === "revenue" && (
+            {activeTab === "revenue" && revenueAreaData && revenueAreaData.length > 0 && (
               <RevenueStatistics
                 revenueAreaData={revenueAreaData}
                 revenueMinY={revenueMinY}
