@@ -182,7 +182,7 @@ const UpdateAreaCategory = () => {
               patchDoc,
             })
           ).unwrap();
-          toast.success("Cập nhật thông tin danh mục thành công!");
+          toast.success("Cập nhật thông tin dịch vụ thành công!");
         }
       }
 
@@ -193,7 +193,6 @@ const UpdateAreaCategory = () => {
             files: formData.images,
           })
         ).unwrap();
-        toast.success("Cập nhật ảnh thành công!");
       }
 
       if (!hasDetailsChange && !hasImageChange && imagesToDelete.length === 0) {

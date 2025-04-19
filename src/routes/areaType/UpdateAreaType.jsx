@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { fetchAreaTypeById, updateAreaType, updateAreaTypeImages, deleteAreaTypeImage } from "../../redux/slices/AreaType";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { FileText, Image, Check, Tag, X, Plus, ArrowLeft, Map, User, Users, Power, DollarSign } from "lucide-react";
+import { FileText, Image, Check, Tag, X, Plus, ArrowLeft, Map, Users, Power, DollarSign } from "lucide-react";
 import { motion } from "framer-motion";
 import { FaSpinner } from "react-icons/fa";
 
@@ -152,7 +152,6 @@ const UpdateAreaType = () => {
         for (const imageUrl of imagesToDelete) {
           await dispatch(deleteAreaTypeImage({ areaTypeId: id, imageUrl })).unwrap();
         }
-        toast.success("Xóa ảnh thành công!");
         setImagesToDelete([]);
       }
 
@@ -347,15 +346,13 @@ const UpdateAreaType = () => {
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
                       Trạng Thái
                     </label>
-                    <select
+                    <input
                       name="status"
-                      value={String(formData.status)}
+                      value={String(formData.status === 1 ? "Hoạt động" : "Không hoạt động")}
                       onChange={handleInputChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                    >
-                      <option value="true">Hoạt động</option>
-                      <option value="false">Không hoạt động</option>
-                    </select>
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 bg-gray-100 text-gray-600 text-sm sm:text-base font-normal cursor-not-allowed"
+                      readOnly
+                    />
                   </div>
                 </div>
               </motion.div>

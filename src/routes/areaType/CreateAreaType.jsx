@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { createAreaType } from "../../redux/slices/AreaType";
-import { Map, FileText, Power, Image, Check, ArrowLeft, Users, DollarSign, Plus, X, PlusCircle } from "lucide-react";
+import { Map, FileText, Image, Check, ArrowLeft, Users, DollarSign, Plus, X, PlusCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
@@ -45,13 +45,6 @@ const CreateAreaType = () => {
     setAreaTypeData((prev) => ({
       ...prev,
       areaCategory: parseInt(e.target.value),
-    }));
-  };
-
-  const handleStatusChange = (e) => {
-    setAreaTypeData((prev) => ({
-      ...prev,
-      status: parseInt(e.target.value),
     }));
   };
 
@@ -139,7 +132,7 @@ const CreateAreaType = () => {
       toast.success("Tạo kiểu khu vực thành công!");
       navigate("/dashboard/areaType");
     } catch (error) {
-      toast.error(error.message || "Lỗi khi tạo kiểu khu vực!");
+      toast.error(error);
     }
   };
 
@@ -315,32 +308,6 @@ const CreateAreaType = () => {
                       placeholder="Nhập mô tả kiểu khu vực"
                       required
                     />
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Status */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Power className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Trạng Thái
-                    </label>
-                    <select
-                      name="status"
-                      value={areaTypeData.status}
-                      onChange={handleStatusChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                    >
-                      <option value={1}>Hoạt động</option>
-                      <option value={0}>Không hoạt động</option>
-                    </select>
                   </div>
                 </div>
               </motion.div>

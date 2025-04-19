@@ -178,26 +178,6 @@ const AreaTypeDetail = () => {
                 </div>
               </motion.div>
 
-              {/* Status */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Power className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Trạng Thái</p>
-                    <span
-                      className={`inline-flex items-center px-3 sm:px-4 py-1 sm:py-1.5 rounded-full font-normal text-xs sm:text-sm transition-all duration-300 ${isDeleted ? "bg-red-100 text-red-800 hover:bg-red-200" : "bg-green-100 text-green-800 hover:bg-green-200"}`}
-                    >
-                      {isDeleted ? "Đã xóa" : "Đang hoạt động"}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-
               {/* Category */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -212,6 +192,24 @@ const AreaTypeDetail = () => {
                     <p className="text-sm sm:text-base font-normal text-gray-800 truncate">
                       {areaCategory === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}
                     </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Description */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500">Mô Tả</p>
+                    <div className="max-h-32 sm:max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                      <p className="text-sm sm:text-base font-normal text-gray-800">{areaDescription}</p>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -248,20 +246,22 @@ const AreaTypeDetail = () => {
                 </div>
               </motion.div>
 
-              {/* Description */}
+              {/* Status */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
                 variants={itemVariants}
               >
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="bg-orange-100 rounded-full p-2">
-                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                    <Power className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500">Mô Tả</p>
-                    <div className="max-h-32 sm:max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                      <p className="text-sm sm:text-base font-normal text-gray-800">{areaDescription}</p>
-                    </div>
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Trạng Thái</p>
+                    <span
+                      className={`inline-flex items-center px-3 sm:px-4 py-1 sm:py-1.5 rounded-full font-normal text-xs sm:text-sm transition-all duration-300 ${isDeleted ? "bg-red-100 text-red-800 hover:bg-red-200" : "bg-green-100 text-green-800 hover:bg-green-200"}`}
+                    >
+                      {isDeleted ? "Đã xóa" : "Đang hoạt động"}
+                    </span>
                   </div>
                 </div>
               </motion.div>

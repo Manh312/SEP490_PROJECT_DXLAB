@@ -42,7 +42,6 @@ export const createAreaType = createAsyncThunk(
       formData.append("AreaDescription", newAreaType.AreaDescription);
       formData.append("Size", newAreaType.Size);
       formData.append("Price", newAreaType.Price);
-      formData.append("Status", newAreaType.Status);
 
       if (files && files.length > 0) {
         files.forEach((file) => {
@@ -56,8 +55,7 @@ export const createAreaType = createAsyncThunk(
       });
       return response.data;
     } catch (error) {
-      console.log(error.response.data);
-      return rejectWithValue(error.response?.data || "Lỗi khi tạo dịch vụ");
+      return rejectWithValue(error.message);
     }
   }
 );

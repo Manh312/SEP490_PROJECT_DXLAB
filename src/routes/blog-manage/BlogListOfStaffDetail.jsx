@@ -470,7 +470,7 @@ const BlogListOfStaffDetail = () => {
             >
               <h2 className="text-lg sm:text-xl font-semibold text-red-600 mb-3 sm:mb-4">Xác nhận xóa</h2>
               <p className="text-sm sm:text-base mb-4 sm:mb-6">
-                Bạn có chắc chắn muốn xóa blog <strong>"{blogTitle}"</strong> không? Hành động này không thể hoàn tác.
+                Bạn có chắc chắn muốn xóa blog <strong>{blogTitle}</strong> không? Hành động này không thể hoàn tác.
               </p>
               <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
                 <button

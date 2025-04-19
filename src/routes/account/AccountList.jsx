@@ -82,7 +82,7 @@ const AccountList = () => {
 
     try {
       const res = await dispatch(addAccount(file)).unwrap();
-      toast.success(res.message || "Nhập file Excel thành công! ✅");
+      toast.success(res.message || "Nhập file Excel thành công!");
       dispatch(fetchAccounts());
     } catch (err) {
       toast.error(err?.message);

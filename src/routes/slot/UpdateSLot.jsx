@@ -17,7 +17,7 @@ const UpdateSlot = () => {
   const [formData, setFormData] = useState({
     startTime: "",
     endTime: "",
-    status: true,
+    status: 1, // Khởi tạo với giá trị số 1 (Hoạt động)
   });
   const [hasChanges, setHasChanges] = useState(false);
   const [currentSlot, setCurrentSlot] = useState(null);
@@ -31,10 +31,9 @@ const UpdateSlot = () => {
       setFormData({
         startTime: slot.startTime || "",
         endTime: slot.endTime || "",
-        status: slot.status !== undefined ? slot.status : true,
+        status: slot.status !== undefined ? slot.status : 1, // Đảm bảo status là số (1 hoặc 0)
       });
     } else {
-      toast.error("Không tìm thấy slot với ID này!");
       navigate("/dashboard/slots");
     }
   }, [slots, dispatch, id, navigate]);
@@ -43,7 +42,7 @@ const UpdateSlot = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "status" ? value === "true" : value,
+      [name]: name === "status" ? Number(value) : value, // Chuyển đổi giá trị status thành số
     }));
     setHasChanges(true);
   };
@@ -70,8 +69,8 @@ const UpdateSlot = () => {
     };
 
     try {
-      await dispatch(updateSlot({ id: parseInt(id), slotData })).unwrap();
-      toast.success("Cập nhật slot thành công!");
+      const response = await dispatch(updateSlot({ id: parseInt(id), slotData })).unwrap();
+      toast.success(response.message);
       navigate("/dashboard/slot");
     } catch (err) {
       toast.error(err.message || "Lỗi khi cập nhật slot");
@@ -195,8 +194,8 @@ const UpdateSlot = () => {
                       onChange={handleInputChange}
                       className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
                     >
-                      <option value={true}>Hoạt động</option>
-                      <option value={false}>Không hoạt động</option>
+                      <option value={1}>Hoạt động</option>
+                      <option value={0}>Không hoạt động</option>
                     </select>
                   </div>
                 </div>

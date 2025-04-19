@@ -22,7 +22,6 @@ const Blog = () => {
     if (!approvedBlogs) return [];
     if (Array.isArray(approvedBlogs)) return approvedBlogs;
     if (approvedBlogs.data && Array.isArray(approvedBlogs.data)) return approvedBlogs.data;
-    console.warn('Unexpected approvedBlogs structure:', approvedBlogs);
     return [];
   }, [approvedBlogs]);
 

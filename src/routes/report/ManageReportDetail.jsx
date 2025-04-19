@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { ClipboardList, ArrowLeft, User, Calendar, Hash, MapPin, Map, Wrench } from "lucide-react";
+import { ClipboardList, ArrowLeft, User, Calendar, Hash, MapPin, Map, Wrench, Home } from "lucide-react";
 import { motion } from "framer-motion";
 import { FaSpinner } from "react-icons/fa";
 
@@ -141,6 +141,24 @@ const ManageReportDetail = () => {
                     <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Ngày Tạo</p>
                     <p className="text-sm sm:text-base font-normal text-gray-800 truncate">
                       {formatDate(report.createdDate)}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Phòng */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Home className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Phòng</p>
+                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">
+                      {report.roomName || "N/A"}
                     </p>
                   </div>
                 </div>
