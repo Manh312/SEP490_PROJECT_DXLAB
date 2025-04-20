@@ -188,10 +188,10 @@ const CreateRoom = () => {
             <div className="space-y-4 sm:space-y-6">
               {/* Tên Phòng */}
               <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 min-h-[120px]"
                 variants={itemVariants}
               >
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 h-full">
                   <div className="bg-orange-100 rounded-full p-2">
                     <Home className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                   </div>
@@ -215,10 +215,10 @@ const CreateRoom = () => {
 
               {/* Sức Chứa */}
               <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 min-h-[120px]"
                 variants={itemVariants}
               >
-                <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 sm:gap-3 h-full">
                   <div className="bg-orange-100 rounded-full p-2">
                     <Users className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                   </div>
@@ -240,73 +240,13 @@ const CreateRoom = () => {
                   </div>
                 </div>
               </motion.div>
-
-              {/* Khu Vực */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-start gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Map className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Khu Vực <span className="text-red-500">*</span>
-                    </label>
-                    <div className="space-y-2 mt-2">
-                      {roomData.areaAddDTO.map((area, index) => (
-                        <div
-                          key={index}
-                          className={`flex flex-col sm:flex-row gap-2 items-center ${index < roomData.areaAddDTO.length - 1 ? "border-b border-gray-200 pb-2" : ""}`}
-                        >
-                          <select
-                            value={area.areaTypeId}
-                            onChange={(e) => handleAreaTypeChange(index, e.target.value)}
-                            className="w-full sm:w-1/2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                          >
-                            <option value="">-- Chọn loại --</option>
-                            {areaTypes.map((type) => (
-                              <option key={type.areaTypeId} value={type.areaTypeId}>
-                                {type.areaTypeName} (Size: {type.size}, Loại: {type.areaCategory === 1 ? "Cá nhân" : "Nhóm"})
-                              </option>
-                            ))}
-                          </select>
-                          <input
-                            type="text"
-                            placeholder="Tên khu vực"
-                            value={area.areaName}
-                            onChange={(e) => handleAreaNameChange(index, e.target.value)}
-                            className="flex-1 w-full sm:w-1/2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveArea(index)}
-                            className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition duration-150 ease-in-out"
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={addArea}
-                        className="w-full mt-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white px-4 sm:px-6 py-1 sm:py-2 rounded-lg flex items-center justify-center gap-x-2 hover:from-orange-600 hover:to-orange-800 transition-all shadow-md text-sm sm:text-base font-normal"
-                      >
-                        + Thêm khu vực
-                      </button>
-                    </div>
-                    {errors.areaAddDTO && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.areaAddDTO}</p>}
-                  </div>
-                </div>
-              </motion.div>
             </div>
 
             {/* Right Column */}
             <div className="space-y-4 sm:space-y-6">
               {/* Mô Tả */}
               <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 min-h-[120px]"
                 variants={itemVariants}
               >
                 <div className="flex items-start gap-2 sm:gap-3">
@@ -323,7 +263,7 @@ const CreateRoom = () => {
                       value={roomData.roomDescription}
                       onChange={handleChange}
                       placeholder="Nhập mô tả phòng"
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out min-h-[50px] max-h-40 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out min-h-[50px] max-h-[80px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
                       required
                     />
                     {errors.roomDescription && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.roomDescription}</p>}
@@ -333,7 +273,7 @@ const CreateRoom = () => {
 
               {/* Hình Ảnh */}
               <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 min-h-[120px]"
                 variants={itemVariants}
               >
                 <div className="flex items-start gap-2 sm:gap-3">
@@ -344,8 +284,8 @@ const CreateRoom = () => {
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
                       Hình Ảnh <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex flex-col gap-2 sm:gap-4 mt-2">
-                      <div className="flex flex-wrap gap-2 sm:gap-4">
+                    <div className="flex flex-col gap-2 sm:gap-3 mt-2 max-h-[80px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                      <div className="flex flex-wrap gap-2 sm:gap-3">
                         {imagePreviews.length > 0 &&
                           imagePreviews.map((preview, index) => (
                             <div key={index} className="relative">
@@ -391,6 +331,70 @@ const CreateRoom = () => {
               </motion.div>
             </div>
           </div>
+
+          {/* Khu Vực - Đặt bên ngoài grid để chiếm toàn bộ chiều rộng và ở giữa */}
+          <motion.div
+            className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 mt-6"
+            variants={itemVariants}
+          >
+            <div className="flex items-start gap-2 sm:gap-3">
+              <div className="bg-orange-100 rounded-full p-2">
+                <Map className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                  Khu Vực <span className="text-red-500">*</span>
+                </label>
+                <div className="space-y-3 mt-2">
+                  {roomData.areaAddDTO.map((area, index) => (
+                    <div
+                      key={index}
+                      className={`flex flex-col sm:flex-row gap-2 sm:gap-3 items-start sm:items-center ${
+                        index < roomData.areaAddDTO.length - 1 ? "border-b border-gray-200 pb-3" : ""
+                      }`}
+                    >
+                      <select
+                        value={area.areaTypeId}
+                        onChange={(e) => handleAreaTypeChange(index, e.target.value)}
+                        className="w-full max-w-full px-3 py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      >
+                        <option value="">-- Chọn loại --</option>
+                        {areaTypes.map((type) => (
+                          <option key={type.areaTypeId} value={type.areaTypeId}>
+                            {type.areaTypeName} (Size: {type.size}, Loại: {type.areaCategory === 1 ? "Cá nhân" : "Nhóm"})
+                          </option>
+                        ))}
+                      </select>
+                      <div className="w-full flex items-center gap-2">
+                        <input
+                          type="text"
+                          placeholder="Tên khu vực"
+                          value={area.areaName}
+                          onChange={(e) => handleAreaNameChange(index, e.target.value)}
+                          className="w-full max-w-full flex-1 px-3 py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveArea(index)}
+                          className="bg-red-500 text-white rounded-full p-2 hover:bg-red-600 transition duration-150 ease-in-out flex-shrink-0"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={addArea}
+                    className="w-full mt-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white px-4 sm:px-6 py-1 sm:py-2 rounded-lg flex items-center justify-center gap-x-2 hover:from-orange-600 hover:to-orange-800 transition-all shadow-md text-sm sm:text-base font-normal"
+                  >
+                    + Thêm khu vực
+                  </button>
+                </div>
+                {errors.areaAddDTO && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.areaAddDTO}</p>}
+              </div>
+            </div>
+          </motion.div>
 
           {/* Action Buttons */}
           <motion.div
