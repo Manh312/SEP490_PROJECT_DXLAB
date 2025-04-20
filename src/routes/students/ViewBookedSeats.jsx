@@ -2,9 +2,9 @@ import { ArmchairIcon } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import table_images from '../../assets/table.png';
 import { useEffect, useMemo, useState } from 'react';
-import { fetchBookingHistory, fetchBookingHistoryDetail, setSelectedDate, setSelectedSlot } from '../../redux/slices/Booking';
+import { fetchBookingHistoryDetail, setSelectedDate, setSelectedSlot } from '../../redux/slices/Booking';
 import { useParams } from 'react-router-dom';
-import { getRoomById, fetchRooms } from '../../redux/slices/Room'; // Add fetchRooms action
+import { getRoomById, fetchRooms } from '../../redux/slices/Room';
 
 // Dynamically map areas to group identifiers
 const createAreaToGroupMap = (areas) => {
@@ -47,43 +47,38 @@ const generateSeatsAndMapping = (numberOfSeats) => {
 const ViewBookedSeats = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { bookings, bookingDetail, bookingDate, bookingLoading, selectedSlot, selectedDate } = useSelector((state) => state.booking);
+  const { bookingDetail, bookingLoading, selectedSlot, selectedDate } = useSelector((state) => state.booking);
   const { selectedRoom, loading: roomLoading, rooms } = useSelector((state) => state.rooms);
 
   const [hasFetchedDetail, setHasFetchedDetail] = useState(false);
-  const [hasFetchedHistory, setHasFetchedHistory] = useState(false);
   const [hasFetchedRooms, setHasFetchedRooms] = useState(false);
+  const [availableDates, setAvailableDates] = useState([]);
+  const [availableSlots, setAvailableSlots] = useState([]);
 
   // Fetch the list of rooms if not already fetched
   useEffect(() => {
     if (!hasFetchedRooms && (!rooms || rooms.length === 0)) {
-      dispatch(fetchRooms()); // Fetch the rooms list
+      dispatch(fetchRooms());
       setHasFetchedRooms(true);
     }
   }, [dispatch, rooms, hasFetchedRooms]);
 
-  // Fetch booking details or history
+  // Fetch booking details
   useEffect(() => {
     if (id && !hasFetchedDetail && (!bookingDetail || bookingDetail?.data?.bookingId !== Number(id))) {
       dispatch(fetchBookingHistoryDetail({ id }));
       setHasFetchedDetail(true);
-    } else if (!id && !hasFetchedHistory && (!bookings || !Array.isArray(bookings.data))) {
-      dispatch(fetchBookingHistory());
-      setHasFetchedHistory(true);
     }
-  }, [dispatch, id, bookingDetail, bookings, hasFetchedDetail, hasFetchedHistory]);
+  }, [dispatch, id, bookingDetail, hasFetchedDetail]);
 
   // Fetch room data if necessary
   useEffect(() => {
     if (id && bookingDetail?.data) {
       const roomName = bookingDetail.data.details[0]?.roomName;
-      console.log('Room name from bookingDetail:', roomName); // Debug log
-      console.log('Rooms list:', rooms); // Debug log
 
       if (roomName) {
         const room = rooms.find((r) => r.roomName === roomName);
         if (room && room.roomId) {
-          console.log('Found room:', room); // Debug log
           if (!selectedRoom || selectedRoom.roomId !== room.roomId) {
             dispatch(getRoomById(room.roomId));
           }
@@ -96,17 +91,59 @@ const ViewBookedSeats = () => {
     }
   }, [dispatch, id, bookingDetail, rooms, selectedRoom]);
 
-  // Set selected date and slot based on booking detail
+  // Extract available dates and slots from bookingDetail
   useEffect(() => {
-    if (bookingDetail?.data) {
-      const bookingDate = bookingDetail.data.bookingCreatedDate.split('T')[0];
-      const slotNumber = bookingDetail.data.details[0]?.slotNumber || 1;
-      dispatch(setSelectedDate(bookingDate));
-      dispatch(setSelectedSlot(Number(slotNumber)));
-    } else if (bookingDate && !id) {
-      dispatch(setSelectedDate(bookingDate));
+    if (bookingDetail?.data?.details?.length > 0) {
+      console.log('bookingDetail.data.details:', bookingDetail.data.details);
+
+      // Extract unique dates
+      const dates = [
+        ...new Set(
+          bookingDetail.data.details.map(detail => {
+            const date = detail.checkinTime.split('T')[0];
+            console.log('Extracted date:', date);
+            return date;
+          })
+        ),
+      ];
+      console.log('Available dates:', dates);
+      setAvailableDates(dates);
+
+      // Set initial selected date to the first available date
+      if (dates.length > 0 && (!selectedDate || !dates.includes(selectedDate))) {
+        console.log('Setting selectedDate to:', dates[0]);
+        dispatch(setSelectedDate(dates[0]));
+      }
+
+      // Update available slots based on selected date
+      const currentDate = selectedDate || dates[0];
+      if (currentDate) {
+        const slots = bookingDetail.data.details
+          .filter(detail => {
+            const detailDate = detail.checkinTime.split('T')[0];
+            console.log(`Comparing ${detailDate} with ${currentDate}`);
+            return detailDate === currentDate;
+          })
+          .map(detail => {
+            console.log('Extracted slot:', detail.slotNumber);
+            return Number(detail.slotNumber);
+          });
+        const uniqueSlots = [...new Set(slots)];
+        console.log('Available slots for date', currentDate, ':', uniqueSlots);
+        setAvailableSlots(uniqueSlots);
+
+        // Set initial selected slot to the first available slot for the selected date
+        if (uniqueSlots.length > 0 && (!selectedSlot || !uniqueSlots.includes(selectedSlot))) {
+          console.log('Setting selectedSlot to:', uniqueSlots[0]);
+          dispatch(setSelectedSlot(uniqueSlots[0]));
+        }
+      }
+    } else {
+      console.log('No details found in bookingDetail');
+      setAvailableDates([]);
+      setAvailableSlots([]);
     }
-  }, [bookingDetail, bookingDate, dispatch]);
+  }, [bookingDetail, selectedDate, selectedSlot, dispatch]);
 
   // Get individual area
   const individualArea = useMemo(() => {
@@ -134,29 +171,35 @@ const ViewBookedSeats = () => {
     return selectedRoom.area_DTO.filter(area => area.areaTypeCategoryId === 2);
   }, [selectedRoom]);
 
-  // Compute booked seats
+  // Compute booked seats using bookingDetail
   const bookedSeats = useMemo(() => {
-    if (bookingLoading || !selectedRoom) return { individual: [], groups: [] };
+    if (bookingLoading || !selectedRoom) {
+      console.log('Booking loading or no selectedRoom');
+      return { individual: [], groups: [] };
+    }
 
     const individual = [];
     const groups = [];
     const maxPositionId = parseNumberOfSeats(individualArea?.areaTypeName);
 
     if (id && bookingDetail?.data?.bookingId === Number(id) && Array.isArray(bookingDetail.data.details)) {
-      const bookingDate = bookingDetail.data.bookingCreatedDate.split('T')[0];
-      if (bookingDate !== selectedDate) return { individual: [], groups: [] };
-
-      console.log('Processing bookingDetail:', bookingDetail.data.details);
-      console.log('selectedDate:', selectedDate, 'selectedSlot:', selectedSlot);
-
+      console.log('Filtering booked seats with selectedDate:', selectedDate, 'and selectedSlot:', selectedSlot);
       bookingDetail.data.details
-        .filter((detail) => Number(detail.slotNumber) === selectedSlot)
-        .forEach((detail) => {
+        .filter(detail => {
+          const detailDate = detail.checkinTime.split('T')[0];
+          const matchesDate = detailDate === selectedDate;
+          const matchesSlot = Number(detail.slotNumber) === selectedSlot;
+          console.log(`Detail: ${detail.checkinTime}, Slot: ${detail.slotNumber}, Matches: ${matchesDate && matchesSlot}`);
+          return matchesDate && matchesSlot;
+        })
+        .forEach(detail => {
           const positionId = detail.position;
+          console.log('Processing position:', positionId);
           if (positionId > maxPositionId) return;
 
           const seatInfo = positionIdToSeatMap[positionId];
           if (seatInfo && seatInfo.area === 'individual') {
+            console.log('Adding individual seat:', seatInfo.seat);
             individual.push(seatInfo.seat);
           }
 
@@ -164,6 +207,7 @@ const ViewBookedSeats = () => {
           console.log('Constructed areaKey:', areaKey);
           const groupArea = areaToGroupMap[areaKey];
           if (groupArea && !groups.includes(groupArea)) {
+            console.log('Adding group area:', groupArea);
             groups.push(groupArea);
           }
         });
@@ -172,43 +216,9 @@ const ViewBookedSeats = () => {
       return { individual, groups };
     }
 
-    if (!bookings || !Array.isArray(bookings.data)) return { individual: [], groups: [] };
-
-    console.log('Processing bookings:', bookings.data);
-    console.log('selectedDate:', selectedDate, 'selectedSlot:', selectedSlot);
-
-    bookings.data
-      .filter((booking) => {
-        if (!booking || !booking.bookingCreatedDate) return false;
-        const bookingDate = booking.bookingCreatedDate.split('T')[0];
-        return bookingDate === selectedDate;
-      })
-      .forEach((booking) => {
-        if (!booking || !Array.isArray(booking.details)) return;
-
-        booking.details
-          .filter((detail) => Number(detail.slotNumber) === selectedSlot)
-          .forEach((detail) => {
-            const positionId = detail.position;
-            if (positionId > maxPositionId) return;
-
-            const seatInfo = positionIdToSeatMap[positionId];
-            if (seatInfo && seatInfo.area === 'individual') {
-              individual.push(seatInfo.seat);
-            }
-
-            const areaKey = `${detail.areaName}-${detail.areaTypeName}`.trim().toLowerCase();
-            console.log('Constructed areaKey:', areaKey);
-            const groupArea = areaToGroupMap[areaKey];
-            if (groupArea && !groups.includes(groupArea)) {
-              groups.push(groupArea);
-            }
-          });
-      });
-
-    console.log('bookedSeats from bookings:', { individual, groups });
-    return { individual, groups };
-  }, [bookingLoading, bookings, bookingDetail, id, selectedDate, selectedSlot, areaToGroupMap, selectedRoom, individualArea, positionIdToSeatMap]);
+    console.log('No bookingDetail data or ID mismatch');
+    return { individual: [], groups: [] };
+  }, [bookingLoading, bookingDetail, id, selectedDate, selectedSlot, areaToGroupMap, selectedRoom, individualArea, positionIdToSeatMap]);
 
   const hasAreas = selectedRoom?.area_DTO && selectedRoom.area_DTO.length > 0;
 
@@ -219,25 +229,56 @@ const ViewBookedSeats = () => {
       <div className="mb-6 flex flex-col sm:flex-row gap-4">
         <div>
           <label className="mr-2 font-semibold">Chọn ngày:</label>
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => dispatch(setSelectedDate(e.target.value))}
+          <select
+            value={selectedDate || ''}
+            onChange={(e) => {
+              const newDate = e.target.value;
+              console.log('Selected date changed to:', newDate);
+              dispatch(setSelectedDate(newDate));
+              // Update available slots when date changes
+              const slots = bookingDetail?.data?.details
+                ?.filter(detail => detail.checkinTime.split('T')[0] === newDate)
+                .map(detail => Number(detail.slotNumber)) || [];
+              const uniqueSlots = [...new Set(slots)];
+              console.log('New available slots:', uniqueSlots);
+              setAvailableSlots(uniqueSlots);
+              if (uniqueSlots.length > 0) {
+                dispatch(setSelectedSlot(uniqueSlots[0]));
+              }
+            }}
             className="border rounded p-2 bg-gray-400"
-            min={new Date().toISOString().split("T")[0]}
-          />
+          >
+            {availableDates.length > 0 ? (
+              availableDates.map(date => (
+                <option key={date} value={date}>
+                  {date}
+                </option>
+              ))
+            ) : (
+              <option value="">Không có ngày</option>
+            )}
+          </select>
         </div>
         <div>
           <label className="mr-2 font-semibold">Chọn slot:</label>
           <select
-            value={selectedSlot}
-            onChange={(e) => dispatch(setSelectedSlot(Number(e.target.value)))}
+            value={selectedSlot || ''}
+            onChange={(e) => {
+              const newSlot = Number(e.target.value);
+              console.log('Selected slot changed to:', newSlot);
+              dispatch(setSelectedSlot(newSlot));
+            }}
             className="border rounded p-2 bg-gray-400"
           >
-            <option value={1}>Slot 1</option>
-            <option value={2}>Slot 2</option>
-            <option value={3}>Slot 3</option>
-            <option value={4}>Slot 4</option>
+            {availableSlots.length > 0 ? (
+              availableSlots.map(slot => (
+                <option key={slot} value={slot}>
+                  Slot {slot}
+                </option>
+              ))
+            ) : (
+              <option value="">Không có slot</option>
+            )}
           </select>
         </div>
       </div>
@@ -305,7 +346,6 @@ const ViewBookedSeats = () => {
                   {groupAreas.map((area, index) => {
                     const areaKey = `${area.areaName}-${area.areaTypeName}`.trim().toLowerCase();
                     const groupAreaId = areaToGroupMap[areaKey];
-                    console.log(`Rendering group area: ${areaKey}, groupAreaId: ${groupAreaId}, isBooked: ${bookedSeats.groups.includes(groupAreaId)}`);
                     return (
                       <div
                         key={index}
