@@ -13,7 +13,7 @@ import {
   clearAreaSelections,
 } from "../../redux/slices/AreaType";
 import { toast } from "react-toastify";
-import { Building, Image, FileText, Check, X, ArrowLeft, Plus, Trash, PlusCircle, House } from "lucide-react";
+import { Building, Image, FileText, Check, X, ArrowLeft, Plus, Trash, PlusCircle, House, Power, Users, Map } from "lucide-react";
 import { motion } from "framer-motion";
 import { FaSpinner } from "react-icons/fa";
 
@@ -442,6 +442,42 @@ const UpdateRoom = () => {
                         </div>
                       </div>
                     </motion.div>
+
+                    {/* Trạng Thái (Read-only) */}
+                    <motion.div
+                      className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                      variants={itemVariants}
+                    >
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="bg-orange-100 rounded-full p-2">
+                          <Power className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Trạng Thái</p>
+                          <span
+                            className={`inline-flex items-center px-3 sm:px-4 py-1 sm:py-1.5 rounded-full font-normal text-xs sm:text-sm transition-all duration-300 ${selectedRoom.status === 0 ? "bg-red-100 text-red-800 hover:bg-red-200" : "bg-green-100 text-green-800 hover:bg-green-200"}`}
+                          >
+                            {selectedRoom.status === 0 ? "Chưa sẵn sàng" : "Sẵn sàng"}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {/* Sức Chứa (Read-only) */}
+                    <motion.div
+                      className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                      variants={itemVariants}
+                    >
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="bg-orange-100 rounded-full p-2">
+                          <Users className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Sức Chứa</p>
+                          <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{selectedRoom.capacity} người</p>
+                        </div>
+                      </div>
+                    </motion.div>
                   </div>
 
                   {/* Right Column */}
@@ -530,6 +566,40 @@ const UpdateRoom = () => {
                     </motion.div>
                   </div>
                 </div>
+
+                {/* Khu Vực (Read-only) - Đưa ra giữa và kéo dài */}
+                <motion.div
+                  className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 mt-4 sm:mt-6"
+                  variants={itemVariants}
+                >
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <div className="bg-orange-100 rounded-full p-2">
+                      <Map className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Khu Vực</p>
+                      {selectedRoom.area_DTO && selectedRoom.area_DTO.length > 0 ? (
+                        <div className="space-y-2 mt-2">
+                          {selectedRoom.area_DTO.map((area, index) => (
+                            <div
+                              key={index}
+                              className={`flex items-center gap-2 text-sm sm:text-base font-normal text-gray-800 ${index < selectedRoom.area_DTO.length - 1 ? "border-b border-gray-200 pb-2" : ""}`}
+                            >
+                              <span className="text-orange-600">•</span>
+                              <p className="truncate">
+                                {area.areaName} - Loại: {area.areaTypeName}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm sm:text-base font-normal text-gray-500 truncate mt-2">
+                          Không có khu vực
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
 
                 {/* Action Buttons */}
                 <motion.div
