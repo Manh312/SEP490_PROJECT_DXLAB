@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Package, ArrowLeft, Box, Tag, DollarSign, Calendar, PlusCircle, Ruler, Armchair } from "lucide-react";
+import { Package, ArrowLeft, Box, Tag, DollarSign, Calendar, PlusCircle } from "lucide-react";
 import { addFacility, fetchFacilities } from "../../redux/slices/Facilities";
 import { motion } from "framer-motion";
 
@@ -17,8 +17,6 @@ const CreateFacilities = () => {
     cost: 0,
     expiredTime: "",
     quantity: 0,
-    size: 0,
-    facilityCategory: 0, // 0: Bàn, 1: Ghế
     importDate: new Date().toISOString().split("T")[0],
   });
 
@@ -60,10 +58,6 @@ const CreateFacilities = () => {
       toast.error("Số lượng phải là số nguyên dương!");
       return;
     }
-    if (parseFloat(facility.size) < 0) {
-      toast.error("Kích thước không được âm!");
-      return;
-    }
 
     try {
       const facilityData = {
@@ -72,8 +66,6 @@ const CreateFacilities = () => {
         cost: parseFloat(facility.cost),
         expiredTime: new Date(facility.expiredTime).toISOString(),
         quantity: parseInt(facility.quantity, 10),
-        size: parseFloat(facility.size),
-        facilityCategory: parseInt(facility.facilityCategory),
         importDate: new Date(facility.importDate).toISOString(),
       };
       const res = await dispatch(addFacility(facilityData)).unwrap();
@@ -144,7 +136,7 @@ const CreateFacilities = () => {
                   </div>
                 </div>
               </motion.div>
-              {/* Số Lượng */}
+{/* Số Lượng */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
                 variants={itemVariants}
@@ -194,13 +186,13 @@ const CreateFacilities = () => {
                   </div>
                 </div>
               </motion.div>
-
+            
             </div>
 
             {/* Right Column */}
             <div className="space-y-4 sm:space-y-6">
-              {/* Tiêu Đề Cơ Sở Vật Chất */}
-              <motion.div
+                {/* Tiêu Đề Cơ Sở Vật Chất */}
+                <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
                 variants={itemVariants}
               >
@@ -257,38 +249,6 @@ const CreateFacilities = () => {
                   </div>
                 </div>
               </motion.div>
-
-              {/* Loại Cơ Sở Vật Chất (Facility Category) */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Armchair className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Loại Cơ Sở Vật Chất <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="facilityCategory"
-                      value={facility.facilityCategory}
-                      onChange={handleChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                      required
-                    >
-                      <option value="0">Bàn</option>
-                      <option value="1">Ghế</option>
-                    </select>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Right Column */}
-            <div className="space-y-4 sm:space-y-6">
-
               {/* Ngày Hết Hạn */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -313,85 +273,6 @@ const CreateFacilities = () => {
                   </div>
                 </div>
               </motion.div>
-
-              {/* Số Lượng */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Box className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Số Lượng <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      name="quantity"
-                      value={facility.quantity}
-                      min={0}
-                      onChange={handleNumberChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                      required
-                    />
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Kích Thước (Size) */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Ruler className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Kích Thước
-                    </label>
-                    <input
-                      type="number"
-                      name="size"
-                      value={facility.size}
-                      min={0}
-                      step="0.01"
-                      onChange={handleNumberChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                      placeholder="Nhập kích thước"
-                    />
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Ngày Nhập */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Ngày Nhập <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      name="importDate"
-                      value={facility.importDate}
-                      onChange={handleChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                      required
-                    />
-                  </div>
-                </div>
-              </motion.div>
-
             </div>
           </div>
 
