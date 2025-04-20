@@ -171,7 +171,7 @@ const CreateFacilities = () => {
                 </div>
               </motion.div>
 
-              
+
               {/* Kích Thước (Size) */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -223,7 +223,7 @@ const CreateFacilities = () => {
                   </div>
                 </div>
               </motion.div>
-              
+
             </div>
 
             {/* Right Column */}
@@ -292,7 +292,7 @@ const CreateFacilities = () => {
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
                       Giá <span className="text-red-500">*</span>
                     </label>
-                    <div className="relative">
+                    <div className="flex items-center mt-1 sm:mt-2 gap-2">
                       <input
                         type="number"
                         name="cost"
@@ -300,11 +300,11 @@ const CreateFacilities = () => {
                         min={0}
                         step="0.01"
                         onChange={handleNumberChange}
-                        className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 pr-16 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                        className="w-full px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
                         placeholder="Nhập giá"
                         required
                       />
-                      <span className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-sm">
+                      <span className="text-gray-500 font-medium text-sm sm:text-base">
                         DXL
                       </span>
                     </div>
@@ -336,7 +336,7 @@ const CreateFacilities = () => {
                 </div>
               </motion.div>
 
-              
+
             </div>
           </div>
 

@@ -12,7 +12,7 @@ const AreaTypeDetail = () => {
   const dispatch = useDispatch();
 
   const { selectedAreaType, loading, error } = useSelector((state) => state.areaTypes);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [imageIndex, setImageIndex] = useState(0);
   const baseUrl = "https://localhost:9999";
 
   useEffect(() => {
@@ -54,7 +54,7 @@ const AreaTypeDetail = () => {
       <div className="min-h-screen flex flex-col items-center justify-center px-4">
         <Layers className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mb-4" />
         <p className="text-gray-500 text-base sm:text-lg font-normal text-center">
-          Không tìm thấy dịch vụ có ID {id}!
+          Không tìm thấy kiểu khu vực có ID {id}!
         </p>
       </div>
     );
@@ -62,21 +62,98 @@ const AreaTypeDetail = () => {
 
   const { areaTypeId, areaTypeName, areaDescription, areaCategory, size, price, isDeleted, images } = selectedAreaType;
 
-  const validImages = Array.isArray(images) && images.length > 0 ? images : [];
-  const displayImageSrc = validImages.length > 0
-    ? typeof validImages[selectedImageIndex] === "string"
-      ? validImages[selectedImageIndex].startsWith("http")
-        ? validImages[selectedImageIndex]
-        : `${baseUrl}/${validImages[selectedImageIndex]}`
-      : "/placeholder-image.jpg"
-    : "/placeholder-image.jpg";
+  // Image rendering function (synced with AreaTypeList, with consistent placeholder size)
+  const renderImages = () => {
+    const validImages = Array.isArray(images) && images.length > 0 ? images : [];
+    const containerClasses = "relative w-full max-w-md h-64 sm:h-80 lg:h-96 group";
 
-  const prevImage = () => {
-    setSelectedImageIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
-  };
+    if (!validImages.length) {
+      return (
+        <div className={containerClasses}>
+          <div className="w-full h-full flex items-center justify-center bg-gray-200 rounded-lg shadow-md">
+            <span className="text-gray-500 text-sm sm:text-base font-medium">Không có ảnh</span>
+          </div>
+          <p className="mt-2 sm:mt-3 text-xs sm:text-sm font-normal text-gray-500 text-center">
+            Không có ảnh
+          </p>
+        </div>
+      );
+    }
 
-  const nextImage = () => {
-    setSelectedImageIndex((prev) => (prev + 1) % validImages.length);
+    const prevImage = () => {
+      setImageIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
+    };
+
+    const nextImage = () => {
+      setImageIndex((prev) => (prev + 1) % validImages.length);
+    };
+
+    const imageSrc = validImages[imageIndex];
+    const displaySrc =
+      typeof imageSrc === "string"
+        ? imageSrc.startsWith("http")
+          ? imageSrc
+          : `${baseUrl}/${imageSrc}`
+        : "/placeholder-image.jpg";
+
+    return (
+      <div className={containerClasses}>
+        <img
+          src={displaySrc}
+          alt={`Area type image ${imageIndex}`}
+          className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
+          onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+        />
+        {validImages.length > 1 && (
+          <>
+            <button
+              onClick={prevImage}
+              className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-70 text-white p-2 sm:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-opacity-90"
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-70 text-white p-2 sm:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-opacity-90"
+            >
+              <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
+            </button>
+            <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 flex gap-1 sm:gap-2">
+              {validImages.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${idx === imageIndex ? "bg-orange-500 scale-125" : "bg-gray-300"}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+        {/* Thumbnails */}
+        <div className="flex gap-2 overflow-x-auto w-full justify-center mt-2 sm:mt-3">
+          {validImages.map((img, idx) => {
+            const thumbnailSrc =
+              typeof img === "string"
+                ? img.startsWith("http")
+                  ? img
+                  : `${baseUrl}/${img}`
+                : "/placeholder-image.jpg";
+            return (
+              <img
+                key={idx}
+                src={thumbnailSrc}
+                alt={`Thumbnail ${idx}`}
+                className={`w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-md cursor-pointer transition-all duration-300 border-2 ${idx === imageIndex ? "border-orange-500 opacity-100" : "border-gray-300 opacity-70 hover:opacity-100"}`}
+                onClick={() => setImageIndex(idx)}
+                onError={(e) => (e.target.src = "/placeholder-image.jpg")}
+              />
+            );
+          })}
+        </div>
+        <p className="mt-2 sm:mt-3 text-xs sm:text-sm font-normal text-gray-500 text-center">
+          {validImages.length > 0 ? `Ảnh ${imageIndex + 1}/${validImages.length}` : "Không có ảnh"}
+        </p>
+      </div>
+    );
   };
 
   return (
@@ -102,62 +179,7 @@ const AreaTypeDetail = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Left Section: Images */}
             <motion.div className="flex flex-col items-center" variants={itemVariants}>
-              <div className="relative w-full max-w-md h-64 sm:h-80 lg:h-96 group">
-                <img
-                  src={displayImageSrc}
-                  alt={`AreaType image ${selectedImageIndex}`}
-                  className="w-full h-full object-cover rounded-lg shadow-md transition-transform duration-300 group-hover:scale-105"
-                  onError={(e) => (e.target.src = "/placeholder-image.jpg")}
-                />
-                {validImages.length > 1 && (
-                  <>
-                    <button
-                      onClick={prevImage}
-                      className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-70 text-white p-2 sm:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-opacity-90"
-                    >
-                      <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
-                    </button>
-                    <button
-                      onClick={nextImage}
-                      className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-70 text-white p-2 sm:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-opacity-90"
-                    >
-                      <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
-                    </button>
-                    <div className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 flex gap-1 sm:gap-2">
-                      {validImages.map((_, idx) => (
-                        <span
-                          key={idx}
-                          className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${idx === selectedImageIndex ? "bg-orange-500 scale-125" : "bg-gray-300"}`}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-              {/* Thumbnails */}
-              <div className="flex gap-2 overflow-x-auto w-full justify-center mt-2 sm:mt-3">
-                {validImages.map((img, idx) => {
-                  const thumbnailSrc =
-                    typeof img === "string"
-                      ? img.startsWith("http")
-                        ? img
-                        : `${baseUrl}/${img}`
-                      : "/placeholder-image.jpg";
-                  return (
-                    <img
-                      key={idx}
-                      src={thumbnailSrc}
-                      alt={`Thumbnail ${idx}`}
-                      className={`w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-md cursor-pointer transition-all duration-300 border-2 ${idx === selectedImageIndex ? "border-orange-500 opacity-100" : "border-gray-300 opacity-70 hover:opacity-100"}`}
-                      onClick={() => setSelectedImageIndex(idx)}
-                      onError={(e) => (e.target.src = "/placeholder-image.jpg")}
-                    />
-                  );
-                })}
-              </div>
-              <p className="mt-2 sm:mt-3 text-xs sm:text-sm font-normal text-gray-500">
-                {validImages.length > 0 ? `Ảnh ${selectedImageIndex + 1}/${validImages.length}` : "Không có ảnh"}
-              </p>
+              {renderImages()}
             </motion.div>
 
             {/* Right Section: Details */}
@@ -188,10 +210,42 @@ const AreaTypeDetail = () => {
                     <Map className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Dịch vụ</p>
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Phân Loại</p>
                     <p className="text-sm sm:text-base font-normal text-gray-800 truncate">
                       {areaCategory === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}
                     </p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Price */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Giá</p>
+                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{price.toLocaleString()} DXL</p>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Size */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Số Lượng (Ghế)</p>
+                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{size} ghế</p>
                   </div>
                 </div>
               </motion.div>
@@ -214,38 +268,6 @@ const AreaTypeDetail = () => {
                 </div>
               </motion.div>
 
-              {/* Size */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Số Lượng (Ghế)</p>
-                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{size} ghế</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Price */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Giá</p>
-                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{price.toLocaleString()} DXL</p>
-                  </div>
-                </div>
-              </motion.div>
-
               {/* Status */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -260,7 +282,7 @@ const AreaTypeDetail = () => {
                     <span
                       className={`inline-flex items-center px-3 sm:px-4 py-1 sm:py-1.5 rounded-full font-normal text-xs sm:text-sm transition-all duration-300 ${isDeleted ? "bg-red-100 text-red-800 hover:bg-red-200" : "bg-green-100 text-green-800 hover:bg-green-200"}`}
                     >
-                      {isDeleted ? "Đã xóa" : "Đang hoạt động"}
+                      {isDeleted ? "Không hoạt động" : "Hoạt động"}
                     </span>
                   </div>
                 </div>

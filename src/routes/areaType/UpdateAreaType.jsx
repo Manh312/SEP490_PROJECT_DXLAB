@@ -313,7 +313,7 @@ const UpdateAreaType = () => {
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
                       Giá <span className="text-red-500">*</span>
                     </label>
-                    <div className="relative">
+                    <div className="flex items-center mt-1 sm:mt-2 gap-2">
                       <input
                         type="number"
                         name="price"
@@ -321,11 +321,11 @@ const UpdateAreaType = () => {
                         min={0}
                         step="0.01"
                         onChange={handleInputChange}
-                        className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 pr-16 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                        className="w-full px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
                         placeholder="Nhập giá dịch vụ"
                         required
                       />
-                      <span className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-sm">
+                       <span className="text-gray-500 font-medium text-sm sm:text-base">
                         DXL
                       </span>
                     </div>

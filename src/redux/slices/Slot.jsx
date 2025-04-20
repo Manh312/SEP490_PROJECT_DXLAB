@@ -44,12 +44,16 @@ const slotSlice = createSlice({
   name: 'slots',
   initialState: {
     slots: [],
+    statusFilter: "all", // Default filter: show all slots
     loading: false,
     error: null,
   },
   reducers: {
     deleteSlot: (state, action) => {
       state.slots = state.slots.filter(slot => slot.id !== action.payload);
+    },
+    setSlotStatusFilter: (state, action) => {
+      state.statusFilter = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -67,7 +71,6 @@ const slotSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
       // Xử lý tạo slot mới
       .addCase(createSlot.pending, (state) => {
         state.loading = true;
@@ -81,7 +84,6 @@ const slotSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
       // Xử lý cập nhật slot
       .addCase(updateSlot.pending, (state) => {
         state.loading = true;
@@ -102,5 +104,5 @@ const slotSlice = createSlice({
   },
 });
 
-export const { deleteSlot } = slotSlice.actions;
+export const { deleteSlot, setSlotStatusFilter } = slotSlice.actions;
 export default slotSlice.reducer;

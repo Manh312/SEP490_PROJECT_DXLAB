@@ -13,7 +13,7 @@ import {
   clearAreaSelections,
 } from "../../redux/slices/AreaType";
 import { toast } from "react-toastify";
-import { Building, Image, FileText, Check, X, ArrowLeft, Plus, Trash, PlusCircle, House, Power, Users, Map } from "lucide-react";
+import { Image, FileText, Check, X, ArrowLeft, Plus, Trash, PlusCircle, House, Power, Users, Map } from "lucide-react";
 import { motion } from "framer-motion";
 import { FaSpinner } from "react-icons/fa";
 

@@ -1,16 +1,11 @@
 import { useTheme } from "../../../hooks/use-theme";
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, ReferenceLine, CartesianGrid } from "recharts";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid } from "recharts";
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 
-const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueYTicks, participationPieData, period, year, month }) => {
+const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueYTicks, period, year, month }) => {
   const { theme } = useTheme();
-  const COLORS = ["#f97316", "#94a3b8"]; // Orange for participating students, gray for non-participating
 
-  // Kiểm tra nếu không có dữ liệu thực sự
-  const hasParticipationData = participationPieData.some(
-    entry => entry.name === "Sinh viên tham gia" && entry.value > 0
-  );
   const hasRevenueData = revenueAreaData.some(
     entry => entry.studentRevenue > 0
   );
@@ -61,16 +56,6 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
     </>
   ) : null;
 
-  // Thêm log để kiểm tra
-  console.log("RevenueStatistics - period:", period);
-  console.log("RevenueStatistics - year:", year);
-  console.log("RevenueStatistics - month:", month);
-  console.log("RevenueStatistics - revenueAreaData length:", revenueAreaData.length);
-  console.log("RevenueStatistics - xAxisInterval:", xAxisInterval);
-  console.log("RevenueStatistics - isLargeScreen:", isLargeScreen);
-  console.log("RevenueStatistics - daysInMonth:", daysInMonth);
-  console.log("RevenueStatistics - referenceLines:", referenceLines ? "Present" : "Not Present");
-
   return (
     <div
       className={`card col-span-1 md:col-span-2 lg:col-span-4 rounded-xl shadow-lg transition-all duration-300 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
@@ -88,68 +73,6 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
 
       {/* Chart Container - Stacked Vertically */}
       <div className="card-body p-6 flex flex-col gap-8">
-        {/* Pie Chart for Student Participation Rate */}
-        <div className="flex flex-col items-center animate-fade-in">
-          <h3
-            className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"
-              }`}
-          >
-            Tỷ lệ sinh viên tham gia
-          </h3>
-          {hasParticipationData ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={participationPieData}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={110}
-                  fill="#8884d8"
-                  dataKey="value"
-                  labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(1)}%`
-                  }
-                >
-                  {participationPieData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                      className="transition-all duration-300 hover:opacity-80"
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value) => `${value.toFixed(1)}%`}
-                  contentStyle={{
-                    backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
-                    color: theme === "dark" ? "#ffffff" : "#1f2937",
-                    borderRadius: "8px",
-                    border: `1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"}`,
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    padding: "8px 12px",
-                  }}
-                />
-                <Legend
-                  verticalAlign="bottom"
-                  height={36}
-                  formatter={(value) => (
-                    <span
-                      className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-600"
-                        }`}
-                    >
-                      {value}
-                    </span>
-                  )}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className={`text-center text-gray-500 dark:text-gray-400`}>
-              Không có dữ liệu tỷ lệ tham gia
-            </p>
-          )}
-        </div>
 
         {/* Area Chart for Revenue Trends */}
         <div className="flex flex-col animate-fade-in">
