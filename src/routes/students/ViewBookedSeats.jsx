@@ -111,7 +111,7 @@ const ViewBookedSeats = () => {
   // Get individual area
   const individualArea = useMemo(() => {
     if (!selectedRoom?.area_DTO) return null;
-    return selectedRoom.area_DTO.find(area => area.areaTypeId === 1);
+    return selectedRoom.area_DTO.find(area => area.areaTypeCategoryId === 1);
   }, [selectedRoom]);
 
   // Parse number of seats and generate seats and position mapping
@@ -123,7 +123,7 @@ const ViewBookedSeats = () => {
   // Create the areaToGroupMap dynamically based on selectedRoom areas
   const areaToGroupMap = useMemo(() => {
     if (!selectedRoom?.area_DTO) return {};
-    const map = createAreaToGroupMap(selectedRoom.area_DTO.filter(area => area.areaTypeId !== 1));
+    const map = createAreaToGroupMap(selectedRoom.area_DTO.filter(area => area.areaTypeCategoryId === 2));
     console.log('areaToGroupMap:', map);
     return map;
   }, [selectedRoom]);
@@ -131,7 +131,7 @@ const ViewBookedSeats = () => {
   // Filter group areas from selectedRoom
   const groupAreas = useMemo(() => {
     if (!selectedRoom?.area_DTO) return [];
-    return selectedRoom.area_DTO.filter(area => area.areaTypeId !== 1);
+    return selectedRoom.area_DTO.filter(area => area.areaTypeCategoryId === 2);
   }, [selectedRoom]);
 
   // Compute booked seats
