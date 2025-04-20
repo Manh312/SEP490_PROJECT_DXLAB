@@ -7,8 +7,6 @@ const PerformanceStatistics = ({
   period,
   year,
   month,
-  utilizationRates,
-  utilizationRatesByYear,
   performanceData,
   performanceMinY,
   performanceMaxY,

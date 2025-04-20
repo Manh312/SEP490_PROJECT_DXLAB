@@ -611,7 +611,7 @@ const UpdateRoom = () => {
                     onClick={() => navigate("/dashboard/room")}
                     className="w-full sm:w-auto bg-gray-500 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:bg-gray-600 transition-all shadow-md text-sm sm:text-base font-normal"
                   >
-                    <ArrowLeft size={14} className="sm:w-4 sm:h-4" /> Hủy
+                    <ArrowLeft size={14} className="sm:w-4 sm:h-4" /> Quay lại
                   </button>
                   <button
                     type="submit"
