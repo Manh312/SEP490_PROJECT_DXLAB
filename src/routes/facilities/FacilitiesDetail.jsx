@@ -105,6 +105,60 @@ const FacilitiesDetail = () => {
                 </div>
               </motion.div>
 
+
+              {/* Số lượng */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <MdOutlineFormatListNumberedRtl className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Số Lượng</p>
+                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.quantity}</p>
+                  </div>
+                </div>
+              </motion.div>
+
+
+              {/* Giá */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Giá</p>
+                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.cost} DXL</p>
+                  </div>
+                </div>
+              </motion.div>
+              {/* Ngày nhập */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Ngày Nhập</p>
+                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">
+                      {format(new Date(facility.importDate), "dd/MM/yyyy HH:mm:ss")}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Cột phải */}
+            <div className="space-y-4 sm:space-y-6">
               {/* Tiêu đề cơ sở vật chất */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -137,44 +191,7 @@ const FacilitiesDetail = () => {
                 </div>
               </motion.div>
 
-              {/* Giá */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Giá</p>
-                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.cost} DXL</p>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Cột phải */}
-            <div className="space-y-4 sm:space-y-6">
-              {/* Ngày nhập */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Ngày Nhập</p>
-                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">
-                      {format(new Date(facility.importDate), "dd/MM/yyyy HH:mm:ss")}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Số lượng */}
+              {/* Giá trị còn lại */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
                 variants={itemVariants}
@@ -184,12 +201,11 @@ const FacilitiesDetail = () => {
                     <MdOutlineFormatListNumberedRtl className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Số Lượng</p>
-                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.quantity}</p>
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Giá Trị Còn Lại</p>
+                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.remainingValue || 0}</p>
                   </div>
                 </div>
               </motion.div>
-
               {/* Ngày hết hạn */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -207,26 +223,9 @@ const FacilitiesDetail = () => {
                   </div>
                 </div>
               </motion.div>
-
-              {/* Giá trị còn lại */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <MdOutlineFormatListNumberedRtl className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Giá Trị Còn Lại</p>
-                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.remainingValue || 0}</p>
-                  </div>
-                </div>
-              </motion.div>
-
               {/* Chất lượng */}
               <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 "
                 variants={itemVariants}
               >
                 <div className="flex items-center gap-2 sm:gap-3">
