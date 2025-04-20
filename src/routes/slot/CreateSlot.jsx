@@ -124,35 +124,7 @@ const CreateSlot = () => {
                   </div>
                 </div>
               </motion.div>
-          
-              {/* Giờ Kết Thúc */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Giờ Kết Thúc <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="time"
-                      name="end_time"
-                      value={slot.end_time}
-                      onChange={handleChange}
-                      className="w-full bg-gray-400 mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                      required
-                    />
-                  </div>
-                </div>
-              </motion.div>
-            </div>
 
-            {/* Right Column */}
-            <div className="space-y-4 sm:space-y-6">
               {/* Time Slot */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -173,6 +145,36 @@ const CreateSlot = () => {
                       onChange={handleChange}
                       className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
                       placeholder="Nhập time slot"
+                      required
+                    />
+                  </div>
+                </div>
+              </motion.div>
+             
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-4 sm:space-y-6">
+
+               {/* Giờ Kết Thúc */}
+               <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Giờ Kết Thúc <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="time"
+                      name="end_time"
+                      value={slot.end_time}
+                      onChange={handleChange}
+                      className="w-full bg-gray-400 mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
                       required
                     />
                   </div>
