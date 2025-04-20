@@ -11,7 +11,6 @@ import {
   useAddress,
   useDisconnect,
   useWallet,
-  useSwitchChain,
   useChainId,
   useConnectionStatus,
 } from "@thirdweb-dev/react";
@@ -115,7 +114,6 @@ const AppWithWallet = React.memo(() => {
   const isConnecting = connectionStatus === "connecting" || connectionStatus === "unknown";
 
   const chainId = useChainId();
-  const switchChain = useSwitchChain();
   const walletType = useMemo(() => wallet?.walletId, [wallet]);
 
   const validateUser = useCallback(async () => {
@@ -159,14 +157,14 @@ const AppWithWallet = React.memo(() => {
     }
   }, [connectionStatus, validateUser]);
 
-  if (isConnecting) {
-    return (
-      <div className="flex items-center justify-center py-6 mt-50">
-        <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
-        <p className="text-orange-500 text-base sm:text-lg font-medium">Đang tải dữ liệu...</p>
-      </div>
-    );
-  }
+  // if (isConnecting) {
+  //   return (
+  //     <div className="flex items-center justify-center py-6 mt-50">
+  //       <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
+  //       <p className="text-orange-500 text-base sm:text-lg font-medium">Đang tải dữ liệu...</p>
+  //     </div>
+  //   );
+  // }
 
   return <App walletAddress={isValidUser ? walletAddress : null} />;
 });
