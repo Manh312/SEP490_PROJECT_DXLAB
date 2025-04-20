@@ -386,4 +386,4 @@ const statisticSlice = createSlice({
 });
 
 export const { resetStats } = statisticSlice.actions;
-export default statisticSlice.reducer;
+export default statisticSlice.reducer;  
