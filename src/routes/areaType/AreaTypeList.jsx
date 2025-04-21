@@ -44,7 +44,11 @@ const AreaTypeList = () => {
 
     let result = areaTypes.filter((type) => {
       if (!type || typeof type !== "object" || !type.areaTypeId || !type.areaTypeName) return false;
-      return statusFilter === "All" ? true : (type.isDeleted === (statusFilter === "Đã xóa"));
+      const matchesStatus =
+        statusFilter === "All" ||
+        (statusFilter === "Hoạt động" && type.status === 1) ||
+        (statusFilter === "Không hoạt động" && type.status === 0);
+      return matchesStatus;
     });
 
     if (searchTerm) {
@@ -317,14 +321,6 @@ const AreaTypeList = () => {
                           >
                             <PencilLine className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => handleDelete(type.areaTypeId)}
-                            data-tooltip-id="action-tooltip"
-                            data-tooltip-content="Xóa"
-                            className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -383,12 +379,6 @@ const AreaTypeList = () => {
                           className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                         >
                           <PencilLine className="w-4 h-4" /> Cập nhật
-                        </button>
-                        <button
-                          onClick={() => handleDelete(type.areaTypeId)}
-                          className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
-                        >
-                          <Trash2 className="w-4 h-4" /> Xóa
                         </button>
                       </div>
                     </div>

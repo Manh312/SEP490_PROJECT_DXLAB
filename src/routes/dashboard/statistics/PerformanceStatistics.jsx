@@ -2,20 +2,37 @@ import { useTheme } from "../../../hooks/use-theme";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, ReferenceLine } from "recharts";
 import PropTypes from "prop-types";
 import { useMemo, useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUtilizationRateByDate } from "../../../redux/slices/Statistics"; // Thêm fetchRooms
+import { fetchRooms } from "../../../redux/slices/Room";
 
 const PerformanceStatistics = ({
   period,
   year,
   month,
+  utilizationRates,
+  utilizationRatesByYear,
   performanceData,
   performanceMinY,
   performanceMaxY,
   performanceYTicks,
 }) => {
   const { theme } = useTheme();
+  const dispatch = useDispatch();
+  const { rooms } = useSelector((state) => state.rooms); // Lấy danh sách phòng từ Redux
   const COLORS = ["#3b82f6", "#ef4444"];
 
   const [isLargeScreen, setIsLargeScreen] = useState(typeof window !== "undefined" ? window.innerWidth > 768 : false);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedRoom, setSelectedRoom] = useState("all");
+  const [dateData, setDateData] = useState([]);
+  const [isDateSearchPerformed, setIsDateSearchPerformed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch rooms khi component mount
+  useEffect(() => {
+    dispatch(fetchRooms());
+  }, [dispatch]);
 
   useEffect(() => {
     const handleResize = () => setIsLargeScreen(window.innerWidth > 768);
@@ -23,15 +40,57 @@ const PerformanceStatistics = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Transform performanceData into a better format
+  // Handle search button click
+  const handleDateSearch = () => {
+    if (!selectedDate) {
+      setIsDateSearchPerformed(false);
+      setDateData([]);
+      setSelectedRoom("all");
+      return;
+    }
+
+    setIsLoading(true);
+    dispatch(fetchUtilizationRateByDate({ dateTime: selectedDate, paraFilter: 1 }))
+      .then((response) => {
+        if (response.payload && response.payload.data) {
+          setDateData(response.payload.data);
+          setIsDateSearchPerformed(true);
+        } else {
+          setDateData([]);
+          setIsDateSearchPerformed(true);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching date data:", error);
+        setDateData([]);
+        setIsDateSearchPerformed(true);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
+  // Transform performanceData for year/month with room filter
   const transformedPerformanceData = useMemo(() => {
     if (!performanceData || performanceData.length === 0) return [];
 
-    return performanceData.map((entry) => {
+    let filteredData = performanceData;
+    if (selectedRoom !== "all") {
+      filteredData = filteredData.map((entry) => {
+        const filteredAreas = entry.areas.filter((area) =>
+          utilizationRates.find(
+            (rate) => rate.areaName === area.areaName && rate.roomId === parseInt(selectedRoom)
+          )
+        );
+        return { ...entry, areas: filteredAreas };
+      });
+    }
+
+    return filteredData.map((entry) => {
       const areas = Object.keys(entry)
         .filter((key) => key !== "name")
         .map((key) => ({
-          areaName: key.replace(/Khuvực/g, "Khu vực "), // Fix the spacing in the key
+          areaName: key.replace(/Khuvực/g, "Khu vực "),
           rate: typeof entry[key] === "number" && entry[key] > 0 && entry[key] <= 1 ? entry[key] * 100 : entry[key] || 0,
         }));
       return {
@@ -39,7 +98,22 @@ const PerformanceStatistics = ({
         areas,
       };
     });
-  }, [performanceData]);
+  }, [performanceData, selectedRoom, utilizationRates]);
+
+  // Transform dateData for specific date
+  const transformedDateData = useMemo(() => {
+    if (!dateData || dateData.length === 0) return [];
+
+    let filteredData = dateData;
+    if (selectedRoom !== "all") {
+      filteredData = filteredData.filter((entry) => entry.roomId === parseInt(selectedRoom));
+    }
+
+    return filteredData.map((entry) => ({
+      name: entry.roomName,
+      rate: (entry.rate || 0) * 100,
+    }));
+  }, [dateData, selectedRoom]);
 
   // Get list of areas dynamically
   const areas = useMemo(() =>
@@ -57,6 +131,8 @@ const PerformanceStatistics = ({
   const hasPerformanceData = transformedPerformanceData.some((entry) =>
     entry.areas.some((area) => area.rate > 0)
   );
+
+  const hasDateData = transformedDateData.length > 0;
 
   // Compute average utilization rate for pie chart
   const avgUtilizationRate = useMemo(() => {
@@ -76,14 +152,26 @@ const PerformanceStatistics = ({
     });
 
     const avgRate = totalEntries > 0 ? totalRate / totalEntries : 0;
-    console.log("totalRate:", totalRate, "totalEntries:", totalEntries, "avgUtilizationRate:", avgRate);
     return avgRate;
   }, [hasPerformanceData, transformedPerformanceData, areas]);
 
-  const utilizationPieData = [
-    { name: "Tỷ lệ sử dụng", value: avgUtilizationRate },
-    { name: "Chưa sử dụng", value: 100 - avgUtilizationRate },
-  ];
+  const avgUtilizationRateByDate = useMemo(() => {
+    if (!hasDateData) return 0;
+
+    const totalRate = transformedDateData.reduce((sum, entry) => sum + (entry.rate || 0), 0);
+    const avgRate = transformedDateData.length > 0 ? totalRate / transformedDateData.length : 0;
+    return avgRate;
+  }, [hasDateData, transformedDateData]);
+
+  const utilizationPieData = isDateSearchPerformed && selectedDate
+    ? [
+        { name: "Tỷ lệ sử dụng", value: avgUtilizationRateByDate },
+        { name: "Chưa sử dụng", value: 100 - avgUtilizationRateByDate },
+      ]
+    : [
+        { name: "Tỷ lệ sử dụng", value: avgUtilizationRate },
+        { name: "Chưa sử dụng", value: 100 - avgUtilizationRate },
+      ];
 
   const getDaysInMonth = (month, year) => {
     const parsedMonth = parseInt(month);
@@ -149,6 +237,16 @@ const PerformanceStatistics = ({
     });
   }, [hasPerformanceData, period, month, year, transformedPerformanceData, areas]);
 
+  // Process data for specific date
+  const processDateData = useMemo(() => {
+    if (!hasDateData) return [];
+
+    return transformedDateData.map((entry) => ({
+      name: entry.name,
+      total: entry.rate || 0,
+    }));
+  }, [hasDateData, transformedDateData]);
+
   const minY = performanceMinY;
   const maxY = performanceMaxY;
   const ticks = performanceYTicks;
@@ -171,27 +269,38 @@ const PerformanceStatistics = ({
           }`}
         >
           <p className="font-semibold mb-2">{label}</p>
-          {areas.map((area, id) => (
-            <p key={id} className="text-sm">
-              {area}: {(data[area] || 0).toFixed(2)}%
+          {isDateSearchPerformed && selectedDate ? (
+            <p className="text-sm">
+              Tỷ lệ sử dụng: {(data.total || 0).toFixed(2)}%
             </p>
-          ))}
-          <p className="text-sm font-medium mt-2">
-            Hiệu suất trung bình: {(data.total || 0).toFixed(2)}%
-          </p>
+          ) : (
+            <>
+              {areas.map((area, id) => (
+                <p key={id} className="text-sm">
+                  {area}: {(data[area] || 0).toFixed(2)}%
+                </p>
+              ))}
+              <p className="text-sm font-medium mt-2">
+                Hiệu suất trung bình: {(data.total || 0).toFixed(2)}%
+              </p>
+            </>
+          )}
         </div>
       );
     }
     return null;
   };
 
-  const areaData = processAreaData;
+  const areaData = isDateSearchPerformed && selectedDate ? processDateData : processAreaData;
 
   const maxLabels = 10;
-  const xAxisInterval = period === "tháng" && areaData.length > maxLabels ? Math.ceil(areaData.length / maxLabels) : 0;
+  const xAxisInterval =
+    period === "tháng" && !(isDateSearchPerformed && selectedDate) && areaData.length > maxLabels
+      ? Math.ceil(areaData.length / maxLabels)
+      : 0;
 
   const daysInMonth = period === "tháng" && month && year ? getDaysInMonth(month, year) : 0;
-  const referenceLines = isLargeScreen && period === "tháng" && daysInMonth > 0 ? (
+  const referenceLines = isLargeScreen && period === "tháng" && !(isDateSearchPerformed && selectedDate) && daysInMonth > 0 ? (
     <>
       <ReferenceLine
         x="Ngày 1"
@@ -231,6 +340,71 @@ const PerformanceStatistics = ({
       </div>
 
       <div className="card-body p-6 flex flex-col gap-8">
+        {/* Filter Section */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="flex-1">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
+              Chọn ngày
+            </label>
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => {
+                setSelectedDate(e.target.value);
+                if (!e.target.value) {
+                  setIsDateSearchPerformed(false);
+                  setDateData([]);
+                  setSelectedRoom("all");
+                }
+              }}
+              className={`w-full p-2 rounded-lg border ${
+                theme === "dark"
+                  ? "bg-gray-800 text-white border-gray-600"
+                  : "bg-white text-gray-900 border-gray-300"
+              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            />
+          </div>
+          <div className="flex-1">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
+              Chọn phòng
+            </label>
+            <select
+              value={selectedRoom}
+              onChange={(e) => setSelectedRoom(e.target.value)}
+              className={`w-full p-2 rounded-lg border ${
+                theme === "dark"
+                  ? "bg-gray-800 text-white border-gray-600"
+                  : "bg-white text-gray-900 border-gray-300"
+              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            >
+              <option value="all">Tất cả phòng</option>
+              {rooms.map((room) => (
+                <option key={room.roomId} value={room.roomId}>
+                  {room.roomName}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={handleDateSearch}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg науки:bg-orange-600 transition"
+              disabled={isLoading}
+            >
+              {isLoading ? "Đang tải..." : "Tìm kiếm"}
+            </button>
+          </div>
+        </div>
+
+        {/* Pie Chart Section */}
         <div className="flex flex-col items-center animate-fade-in">
           <h3
             className={`text-xl font-medium mb-4 ${
@@ -238,11 +412,20 @@ const PerformanceStatistics = ({
             }`}
           >
             Tỷ lệ sử dụng trung bình -{" "}
-            {period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}
+            {isDateSearchPerformed && selectedDate
+              ? `Ngày ${selectedDate}`
+              : period === "năm"
+              ? `Năm ${year}`
+              : `Tháng ${month}/${year}`}
           </h3>
           {utilizationPieData.every((item) => item.value === 0) ? (
             <p className={`text-center text-gray-500 dark:text-gray-400`}>
-              Không có dữ liệu hiệu suất cho {period === "năm" ? `năm ${year}` : `tháng ${month}/${year}`}
+              Không có dữ liệu hiệu suất cho{" "}
+              {isDateSearchPerformed && selectedDate
+                ? `ngày ${selectedDate}`
+                : period === "năm"
+                ? `năm ${year}`
+                : `tháng ${month}/${year}`}
             </p>
           ) : (
             <ResponsiveContainer width="100%" height={350}>
@@ -294,6 +477,7 @@ const PerformanceStatistics = ({
           )}
         </div>
 
+        {/* Area Chart Section */}
         <div className="flex flex-col animate-fade-in">
           <h3
             className={`text-xl font-medium mb-4 ${
@@ -302,9 +486,16 @@ const PerformanceStatistics = ({
           >
             Biểu đồ thống kê hiệu suất (theo %)
           </h3>
-          {areaData.length === 0 || areaData.every((item) => item.total === 0) ? (
+          {isLoading ? (
+            <p className={`text-center text-gray-500 dark:text-gray-400`}>Đang tải dữ liệu...</p>
+          ) : areaData.length === 0 || areaData.every((item) => item.total === 0) ? (
             <p className={`text-center text-gray-500 dark:text-gray-400`}>
-              Không có dữ liệu hiệu suất cho {period === "năm" ? `năm ${year}` : `tháng ${month}/${year}`}
+              Không có dữ liệu hiệu suất cho{" "}
+              {isDateSearchPerformed && selectedDate
+                ? `ngày ${selectedDate}`
+                : period === "năm"
+                ? `năm ${year}`
+                : `tháng ${month}/${year}`}
             </p>
           ) : (
             <ResponsiveContainer width="100%" height={500}>

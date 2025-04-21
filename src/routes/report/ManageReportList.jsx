@@ -20,7 +20,6 @@ const ManageReportList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [signalRError, setSignalRError] = useState(null);
   const reportsPerPage = 5;
 
   // Debounce search
@@ -66,9 +65,6 @@ const ManageReportList = () => {
         }
       } catch (err) {
         console.error("Failed to setup SignalR:", err);
-        if (mounted) {
-          setSignalRError(`Không thể kết nối SignalR: ${err.message}`);
-        }
       } finally {
         if (mounted) {
           setIsInitialLoading(false);
@@ -146,13 +142,6 @@ const ManageReportList = () => {
             </h2>
           </div>
         </div>
-
-        {/* SignalR Error */}
-        {signalRError && (
-          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
-            {signalRError}
-          </div>
-        )}
 
         {/* Search */}
         <div className="mb-6 p-4 rounded-lg shadow-sm">

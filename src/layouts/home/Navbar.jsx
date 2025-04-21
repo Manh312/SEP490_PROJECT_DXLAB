@@ -10,6 +10,9 @@ import { clearAuthData, fetchRoleByID } from "../../redux/slices/Authentication"
 import { FaUserCircle } from "react-icons/fa";
 import Notification from "../../hooks/use-notification"; // Cập nhật import
 
+const SEPOLIA_CHAIN_ID = 11155111;
+
+
 const Navbar = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -124,10 +127,19 @@ const Navbar = () => {
                   <div className="mb-4">
                     <ConnectWallet
                       modalSize="wide"
-                      hideTestnetFaucet
                       hideBuyButton
                       hideDisconnect
                       style={{ width: "100%" }}
+                      supportedTokens={{
+                        [SEPOLIA_CHAIN_ID]: [
+                          {
+                            address: "0xc597d627a7E28B896d43a4eC50703f35Ba259378",
+                            name: "DXLAB Coin",
+                            symbol: "DXL",
+                            icon: "https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png?1687143508"
+                          },
+                        ],
+                      }}
                     />
                   </div>
                   <span className="ml-2 mb-4">Số dư: {balance?.displayValue} DXL</span>
@@ -168,8 +180,19 @@ const Navbar = () => {
             <>
               <ConnectWallet
                 btnTitle="Đăng nhập"
-                auth={{ loginOptional: false }}
                 modalSize="wide"
+                showThirdwebBranding={false}
+                hideTestnetFaucet={false}
+                supportedTokens={{
+                  [SEPOLIA_CHAIN_ID]: [
+                    {
+                      address: "0xc597d627a7E28B896d43a4eC50703f35Ba259378",
+                      name: "DXLAB Coin",
+                      symbol: "DXL",
+                      icon: "https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/0xc597d627a7E28B896d43a4eC50703f35Ba259378/logo.png",
+                    },
+                  ],
+                }}
               />
               <button
                 className="p-2 border rounded-md transition-colors ml-5"
@@ -212,14 +235,22 @@ const Navbar = () => {
             {isLoggedIn ? (
               <div>
                 <div>
-                  <ConnectWallet
-                    btnTitle="Manage Wallet"
-                    modalSize="wide"
-                    hideTestnetFaucet
-                    hideBuyButton
-                    hideDisconnect
-                    style={{ width: "100%" }}
-                  />
+                <ConnectWallet
+                      modalSize="wide"
+                      hideBuyButton
+                      hideDisconnect
+                      style={{ width: "100%" }}
+                      supportedTokens={{
+                        [SEPOLIA_CHAIN_ID]: [
+                          {
+                            address: "0xc597d627a7E28B896d43a4eC50703f35Ba259378",
+                            name: "DXLAB Coin",
+                            symbol: "DXL",
+                            icon: "https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png?1687143508"
+                          },
+                        ],
+                      }}
+                    />
                 </div>
                 <div className="mt-3 ml-1">
                   <span>Số dư: {balance?.displayValue} DXL</span>
@@ -229,6 +260,18 @@ const Navbar = () => {
               <ConnectWallet
                 btnTitle="Đăng nhập"
                 modalSize="wide"
+                showThirdwebBranding={false}
+                hideTestnetFaucet={false}
+                supportedTokens={{
+                  [SEPOLIA_CHAIN_ID]: [
+                    {
+                      address: "0xc597d627a7E28B896d43a4eC50703f35Ba259378",
+                      name: "DXLAB Coin",
+                      symbol: "DXL",
+                      icon: "https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/0xc597d627a7E28B896d43a4eC50703f35Ba259378/logo.png",
+                    },
+                  ],
+                }}
               />
             )}
           </div>

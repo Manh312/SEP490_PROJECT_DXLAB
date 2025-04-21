@@ -191,11 +191,12 @@ export const fetchDepreciationsByYear = createAsyncThunk(
 // Async thunk để lấy dữ liệu tỷ lệ sử dụng theo year và month
 export const fetchUtilizationRateByYearAndMonth = createAsyncThunk(
   'statistic/fetchUtilizationRateByYearAndMonth',
-  async ({ year, month }, { rejectWithValue }) => {
+  async ({ roomId, year, month }, { rejectWithValue }) => {
     try {
       // Chuẩn hóa year và month thành số nguyên
       const yearInt = parseInt(year, 10);
       const monthInt = month ? parseInt(month, 10) : null;
+      const roomInt = roomId ? parseInt(roomId, 10) : null;
 
       if (isNaN(yearInt) || (month && isNaN(monthInt))) {
         throw new Error('Year và Month phải là số nguyên hợp lệ');
@@ -203,7 +204,9 @@ export const fetchUtilizationRateByYearAndMonth = createAsyncThunk(
 
       const queryParams = new URLSearchParams();
       queryParams.append('year', yearInt);
+      queryParams
       if (monthInt) queryParams.append('month', monthInt);
+      queryParams.append('roomId', roomInt);
 
       const response = await axios.get(`/ultilizationrate/month?${queryParams.toString()}`);
 
@@ -222,7 +225,7 @@ export const fetchUtilizationRateByYearAndMonth = createAsyncThunk(
         areaId: typeof item.areaId === 'number' ? item.areaId : parseInt(item.areaId) || 0,
         areaName: item.areaName || '',
         areaTypeId: typeof item.areatypeId === 'number' ? item.areatypeId : parseInt(item.areatypeId) || 0, // Sửa typo từ areaypeid thành areaTypeId
-        areaTypeName: item.areaTypeName || '', 
+        areaTypeName: item.areaTypeName || '',
         areaTypeCategoryId: typeof item.areaTypeCategoryId === 'number' ? item.areaTypeCategoryId : parseInt(item.areaTypeCategoryId) || 0,
         areaTypeCategoryTitle: item.areaTypeCategoryTitle || '',
         rate: typeof item.rate === 'number' ? item.rate : parseFloat(item.rate) || 0,
@@ -238,10 +241,12 @@ export const fetchUtilizationRateByYearAndMonth = createAsyncThunk(
 // Async thunk để lấy dữ liệu tỷ lệ sử dụng theo year
 export const fetchUtilizationRateByYear = createAsyncThunk(
   'statistic/fetchUtilizationRateByYear',
-  async ({ year }, { rejectWithValue }) => {
+  async ({roomId, year }, { rejectWithValue }) => {
     try {
       // Chuẩn hóa year thành số nguyên
       const yearInt = parseInt(year, 10);
+      const roomInt = roomId ? parseInt(roomId, 10) : null;
+
 
       if (isNaN(yearInt)) {
         throw new Error('Year phải là số nguyên hợp lệ');
@@ -249,6 +254,7 @@ export const fetchUtilizationRateByYear = createAsyncThunk(
 
       const queryParams = new URLSearchParams();
       queryParams.append('year', yearInt);
+      if (roomId) queryParams.append('roomId', roomInt);
 
       const response = await axios.get(`/ultilizationrate/year?${queryParams.toString()}`);
 
@@ -267,7 +273,7 @@ export const fetchUtilizationRateByYear = createAsyncThunk(
         areaId: typeof item.areaId === 'number' ? item.areaId : parseInt(item.areaId) || 0,
         areaName: item.areaName || '',
         areaTypeId: typeof item.areatypeId === 'number' ? item.areatypeId : parseInt(item.areatypeId) || 0, // Sửa typo từ areaypeid thành areaTypeId
-        areaTypeName: item.areaTypeName || '', 
+        areaTypeName: item.areaTypeName || '',
         areaTypeCategoryId: typeof item.areaTypeCategoryId === 'number' ? item.areaTypeCategoryId : parseInt(item.areaTypeCategoryId) || 0,
         areaTypeCategoryTitle: item.areaTypeCategoryTitle || '',
         rate: typeof item.rate === 'number' ? item.rate : parseFloat(item.rate) || 0,
@@ -276,6 +282,50 @@ export const fetchUtilizationRateByYear = createAsyncThunk(
       return { data: normalizedData };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message || 'Không thể tải dữ liệu tỷ lệ sử dụng theo năm');
+    }
+  }
+);
+
+// Async thunk để lấy dữ liệu tỷ lệ sử dụng theo ngày
+export const fetchUtilizationRateByDate = createAsyncThunk(
+  'statistic/fetchUtilizationRateByDate',
+  async ({ dateTime, paraFilter }, { rejectWithValue }) => {
+    try {
+      // Kiểm tra định dạng dateTime
+      if (!dateTime || !/^\d{4}-\d{2}-\d{2}$/.test(dateTime)) {
+        throw new Error('dateTime phải có định dạng YYYY-MM-DD hợp lệ');
+      }
+
+      // Kiểm tra paraFilter là số nguyên
+      const paraFilterInt = parseInt(paraFilter, 10);
+      if (parseInt(paraFilterInt)) {
+        throw new Error('paraFilter phải là số nguyên hợp lệ');
+      }
+
+      const queryParams = new URLSearchParams();
+      queryParams.append('dateTime', dateTime);
+      queryParams.append('paraFilter', paraFilterInt);
+
+      const response = await axios.get(`/ultilizationrate/date?${queryParams.toString()}`);
+
+      // Dữ liệu từ /api/utilizationrate/date được bao bọc trong { data: [...] }
+      const utilizationData = response.data?.data;
+
+      if (!utilizationData || !Array.isArray(utilizationData)) {
+        throw new Error('Dữ liệu tỷ lệ sử dụng theo ngày không hợp lệ');
+      }
+
+      // Chuẩn hóa dữ liệu, sửa lỗi typo và đảm bảo giá trị hợp lệ
+      const normalizedData = utilizationData.map(item => ({
+        dateTH: item.dateTH || '',
+        roomId: typeof item.roomId === 'number' ? item.roomId : parseInt(item.roomId) || 0,
+        roomName: item.roomName || '',
+        rate: typeof item.rate === 'number' ? item.rate : parseFloat(item.rate) || 0,
+      }));
+
+      return { data: normalizedData };
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message || 'Không thể tải dữ liệu tỷ lệ sử dụng theo ngày');
     }
   }
 );
@@ -290,6 +340,7 @@ const statisticSlice = createSlice({
     depreciationsByYear: [], // Lưu trữ danh sách khấu hao theo năm
     utilizationRates: [], // Lưu trữ danh sách tỷ lệ sử dụng theo tháng
     utilizationRatesByYear: [], // Lưu trữ danh sách tỷ lệ sử dụng theo năm
+    utilizationRatesByDate: [], // Lưu trữ danh sách tỷ lệ sử dụng theo ngày
     loading: false,
     error: null,
   },
@@ -302,6 +353,7 @@ const statisticSlice = createSlice({
       state.depreciationsByYear = [];
       state.utilizationRates = [];
       state.utilizationRatesByYear = [];
+      state.utilizationRatesByDate = []; // Reset dữ liệu theo ngày
       state.loading = false;
       state.error = null;
     },
@@ -402,6 +454,19 @@ const statisticSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchUtilizationRateByYear.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Xử lý khi gọi API lấy dữ liệu tỷ lệ sử dụng theo ngày
+      .addCase(fetchUtilizationRateByDate.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUtilizationRateByDate.fulfilled, (state, action) => {
+        state.utilizationRatesByDate = action.payload.data || [];
+        state.loading = false;
+      })
+      .addCase(fetchUtilizationRateByDate.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

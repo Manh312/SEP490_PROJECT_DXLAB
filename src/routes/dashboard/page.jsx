@@ -22,9 +22,16 @@ import { toast } from "react-toastify";
 const Page = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
-  const { jobs, jobsByYear, depreciations, depreciationsByYear, utilizationRates, utilizationRatesByYear, loading, error } = useSelector(
-    (state) => state.statistics
-  );
+  const {
+    jobs,
+    jobsByYear,
+    depreciations,
+    depreciationsByYear,
+    utilizationRates,
+    utilizationRatesByYear,
+    loading,
+    error,
+  } = useSelector((state) => state.statistics);
 
   const [period, setPeriod] = useState("năm");
   const [year, setYear] = useState("2025");
@@ -41,8 +48,6 @@ const Page = () => {
 
   const years = Array.from({ length: 10 }, (_, i) => (2025 - i).toString());
   const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
-  console.log(typeof utilizationRatesByYear);
-  
 
   const vietnameseMonths = [
     "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
@@ -72,22 +77,19 @@ const Page = () => {
 
   // Process performanceData when utilizationRates or utilizationRatesByYear changes
   useEffect(() => {
-    // Đảm bảo utilizationRatesByYear và utilizationRates là mảng
     const safeUtilizationRatesByYear = Array.isArray(utilizationRatesByYear) ? utilizationRatesByYear : [];
     const safeUtilizationRates = Array.isArray(utilizationRates) ? utilizationRates : [];
-  
+
     if (period === "năm" && safeUtilizationRatesByYear.length > 0) {
       const monthlyPerformanceData = Array.from({ length: 12 }, (_, i) => ({
         name: vietnameseMonths[i],
       })).map((monthEntry, i) => {
         const entries = safeUtilizationRatesByYear.filter((entry) => {
-          // Kiểm tra entry tồn tại và có theDate
           if (!entry || !entry.theDate) return false;
           const date = new Date(entry.theDate);
-          // Đảm bảo ngày hợp lệ
           return !isNaN(date.getTime()) && date.getMonth() === i;
         });
-  
+
         const areaTotals = entries.reduce((acc, entry) => {
           const areaName = entry.areaName || "Unknown Area";
           const areaKey = areaName.replace(/\s+/g, "");
@@ -95,11 +97,11 @@ const Page = () => {
           if (!acc[areaKey]) {
             acc[areaKey] = { totalRate: 0, count: 0 };
           }
-          acc[areaKey].totalRate += rate * 100; // Chuyển thành phần trăm
+          acc[areaKey].totalRate += rate * 100;
           acc[areaKey].count += 1;
           return acc;
         }, {});
-  
+
         const entry = { name: monthEntry.name };
         Object.keys(areaTotals).forEach((key) => {
           entry[key] =
@@ -109,7 +111,7 @@ const Page = () => {
         });
         return entry;
       });
-  
+
       setPerformanceData(monthlyPerformanceData);
       const rates = monthlyPerformanceData.flatMap((d) =>
         Object.values(d).filter((v) => typeof v === "number")
@@ -125,16 +127,14 @@ const Page = () => {
         name: (i + 1).toString().padStart(2, "0"),
       })).map((dayEntry) => {
         const entries = safeUtilizationRates.filter((entry) => {
-          // Kiểm tra entry tồn tại và có theDate
           if (!entry || !entry.theDate) return false;
           const date = new Date(entry.theDate);
-          // Đảm bảo ngày hợp lệ
           return (
             !isNaN(date.getTime()) &&
             date.getDate().toString().padStart(2, "0") === dayEntry.name
           );
         });
-  
+
         const areaTotals = entries.reduce((acc, entry) => {
           const areaName = entry.areaName || "Unknown Area";
           const areaKey = areaName.replace(/\s+/g, "");
@@ -142,11 +142,11 @@ const Page = () => {
           if (!acc[areaKey]) {
             acc[areaKey] = { totalRate: 0, count: 0 };
           }
-          acc[areaKey].totalRate += rate * 100; // Chuyển thành phần trăm
+          acc[areaKey].totalRate += rate * 100;
           acc[areaKey].count += 1;
           return acc;
         }, {});
-  
+
         const entry = { name: dayEntry.name };
         Object.keys(areaTotals).forEach((key) => {
           entry[key] =
@@ -156,7 +156,7 @@ const Page = () => {
         });
         return entry;
       });
-  
+
       setPerformanceData(dailyPerformance);
       const rates = dailyPerformance.flatMap((d) =>
         Object.values(d).filter((v) => typeof v === "number")
@@ -395,14 +395,6 @@ const Page = () => {
   const revenueYTicks = generateYTicks(maxRevenue);
   const revenueMaxY = revenueYTicks[revenueYTicks.length - 1];
   const revenueMinY = 0;
-
-  // Thêm log để kiểm tra dữ liệu
-  console.log("Page.jsx - period:", period);
-  console.log("Page.jsx - year:", year);
-  console.log("Page.jsx - month:", month);
-  console.log("Page.jsx - showCharts:", showCharts);
-  console.log("Page.jsx - revenueAreaData length:", revenueAreaData.length);
-  console.log("Page.jsx - revenueAreaData:", revenueAreaData);
 
   return (
     <div className="flex flex-col gap-y-4 mb-20 pl-5">

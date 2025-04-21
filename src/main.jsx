@@ -39,11 +39,6 @@ const handleRoleSpecificActions = async (userData) => {
 
 const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, isNewLogin = false) => {
   try {
-    let loadingToastId;
-    if (isNewLogin) {
-      loadingToastId = toast.loading("Đang xác thực tài khoản...", { toastId: "auth-loading" });
-    }
-
     const userEmail =
       walletType === "embeddedWallet"
         ? user?.storedToken?.authDetails?.email || user?.email || "unknown@example.com"
@@ -58,6 +53,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, 
       roleId: 3,
     };
 
+    // Gọi API trước mà không hiển thị toast loading
     const response = await axiosInstance.post("/user/verifyuser?skipMinting=true", payload);
     const result = response.data;
 
@@ -67,6 +63,13 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, 
 
     const { roleId } = result.data.user || {};
 
+    // Chỉ hiển thị toast loading nếu API thành công và là đăng nhập mới
+    let loadingToastId;
+    if (isNewLogin) {
+      loadingToastId = toast.loading("Đang xác thực tài khoản...", { toastId: "auth-loading" });
+    }
+
+    // Cập nhật trạng thái user trong Redux
     dispatch(setAuthData({ token: result.data.token, user: result.data.user }));
 
     if (roleId) {
@@ -78,8 +81,8 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, 
         render: walletType === "metamask"
           ? "Đăng nhập MetaMask thành công!"
           : walletType === "embeddedWallet"
-            ? "Đăng nhập Google thành công!"
-            : "Đăng nhập ví thành công!",
+          ? "Đăng nhập Google thành công!"
+          : "Đăng nhập ví thành công!",
         type: "success",
         isLoading: false,
         autoClose: 3000,
@@ -92,12 +95,15 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, 
     return result.data;
   } catch (error) {
     console.error("Backend error:", error.message);
-    toast.error(
+    const errorMessage =
       error.response?.status === 404
         ? "Backend server không khả dụng."
-        : error.message || "Lỗi đăng nhập. Vui lòng thử lại.",
-      { toastId: "login-error" }
-    );
+        : error.response?.status === 401
+        ? "Tài khoản không tồn tại trong hệ thống."
+        : error.message || "Lỗi đăng nhập. Vui lòng thử lại.";
+
+    // Không cần dismiss toast loading vì toast loading chưa được hiển thị
+    toast.error(errorMessage, { toastId: "login-error" });
     throw error;
   }
 };
@@ -110,12 +116,11 @@ const AppWithWallet = React.memo(() => {
   const [isValidUser, setIsValidUser] = useState(false);
 
   const connectionStatus = useConnectionStatus();
-
   const chainId = useChainId();
   const walletType = useMemo(() => wallet?.walletId, [wallet]);
 
   const validateUser = useCallback(async () => {
-    if (!walletAddress || !walletType || chainId !== "sepolia") {
+    if (!walletAddress || !walletType || chainId !== 11155111) { // Chain ID của Sepolia
       setIsValidUser(false);
       return;
     }
@@ -129,21 +134,13 @@ const AppWithWallet = React.memo(() => {
       return;
     }
 
-    const userEmail = user?.storedToken?.authDetails?.email || user?.email;
-
-    if (walletType === "embeddedWallet" && !userEmail) {
-      disconnect();
-      dispatch(clearAuthData());
+    try {
+      await sendUserDataToBackend(user || {}, walletAddress, dispatch, walletType, false);
+      setIsValidUser(true);
+    } catch (error) {
+      console.error("Error validating user:", error.message);
       setIsValidUser(false);
-    } else {
-      try {
-        await sendUserDataToBackend(user || {}, walletAddress, dispatch, walletType, false);
-        setIsValidUser(true);
-      } catch (error) {
-        console.error("Error validating user:", error.message);
-        setIsValidUser(false);
-        disconnect();
-      }
+      disconnect();
     }
   }, [walletAddress, walletType, chainId, disconnect, dispatch]);
 
@@ -154,15 +151,6 @@ const AppWithWallet = React.memo(() => {
       setIsValidUser(false);
     }
   }, [connectionStatus, validateUser]);
-
-  // if (isConnecting) {
-  //   return (
-  //     <div className="flex items-center justify-center py-6 mt-50">
-  //       <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
-  //       <p className="text-orange-500 text-base sm:text-lg font-medium">Đang tải dữ liệu...</p>
-  //     </div>
-  //   );
-  // }
 
   return <App walletAddress={isValidUser ? walletAddress : null} />;
 });
@@ -189,26 +177,41 @@ const RootApp = () => {
         activeChain={activeChain}
         clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID}
         supportedWallets={[
-          metamaskWallet({ recommended: true }),
+          metamaskWallet({
+            recommended: true,
+            onConnect: async (walletDetails) => {
+              try {
+                const walletAddress = walletDetails.address;
+                await sendUserDataToBackend({}, walletAddress, dispatch, "metamask", true);
+              } catch (error) {
+                // Ngắt kết nối ví nếu xác thực backend thất bại
+                walletDetails.disconnect();
+                console.error("MetaMask login failed:", error);
+              }
+            },
+          }),
           walletConnect(),
           coinbaseWallet(),
           trustWallet(),
           embeddedWallet({
             auth: { options: ["google"] },
             onAuthSuccess: async (user) => {
-              const userEmail = user.email || user.storedToken?.authDetails?.email;
-              if (!userEmail) {
-                toast.error("Bạn cần sử dụng email được cấp quyền để đăng nhập.", {
-                  toastId: "invalid-email",
-                });
-                throw new Error("Email không hợp lệ");
+              try {
+                const userEmail = user.email || user.storedToken?.authDetails?.email;
+                if (!userEmail) {
+                  throw new Error("Email không hợp lệ");
+                }
+                const walletAddress = user.walletDetails?.walletAddress;
+                if (!walletAddress) {
+                  throw new Error("Wallet address không hợp lệ");
+                }
+                await sendUserDataToBackend(user, walletAddress, dispatch, "embeddedWallet", true);
+              } catch (error) {
+                // Hiển thị lỗi đã được xử lý trong sendUserDataToBackend
+                console.error("Embedded wallet login failed:", error);
+                // Ngắt kết nối ví
+                user.disconnect?.();
               }
-              const walletAddress = user.walletDetails?.walletAddress;
-              if (!walletAddress) {
-                toast.error("Không thể lấy địa chỉ wallet. Vui lòng thử lại.");
-                throw new Error("Wallet address không hợp lệ");
-              }
-              await sendUserDataToBackend(user, walletAddress, dispatch, "embeddedWallet", true);
             },
           }),
         ]}
