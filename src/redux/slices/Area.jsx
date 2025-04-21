@@ -70,10 +70,23 @@ export const removeFacilityFromArea = createAsyncThunk(
   'areas/removeFacilityFromArea',
   async (data, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.post('/area/faciremoving', data);
+      const payload = {
+        areaId: data.areaId,
+        facilityId: data.facilityId,
+        batchNumber: data.batchNumber,
+        importDate: data.importDate,
+        quantity: data.quantity,
+        status: data.status,
+      };
+      console.log('Payload being sent to API:', payload);
+      const response = await axiosInstance.post('/area/faciremoving', payload,{
+        headers: {
+          'Content-Type': 'application/json-patch+json',
+        },
+      });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error || 'Lỗi khi xoá thiết bị');
+      return rejectWithValue(error);
     }
   }
 );

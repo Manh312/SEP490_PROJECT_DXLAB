@@ -4,42 +4,42 @@ import { Search, Eye, ClipboardList } from "lucide-react";
 import debounce from "lodash/debounce";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAllReports, resetReports } from "../../redux/slices/Report";
-import { addNotification } from "../../redux/slices/Notification"; // Để thêm thông báo
+import { addNotification } from "../../redux/slices/Notification";
 import { FaSpinner } from "react-icons/fa";
 import Pagination from "../../hooks/use-pagination";
 import { startSignalRConnection, stopSignalRConnection } from "../../utils/signalR/connection";
-import {registerSignalREvent, unregisterSignalREvent,} from "../../utils/signalR/event"
+import { registerSignalREvent, unregisterSignalREvent } from "../../utils/signalR/event";
 
-// Utility để tránh thông báo trùng lặp
+// Utility to avoid duplicate notifications
 const notificationTracker = new Set();
 
 const ManageReportList = () => {
   const dispatch = useDispatch();
   const { reports, loading, error } = useSelector((state) => state.reports);
-  const { token } = useSelector((state) => state.auth); // Lấy token để xác thực SignalR
+  const { token } = useSelector((state) => state.auth); // Get token for SignalR authentication
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [signalRError, setSignalRError] = useState(null);
   const reportsPerPage = 5;
 
-  // Debounce tìm kiếm
+  // Debounce search
   const debouncedSearch = debounce((value) => {
     setSearchTerm(value);
     setCurrentPage(1);
   }, 300);
 
-  // Thiết lập SignalR và lấy danh sách báo cáo ban đầu
+  // Setup SignalR and fetch initial reports
   useEffect(() => {
     let mounted = true;
 
     const setupSignalR = async () => {
       try {
-        // Khởi tạo kết nối tới reportHub
+        // Start SignalR connection to reportHub
         await startSignalRConnection("reportHub", token);
 
         if (mounted) {
-          // Đăng ký sự kiện ReceiveNewReport
+          // Register ReceiveNewReport event
           registerSignalREvent("reportHub", "ReceiveNewReport", (report) => {
             const notificationKey = `ReceiveNewReport-${report.reportId}`;
             if (!notificationTracker.has(notificationKey)) {
@@ -54,11 +54,11 @@ const ManageReportList = () => {
               );
               notificationTracker.delete(notificationKey);
             }
-            // Cập nhật danh sách báo cáo
+            // Refresh report list
             dispatch(fetchAllReports());
           });
 
-          // Lấy danh sách báo cáo ban đầu
+          // Fetch initial reports
           await Promise.all([
             dispatch(fetchAllReports()).unwrap(),
             new Promise((resolve) => setTimeout(resolve, 500)),
@@ -87,31 +87,27 @@ const ManageReportList = () => {
     };
   }, [dispatch, token]);
 
-  // Lọc danh sách báo cáo theo tìm kiếm
+  // Filter reports based on exact search term for reportId or bookingDetailId
   const filteredReports = useMemo(() => {
     let result = Array.isArray(reports) ? reports : [];
     if (error || !reports) {
       return [];
     }
     if (searchTerm) {
-      result = result.filter(
-        (report) =>
-          (report.reportId || "")
-            .toString()
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          (report.bookingDetailId || "")
-            .toString()
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          (report.areaName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (report.staffName || "").toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      result = result.filter((report) => {
+        const reportIdStr = `rp-${report.reportId || ""}`.toLowerCase();
+        const bookingDetailIdStr = `dxl-${report.bookingDetailId || ""}`.toLowerCase();
+        return (
+          reportIdStr === lowerSearchTerm ||
+          bookingDetailIdStr === lowerSearchTerm
+        );
+      });
     }
     return result;
   }, [reports, searchTerm, error]);
 
-  // Reset currentPage khi danh sách báo cáo trống hoặc không hợp lệ
+  // Reset currentPage when report list is empty or invalid
   useEffect(() => {
     if (filteredReports.length === 0 && currentPage !== 1) {
       setCurrentPage(1);
@@ -126,7 +122,7 @@ const ManageReportList = () => {
     currentPage * reportsPerPage
   );
 
-  // Định dạng ngày
+  // Format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, "0");
@@ -165,7 +161,7 @@ const ManageReportList = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Tìm kiếm theo ID, mã đặt chỗ, khu vực, hoặc tên nhân viên"
+                placeholder="Tìm kiếm theo Mã Báo Cáo - Mã Đặt Chỗ"
                 onChange={(e) => debouncedSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border rounded-lg text-sm sm:text-base shadow-sm"
               />
@@ -181,6 +177,7 @@ const ManageReportList = () => {
           </div>
         ) : filteredReports.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12">
+            <Eye className="h-12 w-12 text-gray-400 mb-4" />
             <p className="text-gray-500 text-lg">
               {searchTerm
                 ? `Không tìm thấy báo cáo nào khớp với tìm kiếm`
@@ -204,16 +201,10 @@ const ManageReportList = () => {
                       Mã Đặt Chỗ
                     </th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
-                      Vị Trí
-                    </th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
                       Phòng
                     </th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
-                      Khu Vực
-                    </th>
-                    <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
-                      dịch vụ
+                      Số Lượng
                     </th>
                     <th className="px-4 py-3 font-semibold text-lg uppercase tracking-wide text-center text-gray-700">
                       Tên Nhân Viên
@@ -237,10 +228,8 @@ const ManageReportList = () => {
                       </td>
                       <td className="px-4 py-4 text-center">RP-{report.reportId}</td>
                       <td className="px-4 py-4 text-center">DXL-{report.bookingDetailId || "N/A"}</td>
-                      <td className="px-4 py-4 text-center">{report.position || "N/A"}</td>
                       <td className="px-4 py-4 text-center">{report.roomName || "N/A"}</td>
-                      <td className="px-4 py-4 text-center">{report.areaName || "N/A"}</td>
-                      <td className="px-4 py-4 text-center">{report.areaTypeName || "N/A"}</td>
+                      <td className="px-4 py-4 text-center">{report.facilityQuantity || "N/A"}</td>
                       <td className="px-4 py-4 text-center">{report.staffName || "N/A"}</td>
                       <td className="px-4 py-4 text-center">{formatDate(report.createdDate)}</td>
                       <td className="px-4 py-4 text-center">
@@ -276,22 +265,15 @@ const ManageReportList = () => {
                         to={`/dashboard/report/${report.reportId}`}
                         className="text-orange-500 hover:text-orange-600"
                       >
-                        {report.reportId}
+                        RP-{report.reportId}
                       </Link>
                     </p>
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Mã Đặt Chỗ:</span>{" "}
-                      {report.bookingDetailId || "N/A"}
+                      DXL-{report.bookingDetailId || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600">
-                      <span className="font-medium">Vị Trí:</span> {report.position || "N/A"}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">Khu Vực:</span> {report.areaName || "N/A"}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      <span className="font-medium">dịch vụ:</span>{" "}
-                      {report.areaTypeName || "N/A"}
+                      <span className="font-medium">Phòng:</span> {report.roomName || "N/A"}
                     </p>
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Tên Nhân Viên:</span>{" "}

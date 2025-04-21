@@ -53,12 +53,30 @@ export const fetchReportById = createAsyncThunk(
   }
 );
 
+// Async thunk để gửi yêu cầu xóa thiết bị khu vực (POST /api/area/faciremovereport)
+export const removeAreaFacility = createAsyncThunk(+
+  'report/removeAreaFacility',
+  async ({ areaId, facilityId, quantity }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post('/area/faciremovereport', {
+        areaId,
+        facilityId,
+        quantity,
+      });
+      return response.data; // Trả về dữ liệu từ API
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
 const reportsSlice = createSlice({
   name: 'reports',
   initialState: {
     reports: [], // Lưu trữ danh sách tất cả báo cáo
-    staffReport: null, // Lưu trữ báo cáo của nhân viên
+    staffReport: [], // Lưu trữ báo cáo của nhân viên
     currentReport: null, // Lưu trữ báo cáo theo ID
+    listfacicheck: [], // Lưu trữ danh sách thiết bị cần xóa
     loading: false,
     error: null,
   },
@@ -67,6 +85,7 @@ const reportsSlice = createSlice({
       state.reports = [];
       state.staffReport = null;
       state.currentReport = null;
+      state.listfacicheck = [];
       state.loading = false;
       state.error = null;
     },
@@ -125,6 +144,20 @@ const reportsSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchReportById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Xử lý khi gọi API xóa thiết bị khu vực (POST /api/area/faciremovereport)
+      .addCase(removeAreaFacility.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(removeAreaFacility.fulfilled, (state, action) => {
+        state.loading = false;
+        state.listfacicheck = action.payload.data || []; // Lưu danh sách thiết bị cần xóa
+      })
+      .addCase(removeAreaFacility.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

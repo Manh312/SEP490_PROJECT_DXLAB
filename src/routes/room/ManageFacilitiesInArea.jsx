@@ -11,6 +11,7 @@ import { toast } from "react-toastify";
 import { Search, Plus, X, ArrowLeft, Trash2 } from "lucide-react";
 import PropTypes from "prop-types";
 import { Link, useParams } from "react-router-dom";
+import { format } from "date-fns";
 
 const ManageFacilitiesInArea = ({ entityType = "area" }) => {
   const dispatch = useDispatch();
@@ -33,6 +34,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
   const [deleteModal, setDeleteModal] = useState(false);
   const [facilityToDelete, setFacilityToDelete] = useState(null);
   const [deleteQuantity, setDeleteQuantity] = useState("");
+  const [deleteStatus, setDeleteStatus] = useState("1"); // Default status: Đã sử dụng
   const [deleteAllModal, setDeleteAllModal] = useState(false);
 
   const { id, areaId } = useParams();
@@ -123,7 +125,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
       areaId: parseInt(areaId),
       facilityId: facilityToDelete.facilityId,
       quantity: quantityToDelete,
-      status: 2,
+      status: parseInt(deleteStatus), // Use selected status
     };
 
     try {
@@ -133,6 +135,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
       setDeleteModal(false);
       setFacilityToDelete(null);
       setDeleteQuantity("");
+      setDeleteStatus("1"); // Reset status
     } catch (err) {
       toast.error(err.message);
     }
@@ -189,6 +192,13 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
           </div>
         </div>
 
+        {/* Facilities List Title */}
+        <div className="mb-6 flex items-center gap-3">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">
+            Danh Sách Cơ Sở Vật Chất Sử Dụng Trong Phòng
+          </h2>
+        </div>
+
         {/* Facilities List */}
         {facilitiesLoading ? (
           <div className="flex justify-center items-center h-40">
@@ -203,59 +213,58 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
         ) : (
           <>
             {/* Desktop Table View */}
-            <div className="hidden sm:block bg-white shadow-lg rounded-lg overflow-x-auto">
+            <div className="hidden sm:block bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
               <table className="w-full divide-y divide-gray-200 table-auto">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-100">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
                       #
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
                       Tên Thiết Bị
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
                       Lô
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
                       Số Lượng
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">
                       Ngày Nhập
                     </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700 uppercase tracking-wider">
                       Hành Động
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {facilities.map((item, index) => (
-                    <tr key={item.usingFacilityId} className="hover:bg-gray-50 transition">
-                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
+                    <tr key={item.usingFacilityId} className="hover:bg-gray-50 transition duration-200">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-600">
                         {index + 1}
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                         {item.facilityTitle || "N/A"}
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {item.batchNumber || "N/A"}
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {item.quantity || 0}
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {item.importDate
-                          ? new Date(item.importDate).toLocaleDateString()
-                          : "N/A"}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {format(new Date(item.importDate), "dd/MM/yyyy HH:mm:ss")}
                       </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium flex justify-end">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
                           onClick={() => {
                             setFacilityToDelete(item);
                             setDeleteModal(true);
                           }}
-                          className="text-red-600 hover:text-red-800 transition"
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 hover:bg-red-200 rounded-md transition-colors text-sm font-medium"
                         >
-                          <X size={18} />
+                          <Trash2 size={16} />
+                          Xóa
                         </button>
                       </td>
                     </tr>
@@ -269,17 +278,17 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
               {facilities.map((item, index) => (
                 <div
                   key={item.usingFacilityId}
-                  className="border rounded-lg p-4 shadow-sm hover:bg-gray-50 transition-colors"
+                  className="border border-gray-200 rounded-lg p-5 shadow-sm bg-white hover:shadow-md transition-shadow duration-200"
                 >
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between">
+                  <div className="flex flex-col gap-3">
+                    <div className="flex justify-between items-center">
                       <span className="font-semibold text-sm text-gray-700">
                         #{index + 1}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Tên Thiết Bị:</span>{" "}
-                      {item.facilityTitle || "N/A"}
+                      <span className="font-semibold text-gray-900">{item.facilityTitle || "N/A"}</span>
                     </p>
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Lô:</span>{" "}
@@ -292,18 +301,19 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                     <p className="text-sm text-gray-600">
                       <span className="font-medium">Ngày Nhập:</span>{" "}
                       {item.importDate
-                        ? new Date(item.importDate).toLocaleDateString()
+                        ? format(new Date(item.importDate), "dd/MM/yyyy HH:mm:ss")
                         : "N/A"}
                     </p>
-                    <div className="flex justify-center mt-2">
+                    <div className="flex justify-center mt-3">
                       <button
                         onClick={() => {
                           setFacilityToDelete(item);
                           setDeleteModal(true);
                         }}
-                        className="bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                        className="inline-flex items-center gap-1 px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-md transition-colors text-sm font-medium"
                       >
-                        <X size={18} /> Xóa
+                        <Trash2 size={16} />
+                        Xóa
                       </button>
                     </div>
                   </div>
@@ -313,7 +323,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
           </>
         )}
 
-        {/* Delete Facility Modal */}
+        {/* Delete Facility Modal with Status Selection */}
         {deleteModal && facilityToDelete && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div className="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-md space-y-4">
@@ -324,6 +334,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                     setDeleteModal(false);
                     setFacilityToDelete(null);
                     setDeleteQuantity("");
+                    setDeleteStatus("1");
                   }}
                   className="text-gray-500 hover:text-gray-700"
                 >
@@ -336,6 +347,19 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
               <p className="text-gray-700">
                 Số lượng hiện có: <strong>{facilityToDelete.quantity || 0}</strong>
               </p>
+              <div>
+                <label className="block mb-1 font-medium text-sm text-gray-700">
+                  Chọn trạng thái khi xóa:
+                </label>
+                <select
+                  value={deleteStatus}
+                  onChange={(e) => setDeleteStatus(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  <option value="1">Đã sử dụng</option>
+                  <option value="2">Hỏng</option>
+                </select>
+              </div>
               <input
                 type="number"
                 name="quantity"
@@ -353,6 +377,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                     setDeleteModal(false);
                     setFacilityToDelete(null);
                     setDeleteQuantity("");
+                    setDeleteStatus("1");
                   }}
                   className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
                 >
@@ -481,14 +506,13 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                           <tr
                             key={`${faci.facilityId}-${faci.batchNumber}-${faci.importDate}-${faci.status}`}
                             onClick={() => setSelectedFacility(faci)}
-                            className={`cursor-pointer hover:bg-orange-50 transition ${
-                              selectedFacility?.facilityId === faci.facilityId &&
-                              selectedFacility?.batchNumber === faci.batchNumber &&
-                              selectedFacility?.importDate === faci.importDate &&
-                              selectedFacility?.status === faci.status
+                            className={`cursor-pointer hover:bg-orange-50 transition ${selectedFacility?.facilityId === faci.facilityId &&
+                                selectedFacility?.batchNumber === faci.batchNumber &&
+                                selectedFacility?.importDate === faci.importDate &&
+                                selectedFacility?.status === faci.status
                                 ? "bg-orange-100"
                                 : ""
-                            }`}
+                              }`}
                           >
                             <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               {faci.facilityName}
@@ -517,14 +541,13 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                       <div
                         key={`${faci.facilityId}-${faci.batchNumber}-${faci.importDate}-${faci.status}`}
                         onClick={() => setSelectedFacility(faci)}
-                        className={`border rounded-lg p-4 shadow-sm hover:bg-orange-50 transition-colors cursor-pointer ${
-                          selectedFacility?.facilityId === faci.facilityId &&
-                          selectedFacility?.batchNumber === faci.batchNumber &&
-                          selectedFacility?.importDate === faci.importDate &&
-                          selectedFacility?.status === faci.status
+                        className={`border rounded-lg p-4 shadow-sm hover:bg-orange-50 transition-colors cursor-pointer ${selectedFacility?.facilityId === faci.facilityId &&
+                            selectedFacility?.batchNumber === faci.batchNumber &&
+                            selectedFacility?.importDate === faci.importDate &&
+                            selectedFacility?.status === faci.status
                             ? "bg-orange-100"
                             : ""
-                        }`}
+                          }`}
                       >
                         <div className="flex flex-col gap-2">
                           <p className="text-sm text-gray-600">

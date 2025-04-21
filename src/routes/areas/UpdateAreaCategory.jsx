@@ -32,12 +32,11 @@ const UpdateAreaCategory = () => {
     status: 1,
     images: [],
   });
-  const [hasDetailsChange, setHasDetailsChange] = useState(false);
-  const [hasImageChange, setHasImageChange] = useState(false);
   const [imagePreviews, setImagePreviews] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [imagesToDelete, setImagesToDelete] = useState([]);
   const [failedImages, setFailedImages] = useState(new Set());
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!areaTypeCategories || areaTypeCategories.length === 0) {
@@ -72,7 +71,6 @@ const UpdateAreaCategory = () => {
       ...prev,
       [name]: name === "status" ? parseInt(value) : value,
     }));
-    setHasDetailsChange(true);
   };
 
   const handleFileChange = (e) => {
@@ -84,7 +82,6 @@ const UpdateAreaCategory = () => {
       }));
       const previews = files.map((file) => URL.createObjectURL(file));
       setImagePreviews((prev) => [...prev, ...previews]);
-      setHasImageChange(true);
     }
   };
 
@@ -122,12 +119,22 @@ const UpdateAreaCategory = () => {
         images: updatedImages,
       }));
     }
-
-    setHasImageChange(true);
   };
 
   const handleImageError = (index) => {
     setFailedImages((prev) => new Set(prev).add(index));
+  };
+
+  const hasChanges = () => {
+    const trimmedTitle = formData.title.trim();
+    const trimmedDescription = formData.categoryDescription.trim();
+    return (
+      trimmedTitle !== (currentCategory?.title || "") ||
+      trimmedDescription !== (currentCategory?.categoryDescription || "") ||
+      formData.status !== (currentCategory?.status || 1) ||
+      formData.images.length > 0 ||
+      imagesToDelete.length > 0
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -145,48 +152,55 @@ const UpdateAreaCategory = () => {
       return;
     }
 
+    if (!hasChanges()) {
+      toast.info("Không có thay đổi nào để cập nhật!");
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
+      // Step 1: Delete images if any
       if (imagesToDelete.length > 0) {
-        for (const imageUrl of imagesToDelete) {
-          await dispatch(
-            deleteAreaTypeCategoryImage({
-              categoryId: parseInt(id),
-              imageUrl,
-            })
-          ).unwrap();
-        }
-        toast.success("Xóa ảnh thành công!");
+        await Promise.all(
+          imagesToDelete.map((imageUrl) =>
+            dispatch(
+              deleteAreaTypeCategoryImage({
+                categoryId: parseInt(id),
+                imageUrl,
+              })
+            ).unwrap()
+          )
+        );
         setImagesToDelete([]);
       }
 
-      if (hasDetailsChange) {
-        const patchDoc = [];
-        if (currentCategory?.title !== trimmedTitle) {
-          patchDoc.push({ op: "replace", path: "title", value: trimmedTitle });
-        }
-        if (currentCategory?.categoryDescription !== trimmedDescription) {
-          patchDoc.push({
-            op: "replace",
-            path: "categoryDescription",
-            value: trimmedDescription,
-          });
-        }
-        if (currentCategory?.status !== formData.status) {
-          patchDoc.push({ op: "replace", path: "status", value: formData.status });
-        }
-
-        if (patchDoc.length > 0) {
-          await dispatch(
-            updateAreaTypeCategory({
-              categoryId: parseInt(id),
-              patchDoc,
-            })
-          ).unwrap();
-          toast.success("Cập nhật thông tin dịch vụ thành công!");
-        }
+      // Step 2: Update details if there are changes
+      const patchDoc = [];
+      if (currentCategory?.title !== trimmedTitle) {
+        patchDoc.push({ op: "replace", path: "title", value: trimmedTitle });
+      }
+      if (currentCategory?.categoryDescription !== trimmedDescription) {
+        patchDoc.push({
+          op: "replace",
+          path: "categoryDescription",
+          value: trimmedDescription,
+        });
+      }
+      if (currentCategory?.status !== formData.status) {
+        patchDoc.push({ op: "replace", path: "status", value: formData.status });
       }
 
-      if (hasImageChange && formData.images.length > 0) {
+      if (patchDoc.length > 0) {
+        await dispatch(
+          updateAreaTypeCategory({
+            categoryId: parseInt(id),
+            patchDoc,
+          })
+        ).unwrap();
+      }
+
+      // Step 3: Upload new images if any
+      if (formData.images.length > 0) {
         await dispatch(
           updateAreaTypeCategoryImages({
             categoryId: parseInt(id),
@@ -195,16 +209,17 @@ const UpdateAreaCategory = () => {
         ).unwrap();
       }
 
-      if (!hasDetailsChange && !hasImageChange && imagesToDelete.length === 0) {
-        toast.info("Không có thay đổi nào để cập nhật!");
-        return;
-      }
-
+      // Step 4: Refresh the category list
       await dispatch(fetchAllAreaTypeCategories()).unwrap();
+
+      // Show a single success toast
+      toast.success("Cập nhật dịch vụ thành công!");
       navigate("/dashboard/area");
     } catch (err) {
       const errorMessage = err.message || "Lỗi khi cập nhật danh mục dịch vụ";
       toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -423,10 +438,10 @@ const UpdateAreaCategory = () => {
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitting || loading}
               className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-orange-700 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:from-orange-600 hover:to-orange-800 transition-all shadow-md disabled:bg-orange-300 disabled:cursor-not-allowed text-sm sm:text-base font-normal"
             >
-              {loading ? (
+              {isSubmitting || loading ? (
                 <svg
                   className="animate-spin h-4 w-4 sm:h-5 sm:w-5 mr-2 text-white"
                   viewBox="0 0 24 24"

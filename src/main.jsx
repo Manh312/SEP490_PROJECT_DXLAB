@@ -22,7 +22,6 @@ import { clearAuthData, fetchRoleByID, setAuthData } from "./redux/slices/Authen
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import axiosInstance from "./utils/axios.js";
-import { FaSpinner } from "react-icons/fa";
 
 const activeChain = "sepolia";
 
@@ -111,7 +110,6 @@ const AppWithWallet = React.memo(() => {
   const [isValidUser, setIsValidUser] = useState(false);
 
   const connectionStatus = useConnectionStatus();
-  const isConnecting = connectionStatus === "connecting" || connectionStatus === "unknown";
 
   const chainId = useChainId();
   const walletType = useMemo(() => wallet?.walletId, [wallet]);

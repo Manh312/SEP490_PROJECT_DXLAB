@@ -194,7 +194,6 @@ const UpdateRoom = () => {
             })
           ).unwrap();
         }
-        toast.success("Xóa ảnh thành công!");
         setImagesToDelete([]);
       }
 
@@ -218,7 +217,6 @@ const UpdateRoom = () => {
               patchDoc,
             })
           ).unwrap();
-          toast.success("Cập nhật thông tin phòng thành công!");
         }
       }
 
@@ -229,7 +227,6 @@ const UpdateRoom = () => {
             files: newFiles,
           })
         ).unwrap();
-        toast.success("Cập nhật ảnh thành công!");
       }
 
       if (!hasDetailsChange && !hasImageChange && imagesToDelete.length === 0) {
@@ -237,6 +234,7 @@ const UpdateRoom = () => {
         return;
       }
 
+      toast.success("Cập nhật thông tin phòng thành công!");
       await dispatch(getRoomById(parseInt(id))).unwrap();
       navigate("/dashboard/room", { state: { successMessage: "Cập nhật phòng thành công!" } });
     } catch (err) {
@@ -953,7 +951,7 @@ const UpdateRoom = () => {
             >
               <h2 className="text-xl font-semibold text-red-600 mb-4">Xác nhận xóa khu vực</h2>
               <p className="text-gray-600 mb-6">
-                Bạn có chắc chắn muốn xóa khu vực <strong>"{areaName}"</strong> không? Hành động này không thể hoàn tác.
+                Bạn có chắc chắn muốn xóa khu vực <strong>{areaName}</strong> không? Hành động này không thể hoàn tác.
               </p>
               <div className="flex justify-end gap-4">
                 <button

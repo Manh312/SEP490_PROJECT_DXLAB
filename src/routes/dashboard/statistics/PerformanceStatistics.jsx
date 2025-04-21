@@ -13,9 +13,8 @@ const PerformanceStatistics = ({
   performanceYTicks,
 }) => {
   const { theme } = useTheme();
-  const COLORS = ["#3b82f6", "#ef4444"]; // Colors for pie chart
+  const COLORS = ["#3b82f6", "#ef4444"];
 
-  // Check if screen is large for ReferenceLine
   const [isLargeScreen, setIsLargeScreen] = useState(typeof window !== "undefined" ? window.innerWidth > 768 : false);
 
   useEffect(() => {
@@ -24,51 +23,51 @@ const PerformanceStatistics = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Normalize performanceData to ensure values are in percentage (e.g., 0.11 -> 11)
-  const normalizedPerformanceData = useMemo(() => {
+  // Transform performanceData into a better format
+  const transformedPerformanceData = useMemo(() => {
     if (!performanceData || performanceData.length === 0) return [];
-    const normalized = performanceData.map((entry) => {
-      const normalizedEntry = { name: entry.name };
-      Object.keys(entry).forEach((key) => {
-        if (key !== "name") {
-          const value = entry[key];
-          // Nếu giá trị nằm trong khoảng (0, 1), nhân với 100 để chuyển thành phần trăm
-          normalizedEntry[key] = typeof value === "number" && value > 0 && value <= 1 ? value * 100 : value || 0;
-        }
-      });
-      return normalizedEntry;
+
+    return performanceData.map((entry) => {
+      const areas = Object.keys(entry)
+        .filter((key) => key !== "name")
+        .map((key) => ({
+          areaName: key.replace(/Khuvực/g, "Khu vực "), // Fix the spacing in the key
+          rate: typeof entry[key] === "number" && entry[key] > 0 && entry[key] <= 1 ? entry[key] * 100 : entry[key] || 0,
+        }));
+      return {
+        name: entry.name,
+        areas,
+      };
     });
-    console.log("performanceData:", performanceData);
-    console.log("normalizedPerformanceData:", normalized);
-    return normalized;
   }, [performanceData]);
 
   // Get list of areas dynamically
   const areas = useMemo(() =>
     Array.from(
       new Set(
-        normalizedPerformanceData.flatMap((entry) => Object.keys(entry).filter((key) => key !== "name"))
+        transformedPerformanceData.flatMap((entry) =>
+          entry.areas.map((area) => area.areaName)
+        )
       )
     ),
-    [normalizedPerformanceData]
+    [transformedPerformanceData]
   );
 
   // Check if data exists
-  const hasPerformanceData = normalizedPerformanceData.some((entry) =>
-    areas.some((area) => entry[area] > 0)
+  const hasPerformanceData = transformedPerformanceData.some((entry) =>
+    entry.areas.some((area) => area.rate > 0)
   );
 
   // Compute average utilization rate for pie chart
   const avgUtilizationRate = useMemo(() => {
     if (!hasPerformanceData || areas.length === 0) return 0;
 
-    // Tính tổng tất cả các rate và đếm tổng số bản ghi
     let totalRate = 0;
     let totalEntries = 0;
 
-    normalizedPerformanceData.forEach((entry) => {
-      areas.forEach((area) => {
-        const rate = entry[area] || 0;
+    transformedPerformanceData.forEach((entry) => {
+      entry.areas.forEach((area) => {
+        const rate = area.rate || 0;
         if (rate > 0) {
           totalRate += rate;
           totalEntries += 1;
@@ -79,14 +78,13 @@ const PerformanceStatistics = ({
     const avgRate = totalEntries > 0 ? totalRate / totalEntries : 0;
     console.log("totalRate:", totalRate, "totalEntries:", totalEntries, "avgUtilizationRate:", avgRate);
     return avgRate;
-  }, [hasPerformanceData, normalizedPerformanceData, areas]);
+  }, [hasPerformanceData, transformedPerformanceData, areas]);
 
   const utilizationPieData = [
     { name: "Tỷ lệ sử dụng", value: avgUtilizationRate },
     { name: "Chưa sử dụng", value: 100 - avgUtilizationRate },
   ];
 
-  // Utility to get days in month
   const getDaysInMonth = (month, year) => {
     const parsedMonth = parseInt(month);
     const parsedYear = parseInt(year);
@@ -124,15 +122,15 @@ const PerformanceStatistics = ({
         ...areas.reduce((acc, area) => ({ ...acc, [area]: 0 }), {}),
       }));
 
-      normalizedPerformanceData.forEach((entry) => {
+      transformedPerformanceData.forEach((entry) => {
         const day = parseInt(entry.name, 10) - 1;
         if (day >= 0 && day < daysInMonth) {
-          const areaValues = areas.reduce((sum, area) => sum + (entry[area] || 0), 0);
-          const total = areas.length > 0 ? areaValues / areas.length : 0;
+          const areaValues = entry.areas.reduce((sum, area) => sum + (area.rate || 0), 0);
+          const total = entry.areas.length > 0 ? areaValues / entry.areas.length : 0;
           dailyData[day] = {
             name: `Ngày ${day + 1}`,
             total: total || 0,
-            ...areas.reduce((acc, area) => ({ ...acc, [area]: entry[area] || 0 }), {}),
+            ...entry.areas.reduce((acc, area) => ({ ...acc, [area.areaName]: area.rate || 0 }), {}),
           };
         }
       });
@@ -140,18 +138,17 @@ const PerformanceStatistics = ({
       return dailyData;
     }
 
-    return normalizedPerformanceData.map((entry) => {
-      const areaValues = areas.reduce((sum, area) => sum + (entry[area] || 0), 0);
-      const total = areas.length > 0 ? areaValues / areas.length : 0;
+    return transformedPerformanceData.map((entry) => {
+      const areaValues = entry.areas.reduce((sum, area) => sum + (area.rate || 0), 0);
+      const total = entry.areas.length > 0 ? areaValues / entry.areas.length : 0;
       return {
         name: entry.name,
         total: total || 0,
-        ...areas.reduce((acc, area) => ({ ...acc, [area]: entry[area] || 0 }), {}),
+        ...entry.areas.reduce((acc, area) => ({ ...acc, [area.areaName]: area.rate || 0 }), {}),
       };
     });
-  }, [hasPerformanceData, period, month, year, normalizedPerformanceData, areas]);
+  }, [hasPerformanceData, period, month, year, transformedPerformanceData, areas]);
 
-  // Use props for Y-axis
   const minY = performanceMinY;
   const maxY = performanceMaxY;
   const ticks = performanceYTicks;
@@ -174,8 +171,8 @@ const PerformanceStatistics = ({
           }`}
         >
           <p className="font-semibold mb-2">{label}</p>
-          {areas.map((area) => (
-            <p key={area} className="text-sm">
+          {areas.map((area, id) => (
+            <p key={id} className="text-sm">
               {area}: {(data[area] || 0).toFixed(2)}%
             </p>
           ))}
@@ -190,11 +187,9 @@ const PerformanceStatistics = ({
 
   const areaData = processAreaData;
 
-  // Dynamic X-axis interval to avoid label clutter
   const maxLabels = 10;
   const xAxisInterval = period === "tháng" && areaData.length > maxLabels ? Math.ceil(areaData.length / maxLabels) : 0;
 
-  // Reference lines for monthly view (only on large screens)
   const daysInMonth = period === "tháng" && month && year ? getDaysInMonth(month, year) : 0;
   const referenceLines = isLargeScreen && period === "tháng" && daysInMonth > 0 ? (
     <>
@@ -225,7 +220,6 @@ const PerformanceStatistics = ({
         theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       }`}
     >
-      {/* Card Header */}
       <div className="card-header border-b border-gray-200 dark:border-gray-700">
         <p
           className={`card-title text-2xl font-semibold p-6 ${
@@ -236,9 +230,7 @@ const PerformanceStatistics = ({
         </p>
       </div>
 
-      {/* Card Body */}
       <div className="card-body p-6 flex flex-col gap-8">
-        {/* Pie Chart */}
         <div className="flex flex-col items-center animate-fade-in">
           <h3
             className={`text-xl font-medium mb-4 ${
@@ -302,7 +294,6 @@ const PerformanceStatistics = ({
           )}
         </div>
 
-        {/* Area Chart */}
         <div className="flex flex-col animate-fade-in">
           <h3
             className={`text-xl font-medium mb-4 ${

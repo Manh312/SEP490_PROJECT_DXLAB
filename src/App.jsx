@@ -38,10 +38,7 @@ import RoomDetail from "./routes/room/RoomDetail";
 import UpdateRoom from "./routes/room/UpdateRoom";
 import CreateRoom from "./routes/room/CreateRoom";
 import AreaDetail from "./routes/students/AreaDetail";
-
 import ReportList from "./routes/staff-manage/Report-management/ReportList";
-import ReportDetail from "./routes/staff-manage/Report-management/ReportDetail";
-
 import CreateSlot from "./routes/slot/CreateSlot";
 import CreateBlog from "./routes/staff-manage/blog-management/CreateBlog";
 import StorageListAccount from "./routes/account/StorageListAccount";
@@ -62,6 +59,8 @@ import ManageReportList from "./routes/report/ManageReportList";
 import ManageReportDetail from "./routes/report/ManageReportDetail";
 import ManageFacilitiesInArea from "./routes/room/ManageFacilitiesInArea";
 import UpdateSlot from "./routes/slot/UpdateSLot";
+import FacilitiesListDelete from "./routes/report/FacilitiesListDelete";
+import ReportDetail from "./routes/staff-manage/report-management/ReportDetail";
 
 
 
@@ -228,6 +227,10 @@ const router = createBrowserRouter([
       {
         path: "dashboard/report/:id",
         element: <ProtectedRoute allowedRoles={["Admin"]}><ManageReportDetail /></ProtectedRoute>,
+      },
+      {
+        path: "dashboard/report/:id/check",
+        element: <ProtectedRoute allowedRoles={["Admin"]}><FacilitiesListDelete /></ProtectedRoute>,
       },
       {
         path: "manage",

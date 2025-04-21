@@ -133,7 +133,7 @@ const UpdateAreaType = () => {
     e.preventDefault();
 
     if (!formData.areaTypeName.trim()) {
-      toast.error("Tên dịch vụ là bắt buộc!");
+      toast.error("Tên loại khu vực là bắt buộc!");
       return;
     }
     if (!formData.areaDescription.trim()) {
@@ -177,7 +177,6 @@ const UpdateAreaType = () => {
               patchDoc,
             })
           ).unwrap();
-          toast.success("Cập nhật thông tin dịch vụ thành công!");
         }
       }
 
@@ -188,7 +187,6 @@ const UpdateAreaType = () => {
             files: newFiles,
           })
         ).unwrap();
-        toast.success("Cập nhật ảnh thành công!");
       }
 
       if (!hasDetailsChange && !hasImageChange && imagesToDelete.length === 0) {
@@ -196,6 +194,7 @@ const UpdateAreaType = () => {
         return;
       }
 
+      toast.success("Cập nhật loại khu vực thành công!");
       navigate("/dashboard/areaType");
     } catch (error) {
       const errorMessage = error.message || "Unknown error";

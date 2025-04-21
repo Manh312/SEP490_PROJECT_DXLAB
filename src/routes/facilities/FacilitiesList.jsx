@@ -1,10 +1,10 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState, useMemo } from "react";
-import { fetchFacilities, addFacilityFromExcel, moveToStorage } from "../../redux/slices/Facilities";
+import { fetchFacilities, addFacilityFromExcel } from "../../redux/slices/Facilities";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FaFileExcel, FaFilter, FaSpinner } from "react-icons/fa";
-import { Eye, Package, PlusCircle, Search, Trash2 } from "lucide-react";
+import { Eye, Package, PlusCircle, Search } from "lucide-react";
 import { format } from "date-fns";
 import debounce from "lodash/debounce";
 import Pagination from "../../hooks/use-pagination";
@@ -93,17 +93,6 @@ const FacilitiesList = () => {
     } catch (err) {
       toast.error(err?.message);
       setFileInputKey(Date.now());
-    }
-  };
-
-  const handleSoftDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc muốn chuyển vào thùng rác?")) return;
-    try {
-      await dispatch(moveToStorage(id)).unwrap();
-      toast.success("Đã chuyển vào thùng rác!");
-      dispatch(fetchFacilities());
-    } catch (err) {
-      toast.error(err?.message || "Có lỗi xảy ra khi xóa!");
     }
   };
 
@@ -371,10 +360,12 @@ const FacilitiesList = () => {
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <button
-                          onClick={() => handleSoftDelete(facility.id)}
-                          className="bg-red-500 text-white hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
+                          onClick={() => navigate(`/dashboard/facilities/${facility.facilityId}`)}
+                          data-tooltip-id="action-tooltip"
+                          data-tooltip-content="Xem chi tiết cơ sở vật chất"
+                          className="bg-orange-100 text-orange-700 ml-2 hover:bg-orange-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
                         >
-                          <Trash2 className="w-4 h-4" /> Xóa mềm
+                          <Eye className="w-4 h-4" />
                         </button>
                       </div>
                     </div>

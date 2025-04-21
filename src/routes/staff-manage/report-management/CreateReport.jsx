@@ -11,6 +11,7 @@ const CreateReport = () => {
   const { id } = useParams();
 
   const [reportDescription, setReportDescription] = useState("");
+  const [facilityQuantity, setFacilityQuantity] = useState(0);
   const [loading, setLoading] = useState(false);
 
   // Định dạng ngày hiện tại
@@ -34,6 +35,7 @@ const CreateReport = () => {
       const reportData = {
         bookingDetailId: id,
         reportDescription,
+        facilityQuantity: facilityQuantity,
       };
 
       await dispatch(createReport(reportData)).unwrap();
@@ -103,6 +105,22 @@ const CreateReport = () => {
               placeholder="Nhập nội dung báo cáo..."
               className="w-full p-4 border border-gray-300 rounded-lg text-sm sm:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-y bg-gray-50"
               rows="8"
+              required
+            />
+          </div>
+
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Số Lượng Thiết Bị
+            </label>
+            <input
+              id="facilityQuantity"
+              type="number"
+              value={facilityQuantity}
+              onChange={(e) => setFacilityQuantity(e.target.value)}
+              placeholder="Nhập số lượng thiết bị..."
+              className="w-full p-4 border border-gray-300 rounded-lg text-sm sm:text-base shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-gray-50"
+              min="0"
               required
             />
           </div>
