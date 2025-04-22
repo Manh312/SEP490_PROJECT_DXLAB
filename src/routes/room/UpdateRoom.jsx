@@ -650,7 +650,7 @@ const UpdateRoom = () => {
         {activeTab === "manage-areas" && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-              <h3 className="text-lg sm:text-xl font-semibold">Danh Sách Khu Vực</h3>
+              <h3 className="text-lg sm:text-xl font-semibold">Danh Sách Khu Vực Trong Phòng</h3>
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
@@ -688,7 +688,7 @@ const UpdateRoom = () => {
                           Danh Mục
                         </th>
                         <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Số Lượng Bàn
+                          Tổng Kích Thước Bàn
                         </th>
                         <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Số Lượng Ghế
@@ -723,7 +723,7 @@ const UpdateRoom = () => {
                             {area.categoryId === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {area.faciAmount} bàn
+                            {area.faciAmount} chỗ
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                             {area.faciAmountCh} ghế

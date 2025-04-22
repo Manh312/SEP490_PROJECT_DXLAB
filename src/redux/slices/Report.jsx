@@ -9,7 +9,7 @@ export const createReport = createAsyncThunk(
       const response = await axios.post('/report', reportData);
       return response.data; // Trả về dữ liệu từ API
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Không thể tạo báo cáo');
+      return rejectWithValue(error.message);
     }
   }
 );

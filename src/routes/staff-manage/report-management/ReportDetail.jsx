@@ -215,7 +215,7 @@ const ReportDetail = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Cơ Sở Vật Chất</p>
                     <p className="text-sm sm:text-base font-normal text-gray-800 truncate">
-                      {currentReport.facilityTitle ? `${currentReport.facilityTitle} - ${currentReport.batchNumber || "N/A"}` : "N/A"}
+                      {currentReport.facilityTitle} - {currentReport.batchNumber}
                     </p>
                   </div>
                 </div>

@@ -124,6 +124,8 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
     const body = {
       areaId: parseInt(areaId),
       facilityId: facilityToDelete.facilityId,
+      batchNumber: facilityToDelete.batchNumber,
+      importDate: facilityToDelete.importDate,
       quantity: quantityToDelete,
       status: parseInt(deleteStatus), // Use selected status
     };

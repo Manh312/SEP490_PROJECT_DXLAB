@@ -42,7 +42,7 @@ const CreateReport = () => {
       toast.success("Tạo báo cáo thành công!");
       navigate(`/manage/reports`);
     } catch (error) {
-      toast.error(error || "Không thể tạo báo cáo. Vui lòng thử lại!");
+      toast.error(error);
     } finally {
       setLoading(false);
     }
