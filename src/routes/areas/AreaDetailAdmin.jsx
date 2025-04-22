@@ -171,7 +171,7 @@ const AreaDetailAdmin = () => {
 
         {/* Main Content */}
         <div className="p-4 sm:p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-25">
             {/* Left Section: Images */}
             <motion.div className="flex flex-col items-center" variants={itemVariants}>
               {renderImages()}
@@ -237,7 +237,7 @@ const AreaDetailAdmin = () => {
 
           {/* Buttons */}
           <motion.div
-            className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8"
+            className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-8 sm:mt-10"
             variants={itemVariants}
           >
             <button
