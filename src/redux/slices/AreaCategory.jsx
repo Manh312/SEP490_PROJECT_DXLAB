@@ -35,7 +35,7 @@ export const createAreaTypeCategory = createAsyncThunk(
       const response = await axiosInstance.post(`${API_URL}/newareatypecategory`, formData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi tạo danh mục dịch vụ");
+      return rejectWithValue(error || "Lỗi khi tạo danh mục dịch vụ");
     }
   }
 );
@@ -85,7 +85,8 @@ export const updateAreaTypeCategoryImages = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi cập nhật ảnh");
+      console.log(error);
+      return rejectWithValue(error.message || "Lỗi khi cập nhật ảnh");
     }
   }
 );
