@@ -206,7 +206,7 @@ export const fetchUtilizationRateByYearAndMonth = createAsyncThunk(
       queryParams.append('year', yearInt);
       queryParams
       if (monthInt) queryParams.append('month', monthInt);
-      queryParams.append('roomId', roomInt);
+      if (roomInt) queryParams.append('roomId', roomInt);
 
       const response = await axios.get(`/ultilizationrate/month?${queryParams.toString()}`);
 
@@ -219,16 +219,10 @@ export const fetchUtilizationRateByYearAndMonth = createAsyncThunk(
 
       // Chuẩn hóa dữ liệu, sửa lỗi typo và đảm bảo giá trị hợp lệ
       const normalizedData = utilizationData.map(item => ({
-        theDate: item.thDate || '', // Sửa typo từ thDate thành theDate
         roomId: typeof item.roomId === 'number' ? item.roomId : parseInt(item.roomId) || 0,
         roomName: item.roomName || '',
-        areaId: typeof item.areaId === 'number' ? item.areaId : parseInt(item.areaId) || 0,
-        areaName: item.areaName || '',
-        areaTypeId: typeof item.areatypeId === 'number' ? item.areatypeId : parseInt(item.areatypeId) || 0, // Sửa typo từ areaypeid thành areaTypeId
-        areaTypeName: item.areaTypeName || '',
-        areaTypeCategoryId: typeof item.areaTypeCategoryId === 'number' ? item.areaTypeCategoryId : parseInt(item.areaTypeCategoryId) || 0,
-        areaTypeCategoryTitle: item.areaTypeCategoryTitle || '',
         rate: typeof item.rate === 'number' ? item.rate : parseFloat(item.rate) || 0,
+        dateTH: item.dateTH || '', // Sửa typo từ thDate thành theDate
       }));
 
       return { data: normalizedData };
@@ -253,7 +247,7 @@ export const fetchUtilizationRateByYear = createAsyncThunk(
       }
 
       const queryParams = new URLSearchParams();
-      queryParams.append('year', yearInt);
+      if (yearInt) queryParams.append('year', yearInt);
       if (roomId) queryParams.append('roomId', roomInt);
 
       const response = await axios.get(`/ultilizationrate/year?${queryParams.toString()}`);
@@ -267,16 +261,10 @@ export const fetchUtilizationRateByYear = createAsyncThunk(
 
       // Chuẩn hóa dữ liệu, sửa lỗi typo và đảm bảo giá trị hợp lệ
       const normalizedData = utilizationData.map(item => ({
-        theDate: item.thDate || '', // Sửa typo từ thDate thành theDate
         roomId: typeof item.roomId === 'number' ? item.roomId : parseInt(item.roomId) || 0,
         roomName: item.roomName || '',
-        areaId: typeof item.areaId === 'number' ? item.areaId : parseInt(item.areaId) || 0,
-        areaName: item.areaName || '',
-        areaTypeId: typeof item.areatypeId === 'number' ? item.areatypeId : parseInt(item.areatypeId) || 0, // Sửa typo từ areaypeid thành areaTypeId
-        areaTypeName: item.areaTypeName || '',
-        areaTypeCategoryId: typeof item.areaTypeCategoryId === 'number' ? item.areaTypeCategoryId : parseInt(item.areaTypeCategoryId) || 0,
-        areaTypeCategoryTitle: item.areaTypeCategoryTitle || '',
         rate: typeof item.rate === 'number' ? item.rate : parseFloat(item.rate) || 0,
+        dateTH: item.dateTH || '', // Sửa typo từ thDate thành theDate
       }));
 
       return { data: normalizedData };

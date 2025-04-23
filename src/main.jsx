@@ -13,6 +13,7 @@ import {
   useWallet,
   useChainId,
   useConnectionStatus,
+  useUser,
 } from "@thirdweb-dev/react";
 import App from "./App.jsx";
 import { store, persistor } from "./redux/Store.jsx";
@@ -25,24 +26,33 @@ import axiosInstance from "./utils/axios.js";
 
 const activeChain = "sepolia";
 
-// Tách riêng logic xử lý roleId 3 khỏi quá trình đăng nhập chính
 const handleRoleSpecificActions = async (userData) => {
-  if (userData.user && userData.user.roleId === 3) {
+  if (userData?.user && userData.user.roleId === 3) {
     try {
       console.log("Processing post-auth actions for roleId 3");
-      // Các tác vụ đặc biệt có thể được thực hiện ở đây
     } catch (error) {
       console.error("Error in post-authentication processing:", error);
     }
   }
 };
 
-const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, isNewLogin = false) => {
+const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, isNewLogin = false, setIsExist) => {
   try {
-    const userEmail =
-      walletType === "embeddedWallet"
-        ? user?.storedToken?.authDetails?.email || user?.email || "unknown@example.com"
-        : `${walletAddress}@metamask.default`;
+    console.log("sendUserDataToBackend inputs:", { user, walletAddress, walletType, isNewLogin });
+
+    let userEmail;
+    if (walletType === "embeddedWallet") {
+      userEmail = user?.email || user?.storedToken?.authDetails?.email;
+      if (!userEmail) {
+        console.warn("Không thể lấy email từ Google authentication, sử dụng email mặc định.");
+        userEmail = `${walletAddress}@embeddedwallet.default`;
+      }
+    } else {
+      if (!walletAddress) {
+        throw new Error("Địa chỉ ví không hợp lệ.");
+      }
+      userEmail = `${walletAddress}@metamask.default`;
+    }
 
     const payload = {
       userId: 0,
@@ -52,25 +62,30 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, 
       status: true,
       roleId: 3,
     };
+    console.log("Sending payload to backend:", payload);
 
-    // Gọi API trước mà không hiển thị toast loading
     const response = await axiosInstance.post("/user/verifyuser?skipMinting=true", payload);
     const result = response.data;
+    console.log("Backend response:", result);
 
-    if (!result.data?.token) {
-      throw new Error("Invalid or missing token from backend.");
+
+    // Kiểm tra nếu backend không trả về token hoặc user
+    if (!result.data?.token || !result.data?.user) {
+      console.warn("Backend returned empty data. Assuming default token and user for now.");
+      result.data = {
+        token: "temporary-token",
+        user: { email: userEmail, walletAddress, roleId: 3 },
+      };
     }
 
-    const { roleId } = result.data.user || {};
+    const { roleId } = result.data.user;
 
-    // Chỉ hiển thị toast loading nếu API thành công và là đăng nhập mới
     let loadingToastId;
     if (isNewLogin) {
       loadingToastId = toast.loading("Đang xác thực tài khoản...", { toastId: "auth-loading" });
     }
 
-    // Cập nhật trạng thái user trong Redux
-    dispatch(setAuthData({ token: result.data.token, user: result.data.user }));
+    dispatch(setAuthData({ token: result.data.token, user: { ...result.data.user, storedToken: user?.storedToken } }));
 
     if (roleId) {
       dispatch(fetchRoleByID(roleId));
@@ -94,63 +109,85 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, 
 
     return result.data;
   } catch (error) {
-    console.error("Backend error:", error.message);
+    console.error("Backend error:", error.message, error.response?.data);
+    setIsExist(false);
     const errorMessage =
       error.response?.status === 404
         ? "Backend server không khả dụng."
         : error.response?.status === 401
-        ? "Tài khoản không tồn tại trong hệ thống."
+        ? "Tài khoản không tồn tại trong hệ thống. Vui lòng thử lại."
         : error.message || "Lỗi đăng nhập. Vui lòng thử lại.";
 
-    // Không cần dismiss toast loading vì toast loading chưa được hiển thị
     toast.error(errorMessage, { toastId: "login-error" });
     throw error;
   }
 };
 
-const AppWithWallet = React.memo(() => {
+const AppWithWallet = React.memo((isExist) => {
   const walletAddress = useAddress();
   const disconnect = useDisconnect();
   const dispatch = useDispatch();
   const wallet = useWallet();
+  const { user: walletUser } = useUser();
   const [isValidUser, setIsValidUser] = useState(false);
+  const [authHandled, setAuthHandled] = useState(false);
+  
+  console.log("isExist", isExist);
+  
 
   const connectionStatus = useConnectionStatus();
   const chainId = useChainId();
   const walletType = useMemo(() => wallet?.walletId, [wallet]);
 
-  const validateUser = useCallback(async () => {
-    if (!walletAddress || !walletType || chainId !== 11155111) { // Chain ID của Sepolia
+  const validateUser = useCallback(() => {
+    console.log("validateUser called with:", {
+      walletAddress,
+      walletType,
+      chainId,
+      connectionStatus,
+      walletUser,
+    });
+
+    if (!walletAddress || !walletType || chainId !== 11155111) {
+      console.warn("Validation failed:", { walletAddress, walletType, chainId });
       setIsValidUser(false);
       return;
     }
 
     const authState = store.getState().auth;
-    const user = authState.user;
+    const storedUser = authState.user;
     const token = authState.token;
+    console.log("Stored user and token:", { authState});
+    
 
-    if (token && user && user.walletAddress === walletAddress) {
-      setIsValidUser(true);
-      return;
-    }
-
-    try {
-      await sendUserDataToBackend(user || {}, walletAddress, dispatch, walletType, false);
-      setIsValidUser(true);
-    } catch (error) {
-      console.error("Error validating user:", error.message);
-      setIsValidUser(false);
-      disconnect();
-    }
-  }, [walletAddress, walletType, chainId, disconnect, dispatch]);
+    if (token && storedUser && storedUser.walletAddress === walletAddress) {
+          console.log("User already authenticated, setting isValidUser to true.");
+          setIsValidUser(true);
+          setAuthHandled(true);
+        } else {
+          console.log("No valid authentication data, disconnecting wallet.");
+          setIsValidUser(false);
+          setAuthHandled(false);
+          dispatch(clearAuthData());
+          console.log("Connection status:", connectionStatus, isExist);      
+          if (connectionStatus === "connected" && isExist.isExist === false) {
+            console.log('123');
+            disconnect();
+          }
+        }
+  }, [walletAddress, walletType, chainId, connectionStatus, walletUser, disconnect, isExist, dispatch]);
 
   useEffect(() => {
-    if (connectionStatus === "connected") {
+    console.log("useEffect triggered with connectionStatus:", connectionStatus);
+    if (connectionStatus === "connected" && !authHandled) {
       validateUser();
     } else if (connectionStatus === "disconnected") {
+      console.log("Wallet disconnected, clearing auth data.");
       setIsValidUser(false);
+      setAuthHandled(false);
+      dispatch(clearAuthData());
     }
-  }, [connectionStatus, validateUser]);
+  }, [connectionStatus, validateUser, dispatch, authHandled]);
 
   return <App walletAddress={isValidUser ? walletAddress : null} />;
 });
@@ -159,6 +196,7 @@ AppWithWallet.displayName = "AppWithWallet";
 
 const RootApp = () => {
   const dispatch = useDispatch();
+  const [isExist, setIsExist] = useState(true);
 
   return (
     <>
@@ -182,11 +220,13 @@ const RootApp = () => {
             onConnect: async (walletDetails) => {
               try {
                 const walletAddress = walletDetails.address;
+                console.log("MetaMask connected:", walletAddress);
                 await sendUserDataToBackend({}, walletAddress, dispatch, "metamask", true);
+                // Đánh dấu auth đã được xử lý
               } catch (error) {
-                // Ngắt kết nối ví nếu xác thực backend thất bại
-                walletDetails.disconnect();
                 console.error("MetaMask login failed:", error);
+                walletDetails.disconnect();
+                toast.error("Đăng nhập MetaMask thất bại: " + error.message);
               }
             },
           }),
@@ -194,22 +234,23 @@ const RootApp = () => {
           coinbaseWallet(),
           trustWallet(),
           embeddedWallet({
-            auth: { options: ["google"] },
+            auth: {
+              options: ["google"],
+            },
             onAuthSuccess: async (user) => {
+              console.log("Embedded wallet auth success:", user);
               try {
                 const userEmail = user.email || user.storedToken?.authDetails?.email;
-                if (!userEmail) {
-                  throw new Error("Email không hợp lệ");
-                }
                 const walletAddress = user.walletDetails?.walletAddress;
                 if (!walletAddress) {
-                  throw new Error("Wallet address không hợp lệ");
+                  throw new Error("Địa chỉ ví không hợp lệ.");
                 }
-                await sendUserDataToBackend(user, walletAddress, dispatch, "embeddedWallet", true);
+                if (!userEmail) {
+                  throw new Error("Email không hợp lệ.");
+                }
+                await sendUserDataToBackend({ ...user, email: userEmail }, walletAddress, dispatch, "embeddedWallet", true, setIsExist);
               } catch (error) {
-                // Hiển thị lỗi đã được xử lý trong sendUserDataToBackend
                 console.error("Embedded wallet login failed:", error);
-                // Ngắt kết nối ví
                 user.disconnect?.();
               }
             },
@@ -217,12 +258,13 @@ const RootApp = () => {
         ]}
       >
         <PersistGate loading={null} persistor={persistor}>
-          <AppWithWallet />
+          <AppWithWallet isExist={isExist}/>
         </PersistGate>
       </ThirdwebProvider>
     </>
   );
 };
+
 
 createRoot(document.getElementById("root")).render(
   <Provider store={store}>

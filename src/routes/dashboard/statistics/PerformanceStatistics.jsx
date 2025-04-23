@@ -1,37 +1,77 @@
 import { useTheme } from "../../../hooks/use-theme";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, ReferenceLine } from "recharts";
 import PropTypes from "prop-types";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUtilizationRateByDate } from "../../../redux/slices/Statistics"; // Thêm fetchRooms
+import { fetchUtilizationRateByDate, fetchUtilizationRateByYear, fetchUtilizationRateByYearAndMonth } from "../../../redux/slices/Statistics";
 import { fetchRooms } from "../../../redux/slices/Room";
+import { toast } from "react-toastify";
 
 const PerformanceStatistics = ({
   period,
   year,
   month,
-  utilizationRates,
-  utilizationRatesByYear,
-  performanceData,
   performanceMinY,
   performanceMaxY,
   performanceYTicks,
+  onRoomSelect,
 }) => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
-  const { rooms } = useSelector((state) => state.rooms); // Lấy danh sách phòng từ Redux
+  const { rooms } = useSelector((state) => state.rooms);
+  const { utilizationRates, utilizationRatesByYear, utilizationRatesByDate, loading: isLoading } = useSelector((state) => state.statistics);
   const COLORS = ["#3b82f6", "#ef4444"];
 
   const [isLargeScreen, setIsLargeScreen] = useState(typeof window !== "undefined" ? window.innerWidth > 768 : false);
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedRoom, setSelectedRoom] = useState("all");
-  const [dateData, setDateData] = useState([]);
+  const [selectedRoom, setSelectedRoom] = useState("");
   const [isDateSearchPerformed, setIsDateSearchPerformed] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isRoomSearchPerformed, setIsRoomSearchPerformed] = useState(false);
+  const [selectedRoomNameForDisplay, setSelectedRoomNameForDisplay] = useState("");
+  const selectedRoomRef = useRef("");
 
-  // Fetch rooms khi component mount
+  // Utility to get days in month
+  const getDaysInMonth = (month, year) => {
+    const parsedMonth = parseInt(month);
+    const parsedYear = parseInt(year);
+    if (isNaN(parsedMonth) || isNaN(parsedYear)) return 0;
+    return new Date(parsedYear, parsedMonth, 0).getDate();
+  };
+
+  // Get selected room name
+  const selectedRoomName = useMemo(() => {
+    if (!selectedRoom) return "";
+    const room = rooms.find((room) => room.roomId === parseInt(selectedRoom));
+    const roomName = room ? room.roomName : "";
+    console.log("Selected Room Name:", roomName, "Selected Room ID:", selectedRoom);
+    return roomName;
+  }, [selectedRoom, rooms]);
+
+  // Define transformedDateData before xAxisInterval
+  const transformedDateData = useMemo(() => {
+    if (!utilizationRatesByDate || utilizationRatesByDate.length === 0) return [];
+    return utilizationRatesByDate.map((entry) => ({
+      name: entry.roomName,
+      rate: (entry.rate || 0) * 100,
+    }));
+  }, [utilizationRatesByDate]);
+
+  // Dynamic X-axis interval to avoid label clutter
+  const maxLabels = 10;
+  const daysInMonth = period === "tháng" && month && year ? getDaysInMonth(month, year) : 0;
+  const xAxisInterval = useMemo(() => {
+    if (isDateSearchPerformed && selectedDate) {
+      const roomCount = transformedDateData.length;
+      return roomCount > maxLabels ? Math.ceil(roomCount / maxLabels) : 0;
+    }
+    return period === "tháng" && !isDateSearchPerformed && daysInMonth > maxLabels
+      ? Math.ceil(daysInMonth / maxLabels)
+      : 0;
+  }, [period, isDateSearchPerformed, selectedDate, daysInMonth, transformedDateData]);
+
   useEffect(() => {
     dispatch(fetchRooms());
+    console.log("Rooms Data:", rooms);
   }, [dispatch]);
 
   useEffect(() => {
@@ -40,127 +80,155 @@ const PerformanceStatistics = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Handle search button click
-  const handleDateSearch = () => {
-    if (!selectedDate) {
-      setIsDateSearchPerformed(false);
-      setDateData([]);
-      setSelectedRoom("all");
+  // Debug component render and props changes
+  useEffect(() => {
+    console.log("Component Rendered - isRoomSearchPerformed:", isRoomSearchPerformed, "selectedRoom:", selectedRoom, "selectedRoomNameForDisplay:", selectedRoomNameForDisplay);
+    console.log("Props - period:", period, "year:", year, "month:", month);
+  }, [period, year, month, isRoomSearchPerformed, selectedRoom, selectedRoomNameForDisplay]);
+
+  const handleSearch = async () => {
+    if (!selectedDate && !selectedRoom) {
+      toast.error("Vui lòng chọn phòng hoặc ngày để tìm kiếm!");
       return;
     }
 
-    setIsLoading(true);
-    dispatch(fetchUtilizationRateByDate({ dateTime: selectedDate, paraFilter: 1 }))
-      .then((response) => {
-        if (response.payload && response.payload.data) {
-          setDateData(response.payload.data);
+    try {
+      console.log("Handle Search - Selected Room:", selectedRoom, "Selected Date:", selectedDate);
+      if (selectedDate) {
+        const response = await dispatch(fetchUtilizationRateByDate({ dateTime: selectedDate, paraFilter: 1 }));
+        const data = response.payload?.data || [];
+        if (data.length > 0) {
           setIsDateSearchPerformed(true);
+          setIsRoomSearchPerformed(false);
+          setSelectedRoomNameForDisplay("");
+          setSelectedRoom("");
+          selectedRoomRef.current = "";
+          const avgRate = data.length > 0
+            ? data.reduce((sum, entry) => sum + (entry.rate || 0) * 100, 0) / data.length
+            : 0;
+          onRoomSelect(avgRate);
         } else {
-          setDateData([]);
           setIsDateSearchPerformed(true);
+          setIsRoomSearchPerformed(false);
+          setSelectedRoomNameForDisplay("");
+          setSelectedRoom("");
+          selectedRoomRef.current = "";
+          toast.error(`Không có dữ liệu hiệu suất cho ngày ${selectedDate}!`);
+          onRoomSelect(0);
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching date data:", error);
-        setDateData([]);
-        setIsDateSearchPerformed(true);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      } else if (selectedRoom) {
+        selectedRoomRef.current = selectedRoom;
+        let response;
+        if (period === "năm") {
+          response = await dispatch(fetchUtilizationRateByYear({ roomId: parseInt(selectedRoom), year }));
+        } else if (period === "tháng" && month) {
+          response = await dispatch(fetchUtilizationRateByYearAndMonth({ roomId: parseInt(selectedRoom), year, month }));
+        } else {
+          toast.error("Vui lòng chọn tháng khi tìm kiếm theo tháng!");
+          return;
+        }
+
+        const data = response.payload?.data || [];
+        console.log("Room Search Response Data:", data);
+        if (data.length > 0) {
+          setIsDateSearchPerformed(false);
+          setIsRoomSearchPerformed(true);
+          setSelectedRoomNameForDisplay(selectedRoomName);
+          console.log("After Room Search - isRoomSearchPerformed:", true, "selectedRoomNameForDisplay:", selectedRoomName);
+          const avgRate = data.length > 0
+            ? data.reduce((sum, entry) => sum + (entry.rate || 0) * 100, 0) / data.length
+            : 0;
+          onRoomSelect(avgRate);
+        } else {
+          setIsDateSearchPerformed(false);
+          setIsRoomSearchPerformed(true);
+          setSelectedRoomNameForDisplay(selectedRoomName);
+          console.log("After Room Search (No Data) - isRoomSearchPerformed:", true, "selectedRoomNameForDisplay:", selectedRoomName);
+          toast.error(`Không có dữ liệu hiệu suất cho phòng ${selectedRoomName || "đã chọn"}!`);
+          onRoomSelect(0);
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu hiệu suất:", error);
+      onRoomSelect(0);
+      toast.error("Lỗi khi tải dữ liệu hiệu suất!");
+    }
   };
 
-  // Transform performanceData for year/month with room filter
-  const transformedPerformanceData = useMemo(() => {
-    if (!performanceData || performanceData.length === 0) return [];
+  const processedRoomData = useMemo(() => {
+    const dataSource = period === "năm" ? utilizationRatesByYear : utilizationRates;
 
-    let filteredData = performanceData;
-    if (selectedRoom !== "all") {
-      filteredData = filteredData.map((entry) => {
-        const filteredAreas = entry.areas.filter((area) =>
-          utilizationRates.find(
-            (rate) => rate.areaName === area.areaName && rate.roomId === parseInt(selectedRoom)
-          )
-        );
-        return { ...entry, areas: filteredAreas };
-      });
-    }
-
-    return filteredData.map((entry) => {
-      const areas = Object.keys(entry)
-        .filter((key) => key !== "name")
-        .map((key) => ({
-          areaName: key.replace(/Khuvực/g, "Khu vực "),
-          rate: typeof entry[key] === "number" && entry[key] > 0 && entry[key] <= 1 ? entry[key] * 100 : entry[key] || 0,
+    if (!dataSource || dataSource.length === 0) {
+      if (period === "năm") {
+        return Array.from({ length: 12 }, (_, i) => ({
+          name: `Tháng ${i + 1}`,
+          rate: 0,
         }));
-      return {
-        name: entry.name,
-        areas,
-      };
-    });
-  }, [performanceData, selectedRoom, utilizationRates]);
-
-  // Transform dateData for specific date
-  const transformedDateData = useMemo(() => {
-    if (!dateData || dateData.length === 0) return [];
-
-    let filteredData = dateData;
-    if (selectedRoom !== "all") {
-      filteredData = filteredData.filter((entry) => entry.roomId === parseInt(selectedRoom));
+      } else if (period === "tháng" && month && year) {
+        const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
+        if (daysInMonth === 0) return [];
+        return Array.from({ length: daysInMonth }, (_, i) => ({
+          name: `Ngày ${i + 1}`,
+          rate: 0,
+        }));
+      }
+      return [];
     }
 
-    return filteredData.map((entry) => ({
-      name: entry.roomName,
-      rate: (entry.rate || 0) * 100,
-    }));
-  }, [dateData, selectedRoom]);
+    return period === "năm"
+      ? Array.from({ length: 12 }, (_, i) => ({
+          name: `Tháng ${i + 1}`,
+          rate: 0,
+        })).map((monthEntry, i) => {
+          const entries = dataSource.filter((entry) => {
+            if (!entry || !entry.dateTH) return false;
+            const date = new Date(entry.dateTH);
+            const isValidDate = !isNaN(date.getTime());
+            const monthMatch = isValidDate && date.getMonth() === i;
+            return monthMatch;
+          });
+          const totalRate = entries.reduce((sum, entry) => sum + (entry.rate || 0) * 100, 0);
+          const count = entries.length;
+          const avgRate = count > 0 ? Math.round((totalRate / count) * 100) / 100 : 0;
+          return {
+            name: monthEntry.name,
+            rate: avgRate,
+          };
+        })
+      : Array.from({ length: getDaysInMonth(parseInt(month), parseInt(year)) }, (_, i) => ({
+          name: `Ngày ${i + 1}`,
+          rate: 0,
+        })).map((dayEntry, i) => {
+          const entries = dataSource.filter((entry) => {
+            if (!entry || !entry.dateTH) return false;
+            const date = new Date(entry.dateTH);
+            const isValidDate = !isNaN(date.getTime());
+            const dayMatch = isValidDate && date.getDate() === (i + 1);
+            return dayMatch;
+          });
+          const totalRate = entries.reduce((sum, entry) => sum + (entry.rate || 0) * 100, 0);
+          const count = entries.length;
+          const avgRate = count > 0 ? Math.round((totalRate / count) * 100) / 100 : 0;
+          return {
+            name: dayEntry.name,
+            rate: avgRate,
+          };
+        });
+  }, [utilizationRates, utilizationRatesByYear, period, month, year]);
 
-  // Get list of areas dynamically
-  const areas = useMemo(() =>
-    Array.from(
-      new Set(
-        transformedPerformanceData.flatMap((entry) =>
-          entry.areas.map((area) => area.areaName)
-        )
-      )
-    ),
-    [transformedPerformanceData]
-  );
+  const hasPerformanceData = processedRoomData.length > 0 && processedRoomData.some((entry) => entry.rate > 0);
+  const hasDateData = transformedDateData.length > 0 && transformedDateData.some((entry) => entry.rate > 0);
 
-  // Check if data exists
-  const hasPerformanceData = transformedPerformanceData.some((entry) =>
-    entry.areas.some((area) => area.rate > 0)
-  );
-
-  const hasDateData = transformedDateData.length > 0;
-
-  // Compute average utilization rate for pie chart
   const avgUtilizationRate = useMemo(() => {
-    if (!hasPerformanceData || areas.length === 0) return 0;
-
-    let totalRate = 0;
-    let totalEntries = 0;
-
-    transformedPerformanceData.forEach((entry) => {
-      entry.areas.forEach((area) => {
-        const rate = area.rate || 0;
-        if (rate > 0) {
-          totalRate += rate;
-          totalEntries += 1;
-        }
-      });
-    });
-
-    const avgRate = totalEntries > 0 ? totalRate / totalEntries : 0;
-    return avgRate;
-  }, [hasPerformanceData, transformedPerformanceData, areas]);
+    if (!hasPerformanceData) return 0;
+    const totalRate = processedRoomData.reduce((sum, entry) => sum + (entry.rate || 0), 0);
+    return processedRoomData.length > 0 ? totalRate / processedRoomData.length : 0;
+  }, [hasPerformanceData, processedRoomData]);
 
   const avgUtilizationRateByDate = useMemo(() => {
     if (!hasDateData) return 0;
-
     const totalRate = transformedDateData.reduce((sum, entry) => sum + (entry.rate || 0), 0);
-    const avgRate = transformedDateData.length > 0 ? totalRate / transformedDateData.length : 0;
-    return avgRate;
+    return transformedDateData.length > 0 ? totalRate / transformedDateData.length : 0;
   }, [hasDateData, transformedDateData]);
 
   const utilizationPieData = isDateSearchPerformed && selectedDate
@@ -173,77 +241,11 @@ const PerformanceStatistics = ({
         { name: "Chưa sử dụng", value: 100 - avgUtilizationRate },
       ];
 
-  const getDaysInMonth = (month, year) => {
-    const parsedMonth = parseInt(month);
-    const parsedYear = parseInt(year);
-    if (isNaN(parsedMonth) || isNaN(parsedYear)) return 0;
-    return new Date(parsedYear, parsedMonth, 0).getDate();
-  };
-
-  // Process area data to include total (average across areas)
-  const processAreaData = useMemo(() => {
-    if (!hasPerformanceData || areas.length === 0) {
-      if (period === "năm") {
-        return Array.from({ length: 12 }, (_, i) => ({
-          name: `Tháng ${i + 1}`,
-          total: 0,
-          ...areas.reduce((acc, area) => ({ ...acc, [area]: 0 }), {}),
-        }));
-      } else if (period === "tháng" && month && year) {
-        const daysInMonth = getDaysInMonth(month, year);
-        if (daysInMonth === 0) return [];
-        return Array.from({ length: daysInMonth }, (_, i) => ({
-          name: `Ngày ${i + 1}`,
-          total: 0,
-          ...areas.reduce((acc, area) => ({ ...acc, [area]: 0 }), {}),
-        }));
-      }
-      return [];
-    }
-
-    if (period === "tháng" && month && year) {
-      const daysInMonth = getDaysInMonth(month, year);
-      if (daysInMonth === 0) return [];
-      const dailyData = Array.from({ length: daysInMonth }, (_, i) => ({
-        name: `Ngày ${i + 1}`,
-        total: 0,
-        ...areas.reduce((acc, area) => ({ ...acc, [area]: 0 }), {}),
-      }));
-
-      transformedPerformanceData.forEach((entry) => {
-        const day = parseInt(entry.name, 10) - 1;
-        if (day >= 0 && day < daysInMonth) {
-          const areaValues = entry.areas.reduce((sum, area) => sum + (area.rate || 0), 0);
-          const total = entry.areas.length > 0 ? areaValues / entry.areas.length : 0;
-          dailyData[day] = {
-            name: `Ngày ${day + 1}`,
-            total: total || 0,
-            ...entry.areas.reduce((acc, area) => ({ ...acc, [area.areaName]: area.rate || 0 }), {}),
-          };
-        }
-      });
-
-      return dailyData;
-    }
-
-    return transformedPerformanceData.map((entry) => {
-      const areaValues = entry.areas.reduce((sum, area) => sum + (area.rate || 0), 0);
-      const total = entry.areas.length > 0 ? areaValues / entry.areas.length : 0;
-      return {
-        name: entry.name,
-        total: total || 0,
-        ...entry.areas.reduce((acc, area) => ({ ...acc, [area.areaName]: area.rate || 0 }), {}),
-      };
-    });
-  }, [hasPerformanceData, period, month, year, transformedPerformanceData, areas]);
-
-  // Process data for specific date
   const processDateData = useMemo(() => {
     if (!hasDateData) return [];
-
     return transformedDateData.map((entry) => ({
       name: entry.name,
-      total: entry.rate || 0,
+      rate: entry.rate || 0,
     }));
   }, [hasDateData, transformedDateData]);
 
@@ -251,7 +253,6 @@ const PerformanceStatistics = ({
   const maxY = performanceMaxY;
   const ticks = performanceYTicks;
 
-  // Custom Tooltip for Area Chart
   const CustomTooltip = ({ active, payload, label }) => {
     CustomTooltip.propTypes = {
       active: PropTypes.bool,
@@ -269,38 +270,16 @@ const PerformanceStatistics = ({
           }`}
         >
           <p className="font-semibold mb-2">{label}</p>
-          {isDateSearchPerformed && selectedDate ? (
-            <p className="text-sm">
-              Tỷ lệ sử dụng: {(data.total || 0).toFixed(2)}%
-            </p>
-          ) : (
-            <>
-              {areas.map((area, id) => (
-                <p key={id} className="text-sm">
-                  {area}: {(data[area] || 0).toFixed(2)}%
-                </p>
-              ))}
-              <p className="text-sm font-medium mt-2">
-                Hiệu suất trung bình: {(data.total || 0).toFixed(2)}%
-              </p>
-            </>
-          )}
+          <p className="text-sm">
+            Hiệu suất sử dụng: {(data.rate || 0).toFixed(2)}%
+          </p>
         </div>
       );
     }
     return null;
   };
 
-  const areaData = isDateSearchPerformed && selectedDate ? processDateData : processAreaData;
-
-  const maxLabels = 10;
-  const xAxisInterval =
-    period === "tháng" && !(isDateSearchPerformed && selectedDate) && areaData.length > maxLabels
-      ? Math.ceil(areaData.length / maxLabels)
-      : 0;
-
-  const daysInMonth = period === "tháng" && month && year ? getDaysInMonth(month, year) : 0;
-  const referenceLines = isLargeScreen && period === "tháng" && !(isDateSearchPerformed && selectedDate) && daysInMonth > 0 ? (
+  const referenceLines = isLargeScreen && period === "tháng" && !isDateSearchPerformed && daysInMonth > 0 ? (
     <>
       <ReferenceLine
         x="Ngày 1"
@@ -323,6 +302,11 @@ const PerformanceStatistics = ({
     </>
   ) : null;
 
+  const areaData = isDateSearchPerformed && selectedDate ? processDateData : processedRoomData;
+
+  // Debug log for title rendering
+  console.log("Rendering Title - isRoomSearchPerformed:", isRoomSearchPerformed, "selectedRoom:", selectedRoom, "selectedRoomName:", selectedRoomName, "selectedRoomNameForDisplay:", selectedRoomNameForDisplay);
+
   return (
     <div
       className={`card col-span-1 md:col-span-2 lg:col-span-4 rounded-xl shadow-lg transition-all duration-300 ${
@@ -340,7 +324,6 @@ const PerformanceStatistics = ({
       </div>
 
       <div className="card-body p-6 flex flex-col gap-8">
-        {/* Filter Section */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="flex-1">
             <label
@@ -357,8 +340,6 @@ const PerformanceStatistics = ({
                 setSelectedDate(e.target.value);
                 if (!e.target.value) {
                   setIsDateSearchPerformed(false);
-                  setDateData([]);
-                  setSelectedRoom("all");
                 }
               }}
               className={`w-full p-2 rounded-lg border ${
@@ -384,8 +365,9 @@ const PerformanceStatistics = ({
                   ? "bg-gray-800 text-white border-gray-600"
                   : "bg-white text-gray-900 border-gray-300"
               } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              disabled={isDateSearchPerformed && selectedDate}
             >
-              <option value="all">Tất cả phòng</option>
+              <option value="">Chọn phòng</option>
               {rooms.map((room) => (
                 <option key={room.roomId} value={room.roomId}>
                   {room.roomName}
@@ -395,8 +377,8 @@ const PerformanceStatistics = ({
           </div>
           <div className="flex items-end">
             <button
-              onClick={handleDateSearch}
-              className="px-4 py-2 bg-orange-500 text-white rounded-lg науки:bg-orange-600 transition"
+              onClick={handleSearch}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
               disabled={isLoading}
             >
               {isLoading ? "Đang tải..." : "Tìm kiếm"}
@@ -404,16 +386,17 @@ const PerformanceStatistics = ({
           </div>
         </div>
 
-        {/* Pie Chart Section */}
         <div className="flex flex-col items-center animate-fade-in">
           <h3
             className={`text-xl font-medium mb-4 ${
               theme === "dark" ? "text-gray-200" : "text-gray-700"
             }`}
           >
-            Tỷ lệ sử dụng trung bình -{" "}
+            Hiệu suất sử dụng trung bình -{" "}
             {isDateSearchPerformed && selectedDate
               ? `Ngày ${selectedDate}`
+              : isRoomSearchPerformed && selectedRoomNameForDisplay
+              ? `Phòng ${selectedRoomNameForDisplay} - ${period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}`
               : period === "năm"
               ? `Năm ${year}`
               : `Tháng ${month}/${year}`}
@@ -423,6 +406,8 @@ const PerformanceStatistics = ({
               Không có dữ liệu hiệu suất cho{" "}
               {isDateSearchPerformed && selectedDate
                 ? `ngày ${selectedDate}`
+                : isRoomSearchPerformed && selectedRoomNameForDisplay
+                ? `phòng ${selectedRoomNameForDisplay}`
                 : period === "năm"
                 ? `năm ${year}`
                 : `tháng ${month}/${year}`}
@@ -477,22 +462,30 @@ const PerformanceStatistics = ({
           )}
         </div>
 
-        {/* Area Chart Section */}
         <div className="flex flex-col animate-fade-in">
           <h3
             className={`text-xl font-medium mb-4 ${
               theme === "dark" ? "text-gray-200" : "text-gray-700"
             }`}
           >
-            Biểu đồ thống kê hiệu suất (theo %)
+            Biểu đồ thống kê hiệu suất (theo %) -{" "}
+            {isDateSearchPerformed && selectedDate
+              ? `Ngày ${selectedDate}`
+              : isRoomSearchPerformed && selectedRoomNameForDisplay
+              ? `Phòng ${selectedRoomNameForDisplay} - ${period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}`
+              : period === "năm"
+              ? `Năm ${year}`
+              : `Tháng ${month}/${year}`}
           </h3>
           {isLoading ? (
             <p className={`text-center text-gray-500 dark:text-gray-400`}>Đang tải dữ liệu...</p>
-          ) : areaData.length === 0 || areaData.every((item) => item.total === 0) ? (
+          ) : (!hasPerformanceData && !hasDateData) ? (
             <p className={`text-center text-gray-500 dark:text-gray-400`}>
               Không có dữ liệu hiệu suất cho{" "}
               {isDateSearchPerformed && selectedDate
                 ? `ngày ${selectedDate}`
+                : isRoomSearchPerformed && selectedRoomNameForDisplay
+                ? `phòng ${selectedRoomNameForDisplay}`
                 : period === "năm"
                 ? `năm ${year}`
                 : `tháng ${month}/${year}`}
@@ -517,8 +510,8 @@ const PerformanceStatistics = ({
                   dataKey="name"
                   strokeWidth={0}
                   stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                  angle={-45}
-                  textAnchor="end"
+                  angle={period === "năm" || (period === "tháng" && !isDateSearchPerformed) ? -45 : 0}
+                  textAnchor={period === "năm" || (period === "tháng" && !isDateSearchPerformed) ? "end" : "middle"}
                   height={70}
                   interval={xAxisInterval}
                   tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
@@ -535,8 +528,8 @@ const PerformanceStatistics = ({
                 />
                 <Area
                   type="monotone"
-                  dataKey="total"
-                  name="Tổng"
+                  dataKey="rate"
+                  name="Tỷ lệ sử dụng"
                   stroke="#f97316"
                   strokeWidth={2}
                   fillOpacity={1}
@@ -557,38 +550,10 @@ PerformanceStatistics.propTypes = {
   period: PropTypes.oneOf(["năm", "tháng"]).isRequired,
   year: PropTypes.string.isRequired,
   month: PropTypes.string,
-  utilizationRates: PropTypes.arrayOf(
-    PropTypes.shape({
-      theDate: PropTypes.string,
-      roomId: PropTypes.number,
-      roomName: PropTypes.string,
-      areaId: PropTypes.number,
-      areaName: PropTypes.string,
-      areaTypeId: PropTypes.number,
-      areaTypeName: PropTypes.string,
-      areaTypeCategoryId: PropTypes.number,
-      areaTypeCategoryTitle: PropTypes.string,
-      rate: PropTypes.number,
-    })
-  ).isRequired,
-  utilizationRatesByYear: PropTypes.arrayOf(
-    PropTypes.shape({
-      theDate: PropTypes.string,
-      roomId: PropTypes.number,
-      roomName: PropTypes.string,
-      areaId: PropTypes.number,
-      areaName: PropTypes.string,
-      areaTypeId: PropTypes.number,
-      areaTypeName: PropTypes.string,
-      areaTypeCategoryId: PropTypes.number,
-      areaTypeCategoryTitle: PropTypes.string,
-      rate: PropTypes.number,
-    })
-  ).isRequired,
-  performanceData: PropTypes.array.isRequired,
   performanceMinY: PropTypes.number.isRequired,
   performanceMaxY: PropTypes.number.isRequired,
   performanceYTicks: PropTypes.arrayOf(PropTypes.number).isRequired,
+  onRoomSelect: PropTypes.func,
 };
 
 export default PerformanceStatistics;
