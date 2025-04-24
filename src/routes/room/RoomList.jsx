@@ -19,10 +19,10 @@ const RoomList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [imageIndices, setImageIndices] = useState({});
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State for modal
-  const [roomIdToDelete, setRoomIdToDelete] = useState(null); // Store roomId to delete
-  const [roomName, setRoomName] = useState(""); // Store room name for modal
-  const [loadingId, setLoadingId] = useState(null); // Track loading state for delete
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [roomIdToDelete, setRoomIdToDelete] = useState(null);
+  const [roomName, setRoomName] = useState("");
+  const [loadingId, setLoadingId] = useState(null);
   const roomsPerPage = 5;
   const baseUrl = "https://localhost:9999";
 
@@ -38,8 +38,8 @@ const RoomList = () => {
       if (!room || typeof room !== "object" || !room.roomId || !room.roomName) return false;
       const matchesStatus =
         statusFilter === "All" ||
-        (statusFilter === "Hoạt động" && !room.status) ||
-        (statusFilter === "Đã xóa" && room.status);
+        (statusFilter === "Hoạt động" && room.status === 1) || // Updated to match AreaList logic
+        (statusFilter === "Không hoạt động" && room.status === 0);
       return matchesStatus;
     });
 
@@ -88,7 +88,7 @@ const RoomList = () => {
         return "bg-gray-100 text-gray-800";
       case "Hoạt động":
         return "bg-green-100 text-green-800";
-      case "Đã xóa":
+      case "Không hoạt động":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -219,8 +219,10 @@ const RoomList = () => {
           </div>
         </div>
 
-        <div className="mb-6 p-4 rounded-lg shadow-sm">
+        {/* Updated Search and Filter Section to match AreaList */}
+        <div className="mb-6 p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            {/* Search Input */}
             <div className="relative w-full sm:w-1/2 lg:w-1/3">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
@@ -231,17 +233,18 @@ const RoomList = () => {
               />
             </div>
 
+            {/* Filter Dropdown */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Filter className="h-5 w-5 text-orange-500" />
+              <Filter className="h-5 w-5 text-orange-600" />
               <span className="font-medium text-sm sm:text-base">Lọc theo trạng thái:</span>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className={`w-full sm:w-auto px-3 py-2 border rounded-lg text-sm sm:text-base ${getFilterBgClass()} shadow-sm`}
+                className={`w-full sm:w-auto px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg text-sm sm:text-base ${getFilterBgClass()} focus:outline-none focus:border-orange-500 transition duration-150 ease-in-out`}
               >
                 <option value="All">Tất cả</option>
                 <option value="Hoạt động">Hoạt động</option>
-                <option value="Đã xóa">Đã xóa</option>
+                <option value="Không hoạt động">Không hoạt động</option>
               </select>
             </div>
           </div>
