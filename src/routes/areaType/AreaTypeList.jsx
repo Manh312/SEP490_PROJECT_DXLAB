@@ -1,12 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useMemo, useState } from "react";
-import { fetchAreaTypes, deleteAreaType } from "../../redux/slices/AreaType";
+import { fetchAreaTypes } from "../../redux/slices/AreaType";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   Eye,
   PencilLine,
-  Trash2,
   PlusCircle,
   Map,
   Filter,
@@ -76,25 +75,8 @@ const AreaTypeList = () => {
   );
 
   useEffect(() => {
-    dispatch(fetchAreaTypes("0"));
+    dispatch(fetchAreaTypes("1"));
   }, [dispatch]);
-
-  // Handle delete area type
-  const handleDelete = async (areaTypeId) => {
-    if (!areaTypeId) {
-      toast.error("Không thể xóa: ID không hợp lệ!");
-      return;
-    }
-    if (window.confirm("Bạn có chắc chắn muốn xóa dịch vụ này?")) {
-      try {
-        const res = await dispatch(deleteAreaType(areaTypeId)).unwrap();
-        toast.success(res.message || "Xóa dịch vụ thành công");
-        dispatch(fetchAreaTypes());
-      } catch (err) {
-        toast.error(err?.message || "Lỗi khi xóa dịch vụ");
-      }
-    }
-  };
 
   // Show success message if redirected after creation
   const location = useLocation();
