@@ -145,120 +145,6 @@ const CreateFacilities = () => {
                 </div>
               </motion.div>
 
-              {/* Tiêu Đề Cơ Sở Vật Chất */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Tiêu Đề Cơ Sở Vật Chất <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="facilityTitle"
-                      value={facility.facilityTitle}
-                      onChange={handleChange}
-                      placeholder="Nhập tiêu đề cơ sở vật chất"
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                      required
-                    />
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Giá */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Giá <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="number"
-                        name="cost"
-                        value={facility.cost}
-                        min={0}
-                        step="0.01"
-                        onChange={handleNumberChange}
-                        className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 pr-16 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                        placeholder="Nhập giá"
-                        required
-                      />
-                      <span className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-sm">
-                        DXL
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Loại Cơ Sở Vật Chất (Facility Category) */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Armchair className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Loại Cơ Sở Vật Chất <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      name="facilityCategory"
-                      value={facility.facilityCategory}
-                      onChange={handleChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                      required
-                    >
-                      <option value="0">Bàn</option>
-                      <option value="1">Ghế</option>
-                    </select>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Right Column */}
-            <div className="space-y-4 sm:space-y-6">
-              {/* Ngày Hết Hạn */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Ngày Hết Hạn <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      name="expiredTime"
-                      value={facility.expiredTime}
-                      onChange={handleChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                      required
-                    />
-                  </div>
-                </div>
-              </motion.div>
-
               {/* Số Lượng */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -285,6 +171,7 @@ const CreateFacilities = () => {
                 </div>
               </motion.div>
 
+              
               {/* Kích Thước (Size) */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -336,6 +223,120 @@ const CreateFacilities = () => {
                   </div>
                 </div>
               </motion.div>
+              
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-4 sm:space-y-6">
+              {/* Tiêu Đề Cơ Sở Vật Chất */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Tiêu Đề Cơ Sở Vật Chất <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="facilityTitle"
+                      value={facility.facilityTitle}
+                      onChange={handleChange}
+                      placeholder="Nhập tiêu đề cơ sở vật chất"
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      required
+                    />
+                  </div>
+                </div>
+              </motion.div>
+              {/* Loại Cơ Sở Vật Chất (Facility Category) */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Armchair className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Loại Cơ Sở Vật Chất <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="facilityCategory"
+                      value={facility.facilityCategory}
+                      onChange={handleChange}
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      required
+                    >
+                      <option value="0">Bàn</option>
+                      <option value="1">Ghế</option>
+                    </select>
+                  </div>
+                </div>
+              </motion.div>
+              {/* Giá */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Giá <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        name="cost"
+                        value={facility.cost}
+                        min={0}
+                        step="0.01"
+                        onChange={handleNumberChange}
+                        className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 pr-16 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                        placeholder="Nhập giá"
+                        required
+                      />
+                      <span className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-sm">
+                        DXL
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+              {/* Ngày Hết Hạn */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
+                      Ngày Hết Hạn <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      name="expiredTime"
+                      value={facility.expiredTime}
+                      onChange={handleChange}
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      required
+                    />
+                  </div>
+                </div>
+              </motion.div>
+
+              
             </div>
           </div>
 

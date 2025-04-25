@@ -182,7 +182,7 @@ const PerformanceStatistics = ({
             </p>
           ))}
           <p className="text-sm font-medium mt-2">
-            Tổng: {(data.total || 0).toFixed(2)}%
+            Hiệu suất trung bình: {(data.total || 0).toFixed(2)}%
           </p>
         </div>
       );
