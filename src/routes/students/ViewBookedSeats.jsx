@@ -247,7 +247,7 @@ const ViewBookedSeats = () => {
 
         <div className="flex flex-col sm:flex-row gap-4 mb-10 justify-center">
           <div className="flex flex-col">
-            <label className="text-sm font-medium mb-1">Chọn ngày</label>
+            <label className="text-sm font-medium mb-1">Ngày đặt</label>
             <select
               value={selectedDate || ''}
               onChange={(e) => {
@@ -278,7 +278,7 @@ const ViewBookedSeats = () => {
             </select>
           </div>
           <div className="flex flex-col">
-            <label className="text-sm font-medium mb-1">Chọn slot</label>
+            <label className="text-sm font-medium mb-1">Slot đặt</label>
             <select
               value={selectedSlot || ''}
               onChange={(e) => {
@@ -357,7 +357,7 @@ const ViewBookedSeats = () => {
                               key={seat}
                               className={`absolute w-12 h-12 flex flex-col items-center justify-center rounded-full shadow-sm transition-transform duration-200 hover:scale-110 ${
                                 bookedSeats.individual.includes(seat)
-                                  ? 'bg-green-500 text-white'
+                                  ? 'bg-orange-500 text-white'
                                   : 'bg-gray-300 text-gray-700'
                               }`}
                               style={{ transform: `translate(${x}px, ${y}px)` }}
@@ -376,7 +376,7 @@ const ViewBookedSeats = () => {
               {/* Group Area Section - Horizontal Row */}
               {groupAreas.length > 0 && (
                 <div className="flex flex-col items-center gap-6">
-                  <h2 className="text-2xl font-semibold text-gray-800 border-b-2 border-green-500 pb-2 mb-4">
+                  <h2 className="text-2xl font-semibold text-gray-800 border-b-2 border-orange-500 pb-2 mb-4">
                     Khu vực Nhóm
                   </h2>
                   <div className="flex flex-row flex-wrap justify-center gap-6">
@@ -388,7 +388,7 @@ const ViewBookedSeats = () => {
                           key={index}
                           className={`bg-gray-50 border-2 border-gray-200 rounded-xl p-6 text-center flex justify-center items-center w-full sm:w-[320px] shadow-md hover:shadow-lg transition-shadow duration-200 ${
                             bookedSeats.groups.includes(groupAreaId)
-                              ? 'bg-green-500 text-white'
+                              ? 'bg-orange-500 text-white'
                               : 'bg-gray-50 text-gray-800'
                           }`}
                           style={{ height: '320px' }}

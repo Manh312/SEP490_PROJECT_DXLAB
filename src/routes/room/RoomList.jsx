@@ -418,7 +418,7 @@ const RoomList = () => {
             >
               <h2 className="text-xl font-semibold text-red-600 mb-4">Xác nhận xóa phòng</h2>
               <p className="text-gray-600 mb-6">
-                Bạn có chắc chắn muốn xóa phòng <strong>"{roomName}"</strong> không? Hành động này không thể hoàn tác.
+                Bạn có chắc chắn muốn xóa phòng <strong>{roomName}</strong> không? Hành động này không thể hoàn tác.
               </p>
               <div className="flex justify-end gap-4">
                 <button
