@@ -174,29 +174,33 @@ const ViewAreas = () => {
     navigate(`/area/${area.value[0].areaTypeId}`);
   };
 
-  const handleSlotChange = (bookingIndex, slotId) => {
+  const handleSlotChange = (bookingIndex, slotNumber) => {
     const date = bookingDates[bookingIndex].date;
     const slotsForDate = fetchedSlots[date] || [];
-    const slot = slotsForDate.find((s) => s.slotId === slotId);
+    const slot = slotsForDate.find((s) => s.slotNumber === slotNumber);
     if (!slot) return;
 
     if (slot.availableSlot === 0) {
       toast.error(`Slot ${slot.slotId} không khả dụng!`);
       return;
     }
-
+  
     const updatedDates = [...bookingDates];
     const currentBooking = updatedDates[bookingIndex];
     const currentSlots = Array.isArray(currentBooking.slots) ? currentBooking.slots : [];
-
-    const newSlots = currentSlots.includes(slotId)
-      ? currentSlots.filter((s) => s !== slotId)
-      : [...currentSlots, slotId];
-
+  
+    const exists = currentSlots.some((s) => s.slotNumber === slotNumber);
+  
+    const newSlots = exists
+      ? currentSlots.filter((s) => s.slotNumber !== slotNumber)
+      : [...currentSlots, { slotNumber: slot.slotNumber, slotId: slot.slotId }];
+  
     updatedDates[bookingIndex] = { ...currentBooking, slots: newSlots };
+
     setBookingDates(updatedDates);
-    dispatch(setSelectedTime(updatedDates));
+    dispatch(setSelectedTime(updatedDates));  
   };
+  console.log(bookingDates);
 
   const handleDateChange = (index, value) => {
     const updatedDates = [...bookingDates];
@@ -474,14 +478,14 @@ const ViewAreas = () => {
                       <div className="grid grid-cols-2 gap-2">
                         {fetchedSlots[booking.date].map((slot) => (
                           <div
-                            key={slot.slotId}
+                            key={slot.slotNumber}
                             className={`group relative flex items-center space-x-2 p-2 rounded-md transition-all duration-200 ${slot.availableSlot === 0 ? 'text-orange-500 cursor-not-allowed' : ''}`}
                           >
                             <input
                               type="checkbox"
-                              value={slot.slotId}
-                              checked={Array.isArray(booking.slots) && booking.slots.includes(slot.slotId)}
-                              onChange={() => handleSlotChange(index, slot.slotId)}
+                              value={slot.slotNumber}
+                              checked={booking.slots.some(s => s.slotNumber === slot.slotNumber)}
+                              onChange={() => handleSlotChange(index, slot.slotNumber, slot.slotId)}
                               disabled={isSlotDisabled(slot, booking.date)}
                               className={`${slot.availableSlot === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                             />
