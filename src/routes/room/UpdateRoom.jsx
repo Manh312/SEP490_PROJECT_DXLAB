@@ -53,10 +53,6 @@ const UpdateRoom = () => {
   const [loadingId, setLoadingId] = useState(null);
 
   useEffect(() => {
-    dispatch(getRoomById(id));
-  }, [dispatch, id]);
-
-  useEffect(() => {
     const roomId = parseInt(id);
     dispatch(getRoomById(roomId));
   }, [dispatch, id]);
