@@ -31,7 +31,7 @@ const PerformanceStatistics = ({
   const { theme } = useTheme();
   const dispatch = useDispatch();
   const { rooms, loading: roomsLoading } = useSelector((state) => state.rooms);
-  const COLORS = ["#3b82f6", "#ef4444"];
+  const COLORS = ["#3b82f6", "#ef4444", "#10b981", "#f97316", "#8b5cf6", "#ec4899", "#eab308"];
 
   const [isLargeScreen, setIsLargeScreen] = useState(typeof window !== "undefined" ? window.innerWidth > 768 : false);
   const [selectedDate, setSelectedDate] = useState("");
@@ -41,9 +41,9 @@ const PerformanceStatistics = ({
   const [filteredRoomData, setFilteredRoomData] = useState([]);
   const [roomNameFromApi, setRoomNameFromApi] = useState("");
   const [showRoomFilter, setShowRoomFilter] = useState(false);
-  const [utilizationRates, setUtilizationRates] = useState([]); // Dữ liệu theo tháng
-  const [utilizationRatesByYear, setUtilizationRatesByYear] = useState([]); // Dữ liệu theo năm
-  const [utilizationRatesByDate, setUtilizationRatesByDate] = useState([]); // Dữ liệu theo ngày
+  const [utilizationRates, setUtilizationRates] = useState([]);
+  const [utilizationRatesByYear, setUtilizationRatesByYear] = useState([]);
+  const [utilizationRatesByDate, setUtilizationRatesByDate] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Utility to get days in month
@@ -72,18 +72,18 @@ const PerformanceStatistics = ({
     }));
   }, [utilizationRatesByDate]);
 
-  // Dynamic X-axis interval
+  // Dynamic X-axis interval for date search
   const maxLabels = 10;
-  const daysInMonth = period === "tháng" && month && year ? getDaysInMonth(month, year) : 0;
   const xAxisInterval = useMemo(() => {
     if (isDateSearchPerformed && selectedDate) {
       const roomCount = transformedDateData.length;
       return roomCount > maxLabels ? Math.ceil(roomCount / maxLabels) : 0;
     }
+    const daysInMonth = period === "tháng" && month && year ? getDaysInMonth(month, year) : 0;
     return period === "tháng" && !isDateSearchPerformed && daysInMonth > maxLabels
       ? Math.ceil(daysInMonth / maxLabels)
       : 0;
-  }, [period, isDateSearchPerformed, selectedDate, daysInMonth, transformedDateData, getDaysInMonth]);
+  }, [period, isDateSearchPerformed, selectedDate, transformedDateData, month, year, getDaysInMonth]);
 
   // Fetch rooms
   useEffect(() => {
@@ -111,14 +111,7 @@ const PerformanceStatistics = ({
     setUtilizationRatesByDate([]);
   }, [period, year, month]);
 
-  // Update roomNameFromApi
-  useEffect(() => {
-    if (selectedRoomName && !isRoomSearchPerformed && !isDateSearchPerformed && showRoomFilter) {
-      setRoomNameFromApi(selectedRoomName);
-    }
-  }, [selectedRoomName, isRoomSearchPerformed, isDateSearchPerformed, showRoomFilter]);
-
-  // Synchronize isRoomSearchPerformed
+  // Update roomNameFromApi and reset date-related states when selecting a room
   useEffect(() => {
     if (selectedRoom && showRoomFilter) {
       if (filteredRoomData && filteredRoomData.length > 0) {
@@ -131,8 +124,13 @@ const PerformanceStatistics = ({
         setIsDateSearchPerformed(false);
         setRoomNameFromApi(selectedRoomName);
       }
+      // Clear date-related data
+      setSelectedDate("");
+      setUtilizationRatesByDate([]);
+    } else if (selectedRoomName && !isRoomSearchPerformed && !isDateSearchPerformed && showRoomFilter) {
+      setRoomNameFromApi(selectedRoomName);
     }
-  }, [filteredRoomData, selectedRoom, selectedRoomName, showRoomFilter]);
+  }, [filteredRoomData, selectedRoom, selectedRoomName, showRoomFilter, isRoomSearchPerformed, isDateSearchPerformed]);
 
   // API calls
   const fetchUtilizationRateByDate = useCallback(async (dateTime, paraFilter) => {
@@ -224,8 +222,11 @@ const PerformanceStatistics = ({
           setIsRoomSearchPerformed(false);
           setFilteredRoomData([]);
           setRoomNameFromApi("");
-          const avgRate = data.reduce((sum, entry) => sum + (entry.rate || 0) * 100, 0) / data.length;
-          onRoomSelect(avgRate);
+          const selectedRoomData = selectedRoom
+            ? data.find((entry) => entry.roomId === parseInt(selectedRoom))
+            : null;
+          const rate = selectedRoomData ? selectedRoomData.rate * 100 : 0;
+          onRoomSelect(rate);
         } else {
           setIsDateSearchPerformed(true);
           setIsRoomSearchPerformed(false);
@@ -384,25 +385,46 @@ const PerformanceStatistics = ({
   const hasPerformanceData = processedRoomData.length > 0 && processedRoomData.some((entry) => entry.rate > 0);
   const hasDateData = transformedDateData.length > 0 && transformedDateData.some((entry) => entry.rate > 0);
 
-  const avgUtilizationRate = useMemo(() => {
-    if (!hasPerformanceData) return 0;
-    const totalRate = processedRoomData.reduce((sum, entry) => sum + (entry.rate || 0), 0);
-    return processedRoomData.length > 0 ? totalRate / processedRoomData.length : 0;
-  }, [hasPerformanceData, processedRoomData]);
-
-  const avgUtilizationRateByDate = useMemo(() => {
-    if (!hasDateData) return 0;
-    const totalRate = transformedDateData.reduce((sum, entry) => sum + (entry.rate || 0), 0);
-    return transformedDateData.length > 0 ? totalRate / transformedDateData.length : 0;
-  }, [hasDateData, transformedDateData]);
-
+  // Pie chart data for date search (all rooms or specific room)
   const utilizationPieData = useMemo(() => {
-    const avgRate = isDateSearchPerformed && selectedDate ? avgUtilizationRateByDate : avgUtilizationRate;
+    if (isDateSearchPerformed && selectedDate) {
+      if (selectedRoom) {
+        // Hiển thị tỷ lệ sử dụng của phòng được chọn
+        const selectedRoomData = utilizationRatesByDate.find(
+          (entry) => entry.roomId === parseInt(selectedRoom)
+        );
+        const rate = selectedRoomData ? selectedRoomData.rate * 100 : 0;
+        const roomName = selectedRoomData ? selectedRoomData.roomName : selectedRoomName || "Phòng đã chọn";
+        return [
+          { name: `Tỷ lệ sử dụng (${roomName})`, value: rate },
+          { name: `Chưa sử dụng (${roomName})`, value: 100 - rate },
+        ];
+      } else {
+        // Hiển thị tỷ lệ sử dụng của tất cả các phòng
+        return utilizationRatesByDate.map((entry) => ({
+          name: entry.roomName || "Unknown Room",
+          value: (entry.rate || 0) * 100,
+        }));
+      }
+    }
+    // Trường hợp tìm kiếm theo phòng hoặc mặc định
+    const avgRate = isRoomSearchPerformed
+      ? filteredRoomData.reduce((sum, entry) => sum + (entry.rate || 0) * 100, 0) / filteredRoomData.length
+      : processedRoomData.reduce((sum, entry) => sum + (entry.rate || 0), 0) / processedRoomData.length;
     return [
-      { name: "Tỷ lệ sử dụng", value: avgRate },
-      { name: "Chưa sử dụng", value: 100 - avgRate },
+      { name: "Tỷ lệ sử dụng", value: avgRate || 0 },
+      { name: "Chưa sử dụng", value: 100 - (avgRate || 0) },
     ];
-  }, [isDateSearchPerformed, selectedDate, avgUtilizationRateByDate, avgUtilizationRate]);
+  }, [
+    isDateSearchPerformed,
+    selectedDate,
+    selectedRoom,
+    utilizationRatesByDate,
+    selectedRoomName,
+    isRoomSearchPerformed,
+    filteredRoomData,
+    processedRoomData,
+  ]);
 
   const processDateData = useMemo(() => {
     if (!hasDateData) return [];
@@ -439,7 +461,7 @@ const PerformanceStatistics = ({
   };
 
   const referenceLines =
-    isLargeScreen && period === "tháng" && !isDateSearchPerformed && daysInMonth > 0 ? (
+    isLargeScreen && period === "tháng" && !isDateSearchPerformed && getDaysInMonth(month, year) > 0 ? (
       <>
         <ReferenceLine
           x="Ngày 1"
@@ -454,15 +476,13 @@ const PerformanceStatistics = ({
           label={{ value: "Giữa tháng", position: "top", fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
         />
         <ReferenceLine
-          x={`Ngày ${daysInMonth}`}
+          x={`Ngày ${getDaysInMonth(month, year)}`}
           stroke="#10b981"
           strokeDasharray="3 3"
           label={{ value: "Cuối tháng", position: "top", fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
         />
       </>
     ) : null;
-
-  const areaData = isDateSearchPerformed && selectedDate ? processDateData : processedRoomData;
 
   return (
     <div
@@ -495,11 +515,14 @@ const PerformanceStatistics = ({
                   setIsDateSearchPerformed(false);
                 }
               }}
+              disabled={selectedRoom && showRoomFilter}
               className={`w-full p-2 rounded-lg border ${
                 theme === "dark"
                   ? "bg-gray-800 text-white border-gray-600"
                   : "bg-white text-gray-900 border-gray-300"
-              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              } focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                selectedRoom && showRoomFilter ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             />
           </div>
           {showRoomFilter && (
@@ -517,7 +540,6 @@ const PerformanceStatistics = ({
                     ? "bg-gray-800 text-white border-gray-600"
                     : "bg-white text-gray-900 border-gray-300"
                 } focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                disabled={isDateSearchPerformed && selectedDate}
               >
                 <option value="">Chọn phòng</option>
                 {rooms.map((room) => (
@@ -551,7 +573,9 @@ const PerformanceStatistics = ({
           >
             Hiệu suất sử dụng trung bình -{" "}
             {isDateSearchPerformed && selectedDate
-              ? `Ngày ${selectedDate}`
+              ? selectedRoom
+                ? `Phòng ${selectedRoomName || "đã chọn"} - Ngày ${selectedDate}`
+                : `Ngày ${selectedDate}`
               : isRoomSearchPerformed && roomNameFromApi
               ? `Phòng ${roomNameFromApi} - ${period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}`
               : period === "năm"
@@ -562,7 +586,9 @@ const PerformanceStatistics = ({
             <p className={`text-center text-gray-500 dark:text-gray-400`}>
               Không có dữ liệu hiệu suất cho{" "}
               {isDateSearchPerformed && selectedDate
-                ? `ngày ${selectedDate}`
+                ? selectedRoom
+                  ? `phòng ${selectedRoomName || "đã chọn"} vào ngày ${selectedDate}`
+                  : `ngày ${selectedDate}`
                 : isRoomSearchPerformed && roomNameFromApi
                 ? `phòng ${roomNameFromApi}`
                 : period === "năm"
@@ -579,7 +605,7 @@ const PerformanceStatistics = ({
                   cx="50%"
                   cy="50%"
                   outerRadius={110}
-                  labelLine={false}
+                  labelLine={true}
                   label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
                 >
                   {utilizationPieData.map((entry, index) => (
@@ -613,78 +639,95 @@ const PerformanceStatistics = ({
           )}
         </div>
 
-        {!isDateSearchPerformed && (
-          <div className="flex flex-col animate-fade-in">
-            <h3
-              className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"}`}
-            >
-              Biểu đồ thống kê hiệu suất (theo %) -{" "}
-              {isRoomSearchPerformed && roomNameFromApi
-                ? `Phòng ${roomNameFromApi} - ${period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}`
+        <div className="flex flex-col animate-fade-in">
+          <h3
+            className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"}`}
+          >
+            Biểu đồ thống kê hiệu suất (theo %) -{" "}
+            {isDateSearchPerformed && selectedDate
+              ? `Ngày ${selectedDate}`
+              : isRoomSearchPerformed && roomNameFromApi
+              ? `Phòng ${roomNameFromApi} - ${period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}`
+              : period === "năm"
+              ? `Năm ${year}`
+              : `Tháng ${month}/${year}`}
+          </h3>
+          {loading ? (
+            <p className={`text-center text-gray-500 dark:text-gray-400`}>Đang tải dữ liệu...</p>
+          ) : (!hasPerformanceData && !hasDateData) ? (
+            <p className={`text-center text-gray-500 dark:text-gray-400`}>
+              Không có dữ liệu hiệu suất cho{" "}
+              {isDateSearchPerformed && selectedDate
+                ? `ngày ${selectedDate}`
+                : isRoomSearchPerformed && roomNameFromApi
+                ? `phòng ${roomNameFromApi}`
                 : period === "năm"
-                ? `Năm ${year}`
-                : `Tháng ${month}/${year}`}
-            </h3>
-            {loading ? (
-              <p className={`text-center text-gray-500 dark:text-gray-400`}>Đang tải dữ liệu...</p>
-            ) : (!hasPerformanceData && !hasDateData) ? (
-              <p className={`text-center text-gray-500 dark:text-gray-400`}>
-                Không có dữ liệu hiệu suất cho{" "}
-                {isRoomSearchPerformed && roomNameFromApi
-                  ? `phòng ${roomNameFromApi}`
-                  : period === "năm"
-                  ? `năm ${year}`
-                  : `tháng ${month}/${year}`}
-              </p>
-            ) : (
-              <ResponsiveContainer width="100%" height={500}>
-                <AreaChart data={areaData} margin={{ top: 20, right: 30, left: 40, bottom: 50 }}>
-                  <defs>
-                    <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f97316" stopOpacity={0.9} />
-                      <stop offset="95%" stopColor="#f97316" stopOpacity={0.1} />
-                    </linearGradient>
-                  </defs>
-                  <Tooltip
-                    cursor={{ stroke: theme === "dark" ? "#4b5563" : "#e5e7eb", strokeWidth: 1 }}
-                    content={<CustomTooltip />}
-                  />
-                  <XAxis
-                    dataKey="name"
-                    strokeWidth={0}
-                    stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                    angle={period === "năm" || (period === "tháng" && !isDateSearchPerformed) ? -45 : 0}
-                    textAnchor={period === "năm" || (period === "tháng" && !isDateSearchPerformed) ? "end" : "middle"}
-                    height={70}
-                    interval={xAxisInterval}
-                    tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
-                  />
-                  <YAxis
-                    strokeWidth={0}
-                    stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                    tickFormatter={(value) => `${value}%`}
-                    tickMargin={20}
-                    domain={[minY, maxY]}
-                    ticks={ticks}
-                    width={100}
-                    tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="rate"
-                    name="Tỷ lệ sử dụng"
-                    stroke="#f97316"
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorTotal)"
-                    activeDot={false}
-                  />
-                  {referenceLines}
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-        )}
+                ? `năm ${year}`
+                : `tháng ${month}/${year}`}
+            </p>
+          ) : (
+            <ResponsiveContainer width="100%" height={500}>
+              <AreaChart
+                data={isDateSearchPerformed && selectedDate ? processDateData : processedRoomData}
+                margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
+              >
+                <defs>
+                  <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.9} />
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                <Tooltip
+                  cursor={{ stroke: theme === "dark" ? "#4b5563" : "#e5e7eb", strokeWidth: 1 }}
+                  content={<CustomTooltip />}
+                />
+                <XAxis
+                  dataKey="name"
+                  strokeWidth={0}
+                  stroke={theme === "light" ? "#64748b" : "#94a3b8"}
+                  angle={
+                    isDateSearchPerformed && selectedDate
+                      ? -45
+                      : period === "năm" || (period === "tháng" && !isDateSearchPerformed)
+                      ? -45
+                      : 0
+                  }
+                  textAnchor={
+                    isDateSearchPerformed && selectedDate
+                      ? "end"
+                      : period === "năm" || (period === "tháng" && !isDateSearchPerformed)
+                      ? "end"
+                      : "middle"
+                  }
+                  height={70}
+                  interval={xAxisInterval}
+                  tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+                />
+                <YAxis
+                  strokeWidth={0}
+                  stroke={theme === "light" ? "#64748b" : "#94a3b8"}
+                  tickFormatter={(value) => `${value}%`}
+                  tickMargin={20}
+                  domain={[minY, maxY]}
+                  ticks={ticks}
+                  width={100}
+                  tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+                />
+                <Area
+                  type={isDateSearchPerformed && selectedDate ? "natural" : "monotone"}
+                  dataKey="rate"
+                  name="Tỷ lệ sử dụng"
+                  stroke="#f97316"
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#colorTotal)"
+                  activeDot={false}
+                />
+                {isDateSearchPerformed && selectedDate ? null : referenceLines}
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+        </div>
       </div>
     </div>
   );

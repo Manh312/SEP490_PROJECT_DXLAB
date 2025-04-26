@@ -19,7 +19,7 @@ import App from "./App.jsx";
 import { store, persistor } from "./redux/Store.jsx";
 import "./styles.css";
 import { toast, ToastContainer } from "react-toastify";
-import { clearAuthData, fetchRoleByID, setAuthData } from "./redux/slices/Authentication.jsx";
+import { clearAuthData, fetchRoleByID, setAuthData, setIsAuthenticating } from "./redux/slices/Authentication.jsx";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import axiosInstance from "./utils/axios.js";
@@ -37,12 +37,12 @@ const modalStyles = {
     bottom: "auto",
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
-    padding: "0", // Remove default padding to control it via Tailwind
+    padding: "0",
     border: "none",
     borderRadius: "12px",
     width: "400px",
     maxWidth: "90%",
-    background: "linear-gradient(145deg, #ffffff, #f0f4f8)", // Subtle gradient background
+    background: "linear-gradient(145deg, #ffffff, #f0f4f8)",
     boxShadow: "0 8px 30px rgba(0, 0, 0, 0.15)",
     overflow: "hidden",
   },
@@ -62,9 +62,25 @@ const handleRoleSpecificActions = async (userData) => {
   }
 };
 
-const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, isNewLogin = false, setIsExist, setModalState) => {
+// Hàm giả lập logic mint
+const triggerMining = async (walletAddress) => {
+  console.log(`Triggering mining for wallet: ${walletAddress}`);
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  return { success: true, message: "Token minted successfully!" };
+};
+
+const sendUserDataToBackend = async (
+  user,
+  walletAddress,
+  dispatch,
+  walletType,
+  isNewLogin = false,
+  setIsExist,
+  setModalState
+) => {
   try {
     console.log("sendUserDataToBackend inputs:", { user, walletAddress, walletType, isNewLogin });
+    dispatch(setIsAuthenticating(true)); // Set isAuthenticating to true
 
     let userEmail;
     if (walletType === "embeddedWallet") {
@@ -90,7 +106,7 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, 
     };
     console.log("Sending payload to backend:", payload);
 
-    const response = await axiosInstance.post("/user/verifyuser?skipMinting=true", payload);
+    const response = await axiosInstance.post("/user/verifyuser", payload);
     const result = response.data;
     console.log("Backend response:", result);
 
@@ -109,67 +125,65 @@ const sendUserDataToBackend = async (user, walletAddress, dispatch, walletType, 
 
     dispatch(setAuthData({ token: result.data.token, user: { ...result.data.user, storedToken: user?.storedToken } }));
 
-    if (roleId) {
-      dispatch(fetchRoleByID(roleId));
-    }
-
     if (isNewLogin) {
+      setTimeout(() => {
+        setModalState({ isOpen: true, isLoading: true, isMining: false, message: "Xác thực tài khoản hoàn tất..." });
+      }, 1000);
+
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
+      // Success message for all roleIds
+      const successMessage = walletType === "metamask"
+        ? "Đăng nhập MetaMask thành công!"
+        : walletType === "embeddedWallet"
+          ? "Đăng nhập Google thành công!"
+          : "Đăng nhập ví thành công!";
+
+      setModalState({
+        isOpen: true,
+        isLoading: false,
+        isMining: false,
+        message: successMessage,
+      });
+
+      // For roleId === 3, show mintStatus after 3 seconds
       if (roleId === 3) {
-        // Delay 500ms để đảm bảo modal Thirdweb đóng trước khi hiển thị modal xác thực
         setTimeout(() => {
-          setModalState({ isOpen: true, isLoading: true, message: "Đang xác thực tài khoản..." });
-        }, 500);
-        // Delay 5 giây từ khi gửi request để chuyển modal sang trạng thái thành công
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-        setModalState({
-          isOpen: true,
-          isLoading: false,
-          message: walletType === "metamask"
-            ? "Đăng nhập MetaMask thành công!"
-            : walletType === "embeddedWallet"
-            ? "Đăng nhập Google thành công!"
-            : "Đăng nhập ví thành công!",
-        });
-        // Tự động đóng modal sau 3 giây
-        setTimeout(() => setModalState({ isOpen: false, isLoading: false, message: "" }), 3000);
+          dispatch(setIsAuthenticating(false));
+          setModalState({ isOpen: true, isLoading: false, isMining: false, message: `${result.data.mintStatus}` });
+        }, 3000);
       } else {
-        // Hiển thị toast success ngay lập tức cho các role khác
-        toast.success(
-          walletType === "metamask"
-            ? "Đăng nhập MetaMask thành công!"
-            : walletType === "embeddedWallet"
-            ? "Đăng nhập Google thành công!"
-            : "Đăng nhập ví thành công!",
-          {
-            toastId: "auth-success",
-            autoClose: 3000,
-            closeOnClick: true,
-          }
-        );
+        // For roleId !== 3, show "Hoàn tất xác thực" with success message, then close
+        setTimeout(() => {
+          setModalState({ isOpen: true, isLoading: false, isMining: false, message: successMessage });
+          dispatch(setIsAuthenticating(false));
+          setTimeout(() => {
+            setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" });
+          }, 3000);
+        }, 3000);
       }
-    }
+    }    
 
     setTimeout(() => handleRoleSpecificActions(result.data), 100);
 
     return result.data;
   } catch (error) {
     console.error("Backend error:", error.message, error.response?.data);
-    setIsExist(false);
+    setIsExist({ isExist: false });
     const errorMessage =
       error.response?.status === 404
         ? "Backend server không khả dụng."
         : error.response?.status === 401
-        ? "Tài khoản không tồn tại trong hệ thống. Vui lòng thử lại."
-        : error.message || "Lỗi đăng nhập. Vui lòng thử lại.";
+          ? "Tài khoản không tồn tại trong hệ thống. Vui lòng thử lại."
+          : error.message || "Lỗi đăng nhập. Vui lòng thử lại.";
 
     toast.error(errorMessage, { toastId: "login-error" });
-    // Đóng modal nếu có lỗi
-    setModalState({ isOpen: false, isLoading: false, message: "" });
+    setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" });
     throw error;
   }
 };
 
-const AppWithWallet = React.memo(({ isExist }) => {
+const AppWithWallet = React.memo(({ isExist, setModalState }) => {
   const walletAddress = useAddress();
   const disconnect = useDisconnect();
   const dispatch = useDispatch();
@@ -177,12 +191,55 @@ const AppWithWallet = React.memo(({ isExist }) => {
   const { user: walletUser } = useUser();
   const [isValidUser, setIsValidUser] = useState(false);
   const [authHandled, setAuthHandled] = useState(false);
-
-  console.log("isExist", isExist);
-
+  const [isMinted, setIsMinted] = useState(false);
+  const [isMining, setIsMining] = useState(false);
   const connectionStatus = useConnectionStatus();
   const chainId = useChainId();
   const walletType = useMemo(() => wallet?.walletId, [wallet]);
+
+  const handleMint = async () => {
+    if (!walletAddress) {
+      toast.error("Vui lòng kết nối ví trước khi cấp tiền!", { toastId: "no-wallet" });
+      return;
+    }
+
+    if (isMining || isMinted) {
+      toast.info("Token đã được cấp!", { toastId: "already-minted" });
+      return;
+    }
+
+    try {
+      setIsMining(true);
+      setModalState({ isOpen: true, isLoading: false, isMining: true, message: "Đang cấp tiền..." });
+
+      const miningResult = await triggerMining(walletAddress);
+      if (miningResult.success) {
+        setIsMining(false);
+        setIsMinted(true);
+        setModalState({ isOpen: true, isLoading: false, isMining: false, message: "Cấp tiền thành công!" });
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        setModalState({
+          isOpen: true,
+          isLoading: false,
+          isMining: false,
+          message: walletType === "metamask"
+            ? "Đăng nhập MetaMask thành công!"
+            : walletType === "embeddedWallet"
+              ? "Đăng nhập Google thành công!"
+              : "Đăng nhập ví thành công!",
+        });
+        setTimeout(() => setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" }), 3000);
+      } else {
+        throw new Error("Mining failed");
+      }
+    } catch (error) {
+      console.error("Minting error:", error);
+      setIsMining(false);
+      setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" });
+      toast.error("Lỗi khi cấp tiền: " + error.message, { toastId: "mint-error" });
+    }
+  };
 
   const validateUser = useCallback(() => {
     console.log("validateUser called with:", {
@@ -202,7 +259,7 @@ const AppWithWallet = React.memo(({ isExist }) => {
     const authState = store.getState().auth;
     const storedUser = authState.user;
     const token = authState.token;
-    console.log("Stored user and token:", { authState});
+    console.log("Stored user and token:", { authState });
 
     if (token && storedUser && storedUser.walletAddress === walletAddress) {
       console.log("User already authenticated, setting isValidUser to true.");
@@ -229,36 +286,83 @@ const AppWithWallet = React.memo(({ isExist }) => {
       console.log("Wallet disconnected, clearing auth data.");
       setIsValidUser(false);
       setAuthHandled(false);
+      setIsMinted(false);
+      setIsMining(false);
       dispatch(clearAuthData());
     }
   }, [connectionStatus, validateUser, dispatch, authHandled]);
 
-  // Chỉ hiển thị walletAddress nếu isValidUser và isExist đều true
-  return <App walletAddress={isValidUser && isExist ? walletAddress : null} />;
+  return (
+    <App
+      walletAddress={isValidUser && isExist && isMinted ? walletAddress : null}
+      handleMint={handleMint}
+      isMining={isMining}
+      isMinted={isMinted}
+    />
+  );
 });
 
 AppWithWallet.displayName = "AppWithWallet";
 
-// Component mới để xử lý logic đóng modal Thirdweb
-const ThirdwebWrapper = ( isExist, setModalState ) => {
+const ThirdwebWrapper = ({ isExist, setModalState }) => {
   const dispatch = useDispatch();
   const connectionStatus = useConnectionStatus();
+  const wallet = useWallet();
 
-  // Đóng modal Thirdweb khi trạng thái kết nối là connected
   useEffect(() => {
-    if (connectionStatus === "connected") {
-      // Đảm bảo modal Thirdweb đóng bằng cách kích hoạt sự kiện đóng nếu cần
-      document.dispatchEvent(new Event("thirdwebModalClose"));
+    if (connectionStatus === "connecting" && wallet?.walletId === "embeddedWallet") {
+      console.log("Embedded wallet authentication started, setting isAuthenticating to true");
+      dispatch(setIsAuthenticating(true));
     }
-  }, [connectionStatus]);
 
-  return <AppWithWallet isExist={isExist.isExist} />;
+    if (connectionStatus === "connected" && wallet?.walletId === "embeddedWallet") {
+      const attemptCloseModal = () => {
+        document.dispatchEvent(new Event("thirdwebModalClose"));
+        const selectors = [
+          ".tw-connect-wallet__modal",
+          "[data-testid='connect-wallet-modal']",
+          ".wallet-modal",
+        ];
+        let modalClosed = false;
+        selectors.forEach((selector) => {
+          const modal = document.querySelector(selector);
+          if (modal && modal.style.display !== "none") {
+            modal.style.display = "none";
+            console.log(`Manually closed Thirdweb modal using selector: ${selector}`);
+            modalClosed = true;
+          }
+        });
+        const iframes = document.querySelectorAll("iframe");
+        iframes.forEach((iframe) => {
+          if (iframe.src.includes("google") || iframe.src.includes("thirdweb")) {
+            iframe.style.display = "none";
+            console.log("Manually closed Thirdweb iframe");
+            modalClosed = true;
+          }
+        });
+        return modalClosed;
+      };
+
+      const timer1 = setTimeout(() => {
+        const closed = attemptCloseModal();
+        if (!closed) {
+          console.log("First attempt to close Thirdweb modal failed, scheduling second attempt");
+          const timer2 = setTimeout(attemptCloseModal, 1000);
+          return () => clearTimeout(timer2);
+        }
+      }, 500);
+
+      return () => clearTimeout(timer1);
+    }
+  }, [connectionStatus, wallet, dispatch]);
+
+  return <AppWithWallet isExist={isExist} setModalState={setModalState} />;
 };
 
 const RootApp = () => {
   const dispatch = useDispatch();
   const [isExist, setIsExist] = useState({ isExist: true });
-  const [modalState, setModalState] = useState({ isOpen: false, isLoading: false, message: "" });
+  const [modalState, setModalState] = useState({ isOpen: false, isLoading: false, isMining: false, message: "" });
 
   return (
     <>
@@ -275,21 +379,22 @@ const RootApp = () => {
       />
       <Modal
         isOpen={modalState.isOpen}
-        onRequestClose={() => setModalState({ isOpen: false, isLoading: false, message: "" })}
+        onRequestClose={() => {
+          if (!modalState.isLoading && !modalState.isMining) {
+            setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" });
+          }
+        }}
         style={modalStyles}
         contentLabel="Authentication Modal"
-        shouldCloseOnOverlayClick={!modalState.isLoading} // Prevent closing on overlay click during loading
-        shouldCloseOnEsc={!modalState.isLoading} // Prevent closing on Escape key during loading
+        shouldCloseOnOverlayClick={!modalState.isLoading && !modalState.isMining}
+        shouldCloseOnEsc={!modalState.isLoading && !modalState.isMining}
       >
         <div className="p-6 flex flex-col items-center transition-all duration-300">
-          {/* Header */}
-          <h2 className={`text-xl font-semibold ${modalState.isLoading ? "text-gray-700" : "text-orange-600"} mb-3`}>
-            {modalState.isLoading ? "Đang xác thực" : "Xác thực thành công"}
+          <h2 className={`text-xl font-semibold ${modalState.isLoading || modalState.isMining ? "text-gray-700" : "text-orange-600"} mb-3`}>
+            {modalState.isLoading ? "Xác thực tài khoản" : modalState.isMining ? "Đang cấp tiền" : "Hoàn tất xác thực"}
           </h2>
-
-          {/* Message with Icon */}
           <div className="flex items-center mb-4">
-            {!modalState.isLoading && (
+            {!modalState.isLoading && !modalState.isMining && (
               <svg
                 className="w-6 h-6 text-green-500 mr-2"
                 fill="none"
@@ -307,16 +412,15 @@ const RootApp = () => {
             )}
             <p className="text-gray-600 text-center">{modalState.message}</p>
           </div>
-
-          {/* Spinner for Loading State */}
-          {modalState.isLoading && (
+          {(modalState.isLoading || modalState.isMining) && (
             <div className="loader mb-4 w-10 h-10 border-4 border-t-4 border-gray-200 border-t-orange-500 rounded-full animate-spin"></div>
           )}
-
-          {/* Close Button for Success State */}
-          {!modalState.isLoading && (
+          {!modalState.isLoading && !modalState.isMining && (
             <button
-              onClick={() => setModalState({ isOpen: false, isLoading: false, message: "" })}
+              onClick={() => {
+                dispatch(setIsAuthenticating(false));
+                setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" });
+              }}
               className="px-4 py-2 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
             >
               Đóng
@@ -342,10 +446,12 @@ const RootApp = () => {
               try {
                 const walletAddress = walletDetails.address;
                 console.log("MetaMask connected:", walletAddress);
+                dispatch(setIsAuthenticating(true)); // Set isAuthenticating for MetaMask
                 await sendUserDataToBackend({}, walletAddress, dispatch, "metamask", true, setIsExist, setModalState);
               } catch (error) {
                 console.error("MetaMask login failed:", error);
                 walletDetails.disconnect();
+                dispatch(setIsAuthenticating(false)); // Reset on failure
                 toast.error("Đăng nhập MetaMask thất bại: " + error.message);
               }
             },
@@ -360,6 +466,7 @@ const RootApp = () => {
             onAuthSuccess: async (user) => {
               console.log("Embedded wallet auth success:", user);
               try {
+                dispatch(setIsAuthenticating(true)); // Set isAuthenticating when Google auth starts
                 const userEmail = user.email || user.storedToken?.authDetails?.email;
                 const walletAddress = user.walletDetails?.walletAddress;
                 if (!walletAddress) {
@@ -371,6 +478,7 @@ const RootApp = () => {
                 await sendUserDataToBackend({ ...user, email: userEmail }, walletAddress, dispatch, "embeddedWallet", true, setIsExist, setModalState);
               } catch (error) {
                 console.error("Embedded wallet login failed:", error);
+                dispatch(setIsAuthenticating(false)); // Reset on failure
                 user.disconnect?.();
               }
             },
@@ -378,7 +486,7 @@ const RootApp = () => {
         ]}
       >
         <PersistGate loading={null} persistor={persistor}>
-          <ThirdwebWrapper isExist={isExist} setModalState={setModalState} />
+          <ThirdwebWrapper isExist={isExist.isExist} setModalState={setModalState} />
         </PersistGate>
       </ThirdwebProvider>
     </>
