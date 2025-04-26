@@ -54,6 +54,11 @@ const UpdateRoom = () => {
 
   useEffect(() => {
     const roomId = parseInt(id);
+    dispatch(getRoomById(roomId));
+  }, [dispatch, id]);
+
+  useEffect(() => {
+    const roomId = parseInt(id);
 
     if (!selectedRoom || selectedRoom.roomId !== roomId) {
       dispatch(getRoomById(roomId));

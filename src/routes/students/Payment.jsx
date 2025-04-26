@@ -50,13 +50,14 @@ import { useSelector, useDispatch } from 'react-redux';
         });
       };
 
-      const getSlotNames = (slotIds, date) => {
-        if (!Array.isArray(slotIds) || slotIds.length === 0) return 'Chưa chọn';
+      const getSlotNames = (slots, date) => {
+        if (!Array.isArray(slots) || slots.length === 0) return 'Chưa chọn';
         const slotsForDate = fetchedSlots[date] || [];
-        return slotIds
-          .map((slotId) => {
-            const slot = slotsForDate.find((s) => s.slotId === slotId);
-            return slot ? `Slot ${slot.slotNumber}` : `Slot ${slotId}`;
+        return slots
+          .map(({ slotNumber }) => {
+            const slot = slotsForDate.find((s) => s.slotNumber === slotNumber);
+            console.log(slot);
+            return slot ? `Slot ${slot.slotNumber}` : `Slot ${slotNumber}`;
           })
           .join(', ');
       };
@@ -80,13 +81,14 @@ import { useSelector, useDispatch } from 'react-redux';
           toast.error('Vui lòng chọn thời gian và slot trước khi thanh toán!');
           return;
         }
-
         const bookingData = {
           roomID: selectedRoom.roomId,
           areaTypeId: areaTypeId,
           bookingTimes: selectedTime.map((booking) => ({
             bookingDate: new Date(booking.date).toISOString(),
-            slotId: Array.isArray(booking.slots) ? booking.slots : [],
+            slotId: Array.isArray(booking.slots)
+              ? booking.slots.map((slot) => slot.slotId)
+              : [],
           })),
         };
 

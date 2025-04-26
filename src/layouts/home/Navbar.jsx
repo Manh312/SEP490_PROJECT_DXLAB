@@ -6,12 +6,12 @@ import { useTheme } from "../../hooks/use-theme";
 import { Link } from "react-router-dom";
 import { ConnectWallet, useAddress, useContract, useDisconnect, useTokenBalance } from "@thirdweb-dev/react";
 import { useDispatch, useSelector } from "react-redux";
-import { clearAuthData, fetchRoleByID } from "../../redux/slices/Authentication";
+import { clearAuthData, fetchRoleByID, setIsAuthenticating } from "../../redux/slices/Authentication";
 import { FaUserCircle } from "react-icons/fa";
-import Notification from "../../hooks/use-notification"; // Cập nhật import
+import Notification from "../../hooks/use-notification";
+import Modal from "react-modal";
 
 const SEPOLIA_CHAIN_ID = 11155111;
-
 
 const Navbar = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -23,9 +23,14 @@ const Navbar = () => {
   const disconnect = useDisconnect();
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
-  const { user } = useSelector((state) => state.auth);
-  const { contract } = useContract("0xc597d627a7E28B896d43a4eC50703f35Ba259378");
+  const { user, isAuthenticating } = useSelector((state) => state.auth);
+  const { contract } = useContract("0x004Bbe4D1C9951492336263C8BF96a6E822aeA73");
   const { data: balance } = useTokenBalance(contract, address);
+
+  // Thiết lập app element cho modal
+  useEffect(() => {
+    Modal.setAppElement("#root");
+  }, []);
 
   // Fetch roleName based on roleId
   useEffect(() => {
@@ -42,14 +47,15 @@ const Navbar = () => {
     if (!address) {
       setDropdownOpen(false);
       setRoleName(null);
+      dispatch(setIsAuthenticating(false)); // Reset isAuthenticating
     }
-  }, [address]);
+  }, [address, dispatch]);
 
   // Handle wallet disconnect
   const handleDisconnect = async () => {
     try {
       await disconnect();
-      dispatch(clearAuthData());
+      dispatch(clearAuthData()); // clearAuthData resets isAuthenticating
       setDropdownOpen(false);
       setRoleName(null);
     } catch (error) {
@@ -66,6 +72,7 @@ const Navbar = () => {
       setDropdownOpen(!dropdownOpen);
     }
   };
+
 
   // Determine login status
   const isLoggedIn = address && user && (user?.walletType !== "embeddedWallet" || (user?.storedToken?.authDetails?.email || user?.email)?.endsWith("@fpt.edu.vn"));
@@ -110,10 +117,7 @@ const Navbar = () => {
         <div className="hidden lg:flex justify-center space-x-6 items-center relative z-10">
           {isLoggedIn ? (
             <div className="flex items-center space-x-4" ref={profileRef}>
-              {/* Notification for Admin and Staff */}
-              {(roleName === "Admin" || roleName === "Staff") && (
-                <Notification />
-              )}
+              {(roleName === "Admin" || roleName === "Staff") && <Notification />}
               <FaUserCircle
                 className="h-10 w-10 rounded-full cursor-pointer"
                 onClick={handleProfileClick}
@@ -133,10 +137,10 @@ const Navbar = () => {
                       supportedTokens={{
                         [SEPOLIA_CHAIN_ID]: [
                           {
-                            address: "0xc597d627a7E28B896d43a4eC50703f35Ba259378",
+                            address: "0x004Bbe4D1C9951492336263C8BF96a6E822aeA73",
                             name: "DXLAB Coin",
                             symbol: "DXL",
-                            icon: "https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png?1687143508"
+                            icon: "https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png?1687143508",
                           },
                         ],
                       }}
@@ -178,22 +182,26 @@ const Navbar = () => {
             </div>
           ) : (
             <>
-              <ConnectWallet
-                btnTitle="Đăng nhập"
-                modalSize="wide"
-                showThirdwebBranding={false}
-                hideTestnetFaucet={false}
-                supportedTokens={{
-                  [SEPOLIA_CHAIN_ID]: [
-                    {
-                      address: "0xc597d627a7E28B896d43a4eC50703f35Ba259378",
-                      name: "DXLAB Coin",
-                      symbol: "DXL",
-                      icon: "https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/0xc597d627a7E28B896d43a4eC50703f35Ba259378/logo.png",
-                    },
-                  ],
-                }}
-              />
+              {isAuthenticating ? null : (
+                <div>
+                  <ConnectWallet
+                    btnTitle="Đăng nhập"
+                    modalSize="wide"
+                    showThirdwebBranding={false}
+                    hideTestnetFaucet={false}
+                    supportedTokens={{
+                      [SEPOLIA_CHAIN_ID]: [
+                        {
+                          address: "0x004Bbe4D1C9951492336263C8BF96a6E822aeA73",
+                          name: "DXLAB Coin",
+                          symbol: "DXL",
+                          icon: "https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/0xc597d627a7E28B896d43a4eC50703f35Ba259378/logo.png",
+                        },
+                      ],
+                    }}
+                  />
+                </div>
+              )}
               <button
                 className="p-2 border rounded-md transition-colors ml-5"
                 onClick={() => setTheme(theme === "light" ? "dark" : "light")}
@@ -235,44 +243,46 @@ const Navbar = () => {
             {isLoggedIn ? (
               <div>
                 <div>
-                <ConnectWallet
-                      modalSize="wide"
-                      hideBuyButton
-                      hideDisconnect
-                      style={{ width: "100%" }}
-                      supportedTokens={{
-                        [SEPOLIA_CHAIN_ID]: [
-                          {
-                            address: "0xc597d627a7E28B896d43a4eC50703f35Ba259378",
-                            name: "DXLAB Coin",
-                            symbol: "DXL",
-                            icon: "https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png?1687143508"
-                          },
-                        ],
-                      }}
-                    />
+                  <ConnectWallet
+                    modalSize="wide"
+                    hideBuyButton
+                    hideDisconnect
+                    style={{ width: "100%" }}
+                    supportedTokens={{
+                      [SEPOLIA_CHAIN_ID]: [
+                        {
+                          address: "0x004Bbe4D1C9951492336263C8BF96a6E822aeA73",
+                          name: "DXLAB Coin",
+                          symbol: "DXL",
+                          icon: "https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png?1687143508",
+                        },
+                      ],
+                    }}
+                  />
                 </div>
                 <div className="mt-3 ml-1">
                   <span>Số dư: {balance?.displayValue} DXL</span>
                 </div>
               </div>
             ) : (
-              <ConnectWallet
-                btnTitle="Đăng nhập"
-                modalSize="wide"
-                showThirdwebBranding={false}
-                hideTestnetFaucet={false}
-                supportedTokens={{
-                  [SEPOLIA_CHAIN_ID]: [
-                    {
-                      address: "0xc597d627a7E28B896d43a4eC50703f35Ba259378",
-                      name: "DXLAB Coin",
-                      symbol: "DXL",
-                      icon: "https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/0xc597d627a7E28B896d43a4eC50703f35Ba259378/logo.png",
-                    },
-                  ],
-                }}
-              />
+              <div>
+                <ConnectWallet
+                  btnTitle="Đăng nhập"
+                  modalSize="wide"
+                  showThirdwebBranding={false}
+                  hideTestnetFaucet={false}
+                  supportedTokens={{
+                    [SEPOLIA_CHAIN_ID]: [
+                      {
+                        address: "0x004Bbe4D1C9951492336263C8BF96a6E822aeA73",
+                        name: "DXLAB Coin",
+                        symbol: "DXL",
+                        icon: "https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/0xc597d627a7E28B896d43a4eC50703f35Ba259378/logo.png",
+                      },
+                    ],
+                  }}
+                />
+              </div>
             )}
           </div>
           <ul className="flex flex-col py-2 border-t">
@@ -366,6 +376,21 @@ const Navbar = () => {
           <p>© 2025 DXLAB Co-Working Space</p>
         </div>
       </div>
+
+      {/* Authentication Modal */}
+      <Modal
+        isOpen={isAuthenticating}
+        contentLabel="Authentication Modal"
+        className="fixed inset-0 text-black flex items-center justify-center z-50"
+        overlayClassName="fixed inset-0 bg-opacity-60"
+      >
+        <div className=" p-6 rounded-lg shadow-xl w-full max-w-sm bg-white">
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin mb-4"></div>
+            <p className="text-lg font-semibold">Đang xác thực tài khoản...</p>
+          </div>
+        </div>
+      </Modal>
     </nav>
   );
 };
