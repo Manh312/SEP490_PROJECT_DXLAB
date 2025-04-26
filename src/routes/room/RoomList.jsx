@@ -270,6 +270,7 @@ const RoomList = () => {
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hình Ảnh</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Phòng</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Sức Chứa</th>
+                    {/* <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ngày Hết Hạn</th> */}
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Trạng Thái</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành Động</th>
                   </tr>
@@ -289,6 +290,9 @@ const RoomList = () => {
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {room.capacity} người
                       </td>
+                      {/* <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        {new Date(room.expiredTime).toLocaleDateString()}
+                      </td> */}
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${room.status === 0 ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
@@ -360,6 +364,9 @@ const RoomList = () => {
                       <p className="text-sm">
                         <span className="font-medium">Sức Chứa:</span> {room.capacity} người
                       </p>
+                      {/* <p className="text-sm">
+                        <span className="font-medium">Ngày Hết Hạn:</span> {new Date(room.expiredTime).toLocaleDateString()}
+                      </p> */}
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <button
                           onClick={() => navigate(`/dashboard/room/detail/${room.roomId}`)}

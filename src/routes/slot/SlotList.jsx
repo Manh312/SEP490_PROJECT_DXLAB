@@ -160,6 +160,9 @@ const SlotList = () => {
                       Giờ Kết Thúc
                     </th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
+                      Ngày Hết Hạn
+                    </th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
                       Trạng Thái
                     </th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">
@@ -179,6 +182,7 @@ const SlotList = () => {
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{slot.startTime}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{slot.endTime}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{new Date(slot.expiredTime).toLocaleDateString()}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         <span
                           className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full font-medium text-xs sm:text-sm ${getStatusClass(slot.status)}`}
@@ -227,6 +231,12 @@ const SlotList = () => {
                     </p>
                     <p className="text-sm">
                       <span className="font-medium">Giờ Kết Thúc:</span> {slot.endTime}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Giờ Kết Thúc:</span> {slot.expiredTime}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Ngày Hết Hạn:</span> {new Date(slot.expiredTime).toLocaleDateString()}
                     </p>
                     <div className="flex justify-end">
                       <button

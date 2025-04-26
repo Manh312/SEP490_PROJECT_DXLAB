@@ -62,13 +62,7 @@ const handleRoleSpecificActions = async (userData) => {
   }
 };
 
-// Hàm giả lập logic mint
-const triggerMining = async (walletAddress) => {
-  console.log(`Triggering mining for wallet: ${walletAddress}`);
-  await new Promise((resolve) => setTimeout(resolve, 3000));
-  return { success: true, message: "Token minted successfully!" };
-};
-
+// Hàm dành cho embeddedWallet
 const sendUserDataToBackend = async (
   user,
   walletAddress,
@@ -79,21 +73,13 @@ const sendUserDataToBackend = async (
   setModalState
 ) => {
   try {
-    console.log("sendUserDataToBackend inputs:", { user, walletAddress, walletType, isNewLogin });
+    console.log("sendUserDataToBackend (embeddedWallet) inputs:", { user, walletAddress, walletType, isNewLogin });
     dispatch(setIsAuthenticating(true)); // Set isAuthenticating to true
 
-    let userEmail;
-    if (walletType === "embeddedWallet") {
-      userEmail = user?.email || user?.storedToken?.authDetails?.email;
-      if (!userEmail) {
-        console.warn("Không thể lấy email từ Google authentication, sử dụng email mặc định.");
-        userEmail = `${walletAddress}@embeddedwallet.default`;
-      }
-    } else {
-      if (!walletAddress) {
-        throw new Error("Địa chỉ ví không hợp lệ.");
-      }
-      userEmail = `${walletAddress}@metamask.default`;
+    let userEmail = user?.email || user?.storedToken?.authDetails?.email;
+    if (!userEmail) {
+      console.warn("Không thể lấy email từ Google authentication, sử dụng email mặc định.");
+      userEmail = `${walletAddress}@embeddedwallet.default`;
     }
 
     const payload = {
@@ -104,11 +90,11 @@ const sendUserDataToBackend = async (
       status: true,
       roleId: 3,
     };
-    console.log("Sending payload to backend:", payload);
+    console.log("Sending payload to backend (embeddedWallet):", payload);
 
     const response = await axiosInstance.post("/user/verifyuser", payload);
     const result = response.data;
-    console.log("Backend response:", result);
+    console.log("Backend response (embeddedWallet):", result);
 
     if (!result.data?.token || !result.data?.user) {
       result.data = {
@@ -132,12 +118,9 @@ const sendUserDataToBackend = async (
 
       await new Promise((resolve) => setTimeout(resolve, 5000));
 
-      // Success message for all roleIds
-      const successMessage = walletType === "metamask"
-        ? "Đăng nhập MetaMask thành công!"
-        : walletType === "embeddedWallet"
-          ? "Đăng nhập Google thành công!"
-          : "Đăng nhập ví thành công!";
+      const successMessage = walletType === "embeddedWallet"
+        ? "Đăng nhập Google thành công!"
+        : "Đăng nhập ví thành công!";
 
       setModalState({
         isOpen: true,
@@ -146,29 +129,27 @@ const sendUserDataToBackend = async (
         message: successMessage,
       });
 
-      // For roleId === 3, show mintStatus after 3 seconds
       if (roleId === 3) {
         setTimeout(() => {
           dispatch(setIsAuthenticating(false));
-          setModalState({ isOpen: true, isLoading: false, isMining: false, message: `${result.data.mintStatus}` });
-        }, 3000);
+          setModalState({ isOpen: true, isLoading: false, isMining: false, message: `${successMessage} ${result.data.mintStatus}` });
+        });
       } else {
-        // For roleId !== 3, show "Hoàn tất xác thực" with success message, then close
         setTimeout(() => {
           setModalState({ isOpen: true, isLoading: false, isMining: false, message: successMessage });
           dispatch(setIsAuthenticating(false));
           setTimeout(() => {
             setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" });
           }, 3000);
-        }, 3000);
+        });
       }
-    }    
+    }
 
     setTimeout(() => handleRoleSpecificActions(result.data), 100);
 
     return result.data;
   } catch (error) {
-    console.error("Backend error:", error.message, error.response?.data);
+    console.error("Backend error (embeddedWallet):", error.message, error.response?.data);
     setIsExist({ isExist: false });
     const errorMessage =
       error.response?.status === 404
@@ -183,7 +164,103 @@ const sendUserDataToBackend = async (
   }
 };
 
-const AppWithWallet = React.memo(({ isExist, setModalState }) => {
+// Hàm dành cho MetaMask
+const sendMetaMaskDataToBackend = async (
+  walletAddress,
+  dispatch,
+  isNewLogin = false,
+  setIsExist,
+  setModalState
+) => {
+  try {
+    console.log("sendMetaMaskDataToBackend inputs:", { walletAddress, isNewLogin });
+    dispatch(setIsAuthenticating(true)); // Set isAuthenticating to true
+
+    if (!walletAddress) {
+      throw new Error("Địa chỉ ví không hợp lệ.");
+    }
+
+    const payload = {
+      userId: 0,
+      email: 'abc@fpt.edu.vn',
+      fullName: "unknown",
+      walletAddress,
+      status: true,
+      roleId: 3,
+    };
+    console.log("Sending payload to backend (MetaMask):", payload);
+
+    const response = await axiosInstance.post("/user/verifyuser", payload);
+    const result = response.data;
+    console.log("Backend response (MetaMask):", result);
+
+    if (!result.data?.token || !result.data?.user) {
+      result.data = {
+        token: "temporary-token",
+        user: { email: 'abc@fpt.edu.vn', walletAddress, roleId: 3 },
+      };
+    }
+
+    const { roleId } = result.data.user;
+
+    if (roleId) {
+      dispatch(fetchRoleByID(roleId));
+    }
+
+    dispatch(setAuthData({ token: result.data.token, user: { ...result.data.user } }));
+
+    if (isNewLogin) {
+      setTimeout(() => {
+        setModalState({ isOpen: true, isLoading: true, isMining: false, message: "Xác thực tài khoản hoàn tất..." });
+      }, 1000);
+
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
+      const successMessage = "Đăng nhập MetaMask thành công!";
+
+      setModalState({
+        isOpen: true,
+        isLoading: false,
+        isMining: false,
+        message: successMessage,
+      });
+
+      if (roleId === 3) {
+        setTimeout(() => {
+          dispatch(setIsAuthenticating(false));
+          setModalState({ isOpen: true, isLoading: false, isMining: false, message: `${successMessage} ${result.data.mintStatus}` });
+        });
+      } else {
+        setTimeout(() => {
+          setModalState({ isOpen: true, isLoading: false, isMining: false, message: successMessage });
+          dispatch(setIsAuthenticating(false));
+          setTimeout(() => {
+            setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" });
+          }, 3000);
+        });
+      }
+    }
+
+    setTimeout(() => handleRoleSpecificActions(result.data), 100);
+
+    return result.data;
+  } catch (error) {
+    console.error("Backend error (MetaMask):", error.message, error.response?.data);
+    setIsExist({ isExist: false });
+    const errorMessage =
+      error.response?.status === 404
+        ? "Backend server không khả dụng."
+        : error.response?.status === 401
+          ? "Tài khoản không tồn tại trong hệ thống. Vui lòng thử lại."
+          : error.message || "Lỗi đăng nhập. Vui lòng thử lại.";
+
+    toast.error(errorMessage, { toastId: "login-error" });
+    setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" });
+    throw error;
+  }
+};
+
+const AppWithWallet = React.memo(({ isExist, setIsExist, setModalState }) => {
   const walletAddress = useAddress();
   const disconnect = useDisconnect();
   const dispatch = useDispatch();
@@ -191,55 +268,9 @@ const AppWithWallet = React.memo(({ isExist, setModalState }) => {
   const { user: walletUser } = useUser();
   const [isValidUser, setIsValidUser] = useState(false);
   const [authHandled, setAuthHandled] = useState(false);
-  const [isMinted, setIsMinted] = useState(false);
-  const [isMining, setIsMining] = useState(false);
   const connectionStatus = useConnectionStatus();
   const chainId = useChainId();
   const walletType = useMemo(() => wallet?.walletId, [wallet]);
-
-  const handleMint = async () => {
-    if (!walletAddress) {
-      toast.error("Vui lòng kết nối ví trước khi cấp tiền!", { toastId: "no-wallet" });
-      return;
-    }
-
-    if (isMining || isMinted) {
-      toast.info("Token đã được cấp!", { toastId: "already-minted" });
-      return;
-    }
-
-    try {
-      setIsMining(true);
-      setModalState({ isOpen: true, isLoading: false, isMining: true, message: "Đang cấp tiền..." });
-
-      const miningResult = await triggerMining(walletAddress);
-      if (miningResult.success) {
-        setIsMining(false);
-        setIsMinted(true);
-        setModalState({ isOpen: true, isLoading: false, isMining: false, message: "Cấp tiền thành công!" });
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        setModalState({
-          isOpen: true,
-          isLoading: false,
-          isMining: false,
-          message: walletType === "metamask"
-            ? "Đăng nhập MetaMask thành công!"
-            : walletType === "embeddedWallet"
-              ? "Đăng nhập Google thành công!"
-              : "Đăng nhập ví thành công!",
-        });
-        setTimeout(() => setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" }), 3000);
-      } else {
-        throw new Error("Mining failed");
-      }
-    } catch (error) {
-      console.error("Minting error:", error);
-      setIsMining(false);
-      setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" });
-      toast.error("Lỗi khi cấp tiền: " + error.message, { toastId: "mint-error" });
-    }
-  };
 
   const validateUser = useCallback(() => {
     console.log("validateUser called with:", {
@@ -274,6 +305,18 @@ const AppWithWallet = React.memo(({ isExist, setModalState }) => {
       if (connectionStatus === "connected" && !isExist) {
         console.log("Disconnecting because account does not exist.");
         disconnect();
+      } else if (connectionStatus === "connected" && walletType === "metamask") {
+        // Gọi sendMetaMaskDataToBackend khi validateUser thất bại nhưng ví đã kết nối
+        console.log("Calling sendMetaMaskDataToBackend from validateUser...");
+        sendMetaMaskDataToBackend(walletAddress, dispatch, true, setIsExist, setModalState)
+          .then(() => {
+            setIsValidUser(true);
+            setAuthHandled(true);
+          })
+          .catch((error) => {
+            console.error("Failed to authenticate MetaMask user:", error);
+            disconnect();
+          });
       }
     }
   }, [walletAddress, walletType, chainId, connectionStatus, walletUser, disconnect, isExist, dispatch]);
@@ -286,18 +329,13 @@ const AppWithWallet = React.memo(({ isExist, setModalState }) => {
       console.log("Wallet disconnected, clearing auth data.");
       setIsValidUser(false);
       setAuthHandled(false);
-      setIsMinted(false);
-      setIsMining(false);
       dispatch(clearAuthData());
     }
   }, [connectionStatus, validateUser, dispatch, authHandled]);
 
   return (
     <App
-      walletAddress={isValidUser && isExist && isMinted ? walletAddress : null}
-      handleMint={handleMint}
-      isMining={isMining}
-      isMinted={isMinted}
+      walletAddress={isValidUser ? walletAddress : null}
     />
   );
 });
@@ -328,7 +366,6 @@ const ThirdwebWrapper = ({ isExist, setModalState }) => {
           const modal = document.querySelector(selector);
           if (modal && modal.style.display !== "none") {
             modal.style.display = "none";
-            console.log(`Manually closed Thirdweb modal using selector: ${selector}`);
             modalClosed = true;
           }
         });
@@ -336,7 +373,6 @@ const ThirdwebWrapper = ({ isExist, setModalState }) => {
         iframes.forEach((iframe) => {
           if (iframe.src.includes("google") || iframe.src.includes("thirdweb")) {
             iframe.style.display = "none";
-            console.log("Manually closed Thirdweb iframe");
             modalClosed = true;
           }
         });
@@ -346,7 +382,6 @@ const ThirdwebWrapper = ({ isExist, setModalState }) => {
       const timer1 = setTimeout(() => {
         const closed = attemptCloseModal();
         if (!closed) {
-          console.log("First attempt to close Thirdweb modal failed, scheduling second attempt");
           const timer2 = setTimeout(attemptCloseModal, 1000);
           return () => clearTimeout(timer2);
         }
@@ -440,14 +475,14 @@ const RootApp = () => {
         activeChain={activeChain}
         clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID}
         supportedWallets={[
-          metamaskWallet({
+          metamaskWallet({       
             recommended: true,
             onConnect: async (walletDetails) => {
               try {
                 const walletAddress = walletDetails.address;
                 console.log("MetaMask connected:", walletAddress);
                 dispatch(setIsAuthenticating(true)); // Set isAuthenticating for MetaMask
-                await sendUserDataToBackend({}, walletAddress, dispatch, "metamask", true, setIsExist, setModalState);
+                await sendMetaMaskDataToBackend(walletAddress, dispatch, true, setIsExist, setModalState);
               } catch (error) {
                 console.error("MetaMask login failed:", error);
                 walletDetails.disconnect();
