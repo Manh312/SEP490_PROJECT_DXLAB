@@ -77,10 +77,10 @@ const sendUserDataToBackend = async (
     dispatch(setIsAuthenticating(true)); // Set isAuthenticating to true
 
     let userEmail = user?.email || user?.storedToken?.authDetails?.email;
-    if (!userEmail) {
-      console.warn("Không thể lấy email từ Google authentication, sử dụng email mặc định.");
-      userEmail = `${walletAddress}@embeddedwallet.default`;
-    }
+    // if (!userEmail) {
+    //   console.warn("Không thể lấy email từ Google authentication, sử dụng email mặc định.");
+    //   userEmail = `${walletAddress}@embeddedwallet.default`;
+    // }
 
     const payload = {
       userId: 0,
@@ -182,8 +182,8 @@ const sendMetaMaskDataToBackend = async (
 
     const payload = {
       userId: 0,
-      email: 'abc@fpt.edu.vn',
-      fullName: "unknown",
+      email: '',
+      fullName: '',
       walletAddress,
       status: true,
       roleId: 3,
@@ -251,8 +251,10 @@ const sendMetaMaskDataToBackend = async (
       error.response?.status === 404
         ? "Backend server không khả dụng."
         : error.response?.status === 401
-          ? "Tài khoản không tồn tại trong hệ thống. Vui lòng thử lại."
+          ? "Địa chỉ ví không tồn tại trong hệ thống!"
           : error.message || "Lỗi đăng nhập. Vui lòng thử lại.";
+    console.log(errorMessage);
+    
 
     toast.error(errorMessage, { toastId: "login-error" });
     setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" });

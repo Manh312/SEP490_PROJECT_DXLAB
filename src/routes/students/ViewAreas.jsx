@@ -184,21 +184,21 @@ const ViewAreas = () => {
       toast.error(`Slot ${slot.slotId} không khả dụng!`);
       return;
     }
-  
+
     const updatedDates = [...bookingDates];
     const currentBooking = updatedDates[bookingIndex];
     const currentSlots = Array.isArray(currentBooking.slots) ? currentBooking.slots : [];
-  
+
     const exists = currentSlots.some((s) => s.slotNumber === slotNumber);
-  
+
     const newSlots = exists
       ? currentSlots.filter((s) => s.slotNumber !== slotNumber)
       : [...currentSlots, { slotNumber: slot.slotNumber, slotId: slot.slotId }];
-  
+
     updatedDates[bookingIndex] = { ...currentBooking, slots: newSlots };
 
     setBookingDates(updatedDates);
-    dispatch(setSelectedTime(updatedDates));  
+    dispatch(setSelectedTime(updatedDates));
   };
   console.log(bookingDates);
 
@@ -377,11 +377,11 @@ const ViewAreas = () => {
             <p className="text-gray-500 text-lg">Không tìm thấy khu vực nào trong phòng này</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full max-w-7xl justify-items-center">
             {categoryInRoom.data.map((area, index) => (
               <div
                 key={index}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 flex flex-col"
+                className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 flex flex-col w-full sm:w-96"
               >
                 {renderImages(area.key.images, index)}
                 <div className="p-6 text-left flex flex-col flex-grow">

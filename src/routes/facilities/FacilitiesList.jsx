@@ -277,7 +277,7 @@ const FacilitiesList = () => {
                           {facility.batchNumber}
                         </td>
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.facilityTitle}</td>
-                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.cost}</td>
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.cost} DXL</td>
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                           {format(new Date(facility.importDate), "dd/MM/yyyy HH:mm:ss")}
                         </td>
@@ -285,7 +285,7 @@ const FacilitiesList = () => {
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                           {format(new Date(facility.expiredTime), "dd/MM/yyyy")}
                         </td>
-                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.remainingValue || 0}</td>
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.remainingValue || 0} DXL</td>
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                           <span className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-sm ${statusClass}`}>
                             {status}
@@ -336,7 +336,7 @@ const FacilitiesList = () => {
                         <span className="font-medium">Mô tả:</span> {facility.facilityDescription}
                       </p>
                       <p className="text-sm">
-                        <span className="font-medium">Giá:</span> {facility.cost}
+                        <span className="font-medium">Giá:</span> {facility.cost} DXL
                       </p>
                       <p className="text-sm">
                         <span className="font-medium">Ngày nhập:</span>{" "}
@@ -350,7 +350,7 @@ const FacilitiesList = () => {
                         {format(new Date(facility.expiredTime), "dd/MM/yyyy")}
                       </p>
                       <p className="text-sm">
-                        <span className="font-medium">Giá trị còn lại:</span> {facility.remainingValue || 0}
+                        <span className="font-medium">Giá trị còn lại:</span> {facility.remainingValue || 0} DXL
                       </p>
                       <p className="text-sm">
                         <span className="font-medium">Chất lượng:</span>{" "}

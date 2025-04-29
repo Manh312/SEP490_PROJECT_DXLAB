@@ -161,7 +161,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
   );
 
   return (
-    <div className="py-4 px-4 sm:px-6 lg:px-8 mb-10 bg-gray-100 min-h-screen">
+    <div className="py-4 px-4 sm:px-6 lg:px-8 mb-10 min-h-screen">
       <div className="w-full max-w-6xl mx-auto rounded-2xl border bg-white shadow-lg p-4 sm:p-6 lg:p-8 transition-all duration-300">
         {/* Header Section with Back Button, Add Facility, and Delete All Button */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-3">

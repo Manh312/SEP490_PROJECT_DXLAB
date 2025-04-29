@@ -152,7 +152,7 @@ const BookingDetail = () => {
             </div>
             <div>
               <p className="text-sm">Tổng Tiền</p>
-              <p className="text-lg font-medium text-green-500 dark:text-green-400">{booking.totalPrice} DXL</p>
+              <p className="text-lg font-medium">{booking.totalPrice} DXL</p>
             </div>
           </div>
         </div>
@@ -226,7 +226,7 @@ const BookingDetail = () => {
                 const target = booking.details.find(detail => detail.status === 0);
                 if (target) handleCheckin(target.bookingDetailId);
               }}
-              className="bg-blue-500 hover:bg-blue-600 cursor-pointer text-white px-5 py-2 rounded-lg transition-all"
+              className="bg-orange-500 hover:bg-orange-600 cursor-pointer text-white px-5 py-2 rounded-lg transition-all"
             >
               Check-in
             </button>

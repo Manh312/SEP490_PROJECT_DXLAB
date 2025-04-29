@@ -47,9 +47,9 @@ const SlotList = () => {
   const getStatusDisplayName = (status) => {
     switch (status) {
       case 1:
-        return "Hoạt động";
+        return "Bình thường";
       case 0:
-        return "Không hoạt động";
+        return "Sắp hết hạn";
       default:
         return "Không xác định";
     }
@@ -115,8 +115,8 @@ const SlotList = () => {
                 }`}
               >
                 <option value="all">Tất cả</option>
-                <option value="1">Hoạt động</option>
-                <option value="0">Không hoạt động</option>
+                <option value="1">Bình thường</option>
+                <option value="0">Sắp hết hạn</option>
               </select>
             </div>
           </div>
