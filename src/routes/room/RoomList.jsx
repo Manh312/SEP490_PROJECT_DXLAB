@@ -38,8 +38,8 @@ const RoomList = () => {
       if (!room || typeof room !== "object" || !room.roomId || !room.roomName) return false;
       const matchesStatus =
         statusFilter === "All" ||
-        (statusFilter === "Hoạt động" && room.status === 1) || // Updated to match AreaList logic
-        (statusFilter === "Không hoạt động" && room.status === 0);
+        (statusFilter === "Sẵn sàng" && room.status === 1) || // Updated to match AreaList logic
+        (statusFilter === "Không sẵn sàng" && room.status === 0);
       return matchesStatus;
     });
 
@@ -86,9 +86,9 @@ const RoomList = () => {
     switch (statusFilter) {
       case "All":
         return "bg-gray-100 text-gray-800";
-      case "Hoạt động":
+      case "Sẵn sàng":
         return "bg-green-100 text-green-800";
-      case "Không hoạt động":
+      case "Không sẵn sàng":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -243,8 +243,8 @@ const RoomList = () => {
                 className={`w-full sm:w-auto px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg text-sm sm:text-base ${getFilterBgClass()} focus:outline-none focus:border-orange-500 transition duration-150 ease-in-out`}
               >
                 <option value="All">Tất cả</option>
-                <option value="Hoạt động">Hoạt động</option>
-                <option value="Không hoạt động">Không hoạt động</option>
+                <option value="Sẵn sàng">Sẵn sàng</option>
+                <option value="Không sẵn sàng">Không sẵn sàng</option>
               </select>
             </div>
           </div>
@@ -270,6 +270,7 @@ const RoomList = () => {
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hình Ảnh</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Phòng</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Sức Chứa</th>
+                    {/* <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ngày Hết Hạn</th> */}
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Trạng Thái</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành Động</th>
                   </tr>
@@ -289,6 +290,9 @@ const RoomList = () => {
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {room.capacity} người
                       </td>
+                      {/* <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        {new Date(room.expiredTime).toLocaleDateString()}
+                      </td> */}
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${room.status === 0 ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
@@ -350,7 +354,7 @@ const RoomList = () => {
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${room.status ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
                         >
-                          {room.status ? "Đã xóa" : "Hoạt động"}
+                          {room.status ? "Đã xóa" : "Sẵn sàng"}
                         </span>
                       </div>
                       {renderImages(room.images, room.roomId)}
@@ -360,6 +364,9 @@ const RoomList = () => {
                       <p className="text-sm">
                         <span className="font-medium">Sức Chứa:</span> {room.capacity} người
                       </p>
+                      {/* <p className="text-sm">
+                        <span className="font-medium">Ngày Hết Hạn:</span> {new Date(room.expiredTime).toLocaleDateString()}
+                      </p> */}
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <button
                           onClick={() => navigate(`/dashboard/room/detail/${room.roomId}`)}

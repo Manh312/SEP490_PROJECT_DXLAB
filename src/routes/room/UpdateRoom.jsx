@@ -702,6 +702,9 @@ const UpdateRoom = () => {
                           Kích Thước
                         </th>
                         <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          Ngày Hết Hạn
+                        </th>
+                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Trạng Thái
                         </th>
                         <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -735,6 +738,9 @@ const UpdateRoom = () => {
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                             {area.size}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(area.expiredDate).toLocaleDateString()}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm">
                             <span
@@ -852,7 +858,10 @@ const UpdateRoom = () => {
                           <span className="font-medium">Kích Thước:</span> {area.size}
                         </p>
                         <p>
-                          <span className="font-medium">Trạng Thái:</span>{" "}
+                          <span className="font-medium">Ngày Hết Hạn:</span> {new Date(area.expiredDate).toLocaleDateString()}
+                        </p>
+                        <p>
+                          <span className="font-medium">Trạng Thái:</span>
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium ${area.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                               }`}

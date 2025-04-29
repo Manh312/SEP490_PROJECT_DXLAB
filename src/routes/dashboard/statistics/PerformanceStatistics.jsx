@@ -385,46 +385,23 @@ const PerformanceStatistics = ({
   const hasPerformanceData = processedRoomData.length > 0 && processedRoomData.some((entry) => entry.rate > 0);
   const hasDateData = transformedDateData.length > 0 && transformedDateData.some((entry) => entry.rate > 0);
 
-  // Pie chart data for date search (all rooms or specific room)
+  // Pie chart data for room search or default (not for date search)
   const utilizationPieData = useMemo(() => {
-    if (isDateSearchPerformed && selectedDate) {
-      if (selectedRoom) {
-        // Hiển thị tỷ lệ sử dụng của phòng được chọn
-        const selectedRoomData = utilizationRatesByDate.find(
-          (entry) => entry.roomId === parseInt(selectedRoom)
-        );
-        const rate = selectedRoomData ? selectedRoomData.rate * 100 : 0;
-        const roomName = selectedRoomData ? selectedRoomData.roomName : selectedRoomName || "Phòng đã chọn";
-        return [
-          { name: `Tỷ lệ sử dụng (${roomName})`, value: rate },
-          { name: `Chưa sử dụng (${roomName})`, value: 100 - rate },
-        ];
-      } else {
-        // Hiển thị tỷ lệ sử dụng của tất cả các phòng
-        return utilizationRatesByDate.map((entry) => ({
-          name: entry.roomName || "Unknown Room",
-          value: (entry.rate || 0) * 100,
-        }));
-      }
+    if (isRoomSearchPerformed) {
+      const avgRate = filteredRoomData.reduce((sum, entry) => sum + (entry.rate || 0) * 100, 0) / filteredRoomData.length;
+      return [
+        { name: "Tỷ lệ sử dụng", value: avgRate || 0 },
+        { name: "Chưa sử dụng", value: 100 - (avgRate || 0) },
+      ];
+    } else if (!isDateSearchPerformed) {
+      const avgRate = processedRoomData.reduce((sum, entry) => sum + (entry.rate || 0), 0) / processedRoomData.length;
+      return [
+        { name: "Tỷ lệ sử dụng", value: avgRate || 0 },
+        { name: "Chưa sử dụng", value: 100 - (avgRate || 0) },
+      ];
     }
-    // Trường hợp tìm kiếm theo phòng hoặc mặc định
-    const avgRate = isRoomSearchPerformed
-      ? filteredRoomData.reduce((sum, entry) => sum + (entry.rate || 0) * 100, 0) / filteredRoomData.length
-      : processedRoomData.reduce((sum, entry) => sum + (entry.rate || 0), 0) / processedRoomData.length;
-    return [
-      { name: "Tỷ lệ sử dụng", value: avgRate || 0 },
-      { name: "Chưa sử dụng", value: 100 - (avgRate || 0) },
-    ];
-  }, [
-    isDateSearchPerformed,
-    selectedDate,
-    selectedRoom,
-    utilizationRatesByDate,
-    selectedRoomName,
-    isRoomSearchPerformed,
-    filteredRoomData,
-    processedRoomData,
-  ]);
+    return [];
+  }, [isDateSearchPerformed, isRoomSearchPerformed, filteredRoomData, processedRoomData]);
 
   const processDateData = useMemo(() => {
     if (!hasDateData) return [];
@@ -567,77 +544,72 @@ const PerformanceStatistics = ({
           </div>
         </div>
 
-        <div className="flex flex-col items-center animate-fade-in">
-          <h3
-            className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"}`}
-          >
-            Hiệu suất sử dụng trung bình -{" "}
-            {isDateSearchPerformed && selectedDate
-              ? selectedRoom
-                ? `Phòng ${selectedRoomName || "đã chọn"} - Ngày ${selectedDate}`
-                : `Ngày ${selectedDate}`
-              : isRoomSearchPerformed && roomNameFromApi
-              ? `Phòng ${roomNameFromApi} - ${period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}`
-              : period === "năm"
-              ? `Năm ${year}`
-              : `Tháng ${month}/${year}`}
-          </h3>
-          {utilizationPieData.every((item) => item.value === 0) ? (
-            <p className={`text-center text-gray-500 dark:text-gray-400`}>
-              Không có dữ liệu hiệu suất cho{" "}
-              {isDateSearchPerformed && selectedDate
-                ? selectedRoom
-                  ? `phòng ${selectedRoomName || "đã chọn"} vào ngày ${selectedDate}`
-                  : `ngày ${selectedDate}`
-                : isRoomSearchPerformed && roomNameFromApi
-                ? `phòng ${roomNameFromApi}`
+        {/* Chỉ hiển thị PieChart khi không phải tìm kiếm theo ngày */}
+        {!isDateSearchPerformed && utilizationPieData.length > 0 && (
+          <div className="flex flex-col items-center animate-fade-in">
+            <h3
+              className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"}`}
+            >
+              Hiệu suất sử dụng trung bình -{" "}
+              {isRoomSearchPerformed && roomNameFromApi
+                ? `Phòng ${roomNameFromApi} - ${period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}`
                 : period === "năm"
-                ? `năm ${year}`
-                : `tháng ${month}/${year}`}
-            </p>
-          ) : (
-            <ResponsiveContainer width="100%" height={350}>
-              <PieChart>
-                <Pie
-                  data={utilizationPieData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={110}
-                  labelLine={true}
-                  label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
-                >
-                  {utilizationPieData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                      className="transition-all duration-300 hover:opacity-80"
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value) => `${value.toFixed(1)}%`}
-                  contentStyle={{
-                    backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
-                    color: theme === "dark" ? "#ffffff" : "#1f2937",
-                    borderRadius: "8px",
-                    border: `1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"}`,
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                    padding: "8px 12px",
-                  }}
-                />
-                <Legend
-                  verticalAlign="bottom"
-                  height={36}
-                  formatter={(value) => (
-                    <span className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>{value}</span>
-                  )}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+                ? `Năm ${year}`
+                : `Tháng ${month}/${year}`}
+            </h3>
+            {utilizationPieData.every((item) => item.value === 0) ? (
+              <p className={`text-center text-gray-500 dark:text-gray-400`}>
+                Không có dữ liệu hiệu suất cho{" "}
+                {isRoomSearchPerformed && roomNameFromApi
+                  ? `phòng ${roomNameFromApi}`
+                  : period === "năm"
+                  ? `năm ${year}`
+                  : `tháng ${month}/${year}`}
+              </p>
+            ) : (
+              <ResponsiveContainer width="100%" height={350}>
+                <PieChart>
+                  <Pie
+                    data={utilizationPieData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={110}
+                    labelLine={true}
+                    label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
+                  >
+                    {utilizationPieData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                        className="transition-all duration-300 hover:opacity-80"
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value) => `${value.toFixed(1)}%`}
+                    contentStyle={{
+                      backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
+                      color: theme === "dark" ? "#ffffff" : "#1f2937",
+                      borderRadius: "8px",
+                      border: `1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"}`,
+                      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                      padding: "8px 12px",
+                    }}
+                  />
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
+                    formatter={(value) => (
+                      <span className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>{value}</span>
+                    )}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        )}
 
         <div className="flex flex-col animate-fade-in">
           <h3

@@ -35,7 +35,7 @@ export const createAreaTypeCategory = createAsyncThunk(
       const response = await axiosInstance.post(`${API_URL}/newareatypecategory`, formData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error || "Lỗi khi tạo danh mục dịch vụ");
+      return rejectWithValue(error);
     }
   }
 );

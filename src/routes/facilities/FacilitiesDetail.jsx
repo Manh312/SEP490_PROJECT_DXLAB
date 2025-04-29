@@ -150,7 +150,7 @@ const FacilitiesDetail = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Giá Trị Còn Lại</p>
-                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.remainingValue || 0}</p>
+                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.remainingValue || 0} DXL</p>
                   </div>
                 </div>
               </motion.div>

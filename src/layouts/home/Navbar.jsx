@@ -384,7 +384,7 @@ const Navbar = () => {
         className="fixed inset-0 text-black flex items-center justify-center z-50"
         overlayClassName="fixed inset-0 bg-opacity-60"
       >
-        <div className=" p-6 rounded-lg shadow-xl w-full max-w-sm bg-white">
+        <div className=" p-6 rounded-lg h-42 shadow-xl w-full max-w-sm bg-white">
           <div className="flex flex-col items-center">
             <div className="w-10 h-10 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin mb-4"></div>
             <p className="text-lg font-semibold">Đang xác thực tài khoản...</p>
