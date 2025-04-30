@@ -85,7 +85,8 @@ export const updateAreaTypeCategoryImages = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi cập nhật ảnh");
+      console.log(error);
+      return rejectWithValue(error.message || "Lỗi khi cập nhật ảnh");
     }
   }
 );
