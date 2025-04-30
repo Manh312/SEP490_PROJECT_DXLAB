@@ -72,19 +72,14 @@ const Page = () => {
 
   // Process performanceData when utilizationRates or utilizationRatesByYear changes
   useEffect(() => {
-    // Hàm kiểm tra entry hợp lệ
-    const isValidEntry = (entry) => entry && entry.theDate && !isNaN(new Date(entry.theDate).getTime());
-
-    if (period === "năm" && Array.isArray(utilizationRatesByYear) && utilizationRatesByYear.length > 0) {
+    if (period === "năm" && utilizationRatesByYear.length > 0) {
       const monthlyPerformanceData = Array.from({ length: 12 }, (_, i) => ({
         name: vietnameseMonths[i],
       })).map((monthEntry, i) => {
         const entries = utilizationRatesByYear.filter((entry) => {
-          if (!isValidEntry(entry)) return false;
           const date = new Date(entry.theDate);
           return date.getMonth() === i;
         });
-
         const areaTotals = entries.reduce((acc, entry) => {
           const areaName = entry.areaName || "Unknown Area";
           const areaKey = areaName.replace(/\s+/g, "");
@@ -92,16 +87,17 @@ const Page = () => {
           if (!acc[areaKey]) {
             acc[areaKey] = { totalRate: 0, count: 0 };
           }
-          acc[areaKey].totalRate += rate * 100; // Chuyển đổi thành phần trăm
+          acc[areaKey].totalRate += rate * 100; // Convert to percentage
           acc[areaKey].count += 1;
           return acc;
         }, {});
-
         const entry = { name: monthEntry.name };
         Object.keys(areaTotals).forEach((key) => {
-          entry[key] = areaTotals[key].count > 0
-            ? Math.round((areaTotals[key].totalRate / areaTotals[key].count) * 100) / 100
-            : 0;
+          if (areaTotals[key].count > 0) {
+            entry[key] = Math.round((areaTotals[key].totalRate / areaTotals[key].count) * 100) / 100;
+          } else {
+            entry[key] = 0;
+          }
         });
         return entry;
       });
@@ -113,17 +109,15 @@ const Page = () => {
       setPerformanceMinY(Math.floor(minRate / 20) * 20);
       setPerformanceMaxY(Math.ceil(maxRate / 20) * 20);
       setPerformanceYTicks(generateYTicks(maxRate, minRate));
-    } else if (period === "tháng" && Array.isArray(utilizationRates) && utilizationRates.length > 0 && month && year) {
+    } else if (period === "tháng" && utilizationRates.length > 0 && month && year) {
       const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
       const dailyPerformance = Array.from({ length: daysInMonth }, (_, i) => ({
         name: (i + 1).toString().padStart(2, "0"),
       })).map((dayEntry) => {
         const entries = utilizationRates.filter((entry) => {
-          if (!isValidEntry(entry)) return false;
           const date = new Date(entry.theDate);
           return date.getDate().toString().padStart(2, "0") === dayEntry.name;
         });
-
         const areaTotals = entries.reduce((acc, entry) => {
           const areaName = entry.areaName || "Unknown Area";
           const areaKey = areaName.replace(/\s+/g, "");
@@ -131,16 +125,17 @@ const Page = () => {
           if (!acc[areaKey]) {
             acc[areaKey] = { totalRate: 0, count: 0 };
           }
-          acc[areaKey].totalRate += rate * 100; // Chuyển đổi thành phần trăm
+          acc[areaKey].totalRate += rate * 100; // Convert to percentage
           acc[areaKey].count += 1;
           return acc;
         }, {});
-
         const entry = { name: dayEntry.name };
         Object.keys(areaTotals).forEach((key) => {
-          entry[key] = areaTotals[key].count > 0
-            ? Math.round((areaTotals[key].totalRate / areaTotals[key].count) * 100) / 100
-            : 0;
+          if (areaTotals[key].count > 0) {
+            entry[key] = Math.round((areaTotals[key].totalRate / areaTotals[key].count) * 100) / 100;
+          } else {
+            entry[key] = 0;
+          }
         });
         return entry;
       });
