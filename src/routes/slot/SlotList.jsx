@@ -106,13 +106,12 @@ const SlotList = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => dispatch(setSlotStatusFilter(e.target.value))}
-                className={`w-full sm:w-auto px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:border-orange-500 transition duration-150 ease-in-out ${
-                  statusFilter === "1"
+                className={`w-full sm:w-auto px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg text-sm sm:text-base focus:outline-none focus:border-orange-500 transition duration-150 ease-in-out ${statusFilter === "1"
                     ? "bg-green-100 text-green-800"
                     : statusFilter === "0"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-gray-100 text-gray-800"
-                }`}
+                      ? "bg-red-100 text-red-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
               >
                 <option value="all">Tất cả</option>
                 <option value="1">Bình thường</option>
@@ -182,7 +181,11 @@ const SlotList = () => {
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{slot.startTime}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{slot.endTime}</td>
-                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">{new Date(slot.expiredTime).toLocaleDateString()}</td>
+                      <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        {new Date(slot.expiredTime).toLocaleDateString() === new Date('1/1/3000').toLocaleDateString()
+                          ? 'Không xác định'
+                          : new Date(slot.expiredTime).toLocaleDateString()}
+                      </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         <span
                           className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full font-medium text-xs sm:text-sm ${getStatusClass(slot.status)}`}

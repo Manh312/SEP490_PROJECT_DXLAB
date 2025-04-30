@@ -245,19 +245,9 @@ const sendMetaMaskDataToBackend = async (
 
     return result.data;
   } catch (error) {
-    console.error("Backend error (MetaMask):", error.message, error.response?.data);
+    toast.error(error.message, { toastId: "login-error" });
     setIsExist({ isExist: false });
-    const errorMessage =
-      error.response?.status === 404
-        ? "Backend server không khả dụng."
-        : error.response?.status === 401
-          ? "Địa chỉ ví không tồn tại trong hệ thống!"
-          : error.message || "Lỗi đăng nhập. Vui lòng thử lại.";
-    console.log(errorMessage);
-    
-
-    toast.error(errorMessage, { toastId: "login-error" });
-    setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" });
+        setModalState({ isOpen: false, isLoading: false, isMining: false, message: "" });
     throw error;
   }
 };

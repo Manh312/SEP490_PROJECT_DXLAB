@@ -6,6 +6,7 @@ import { fetchRoleByID } from "../../redux/slices/Authentication";
 import NotAuthorization from "../../layouts/home/NotAuthorization";
 import NotAuthenticate from "../../layouts/home/NotAuthenticate";
 import { FaSpinner } from "react-icons/fa";
+import { HomeContent } from "../../App";
 
 // Component Loading riêng biệt để tái sử dụng
 const LoadingSpinner = () => (
@@ -21,17 +22,19 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const dispatch = useDispatch();
 
   // Lấy dữ liệu từ Redux một cách chọn lọc
-  const { user, loading, roleName } = useSelector(
+  const { user, loading, roleName, isLoggingOut } = useSelector(
     (state) => ({
       user: state.auth.user,
       loading: state.auth.loading,
       roleName: state.auth.roleName,
+      isLoggingOut: state.auth.isLoggingOut,
     }),
     // So sánh shallow để tránh re-render không cần thiết
     (prev, next) => 
       prev.user === next.user && 
       prev.loading === next.loading && 
-      prev.roleName === next.roleName
+      prev.roleName === next.roleName &&
+      prev.isLoggingOut === next.isLoggingOut
   );
 
   // Chỉ fetch role khi cần thiết
@@ -69,6 +72,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   );
 
   if (isAuthLoading) return <LoadingSpinner />;
+  if (isLoggingOut) return <HomeContent/>;
   if (isDisconnected) return <NotAuthenticate />;
   if (isUnauthorized) return <NotAuthorization />;
 

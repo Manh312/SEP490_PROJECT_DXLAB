@@ -21,6 +21,7 @@ const authSlice = createSlice({
     user: null,
     roleName: null,
     isAuthenticating: false, // Add isAuthenticating to state
+    isLoggingOut: false,
     loading: false,
     error: null,
   },
@@ -33,11 +34,15 @@ const authSlice = createSlice({
       state.token = null;
       state.user = null;
       state.roleName = null;
+      state.isLoggingOut = false;
       // state.isAuthenticating = false; // Reset isAuthenticating on logout
     },
     setIsAuthenticating: (state, action) => {
       console.log("setIsAuthenticating called with:", action.payload);
       state.isAuthenticating = action.payload; // Action to set isAuthenticating
+    },
+    setIsLoggingOut(state, action) {
+      state.isLoggingOut = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -57,5 +62,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setAuthData, clearAuthData, setIsAuthenticating } = authSlice.actions;
+export const { setAuthData, clearAuthData, setIsLoggingOut, setIsAuthenticating } = authSlice.actions;
 export default authSlice.reducer;

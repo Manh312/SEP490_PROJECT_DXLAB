@@ -3,10 +3,10 @@ import { useState, useRef, useEffect } from "react";
 import logo from "../../assets/logo_images.png";
 import { navItems } from "../../constants";
 import { useTheme } from "../../hooks/use-theme";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ConnectWallet, useAddress, useContract, useDisconnect, useTokenBalance } from "@thirdweb-dev/react";
 import { useDispatch, useSelector } from "react-redux";
-import { clearAuthData, fetchRoleByID, setIsAuthenticating } from "../../redux/slices/Authentication";
+import { clearAuthData, fetchRoleByID, setIsAuthenticating, setIsLoggingOut } from "../../redux/slices/Authentication";
 import { FaUserCircle } from "react-icons/fa";
 import Notification from "../../hooks/use-notification";
 import Modal from "react-modal";
@@ -26,6 +26,7 @@ const Navbar = () => {
   const { user, isAuthenticating } = useSelector((state) => state.auth);
   const { contract } = useContract("0x004Bbe4D1C9951492336263C8BF96a6E822aeA73");
   const { data: balance } = useTokenBalance(contract, address);
+  const navigate = useNavigate();
 
   // Thiết lập app element cho modal
   useEffect(() => {
@@ -54,10 +55,12 @@ const Navbar = () => {
   // Handle wallet disconnect
   const handleDisconnect = async () => {
     try {
+      dispatch(setIsLoggingOut(true));
       await disconnect();
       dispatch(clearAuthData()); // clearAuthData resets isAuthenticating
       setDropdownOpen(false);
       setRoleName(null);
+      navigate("/");
     } catch (error) {
       console.error("Disconnect error:", error);
     }
