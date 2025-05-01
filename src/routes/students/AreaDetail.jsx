@@ -30,7 +30,7 @@ const AreaDetail = () => {
   const [groupAreas, setGroupAreas] = useState([]);
   const [imageIndex, setImageIndex] = useState(0);
   const today = getCurrentDate();
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   // Fetch category in room when selectedRoom changes
   useEffect(() => {
@@ -115,7 +115,6 @@ const AreaDetail = () => {
         return updatedSlots;
       });
     } catch (error) {
-      toast.error('Không thể tải danh sách slot!');
       datesToFetch.forEach((date) => {
         setFetchedSlots((prev) => ({ ...prev, [date]: [] }));
       });

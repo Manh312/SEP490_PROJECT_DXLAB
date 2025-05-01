@@ -81,7 +81,7 @@ const SlotList = () => {
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
             onClick={handleAddSlot}
           >
-            <PlusCircle size={20} /> Thêm Slot
+            <PlusCircle size={20} /> Thêm slot
           </button>
         </div>
 

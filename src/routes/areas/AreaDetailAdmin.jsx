@@ -12,7 +12,7 @@ const AreaDetailAdmin = () => {
 
   const [areaDetail, setAreaDetail] = useState(null);
   const [imageIndex, setImageIndex] = useState(0);
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   // Find the area detail
   useEffect(() => {

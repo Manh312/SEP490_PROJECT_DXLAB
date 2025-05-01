@@ -24,7 +24,7 @@ const RoomList = () => {
   const [roomName, setRoomName] = useState("");
   const [loadingId, setLoadingId] = useState(null);
   const roomsPerPage = 5;
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   const debouncedSearch = debounce((value) => {
     setSearchQuery(value);
@@ -214,7 +214,7 @@ const RoomList = () => {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
             >
               <PlusCircle className="h-5 w-5" />
-              <span className="hidden sm:inline">Thêm Phòng</span>
+              <span className="hidden sm:inline">Thêm phòng</span>
             </button>
           </div>
         </div>

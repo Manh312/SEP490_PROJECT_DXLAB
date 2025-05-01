@@ -13,7 +13,7 @@ const RoomDetail = () => {
 
   const { selectedRoom, loading, error } = useSelector((state) => state.rooms);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   useEffect(() => {
     dispatch(getRoomById(id));

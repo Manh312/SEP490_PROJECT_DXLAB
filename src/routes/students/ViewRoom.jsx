@@ -9,7 +9,7 @@ const ViewRoom = () => {
   const dispatch = useDispatch();
   const { rooms, loading, error } = useSelector((state) => state.rooms);
   const [imageIndices, setImageIndices] = useState({});
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   useEffect(() => {
     dispatch(fetchRooms());

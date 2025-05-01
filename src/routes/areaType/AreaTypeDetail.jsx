@@ -13,7 +13,7 @@ const AreaTypeDetail = () => {
 
   const { selectedAreaType, loading, error } = useSelector((state) => state.areaTypes);
   const [imageIndex, setImageIndex] = useState(0);
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   useEffect(() => {
     dispatch(fetchAreaTypeById(id));

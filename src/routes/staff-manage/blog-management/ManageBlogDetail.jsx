@@ -17,7 +17,7 @@ const ManageBlogDetail = () => {
   const { selectedBlog, loading, error } = useSelector((state) => state.blogs);
   const [status, setStatus] = useState("");
   const [imageIndex, setImageIndex] = useState(0);
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   useEffect(() => {
     if (id) {

@@ -27,7 +27,7 @@ const BlogListOfStaffDetail = () => {
   const [localLoading, setLocalLoading] = useState(false);
   const [blogIdToDelete, setBlogIdToDelete] = useState(null);
   const [blogTitle, setBlogTitle] = useState("");
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   useEffect(() => {
     if (id) {

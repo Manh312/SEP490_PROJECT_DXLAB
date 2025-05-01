@@ -13,6 +13,7 @@ import {
   LucideAreaChart,
   ChevronLeft,
   ChevronRight,
+  Tag,
 } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
@@ -29,7 +30,7 @@ const AreaTypeList = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [imageIndices, setImageIndices] = useState({}); // State to track current image index for each area type
   const areaTypesPerPage = 5;
-  const baseUrl = "https://localhost:9999"; // Base URL for image paths
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   // Debounced search function
   const debouncedSearch = debounce((value) => {
@@ -190,7 +191,7 @@ const AreaTypeList = () => {
         {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <LucideAreaChart className="h-6 w-6 text-orange-500" />
+            <Tag className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
               Danh Sách Kiểu Khu Vực
             </h2>
@@ -201,7 +202,7 @@ const AreaTypeList = () => {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
             >
               <PlusCircle className="h-5 w-5" />
-              <span className="hidden sm:inline">Thêm Kiểu Khu Vực</span>
+              <span className="hidden sm:inline">Thêm kiểu khu vực</span>
             </button>
           </div>
         </div>

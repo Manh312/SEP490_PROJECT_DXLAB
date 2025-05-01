@@ -18,7 +18,7 @@ const AreaList = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [imageIndices, setImageIndices] = useState({});
   const areasPerPage = 5;
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   useEffect(() => {
     dispatch(fetchAllAreaTypeCategories());
@@ -167,7 +167,7 @@ const AreaList = () => {
           <div className="flex items-center space-x-3 mb-4 sm:mb-0">
             <Map className="h-8 w-8 text-orange-500" />
             <h2 className="text-2xl sm:text-3xl font-bold">
-              Danh Sách dịch vụ
+              Danh Sách Dịch Vụ
             </h2>
           </div>
           <button

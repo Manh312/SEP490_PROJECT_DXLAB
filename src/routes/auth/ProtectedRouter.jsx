@@ -71,8 +71,9 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     [roleName, allowedRoles]
   );
 
+  // Prioritize isLoggingOut and home page
+  if (isLoggingOut || location.pathname === "/") return <HomeContent />;
   if (isAuthLoading) return <LoadingSpinner />;
-  if (isLoggingOut) return <HomeContent/>;
   if (isDisconnected) return <NotAuthenticate />;
   if (isUnauthorized) return <NotAuthorization />;
 

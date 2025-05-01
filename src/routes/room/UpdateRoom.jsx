@@ -7,15 +7,16 @@ import {
   updateRoomImages,
   deleteRoomImage,
 } from "../../redux/slices/Room";
-import { fetchAreaInRoomForManagement, addAreaToRoom, deleteArea } from "../../redux/slices/Area";
+import { fetchAreaInRoomForManagement, addAreaToRoom, deleteArea, setExpiredDate } from "../../redux/slices/Area";
 import {
   fetchAreaTypes,
   clearAreaSelections,
 } from "../../redux/slices/AreaType";
 import { toast } from "react-toastify";
-import { Image, FileText, Check, X, ArrowLeft, Plus, Trash, PlusCircle, House, Power, Users, Map } from "lucide-react";
+import { Image, FileText, Check, X, ArrowLeft, Plus, Trash, PlusCircle, House, Power, Users, Map, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { FaSpinner } from "react-icons/fa";
+import { Tooltip } from "react-tooltip";
 
 const BACKEND_URL = "https://localhost:9999";
 
@@ -51,6 +52,7 @@ const UpdateRoom = () => {
   const [areaIdToDelete, setAreaIdToDelete] = useState(null);
   const [areaName, setAreaName] = useState("");
   const [loadingId, setLoadingId] = useState(null);
+  const [loadingExpiryId, setLoadingExpiryId] = useState(null); // Trạng thái loading cho API setExpiredDate
 
   useEffect(() => {
     const roomId = parseInt(id);
@@ -321,6 +323,31 @@ const UpdateRoom = () => {
     }
   };
 
+  const handleSetExpiryDate = async (areaId) => {
+    if (!areaId) {
+      toast.error("Không tìm thấy ID khu vực để đặt ngày hết hạn!");
+      return;
+    }
+
+    setLoadingExpiryId(areaId);
+    try {
+      // Tự động đặt ngày hết hạn là 30 ngày kể từ hiện tại
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30); // Thêm 30 ngày
+      const formattedDate = expiryDate.toISOString();
+
+      const patchData = { expiredDate: formattedDate };
+      const response = await dispatch(setExpiredDate({ areaId, data: patchData })).unwrap();
+      toast.success(response.data.message);
+      dispatch(fetchAreaInRoomForManagement(parseInt(id)));
+    } catch (err) {
+      const errorMessage = err?.message || "Lỗi khi đặt ngày hết hạn";
+      toast.error(errorMessage);
+    } finally {
+      setLoadingExpiryId(null);
+    }
+  };
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -332,15 +359,7 @@ const UpdateRoom = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <p className="text-gray-600 text-lg animate-pulse">Đang tải dữ liệu...</p>
-      </div>
-    );
-  }
-
-  if (!selectedRoom) {
+  if (!selectedRoom ) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
         <p className="text-gray-600 text-lg animate-pulse">Đang tải dữ liệu...</p>
@@ -349,8 +368,9 @@ const UpdateRoom = () => {
   }
 
   return (
-    <div className="py-6 px-4 sm:px-6 lg:px-8 mb-10 min-h-screen">
-      <div className="w-full max-w-6xl mx-auto rounded-2xl border shadow-lg p-6 sm:p-8 transition-all duration-300">
+    <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
+      <Tooltip id="action-tooltip" />
+      <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-6 sm:mb-8">
           <div className="flex flex-row justify-center items-center p-4 gap-2">
@@ -676,38 +696,38 @@ const UpdateRoom = () => {
             ) : Array.isArray(areaInRoom) && areaInRoom.length > 0 ? (
               <>
                 {/* Table for Desktop */}
-                <div className="hidden sm:block shadow-lg rounded-lg border border-gray-200 overflow-x-auto">
-                  <table className="w-full divide-y divide-gray-200 table-auto">
-                    <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                <div className="hidden md:block border rounded-lg overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="border-b items-center bg-gray-400">
                       <tr>
-                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-md uppercase tracking-wide">
                           STT
                         </th>
-                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-md uppercase tracking-wide">
                           Tên Khu Vực
                         </th>
-                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Dịch Vụ
+                        <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-md uppercase tracking-wide">
+                          Kiểu Khu Vực
                         </th>
-                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                          Danh Mục
+                        <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-md uppercase tracking-wide">
+                        Dịch Vụ
                         </th>
-                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-md uppercase tracking-wide w-[30%]">
                           Tổng Kích Thước Bàn
                         </th>
-                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-md uppercase tracking-wide">
                           Số Lượng Ghế
                         </th>
-                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-md uppercase tracking-wide">
                           Kích Thước
                         </th>
-                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-md uppercase tracking-wide">
                           Ngày Hết Hạn
                         </th>
-                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-md uppercase tracking-wide">
                           Trạng Thái
                         </th>
-                        <th className="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-md uppercase tracking-wide">
                           Hành Động
                         </th>
                       </tr>
@@ -718,29 +738,31 @@ const UpdateRoom = () => {
                           key={area.areaId}
                           className={`transition-colors duration-200 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"} hover:bg-orange-50`}
                         >
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                             {index + 1}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                             {area.areaName}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                             {area.areaTypeName}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                             {area.categoryId === 1 ? "Khu vực cá nhân" : "Khu vực nhóm"}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                             {area.faciAmount} chỗ
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                             {area.faciAmountCh} ghế
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                             {area.size}
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(area.expiredDate).toLocaleDateString()}
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
+                            {new Date(area.expiredDate).toLocaleDateString() === new Date('1/1/3000').toLocaleDateString()
+                              ? 'Không xác định'
+                              : new Date(area.expiredDate).toLocaleDateString()}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm">
                             <span
@@ -750,18 +772,52 @@ const UpdateRoom = () => {
                               {area.status ? "Hoạt động" : "Không hoạt động"}
                             </span>
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleEditArea(area.areaId)}
+                                data-tooltip-id="action-tooltip"
+                                data-tooltip-content="Thêm thiết bị"
                                 className="inline-flex items-center justify-center bg-yellow-200 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg transition-colors w-10 h-10"
                               >
                                 <Plus className="w-4 h-4" />
                               </button>
                               <button
+                                onClick={() => handleSetExpiryDate(area.areaId)}
+                                data-tooltip-id="action-tooltip"
+                                data-tooltip-content="Đặt ngày hết hạn"
+                                disabled={loadingExpiryId === area.areaId}
+                                className="inline-flex items-center justify-center bg-blue-100 text-blue-700 hover:bg-blue-200 p-2 rounded-lg transition-colors w-10 h-10 disabled:bg-gray-300 disabled:text-center"
+                              >
+                                {loadingExpiryId === area.areaId ? (
+                                  <svg
+                                    className="animate-spin h-4 w-4 text-blue-700"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <circle
+                                      className="opacity-25"
+                                      cx="12"
+                                      cy="12"
+                                      r="10"
+                                      stroke="currentColor"
+                                      strokeWidth="4"
+                                    />
+                                    <path
+                                      className="opacity-75"
+                                      fill="currentColor"
+                                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    />
+                                  </svg>
+                                ) : (
+                                  <Calendar className="w-4 h-4" />
+                                )}
+                              </button>
+                              <button
                                 onClick={() => handleOpenDeleteModal(area.areaId, area.areaName)}
                                 disabled={loadingId === area.areaId}
-                                className="inline-flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors w-10 h-10 disabled:bg-gray-300 disabled:text-gray-500"
+                                data-tooltip-id="action-tooltip"
+                                data-tooltip-content="Xóa khu vực"
+                                className="inline-flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors w-10 h-10 disabled:bg-gray-300 disabled:text-center"
                               >
                                 {loadingId === area.areaId ? (
                                   <svg
@@ -808,13 +864,47 @@ const UpdateRoom = () => {
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleEditArea(area.areaId)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Thêm thiết bị"
                             className="inline-flex items-center justify-center bg-yellow-200 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg transition-colors w-8 h-8"
                           >
                             <Plus className="w-4 h-4" />
                           </button>
                           <button
+                            onClick={() => handleSetExpiryDate(area.areaId)}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Đặt ngày hết hạn"
+                            disabled={loadingExpiryId === area.areaId}
+                            className="inline-flex items-center justify-center bg-blue-100 text-blue-700 hover:bg-blue-200 p-2 rounded-lg transition-colors w-8 h-8 disabled:bg-gray-300 disabled:text-gray-500"
+                          >
+                            {loadingExpiryId === area.areaId ? (
+                              <svg
+                                className="animate-spin h-4 w-4 text-blue-700"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                />
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                />
+                              </svg>
+                            ) : (
+                              <Calendar className="w-4 h-4" />
+                            )}
+                          </button>
+                          <button
                             onClick={() => handleOpenDeleteModal(area.areaId, area.areaName)}
                             disabled={loadingId === area.areaId}
+                            data-tooltip-id="action-tooltip"
+                            data-tooltip-content="Xóa khu vực"
                             className="inline-flex items-center justify-center bg-red-100 text-red-700 hover:bg-red-200 p-2 rounded-lg transition-colors w-8 h-8 disabled:bg-gray-300 disabled:text-gray-500"
                           >
                             {loadingId === area.areaId ? (
@@ -858,7 +948,10 @@ const UpdateRoom = () => {
                           <span className="font-medium">Kích Thước:</span> {area.size}
                         </p>
                         <p>
-                          <span className="font-medium">Ngày Hết Hạn:</span> {new Date(area.expiredDate).toLocaleDateString()}
+                          <span className="font-medium">Ngày Hết Hạn:</span>
+                          {new Date(area.expiredDate).toLocaleDateString() === new Date('1/1/3000').toLocaleDateString()
+                            ? 'Không xác định'
+                            : new Date(area.expiredDate).toLocaleDateString()}
                         </p>
                         <p>
                           <span className="font-medium">Trạng Thái:</span>

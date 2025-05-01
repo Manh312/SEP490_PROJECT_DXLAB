@@ -7,7 +7,7 @@ import { useClickOutside } from "../hooks/use-click-outside";
 import { useEffect, useRef, useState } from "react";
 import Header from "./dashboard/Header";
 import { useAddress } from "@thirdweb-dev/react";
-
+import { useSelector } from "react-redux";
 
 const TIDIO_SCRIPT_URL = import.meta.env.VITE_TIDIO_SCRIPT_URL;
 
@@ -15,6 +15,7 @@ const Layout = () => {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith("/dashboard");
   const isManage = location.pathname.startsWith("/manage");
+  const { roleName } = useSelector((state) => state.auth);
 
   const isDesktopDevice = useMediaQuery("(min-width: 768px)");
   const [collapsed, setCollapsed] = useState(!isDesktopDevice);
@@ -44,18 +45,24 @@ const Layout = () => {
     }
   }, []);
 
+  const shouldShowSidebar =
+    address &&
+    ((isDashboard && roleName === "Admin") || (isManage && roleName === "Staff"));
 
   return (
     <div>
       <Navbar className={isDashboard || isManage ? "w-[200px]" : "w-full"} />
       <div className={`w-full ${isDashboard || isManage ? "" : ""} mx-auto`}>
-
         <div className="flex w-full">
-          {(isDashboard || isManage) && address && (
-            <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+          {shouldShowSidebar && (
+            <Sidebar
+              collapsed={collapsed}
+              setCollapsed={setCollapsed}
+              ref={sidebarRef}
+            />
           )}
           <div className="flex flex-col flex-1">
-            {(isDashboard || isManage) && address && (
+            {shouldShowSidebar && (
               <Header collapsed={collapsed} setCollapsed={setCollapsed} />
             )}
             <div className="flex-1">

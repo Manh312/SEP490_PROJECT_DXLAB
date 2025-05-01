@@ -39,7 +39,7 @@ const ViewAreas = () => {
   const [groupAreas, setGroupAreas] = useState([]);
   const [imageIndices, setImageIndices] = useState({});
   const today = getCurrentDate();
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   // Fetch room data khi id thay đổi
   useEffect(() => {

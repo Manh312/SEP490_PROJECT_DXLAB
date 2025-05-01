@@ -23,9 +23,9 @@ const Navbar = () => {
   const disconnect = useDisconnect();
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
-  const { user, isAuthenticating } = useSelector((state) => state.auth);
-  const { contract } = useContract("0x004Bbe4D1C9951492336263C8BF96a6E822aeA73");
-  const { data: balance } = useTokenBalance(contract, address);
+  const { user, isAuthenticating, isLoggingOut } = useSelector((state) => state.auth);
+  const { contract } = useContract(import.meta.env.VITE_DXLABCOINT_CONTRACT);
+    const { data: balance } = useTokenBalance(contract, address);
   const navigate = useNavigate();
 
   // Thiết lập app element cho modal
@@ -48,21 +48,25 @@ const Navbar = () => {
     if (!address) {
       setDropdownOpen(false);
       setRoleName(null);
-      dispatch(setIsAuthenticating(false)); // Reset isAuthenticating
+      dispatch(setIsAuthenticating(false));
     }
   }, [address, dispatch]);
 
   // Handle wallet disconnect
   const handleDisconnect = async () => {
     try {
-      dispatch(setIsLoggingOut(true));
-      await disconnect();
-      dispatch(clearAuthData()); // clearAuthData resets isAuthenticating
+      dispatch(setIsLoggingOut(true)); // Set isLoggingOut to true
+      navigate("/"); // Navigate to home immediately
+      await disconnect(); // Disconnect wallet
+      dispatch(clearAuthData()); // Clear Redux auth state
       setDropdownOpen(false);
       setRoleName(null);
-      navigate("/");
+      dispatch(setIsLoggingOut(false)); // Reset isLoggingOut
     } catch (error) {
       console.error("Disconnect error:", error);
+      dispatch(clearAuthData());
+      dispatch(setIsLoggingOut(false));
+      navigate("/"); // Ensure navigation on error
     }
   };
 
@@ -75,7 +79,6 @@ const Navbar = () => {
       setDropdownOpen(!dropdownOpen);
     }
   };
-
 
   // Determine login status
   const isLoggedIn = address && user && (user?.walletType !== "embeddedWallet" || (user?.storedToken?.authDetails?.email || user?.email)?.endsWith("@fpt.edu.vn"));
@@ -140,7 +143,7 @@ const Navbar = () => {
                       supportedTokens={{
                         [SEPOLIA_CHAIN_ID]: [
                           {
-                            address: "0x004Bbe4D1C9951492336263C8BF96a6E822aeA73",
+                            address: import.meta.env.VITE_DXLABCOINT_CONTRACT,
                             name: "DXLAB Coin",
                             symbol: "DXL",
                             icon: "https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png?1687143508",
@@ -195,7 +198,7 @@ const Navbar = () => {
                     supportedTokens={{
                       [SEPOLIA_CHAIN_ID]: [
                         {
-                          address: "0x004Bbe4D1C9951492336263C8BF96a6E822aeA73",
+                          address: import.meta.env.VITE_DXLABCOINT_CONTRACT,
                           name: "DXLAB Coin",
                           symbol: "DXL",
                           icon: "https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/0xc597d627a7E28B896d43a4eC50703f35Ba259378/logo.png",
@@ -254,7 +257,7 @@ const Navbar = () => {
                     supportedTokens={{
                       [SEPOLIA_CHAIN_ID]: [
                         {
-                          address: "0x004Bbe4D1C9951492336263C8BF96a6E822aeA73",
+                          address: import.meta.env.VITE_DXLABCOINT_CONTRACT,
                           name: "DXLAB Coin",
                           symbol: "DXL",
                           icon: "https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png?1687143508",
@@ -277,7 +280,7 @@ const Navbar = () => {
                   supportedTokens={{
                     [SEPOLIA_CHAIN_ID]: [
                       {
-                        address: "0x004Bbe4D1C9951492336263C8BF96a6E822aeA73",
+                        address: import.meta.env.VITE_DXLABCOINT_CONTRACT,
                         name: "DXLAB Coin",
                         symbol: "DXL",
                         icon: "https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/0xc597d627a7E28B896d43a4eC50703f35Ba259378/logo.png",
@@ -387,10 +390,25 @@ const Navbar = () => {
         className="fixed inset-0 text-black flex items-center justify-center z-50"
         overlayClassName="fixed inset-0 bg-opacity-60"
       >
-        <div className=" p-6 rounded-lg h-42 shadow-xl w-full max-w-sm bg-white">
+        <div className="p-6 rounded-lg h-42 shadow-xl w-full max-w-sm bg-white">
           <div className="flex flex-col items-center">
             <div className="w-10 h-10 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin mb-4"></div>
             <p className="text-lg font-semibold">Đang xác thực tài khoản...</p>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Logout Modal */}
+      <Modal
+        isOpen={isLoggingOut}
+        contentLabel="Logout Modal"
+        className="fixed inset-0 text-black flex items-center justify-center z-50"
+        overlayClassName="fixed inset-0 bg-opacity-60"
+      >
+        <div className="p-6 rounded-lg h-42 shadow-xl w-full max-w-sm bg-white">
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin mb-4"></div>
+            <p className="text-lg font-semibold">Đang đăng xuất...</p>
           </div>
         </div>
       </Modal>
