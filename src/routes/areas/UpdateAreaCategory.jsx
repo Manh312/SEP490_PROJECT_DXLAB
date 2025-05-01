@@ -21,7 +21,7 @@ const UpdateAreaCategory = () => {
   const { id } = useParams();
   const fileInputRef = useRef(null);
 
-  const { loading, areaTypeCategories, error } = useSelector((state) => state.areaCategory);
+  const { loading, areaTypeCategories } = useSelector((state) => state.areaCategory);
   const currentCategory = areaTypeCategories?.find(
     (cat) => cat?.categoryId === parseInt(id)
   );
@@ -239,16 +239,6 @@ const UpdateAreaCategory = () => {
       <div className="flex items-center justify-center py-6 mt-50 mb-200">
         <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
         <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <p className="text-red-500 text-base sm:text-lg font-normal text-center">
-          {error}
-        </p>
       </div>
     );
   }

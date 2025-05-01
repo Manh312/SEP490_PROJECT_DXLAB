@@ -13,7 +13,7 @@ import {format} from "date-fns";
 const BookingList = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  const { data: bookings, loading, error } = useSelector((state) => state.bookingHistory);
+  const { data: bookings, loading } = useSelector((state) => state.bookingHistory);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -65,8 +65,6 @@ const BookingList = () => {
     );
   }
 
-  if (error) return <p className="text-red-500">Lỗi: {error}</p>;
-
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
       <Tooltip id="action-tooltip" />
@@ -112,7 +110,7 @@ const BookingList = () => {
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Người Đặt</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ngày Đặt</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tổng Giá</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tổng Chi Tiết Đơn</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tổng Số Đơn</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành Động</th>
                   </tr>
                 </thead>
@@ -168,7 +166,7 @@ const BookingList = () => {
                       <span className="font-medium">Tổng Giá:</span> {booking.totalPrice} DXL
                     </p>
                     <p className="text-sm">
-                      <span className="font-medium">Tổng Chi Tiết Đơn:</span> {booking.totalBookingDetail}
+                      <span className="font-medium">Tổng Số Đơn:</span> {booking.totalBookingDetail}
                     </p>
                     <div className="flex justify-center mt-2">
                       <NavLink

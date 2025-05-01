@@ -26,7 +26,7 @@ const Payment = () => {
     console.log('Redux state.booking:', state.booking);
     return state.booking || {};
   });
-  const { selectedRoom, loading: roomsLoading, error: roomsError } = useSelector((state) => state.rooms);
+  const { selectedRoom, loading: roomsLoading } = useSelector((state) => state.rooms);
 
   useEffect(() => {
     dispatch(resetBookingStatus());
@@ -197,12 +197,9 @@ const Payment = () => {
     return <div className="p-6 text-center text-gray-600">Đang tải dữ liệu...</div>;
   }
 
-  if (roomsError) {
-    return <div className="p-6 text-center text-red-500">Lỗi: {roomsError}</div>;
-  }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+    <div className="mt-20 mb-20 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8">
         <h1 className="text-3xl font-bold text-gray-800 text-center mb-8">Xác Nhận Thanh Toán</h1>
         <div className="space-y-6">

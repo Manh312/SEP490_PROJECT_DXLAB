@@ -11,7 +11,7 @@ const RoomDetail = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { selectedRoom, loading, error } = useSelector((state) => state.rooms);
+  const { selectedRoom, loading } = useSelector((state) => state.rooms);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
@@ -39,15 +39,6 @@ const RoomDetail = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <p className="text-red-500 text-base sm:text-lg font-normal text-center">
-          Lỗi: {error}
-        </p>
-      </div>
-    );
-  }
 
   if (!selectedRoom) {
     return (

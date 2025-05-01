@@ -22,20 +22,6 @@ const BookingDetail = () => {
     dispatch(fetchBookingDetailById(id));
   }, [dispatch, id]);
 
-  // Định dạng ngày giờ
-  const formatDateTime = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      timeZone: "Asia/Ho_Chi_Minh",
-    });
-  };
-
   // Định dạng ngày hiện tại
   const currentDate = new Date().toLocaleDateString("vi-VN", {
     day: "2-digit",
@@ -187,11 +173,11 @@ const BookingDetail = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm">Thời Gian Check-in</p>
-                  <p className="text-base font-medium">{formatDateTime(detail.checkinTime)}</p>
+                  <p className="text-base font-medium">{format(new Date(detail.checkinTime), "dd/MM/yyyy HH:mm:ss")}</p>
                 </div>
                 <div>
                   <p className="text-sm">Thời Gian Check-out</p>
-                  <p className="text-base font-medium">{formatDateTime(detail.checkoutTime)}</p>
+                  <p className="text-base font-medium">{format(new Date(detail.checkoutTime), "dd/MM/yyyy HH:mm:ss")}</p>
                 </div>
                 <div>
                   <p className="text-sm">Vị Trí</p>

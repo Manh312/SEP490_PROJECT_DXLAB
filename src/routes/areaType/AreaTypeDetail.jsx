@@ -11,7 +11,7 @@ const AreaTypeDetail = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { selectedAreaType, loading, error } = useSelector((state) => state.areaTypes);
+  const { selectedAreaType, loading } = useSelector((state) => state.areaTypes);
   const [imageIndex, setImageIndex] = useState(0);
   const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
@@ -35,16 +35,6 @@ const AreaTypeDetail = () => {
       <div className="flex items-center justify-center py-6 mb-200">
         <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
         <p className="text-orange-500 text-base sm:text-lg font-medium">Đang tải dữ liệu...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <p className="text-red-500 text-base sm:text-lg font-normal text-center">
-          Lỗi: {error}
-        </p>
       </div>
     );
   }

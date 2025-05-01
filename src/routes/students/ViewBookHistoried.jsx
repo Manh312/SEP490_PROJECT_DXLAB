@@ -11,7 +11,7 @@ const ITEMS_PER_PAGE = 6;
 
 const ViewBookingHistory = () => {
   const dispatch = useDispatch();
-  const { bookings, error } = useSelector((state) => state.booking);
+  const { bookings } = useSelector((state) => state.booking);
 
   // Fetch data only once when component mounts if bookings is empty
   useEffect(() => {
@@ -88,24 +88,7 @@ const ViewBookingHistory = () => {
     currentPage * ITEMS_PER_PAGE
   );
 
-  // Display error if fetching fails
-  if (error) {
-    return (
-      <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">
-        <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-2">
-              <Users className="h-6 w-6 text-orange-500" />
-              <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">Lịch Sử Giao Dịch</h2>
-            </div>
-          </div>
-          <div className="text-center text-red-500">
-            Đã có lỗi xảy ra khi tải dữ liệu: {error.message || error}
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="py-4 px-2 sm:px-4 lg:px-8 mb-10">

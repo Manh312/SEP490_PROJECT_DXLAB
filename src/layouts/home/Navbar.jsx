@@ -94,24 +94,24 @@ const Navbar = () => {
         {/* Menu for desktop */}
         <ul className="hidden lg:flex space-x-12 text-xl">
           {navItems.map((item, index) => (
-            <li key={index}>
+            <li key={index} className="hover:text-orange-500">
               <Link to={item.href}>{item.label}</Link>
             </li>
           ))}
           {isLoggedIn && (
             <>
               {roleName !== "Admin" && roleName !== "Staff" && (
-                <li>
+                <li className="hover:text-orange-500">
                   <Link to="/rooms">Dịch vụ</Link>
                 </li>
               )}
               {roleName === "Admin" && (
-                <li>
+                <li className="hover:text-orange-500">
                   <Link to="/dashboard">Bảng điều khiển</Link>
                 </li>
               )}
               {roleName === "Staff" && (
-                <li>
+                <li className="hover:text-orange-500">
                   <Link to="/manage">Quản lý</Link>
                 </li>
               )}
@@ -293,7 +293,7 @@ const Navbar = () => {
           </div>
           <ul className="flex flex-col py-2 border-t">
             {navItems.map((item, index) => (
-              <li key={index}>
+              <li key={index} className="hover:text-orange-500">
                 <Link
                   to={item.href}
                   onClick={() => setMobileDrawerOpen(false)}
@@ -306,7 +306,7 @@ const Navbar = () => {
             {isLoggedIn && (
               <>
                 {roleName !== "Admin" && roleName !== "Staff" && (
-                  <li>
+                  <li className="hover:text-orange-500">
                     <Link
                       to="/rooms"
                       onClick={() => setMobileDrawerOpen(false)}
@@ -322,7 +322,7 @@ const Navbar = () => {
                   </li>
                 )}
                 {roleName === "Admin" && (
-                  <li>
+                  <li className="hover:text-orange-500">
                     <Link
                       to="/dashboard"
                       onClick={() => setMobileDrawerOpen(false)}
@@ -333,7 +333,7 @@ const Navbar = () => {
                   </li>
                 )}
                 {roleName === "Staff" && (
-                  <li>
+                  <li className="hover:text-orange-500">
                     <Link
                       to="/manage"
                       onClick={() => setMobileDrawerOpen(false)}
