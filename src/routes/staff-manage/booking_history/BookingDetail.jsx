@@ -5,6 +5,7 @@ import { checkinBookingDetail, checkoutBookingDetail, fetchBookingDetailById } f
 import { createReport } from "../../../redux/slices/Report";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { format } from "date-fns";
 
 const BookingDetail = () => {
   const { id } = useParams();
@@ -148,7 +149,7 @@ const BookingDetail = () => {
             </div>
             <div>
               <p className="text-sm">Ngày Đặt</p>
-              <p className="text-lg font-medium">{formatDateTime(booking.bookingCreatedDate)}</p>
+              <p className="text-lg font-medium">{format(new Date(booking.bookingCreatedDate), "dd/MM/yyyy HH:mm:ss")}</p>
             </div>
             <div>
               <p className="text-sm">Tổng Tiền</p>

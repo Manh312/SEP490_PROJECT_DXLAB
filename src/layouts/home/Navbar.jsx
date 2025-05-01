@@ -379,7 +379,7 @@ const Navbar = () => {
         </div>
 
         <div className="border-t p-4 text-xs">
-          <p>© 2025 DXLAB Co-Working Space</p>
+          <p>© 2025 DXLAB CoWorking Space</p>
         </div>
       </div>
 

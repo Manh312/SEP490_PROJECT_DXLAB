@@ -87,7 +87,7 @@ const Blog = () => {
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl md:text-3xl text-orange-500 text-center mb-6">DXLAB Blog</h1>
         <p className="text-center text-4xl font-bold mb-10">
-          Bài viết mới nhất tại DXLAB Co-working Space
+          Bài viết mới nhất tại DXLAB Coworking Space
         </p>
 
         <input

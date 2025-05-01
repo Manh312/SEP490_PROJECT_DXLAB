@@ -114,7 +114,7 @@ const ViewRoom = () => {
       <h2 className="text-4xl mb-10 tracking-wide">
         Danh sách phòng tại{" "}
         <span className="bg-gradient-to-r from-orange-500 to-orange-800 text-transparent bg-clip-text">
-          DXLAB Co-Working Space
+          DXLAB CoWorking Space
         </span>
       </h2>
 

@@ -493,11 +493,7 @@ const PerformanceStatistics = ({
                 }
               }}
               disabled={selectedRoom && showRoomFilter}
-              className={`w-full p-2 rounded-lg border ${
-                theme === "dark"
-                  ? "bg-gray-800 text-white border-gray-600"
-                  : "bg-white text-gray-900 border-gray-300"
-              } focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full p-2 rounded-lg border bg-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 selectedRoom && showRoomFilter ? "opacity-50 cursor-not-allowed" : ""
               }`}
             />

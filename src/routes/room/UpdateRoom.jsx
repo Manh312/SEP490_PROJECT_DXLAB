@@ -732,11 +732,10 @@ const UpdateRoom = () => {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className=" divide-y">
                       {areaInRoom.map((area, index) => (
                         <tr
                           key={area.areaId}
-                          className={`transition-colors duration-200 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"} hover:bg-orange-50`}
                         >
                           <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
                             {index + 1}

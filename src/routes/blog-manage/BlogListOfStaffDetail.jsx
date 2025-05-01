@@ -302,7 +302,7 @@ const BlogListOfStaffDetail = () => {
             {/* Right Section: Details */}
             <motion.div className="space-y-4 sm:space-y-6" variants={itemVariants}>
               <motion.div
-                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-300 ${
                   theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                 }`}
                 variants={itemVariants}
@@ -319,7 +319,7 @@ const BlogListOfStaffDetail = () => {
               </motion.div>
 
               <motion.div
-                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-300 ${
                   theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                 }`}
                 variants={itemVariants}
@@ -336,7 +336,7 @@ const BlogListOfStaffDetail = () => {
               </motion.div>
 
               <motion.div
-                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-300 ${
                   theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                 }`}
                 variants={itemVariants}
@@ -355,7 +355,7 @@ const BlogListOfStaffDetail = () => {
               </motion.div>
 
               <motion.div
-                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-300 ${
                   theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                 }`}
                 variants={itemVariants}
@@ -372,7 +372,7 @@ const BlogListOfStaffDetail = () => {
               </motion.div>
 
               <motion.div
-                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-300 ${
                   theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                 }`}
                 variants={itemVariants}
@@ -393,7 +393,7 @@ const BlogListOfStaffDetail = () => {
               </motion.div>
 
               <motion.div
-                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-300 ${
                   theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                 }`}
                 variants={itemVariants}

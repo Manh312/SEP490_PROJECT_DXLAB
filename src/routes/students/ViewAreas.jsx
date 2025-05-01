@@ -355,7 +355,7 @@ const ViewAreas = () => {
         <h1 className="text-4xl mb-10 tracking-wide">
           Danh sách khu vực tại{" "}
           <span className="bg-gradient-to-r from-orange-500 to-orange-800 text-transparent bg-clip-text">
-            DXLAB Co-working Space
+            DXLAB Coworking Space
           </span>
         </h1>
         <p className="text-gray-600 mb-10 max-w-2xl">

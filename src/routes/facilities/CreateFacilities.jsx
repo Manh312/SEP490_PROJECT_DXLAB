@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { Package, ArrowLeft, Box, Tag, DollarSign, Calendar, PlusCircle, Ruler, Armchair } from "lucide-react";
 import { addFacility, fetchFacilities } from "../../redux/slices/Facilities";
 import { motion } from "framer-motion";
+import { MdOutlineFormatListNumberedRtl } from "react-icons/md";
 
 const CreateFacilities = () => {
   const dispatch = useDispatch();
@@ -19,7 +20,7 @@ const CreateFacilities = () => {
     quantity: 0,
     size: 0,
     facilityCategory: 0, // 0: Bàn, 1: Ghế
-    importDate: new Date().toISOString().split("T")[0],
+    importDate: "",
   });
 
   const handleChange = (e) => {
@@ -152,7 +153,7 @@ const CreateFacilities = () => {
               >
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="bg-orange-100 rounded-full p-2">
-                    <Box className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                    <MdOutlineFormatListNumberedRtl className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
@@ -170,7 +171,6 @@ const CreateFacilities = () => {
                   </div>
                 </div>
               </motion.div>
-
 
               {/* Kích Thước (Size) */}
               <motion.div
@@ -192,7 +192,10 @@ const CreateFacilities = () => {
                       min={0}
                       step="0.01"
                       onChange={handleNumberChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      readOnly={facility.facilityCategory === "1"}
+                      className={`w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out ${
+                        facility.facilityCategory === "1" ? "bg-gray-100 cursor-not-allowed" : ""
+                      }`}
                       placeholder="Nhập kích thước"
                     />
                   </div>
@@ -213,17 +216,16 @@ const CreateFacilities = () => {
                       Ngày Nhập <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="date"
+                      type="datetime-local"
                       name="importDate"
                       value={facility.importDate}
                       onChange={handleChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 bg-gray-400 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
                       required
                     />
                   </div>
                 </div>
               </motion.div>
-
             </div>
 
             {/* Right Column */}
@@ -235,11 +237,11 @@ const CreateFacilities = () => {
               >
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="bg-orange-100 rounded-full p-2">
-                    <Tag className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+                    <Package className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Tiêu Đề Cơ Sở Vật Chất <span className="text-red-500">*</span>
+                      Tiêu Đề <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -253,6 +255,7 @@ const CreateFacilities = () => {
                   </div>
                 </div>
               </motion.div>
+
               {/* Loại Cơ Sở Vật Chất (Facility Category) */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -279,6 +282,7 @@ const CreateFacilities = () => {
                   </div>
                 </div>
               </motion.div>
+
               {/* Giá */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -311,6 +315,7 @@ const CreateFacilities = () => {
                   </div>
                 </div>
               </motion.div>
+
               {/* Ngày Hết Hạn */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -329,14 +334,12 @@ const CreateFacilities = () => {
                       name="expiredTime"
                       value={facility.expiredTime}
                       onChange={handleChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg bg-gray-400 border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
                       required
                     />
                   </div>
                 </div>
               </motion.div>
-
-
             </div>
           </div>
 

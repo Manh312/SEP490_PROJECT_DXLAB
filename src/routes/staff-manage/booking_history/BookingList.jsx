@@ -8,6 +8,7 @@ import { Tooltip } from "react-tooltip";
 import debounce from "lodash/debounce";
 import { FaSpinner } from "react-icons/fa";
 import Pagination from "../../../hooks/use-pagination"; // Import Pagination component
+import {format} from "date-fns";
 
 const BookingList = () => {
   const theme = useTheme();
@@ -122,7 +123,7 @@ const BookingList = () => {
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">DXL-{booking.bookingId}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{booking.userName}</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
-                        {new Intl.DateTimeFormat("vi-VN").format(new Date(booking.bookingCreatedDate))}
+                        {format(new Date(booking.bookingCreatedDate), "dd/MM/yyyy HH:mm:ss")}
                       </td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{booking.totalPrice} DXL</td>
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">{booking.totalBookingDetail}</td>
@@ -161,7 +162,7 @@ const BookingList = () => {
                     </p>
                     <p className="text-sm">
                       <span className="font-medium">Ngày Đặt:</span>{" "}
-                      {new Intl.DateTimeFormat("vi-VN").format(new Date(booking.bookingCreatedDate))}
+                      {format(new Date(booking.bookingCreatedDate), "dd/MM/yyyy HH:mm:ss")}
                     </p>
                     <p className="text-sm">
                       <span className="font-medium">Tổng Giá:</span> {booking.totalPrice} DXL
