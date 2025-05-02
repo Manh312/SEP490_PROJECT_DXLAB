@@ -42,10 +42,13 @@ const Pricing = () => {
           <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
             {/* Text */}
             <div className="flex-1">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                Khơi nguồn sáng tạo tại DXLAB
+              <h2 className="text-3xl sm:text-5xl lg:text-6xl text-gray-900 mb-6">
+                Khơi nguồn sáng 
+                <span className="bg-gradient-to-r from-orange-500 to-orange-800 text-transparent bg-clip-text">
+                {" "} tạo tại DXLAB
+                </span>
               </h2>
-              <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-8">
+              <p className="text-md text-neutral-500 leading-relaxed mb-8">
                 DXLAB Coworking Space là không gian lý tưởng dành cho sinh viên Đại học FPT, nơi bạn có thể học tập, làm việc nhóm, phát triển dự án và nghiên cứu. Với cơ sở vật chất hiện đại và môi trường mở, DXLAB mang đến không gian thoải mái để bạn thỏa sức sáng tạo và đạt hiệu quả cao nhất trong học tập. Dù bạn cần một góc yên tĩnh để tập trung hay một không gian năng động để thảo luận nhóm, DXLAB luôn sẵn sàng hỗ trợ bạn trên hành trình chinh phục tri thức.
               </p>
               <Link
@@ -89,10 +92,13 @@ const Pricing = () => {
             </div>
             {/* Text */}
             <div className="flex-1 order-0 lg:order-1">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-                Kết nối cộng đồng sinh viên FPT
+              <h2 className="text-3xl sm:text-5xl lg:text-6xl mb-6">
+                Kết nối cộng đồng 
+                <span className="bg-gradient-to-r from-orange-500 to-orange-800 text-transparent bg-clip-text">
+                {" "} sinh viên FPT
+                </span>
               </h2>
-              <p className="text-gray-300 text-base sm:text-lg leading-relaxed mb-8">
+              <p className="text-md text-neutral-500 leading-relaxed mb-8">
                 DXLAB không chỉ là nơi học tập mà còn là cầu nối để sinh viên Đại học FPT gắn kết với nhau. Tại đây, bạn có thể gặp gỡ những người bạn cùng chí hướng, chia sẻ ý tưởng và cùng nhau thực hiện các dự án sáng tạo. Với không gian được thiết kế để khuyến khích sự hợp tác, DXLAB giúp bạn mở rộng mạng lưới quan hệ, học hỏi từ cộng đồng và phát triển kỹ năng cần thiết cho tương lai.
               </p>
             </div>

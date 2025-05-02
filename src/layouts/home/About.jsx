@@ -89,8 +89,11 @@ const About = () => {
           className="lg:w-1/2 flex flex-col justify-center"
           variants={itemVariants}
         >
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
-            Hệ sinh thái Học tập, Làm việc & Sáng tạo DXLAB
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl mb-6 leading-tight">
+            Hệ sinh thái Học tập,
+            <span className="bg-gradient-to-r from-orange-500 to-orange-800 text-transparent bg-clip-text">
+              {" "}Làm việc & Sáng tạo DXLAB
+            </span>
           </h1>
           <p className="text-base sm:text-lg leading-relaxed mb-4">
             DXLAB là không gian lý tưởng dành cho sinh viên Đại học FPT, nơi bạn có thể học tập, làm việc nhóm, phát triển dự án và nghiên cứu. Chúng tôi mang đến môi trường hiện đại, tiện nghi và sáng tạo, giúp bạn tối ưu hóa hiệu quả học tập và phát triển kỹ năng.
@@ -123,8 +126,11 @@ const About = () => {
           <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8">
             {/* Text */}
             <div className="flex-1">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                Khu vực Cá nhân tại DXLAB
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl text-gray-900 mb-6">
+                Khu vực
+                <span className="bg-gradient-to-r from-orange-500 to-orange-800 text-transparent bg-clip-text">
+                  {" "}Cá nhân tại DXLAB
+                </span>
               </h2>
               <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-8">
                 Khu vực Cá nhân tại DXLAB Coworking Space là không gian lý tưởng dành cho sinh viên Đại học FPT, nơi bạn có thể tập trung học tập, nghiên cứu và phát triển các dự án cá nhân. Với cơ sở vật chất hiện đại và môi trường yên tĩnh, khu vực này giúp bạn đạt hiệu quả cao nhất trong học tập. DXLAB luôn sẵn sàng hỗ trợ bạn trên hành trình chinh phục tri thức.
@@ -164,8 +170,11 @@ const About = () => {
             </div>
             {/* Text */}
             <div className="flex-1 order-0 lg:order-1">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-                Khu vực Nhóm tại DXLAB
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl mb-6">
+                Khu vực 
+                <span className="bg-gradient-to-r from-orange-500 to-orange-800 text-transparent bg-clip-text">
+                  {" "}Nhóm tại DXLAB
+                </span>
               </h2>
               <p className="text-gray-300 text-base sm:text-lg leading-relaxed mb-8">
                 Khu vực Nhóm tại DXLAB không chỉ là nơi học tập mà còn là cầu nối để sinh viên Đại học FPT gắn kết với nhau. Tại đây, bạn có thể gặp gỡ những người bạn cùng chí hướng, thảo luận ý tưởng và cùng nhau thực hiện các dự án sáng tạo. Với không gian được thiết kế để khuyến khích sự hợp tác, DXLAB giúp bạn mở rộng mạng lưới quan hệ và phát triển kỹ năng nhóm.

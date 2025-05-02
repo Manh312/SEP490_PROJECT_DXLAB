@@ -227,8 +227,8 @@ const ViewBookedSeats = () => {
         initial="hidden"
         animate="visible"
       >
-        <h1 className="text-4xl font-bold text-center mb-12 tracking-tight">
-          Bảng Hiển Thị Vị Trí Ghế Ngồi Tại DXLAB
+        <h1 className="text-4xl text-center mb-12 tracking-tight">
+          Bảng Hiển Thị Vị Trí Ghế Ngồi Tại DXLAB - Phòng {selectedRoom?.roomName}
         </h1>
 
         {/* Date and Slot Selection */}
