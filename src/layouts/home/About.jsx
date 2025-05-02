@@ -75,7 +75,7 @@ const About = () => {
           variants={itemVariants}
         >
           <div
-            className="absolute top-0 left-0 w-3/4 h-full bg-red-500 rounded-full opacity-50"
+            className="absolute top-0 left-0 w-3/4 h-full bg-orange-500 rounded-full opacity-50"
             style={{ transform: 'translate(-30%, -30%)' }}
           ></div>
           <img
@@ -129,12 +129,6 @@ const About = () => {
               <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-8">
                 Khu vực Cá nhân tại DXLAB Coworking Space là không gian lý tưởng dành cho sinh viên Đại học FPT, nơi bạn có thể tập trung học tập, nghiên cứu và phát triển các dự án cá nhân. Với cơ sở vật chất hiện đại và môi trường yên tĩnh, khu vực này giúp bạn đạt hiệu quả cao nhất trong học tập. DXLAB luôn sẵn sàng hỗ trợ bạn trên hành trình chinh phục tri thức.
               </p>
-              <Link
-                to={`/rooms`}
-                className="inline-flex justify-center items-center px-6 py-3 bg-red-500 text-white font-semibold rounded-full hover:bg-red-600 transition duration-200"
-              >
-                KHÁM PHÁ DỊCH VỤ
-              </Link>
             </div>
             {/* Image */}
             <div className="flex-1">

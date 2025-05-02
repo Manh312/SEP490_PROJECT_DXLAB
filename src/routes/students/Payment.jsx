@@ -2,6 +2,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { createBooking, confirmBooking, resetBookingStatus } from '../../redux/slices/Booking';
+import { addNotification } from '../../redux/slices/Notification';
 import { useEffect, useState } from 'react';
 import { useAddress, useContract, useContractWrite, useContractRead, useBalance } from '@thirdweb-dev/react';
 import { ethers } from 'ethers';
@@ -162,10 +163,33 @@ const Payment = () => {
         toast.error('Số dư DXL không đủ để thực hiện thanh toán!');
         return;
       }
+
+      // Perform the transaction
       const tx = await transfer({
         args: [recipientAddress, amount],
       });
       console.log('Transaction successful:', tx);
+
+      // Fetch the updated balance after the transaction
+      let updatedBalance;
+      try {
+        updatedBalance = await contract.call('balanceOf', [address]);
+        console.log('Updated balance:', updatedBalance.toString());
+      } catch (error) {
+        console.error('Error fetching updated balance:', error);
+        updatedBalance = tokenBalance; // Fallback to previous balance if fetch fails
+      }
+
+      // Format updated balance
+      const formattedBalance = updatedBalance && decimals
+        ? ethers.utils.formatUnits(updatedBalance, decimals)
+        : 'N/A';
+
+      // Dispatch notification with updated balance
+      dispatch(addNotification({
+        message: `Thanh toán thành công ${totalPrice} DXL cho đơn đặt chỗ DXL-${bookingId}. Số dư hiện tại của bạn là: ${parseFloat(formattedBalance).toFixed(2)} DXL.`,
+        type: 'success',
+      }));
 
       // Sau khi trừ tiền thành công, cập nhật trạng thái và chuyển hướng
       toast.success('Thanh toán thành công!');
@@ -197,7 +221,6 @@ const Payment = () => {
     return <div className="p-6 text-center text-gray-600">Đang tải dữ liệu...</div>;
   }
 
-
   return (
     <div className="mt-20 mb-20 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8">
@@ -218,7 +241,7 @@ const Payment = () => {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="font-medium text-gray-600">Khu vực:</span>
+              <span className="font-medium text-gray-600">Kiểu khu vực:</span>
               <span className="text-gray-800">
                 {selectedArea?.name || selectedArea?.value?.[0]?.areaTypeName || 'Chưa chọn'}
               </span>
@@ -251,10 +274,10 @@ const Payment = () => {
               {isLoading ? 'Đang xử lý...' : 'Xác Nhận Thanh Toán'}
             </button>
             <Link
-              to={`/area/${selectedArea?.value?.[0]?.areaTypeId || selectedArea?.areaTypeId}`}
+              onClick={() => navigate(-1)}
               className="w-full py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-200 text-center font-semibold"
             >
-              Quay Lại Chọn Khu Vực
+              Quay Lại
             </Link>
           </div>
         </div>
@@ -275,19 +298,22 @@ const Payment = () => {
             <h2 className="text-2xl font-bold mb-4">Điều Khoản Thanh Toán</h2>
             <div className="max-h-96 overflow-y-auto space-y-4">
               <p>
-                <strong>1. Chấp Nhận Điều Khoản:</strong> Bằng việc nhấn "Đồng Ý và Thanh Toán", bạn đồng ý với các điều khoản và điều kiện được nêu dưới đây.
+                <strong>1. Đồng Ý Điều Khoản:</strong> Khi nhấn "Đồng Ý và Thanh Toán", bạn xác nhận đã đọc và đồng ý với các điều khoản được liệt kê dưới đây.
               </p>
               <p>
-                <strong>2. Thanh Toán:</strong> Tổng chi phí là {calculateTotalPrice()} DXL sẽ được thanh toán ngay sau khi xác nhận. Không hoàn tiền sau khi thanh toán hoàn tất.
+                <strong>2. Thông Tin Đặt Chỗ:</strong> Bạn có trách nhiệm đảm bảo tính chính xác của thông tin về phòng, khu vực và thời gian đặt chỗ.
               </p>
               <p>
-                <strong>3. Thông Tin Đặt Chỗ:</strong> Bạn chịu trách nhiệm đảm bảo thông tin phòng, khu vực, và thời gian đặt chỗ là chính xác.
+                <strong>3. Quy Định Về Thời Gian Đặt Chỗ:</strong> Mỗi khung giờ (slot) chỉ được đặt một lần cho một ngày cụ thể. Ví dụ, nếu bạn đã đặt slot 1 ngày 3/5, bạn không thể đặt lại slot 1 cho cùng ngày đó.
               </p>
               <p>
-                <strong>4. Hủy Đặt Chỗ:</strong> Đặt chỗ có thể bị hủy nếu vi phạm chính sách sử dụng của chúng tôi.
+                <strong>4. Yêu Cầu Số Dư:</strong> Ví của bạn phải có đủ số dư DXL tương ứng với tổng chi phí dịch vụ để giao dịch thanh toán được thực hiện thành công.
               </p>
               <p>
-                <strong>5. Trách Nhiệm:</strong> Chúng tôi không chịu trách nhiệm cho bất kỳ thiệt hại nào phát sinh từ việc sử dụng dịch vụ.
+                <strong>5. Thanh Toán:</strong> Tổng số tiền {calculateTotalPrice()} DXL sẽ được thanh toán ngay sau khi xác nhận. Mọi giao dịch đã hoàn tất không được hoàn tiền.
+              </p>
+              <p>
+                <strong>6. Trách Nhiệm:</strong> Chúng tôi không chịu trách nhiệm cho bất kỳ thiệt hại nào phát sinh từ việc sử dụng dịch vụ này.
               </p>
             </div>
             <div className="flex gap-4 mt-6">

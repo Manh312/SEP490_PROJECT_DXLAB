@@ -340,12 +340,12 @@ const AreaDetail = () => {
         <h2 className="text-xl font-bold mb-4">Đăng ký đặt chỗ</h2>
         <div className="mb-4">
           <p className="break-words text-base">
-            Bạn đã chọn khu vực: <strong>{selectedArea.key.title}</strong>
+            Bạn đã chọn dịch vụ: <strong>{selectedArea.key.title}</strong>
           </p>
         </div>
         {selectedArea.key.categoryId === 2 && groupAreas.length > 0 && (
           <div>
-            <label className="block font-medium mb-2">Chọn khu vực nhóm bạn mong muốn:</label>
+            <label className="block font-medium mb-2">Chọn kiểu khu vực nhóm bạn mong muốn:</label>
             <select
               value={selectedArea.value[0].areaTypeId}
               onChange={handleAreaChange}

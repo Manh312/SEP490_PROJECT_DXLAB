@@ -1,4 +1,4 @@
-import { ArmchairIcon, DoorOpenIcon } from 'lucide-react';
+import { ArmchairIcon, DoorOpenIcon, Tv } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import table_images from '../../assets/table.png';
 import { useEffect, useMemo, useState } from 'react';
@@ -216,19 +216,18 @@ const ViewBookedSeats = () => {
 
   const itemVariants = {
     hidden: { opacity: 0, scale: 0.95 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 },
-    },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
       <motion.div
         className="max-w-7xl mx-auto"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        <h1 className="text-4xl font-bold text-center mb-12 text-gray-900 tracking-tight">
+        <h1 className="text-4xl font-bold text-center mb-12 tracking-tight">
           Bảng Hiển Thị Vị Trí Ghế Ngồi Tại DXLAB
         </h1>
 
@@ -238,9 +237,7 @@ const ViewBookedSeats = () => {
           variants={itemVariants}
         >
           <div className="flex flex-col w-full sm:w-64">
-            <label className="text-sm font-semibold text-gray-700 mb-2">
-              Ngày đặt
-            </label>
+            <label className="text-sm font-semibold mb-2">Ngày đặt</label>
             <select
               value={selectedDate || ''}
               onChange={(e) => {
@@ -255,7 +252,7 @@ const ViewBookedSeats = () => {
                   dispatch(setSelectedSlot(uniqueSlots[0]));
                 }
               }}
-              className="border border-gray-300 rounded-lg px-4 py-2 bg-white shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition duration-150 ease-in-out"
+              className="border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition duration-150 ease-in-out"
             >
               {availableDates.length > 0 ? (
                 availableDates.map(date => (
@@ -269,16 +266,14 @@ const ViewBookedSeats = () => {
             </select>
           </div>
           <div className="flex flex-col w-full sm:w-64">
-            <label className="text-sm font-semibold text-gray-700 mb-2">
-              Slot đặt
-            </label>
+            <label className="text-sm font-semibold mb-2">Slot đặt</label>
             <select
               value={selectedSlot || ''}
               onChange={(e) => {
                 const newSlot = Number(e.target.value);
                 dispatch(setSelectedSlot(newSlot));
               }}
-              className="border border-gray-300 rounded-lg px-4 py-2 bg-white shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition duration-150 ease-in-out"
+              className="border border-gray-300 rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition duration-150 ease-in-out"
             >
               {availableSlots.length > 0 ? (
                 availableSlots.map(slot => (
@@ -344,37 +339,51 @@ const ViewBookedSeats = () => {
         {/* Main Content */}
         {!roomLoading && !bookingLoading && selectedRoom && hasAreas && (
           <motion.div
-            className="bg-white rounded-xl shadow-lg p-8 relative"
+            className="rounded-xl shadow-lg p-8 relative"
             variants={containerVariants}
           >
             {/* Door Indicator */}
             <motion.div
-              className="absolute top-4 left-4 flex items-center gap-2 bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-lg shadow-sm"
+              className="absolute top-4 left-4 flex items-center gap-2 bg-orange-100 text-orange-700 font-medium px-4 py-2 rounded-lg shadow-sm"
               variants={itemVariants}
             >
               <DoorOpenIcon className="w-5 h-5" />
               <span>Lối vào</span>
             </motion.div>
 
-            <div className="flex flex-col gap-12">
+            {/* Room Name */}
+            <motion.div
+              className="w-full flex flex-col items-center gap-6 pl-16 -mt-10"
+              variants={itemVariants}
+            >
+              <div className="flex items-center gap-2">
+                <Tv className="w-20 h-20 text-orange-500" />
+              </div>
+            </motion.div>
+
+            <div className="flex flex-col gap-12 mt-15">
               {/* Group Area Section - 5-Dot Dice Pattern */}
               {groupAreas.length > 0 && (
                 <motion.div
-                  className="flex flex-col items-center gap-6"
+                  className="flex items-start gap-6 relative"
                   variants={containerVariants}
                 >
-                  <h2 className="text-2xl font-semibold text-gray-900 border-b-2 border-orange-500 pb-2">
-                    Khu vực Nhóm
-                  </h2>
-                  <div className="relative w-full max-w-3xl flex justify-center">
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2">
+                    <h2
+                      className="text-2xl font-semibold text-orange-500"
+                      style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+                    >
+                      Khu vực Nhóm
+                    </h2>
+                  </div>
+                  <div className="w-full flex flex-col items-center gap-6 pl-16">
                     <div
-                      className={`grid gap-6 ${
-                        groupAreas.length === 1
+                      className={`grid gap-6 ${groupAreas.length === 1
                           ? 'grid-cols-1'
                           : groupAreas.length <= 3
-                          ? 'grid-cols-2'
-                          : 'grid-cols-3'
-                      } ${groupAreas.length >= 5 ? 'aspect-square' : ''} place-items-center`}
+                            ? 'grid-cols-2'
+                            : 'grid-cols-3'
+                        } ${groupAreas.length >= 5 ? 'aspect-square' : ''} place-items-center`}
                       style={{
                         maxWidth: groupAreas.length >= 5 ? '600px' : '800px',
                       }}
@@ -393,16 +402,13 @@ const ViewBookedSeats = () => {
                         return (
                           <motion.div
                             key={index}
-                            className={`bg-gray-50 border-2 border-gray-200 rounded-xl p-6 text-center flex flex-col justify-center items-center w-full h-48 shadow-md hover:shadow-lg transition-shadow duration-200 ${
-                              bookedSeats.groups.includes(groupAreaId)
+                            className={`aspect-square w-full max-w-[320px] bg-gray-50 border-2 border-gray-200 rounded-xl p-6 text-center flex flex-col justify-center items-center shadow-md hover:shadow-lg transition-shadow duration-200 ${bookedSeats.groups.includes(groupAreaId)
                                 ? 'bg-orange-500 text-white border-orange-600'
                                 : 'bg-gray-50 text-gray-800'
-                            } ${gridPosition}`}
+                              } ${gridPosition}`}
                             variants={itemVariants}
                           >
-                            <strong className="text-lg font-semibold">
-                              {area.areaName}
-                            </strong>
+                            <strong className="text-lg font-semibold">{area.areaName}</strong>
                             <span className="text-sm">{area.areaTypeName}</span>
                           </motion.div>
                         );
@@ -415,49 +421,55 @@ const ViewBookedSeats = () => {
               {/* Individual Area Section - Original Circular Design */}
               {individualArea && individualTables.length > 0 && (
                 <motion.div
-                  className="flex flex-col items-center gap-6"
+                  className="flex items-start gap-6 relative"
                   variants={containerVariants}
                 >
-                  <h2 className="text-2xl font-semibold text-gray-900 border-b-2 border-orange-500 pb-2">
-                    Khu vực Cá Nhân
-                  </h2>
-                  <h3 className="text-lg font-medium text-gray-700">{individualArea.areaName}</h3>
-                  <div className="flex flex-row flex-wrap justify-center gap-6">
-                    {individualTables.map((tableSeats, tableIndex) => (
-                      <motion.div
-                        key={`table-${tableIndex}`}
-                        className="relative flex justify-center items-center border-2 border-gray-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-200 w-full sm:w-[320px]"
-                        style={{ height: '320px' }}
-                        variants={itemVariants}
-                      >
-                        <img
-                          src={table_images}
-                          alt="Table"
-                          className="absolute w-32 h-32 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-80"
-                        />
-                        {tableSeats.map((seat, index) => {
-                          const angle = (360 / tableSeats.length) * index;
-                          const radius = 130;
-                          const x = Math.cos(angle * (Math.PI / 180)) * radius;
-                          const y = Math.sin(angle * (Math.PI / 180)) * radius;
-                          const position = seatToPositionMap[seat];
-                          return (
-                            <span
-                              key={seat}
-                              className={`absolute w-12 h-12 flex flex-col items-center justify-center rounded-full shadow-sm transition-transform duration-200 hover:scale-110 ${
-                                bookedSeats.individual.includes(seat)
-                                  ? 'bg-orange-500 text-white'
-                                  : 'bg-gray-300 text-gray-700'
-                              }`}
-                              style={{ transform: `translate(${x}px, ${y}px)` }}
-                            >
-                              <ArmchairIcon className="w-5 h-5" />
-                              <span className="text-xs font-semibold mt-0.5">{position}</span>
-                            </span>
-                          );
-                        })}
-                      </motion.div>
-                    ))}
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2">
+                    <h2
+                      className="text-2xl font-semibold text-orange-500"
+                      style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}
+                    >
+                      Khu vực Cá Nhân
+                    </h2>
+                  </div>
+                  <div className="w-full flex flex-col items-center gap-6 pl-16">
+                    <h3 className="text-lg font-medium text-gray-700">{individualArea.areaName}</h3>
+                    <div className="flex flex-row flex-wrap justify-center gap-6">
+                      {individualTables.map((tableSeats, tableIndex) => (
+                        <motion.div
+                          key={`table-${tableIndex}`}
+                          className="relative flex justify-center items-center border-2 border-gray-200 rounded-xl p-6 shadow-md hover:shadow-lg transition-shadow duration-200 w-full sm:w-[320px]"
+                          style={{ height: '320px' }}
+                          variants={itemVariants}
+                        >
+                          <img
+                            src={table_images}
+                            alt="Table"
+                            className="absolute w-32 h-32 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-80"
+                          />
+                          {tableSeats.map((seat, index) => {
+                            const angle = (360 / tableSeats.length) * index;
+                            const radius = 130;
+                            const x = Math.cos(angle * (Math.PI / 180)) * radius;
+                            const y = Math.sin(angle * (Math.PI / 180)) * radius;
+                            const position = seatToPositionMap[seat];
+                            return (
+                              <span
+                                key={seat}
+                                className={`absolute w-12 h-12 flex flex-col items-center justify-center rounded-full shadow-sm transition-transform duration-200 hover:scale-110 ${bookedSeats.individual.includes(seat)
+                                    ? 'bg-orange-500 text-white'
+                                    : 'bg-gray-300 text-gray-700'
+                                  }`}
+                                style={{ transform: `translate(${x}px, ${y}px)` }}
+                              >
+                                <ArmchairIcon className="w-5 h-5" />
+                                <span className="text-xs font-semibold mt-0.5">{position}</span>
+                              </span>
+                            );
+                          })}
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
                 </motion.div>
               )}

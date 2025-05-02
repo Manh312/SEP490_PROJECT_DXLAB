@@ -50,7 +50,7 @@ const Pricing = () => {
               </p>
               <Link
                 to={`/rooms`}
-                className="inline-flex justify-center items-center px-6 py-3 bg-red-500 text-white font-semibold rounded-full hover:bg-red-600 transition duration-200"
+                className="inline-flex justify-center items-center px-6 py-3 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 transition duration-200"
               >
                 KHÁM PHÁ DỊCH VỤ
               </Link>
