@@ -50,21 +50,9 @@ const UpdateSlot = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const trimmedStartTime = formData.startTime.trim();
-    const trimmedEndTime = formData.endTime.trim();
-
-    if (!trimmedStartTime) {
-      toast.error("Thời gian bắt đầu là bắt buộc!");
-      return;
-    }
-    if (!trimmedEndTime) {
-      toast.error("Thời gian kết thúc là bắt buộc!");
-      return;
-    }
-
     const slotData = {
-      startTime: trimmedStartTime,
-      endTime: trimmedEndTime,
+      startTime: formData.startTime,
+      endTime: formData.endTime,
       status: formData.status,
     };
 
@@ -122,7 +110,7 @@ const UpdateSlot = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Left Column */}
             <div className="space-y-4 sm:space-y-6">
-              {/* Thời Gian Bắt Đầu */}
+              {/* Thời Gian Bắt Đầu (Read-only) */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
                 variants={itemVariants}
@@ -133,21 +121,16 @@ const UpdateSlot = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Thời Gian Bắt Đầu <span className="text-red-500">*</span>
+                      Thời Gian Bắt Đầu
                     </label>
-                    <input
-                      type="time"
-                      name="startTime"
-                      value={formData.startTime}
-                      onChange={handleInputChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                      required
-                    />
+                    <div className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal bg-gray-100">
+                      {formData.startTime}
+                    </div>
                   </div>
                 </div>
               </motion.div>
 
-              {/* Thời Gian Kết Thúc */}
+              {/* Thời Gian Kết Thúc (Read-only) */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
                 variants={itemVariants}
@@ -158,16 +141,11 @@ const UpdateSlot = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Thời Gian Kết Thúc <span className="text-red-500">*</span>
+                      Thời Gian Kết Thúc
                     </label>
-                    <input
-                      type="time"
-                      name="endTime"
-                      value={formData.endTime}
-                      onChange={handleInputChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
-                      required
-                    />
+                    <div className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal bg-gray-100">
+                      {formData.endTime}
+                    </div>
                   </div>
                 </div>
               </motion.div>

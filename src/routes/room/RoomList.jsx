@@ -19,12 +19,12 @@ const RoomList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [imageIndices, setImageIndices] = useState({});
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State for modal
-  const [roomIdToDelete, setRoomIdToDelete] = useState(null); // Store roomId to delete
-  const [roomName, setRoomName] = useState(""); // Store room name for modal
-  const [loadingId, setLoadingId] = useState(null); // Track loading state for delete
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [roomIdToDelete, setRoomIdToDelete] = useState(null);
+  const [roomName, setRoomName] = useState("");
+  const [loadingId, setLoadingId] = useState(null);
   const roomsPerPage = 5;
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   const debouncedSearch = debounce((value) => {
     setSearchQuery(value);
@@ -38,8 +38,8 @@ const RoomList = () => {
       if (!room || typeof room !== "object" || !room.roomId || !room.roomName) return false;
       const matchesStatus =
         statusFilter === "All" ||
-        (statusFilter === "Hoạt động" && !room.status) ||
-        (statusFilter === "Đã xóa" && room.status);
+        (statusFilter === "Sẵn sàng" && room.status === 1) || // Updated to match AreaList logic
+        (statusFilter === "Không sẵn sàng" && room.status === 0);
       return matchesStatus;
     });
 
@@ -86,9 +86,9 @@ const RoomList = () => {
     switch (statusFilter) {
       case "All":
         return "bg-gray-100 text-gray-800";
-      case "Hoạt động":
+      case "Sẵn sàng":
         return "bg-green-100 text-green-800";
-      case "Đã xóa":
+      case "Không sẵn sàng":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -214,13 +214,15 @@ const RoomList = () => {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
             >
               <PlusCircle className="h-5 w-5" />
-              <span className="hidden sm:inline">Thêm Phòng</span>
+              <span className="hidden sm:inline">Thêm phòng</span>
             </button>
           </div>
         </div>
 
-        <div className="mb-6 p-4 rounded-lg shadow-sm">
+        {/* Updated Search and Filter Section to match AreaList */}
+        <div className="mb-6 p-4 rounded-lg shadow-sm border border-gray-200">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+            {/* Search Input */}
             <div className="relative w-full sm:w-1/2 lg:w-1/3">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input
@@ -231,17 +233,18 @@ const RoomList = () => {
               />
             </div>
 
+            {/* Filter Dropdown */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Filter className="h-5 w-5 text-orange-500" />
+              <Filter className="h-5 w-5 text-orange-600" />
               <span className="font-medium text-sm sm:text-base">Lọc theo trạng thái:</span>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className={`w-full sm:w-auto px-3 py-2 border rounded-lg text-sm sm:text-base ${getFilterBgClass()} shadow-sm`}
+                className={`w-full sm:w-auto px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg text-sm sm:text-base ${getFilterBgClass()} focus:outline-none focus:border-orange-500 transition duration-150 ease-in-out`}
               >
                 <option value="All">Tất cả</option>
-                <option value="Hoạt động">Hoạt động</option>
-                <option value="Đã xóa">Đã xóa</option>
+                <option value="Sẵn sàng">Sẵn sàng</option>
+                <option value="Không sẵn sàng">Không sẵn sàng</option>
               </select>
             </div>
           </div>
@@ -267,6 +270,7 @@ const RoomList = () => {
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hình Ảnh</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tên Phòng</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Sức Chứa</th>
+                    {/* <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ngày Hết Hạn</th> */}
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Trạng Thái</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Hành Động</th>
                   </tr>
@@ -286,6 +290,9 @@ const RoomList = () => {
                       <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                         {room.capacity} người
                       </td>
+                      {/* <td className="px-2 py-3 md:px-3 md:py-4 text-center">
+                        {new Date(room.expiredTime).toLocaleDateString()}
+                      </td> */}
                       <td className="px-2 py-3 md:px-4 md:py-4 text-center">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full font-normal text-xs md:text-sm ${room.status === 0 ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
@@ -347,7 +354,7 @@ const RoomList = () => {
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-normal ${room.status ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"}`}
                         >
-                          {room.status ? "Đã xóa" : "Hoạt động"}
+                          {room.status ? "Đã xóa" : "Sẵn sàng"}
                         </span>
                       </div>
                       {renderImages(room.images, room.roomId)}
@@ -357,6 +364,9 @@ const RoomList = () => {
                       <p className="text-sm">
                         <span className="font-medium">Sức Chứa:</span> {room.capacity} người
                       </p>
+                      {/* <p className="text-sm">
+                        <span className="font-medium">Ngày Hết Hạn:</span> {new Date(room.expiredTime).toLocaleDateString()}
+                      </p> */}
                       <div className="flex flex-col sm:flex-row gap-2 mt-2">
                         <button
                           onClick={() => navigate(`/dashboard/room/detail/${room.roomId}`)}
@@ -415,7 +425,7 @@ const RoomList = () => {
             >
               <h2 className="text-xl font-semibold text-red-600 mb-4">Xác nhận xóa phòng</h2>
               <p className="text-gray-600 mb-6">
-                Bạn có chắc chắn muốn xóa phòng <strong>"{roomName}"</strong> không? Hành động này không thể hoàn tác.
+                Bạn có chắc chắn muốn xóa phòng <strong>{roomName}</strong> không? Hành động này không thể hoàn tác.
               </p>
               <div className="flex justify-end gap-4">
                 <button

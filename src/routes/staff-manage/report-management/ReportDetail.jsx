@@ -11,7 +11,7 @@ import { fetchReportById } from "../../../redux/slices/Report";
 const ReportDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const { currentReport, loading, error } = useSelector((state) => state.reports);
+  const { currentReport, loading } = useSelector((state) => state.reports);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -56,20 +56,11 @@ const ReportDetail = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex justify-center items-center py-6 min-h-screen px-4">
-        <p className="text-red-500 text-base sm:text-lg font-normal text-center">
-          Lỗi: {error}
-        </p>
-      </div>
-    );
-  }
 
   if (!currentReport) {
     return (
       <div className="flex justify-center items-center py-6 min-h-screen px-4">
-        <p className="text-red-500 text-base sm:text-lg font-normal text-center">
+        <p className="text-orange-500 text-base sm:text-lg font-normal text-center">
           Không tìm thấy báo cáo!
         </p>
       </div>

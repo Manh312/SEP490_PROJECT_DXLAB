@@ -7,16 +7,13 @@ const notificationSlice = createSlice({
   },
   reducers: {
     addNotification: (state, action) => {
-      state.notifications = [
-        {
-          id: action.payload.id,
-          message: action.payload.message,
-          type: action.payload.type,
-          timestamp: action.payload.timestamp,
-          isRead: false,
-        },
-        ...state.notifications,
-      ];
+      state.notifications.push({
+        id: Date.now().toString(), // Simple unique ID
+        message: action.payload.message,
+        type: action.payload.type || 'success',
+        timestamp: new Date().toISOString(),
+        isRead: false,
+      });
     },
     markAsRead: (state, action) => {
       state.notifications = state.notifications.map((notif) =>

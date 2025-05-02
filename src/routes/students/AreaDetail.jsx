@@ -30,7 +30,7 @@ const AreaDetail = () => {
   const [groupAreas, setGroupAreas] = useState([]);
   const [imageIndex, setImageIndex] = useState(0);
   const today = getCurrentDate();
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   // Fetch category in room when selectedRoom changes
   useEffect(() => {
@@ -115,7 +115,6 @@ const AreaDetail = () => {
         return updatedSlots;
       });
     } catch (error) {
-      toast.error('Không thể tải danh sách slot!');
       datesToFetch.forEach((date) => {
         setFetchedSlots((prev) => ({ ...prev, [date]: [] }));
       });
@@ -152,28 +151,31 @@ const AreaDetail = () => {
     }
   }, [selectedTime]);
 
-  const handleSlotChange = (bookingIndex, slotId) => {
+  const handleSlotChange = (bookingIndex, slotNumber) => {
     const date = bookingDates[bookingIndex].date;
     const slotsForDate = fetchedSlots[date] || [];
-    const slot = slotsForDate.find((s) => s.slotId === slotId);
+    const slot = slotsForDate.find((s) => s.slotNumber === slotNumber);
     if (!slot) return;
 
     if (slot.availableSlot === 0) {
       toast.error(`Slot ${slot.slotId} không khả dụng!`);
       return;
     }
-
+  
     const updatedDates = [...bookingDates];
     const currentBooking = updatedDates[bookingIndex];
     const currentSlots = Array.isArray(currentBooking.slots) ? currentBooking.slots : [];
-
-    const newSlots = currentSlots.includes(slotId)
-      ? currentSlots.filter((s) => s !== slotId)
-      : [...currentSlots, slotId];
-
+  
+    const exists = currentSlots.some((s) => s.slotNumber === slotNumber);
+  
+    const newSlots = exists
+      ? currentSlots.filter((s) => s.slotNumber !== slotNumber)
+      : [...currentSlots, { slotNumber: slot.slotNumber, slotId: slot.slotId }];
+  
     updatedDates[bookingIndex] = { ...currentBooking, slots: newSlots };
+
     setBookingDates(updatedDates);
-    dispatch(setSelectedTime(updatedDates));
+    dispatch(setSelectedTime(updatedDates));  
   };
 
   const handleDateChange = (index, value) => {
@@ -338,12 +340,12 @@ const AreaDetail = () => {
         <h2 className="text-xl font-bold mb-4">Đăng ký đặt chỗ</h2>
         <div className="mb-4">
           <p className="break-words text-base">
-            Bạn đã chọn khu vực: <strong>{selectedArea.key.title}</strong>
+            Bạn đã chọn dịch vụ: <strong>{selectedArea.key.title}</strong>
           </p>
         </div>
         {selectedArea.key.categoryId === 2 && groupAreas.length > 0 && (
           <div>
-            <label className="block font-medium mb-2">Chọn khu vực nhóm bạn mong muốn:</label>
+            <label className="block font-medium mb-2">Chọn kiểu khu vực nhóm bạn mong muốn:</label>
             <select
               value={selectedArea.value[0].areaTypeId}
               onChange={handleAreaChange}
@@ -387,9 +389,9 @@ const AreaDetail = () => {
                       >
                         <input
                           type="checkbox"
-                          value={slot.slotId}
-                          checked={Array.isArray(booking.slots) && booking.slots.includes(slot.slotId)}
-                          onChange={() => handleSlotChange(index, slot.slotId)}
+                          value={slot.slotNumber}
+                          checked={booking.slots.some(s => s.slotNumber === slot.slotNumber)}
+                          onChange={() => handleSlotChange(index, slot.slotNumber, slot.slotId)}
                           disabled={isSlotDisabled(slot, booking.date)}
                           className={`${slot.availableSlot === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                         />

@@ -1,12 +1,11 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useMemo, useState } from "react";
-import { fetchAreaTypes, deleteAreaType } from "../../redux/slices/AreaType";
+import { fetchAreaTypes } from "../../redux/slices/AreaType";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   Eye,
   PencilLine,
-  Trash2,
   PlusCircle,
   Map,
   Filter,
@@ -14,6 +13,7 @@ import {
   LucideAreaChart,
   ChevronLeft,
   ChevronRight,
+  Tag,
 } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import { FaSpinner } from "react-icons/fa";
@@ -30,7 +30,7 @@ const AreaTypeList = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [imageIndices, setImageIndices] = useState({}); // State to track current image index for each area type
   const areaTypesPerPage = 5;
-  const baseUrl = "https://localhost:9999"; // Base URL for image paths
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   // Debounced search function
   const debouncedSearch = debounce((value) => {
@@ -44,7 +44,11 @@ const AreaTypeList = () => {
 
     let result = areaTypes.filter((type) => {
       if (!type || typeof type !== "object" || !type.areaTypeId || !type.areaTypeName) return false;
-      return statusFilter === "All" ? true : (type.isDeleted === (statusFilter === "Đã xóa"));
+      const matchesStatus =
+        statusFilter === "All" ||
+        (statusFilter === "Hoạt động" && type.status === 1) ||
+        (statusFilter === "Không hoạt động" && type.status === 0);
+      return matchesStatus;
     });
 
     if (searchTerm) {
@@ -72,25 +76,8 @@ const AreaTypeList = () => {
   );
 
   useEffect(() => {
-    dispatch(fetchAreaTypes("0"));
+    dispatch(fetchAreaTypes("1"));
   }, [dispatch]);
-
-  // Handle delete area type
-  const handleDelete = async (areaTypeId) => {
-    if (!areaTypeId) {
-      toast.error("Không thể xóa: ID không hợp lệ!");
-      return;
-    }
-    if (window.confirm("Bạn có chắc chắn muốn xóa dịch vụ này?")) {
-      try {
-        const res = await dispatch(deleteAreaType(areaTypeId)).unwrap();
-        toast.success(res.message || "Xóa dịch vụ thành công");
-        dispatch(fetchAreaTypes());
-      } catch (err) {
-        toast.error(err?.message || "Lỗi khi xóa dịch vụ");
-      }
-    }
-  };
 
   // Show success message if redirected after creation
   const location = useLocation();
@@ -204,7 +191,7 @@ const AreaTypeList = () => {
         {/* Header Section */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
           <div className="flex items-center space-x-2 mb-4 sm:mb-0">
-            <LucideAreaChart className="h-6 w-6 text-orange-500" />
+            <Tag className="h-6 w-6 text-orange-500" />
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
               Danh Sách Kiểu Khu Vực
             </h2>
@@ -215,7 +202,7 @@ const AreaTypeList = () => {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 transition-all duration-300 shadow-md"
             >
               <PlusCircle className="h-5 w-5" />
-              <span className="hidden sm:inline">Thêm Kiểu Khu Vực</span>
+              <span className="hidden sm:inline">Thêm kiểu khu vực</span>
             </button>
           </div>
         </div>
@@ -317,14 +304,6 @@ const AreaTypeList = () => {
                           >
                             <PencilLine className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => handleDelete(type.areaTypeId)}
-                            data-tooltip-id="action-tooltip"
-                            data-tooltip-content="Xóa"
-                            className="bg-red-100 text-red-700 hover:bg-red-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -383,12 +362,6 @@ const AreaTypeList = () => {
                           className="bg-yellow-100 text-yellow-700 hover:bg-yellow-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                         >
                           <PencilLine className="w-4 h-4" /> Cập nhật
-                        </button>
-                        <button
-                          onClick={() => handleDelete(type.areaTypeId)}
-                          className="bg-red-100 text-red-700 hover:bg-red-400 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
-                        >
-                          <Trash2 className="w-4 h-4" /> Xóa
                         </button>
                       </div>
                     </div>

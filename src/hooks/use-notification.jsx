@@ -1,28 +1,24 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
 import {
   markAsRead,
   clearNotification,
   markAllAsRead,
+  clearAllNotifications,
 } from "../redux/slices/Notification";
 import { Bell, CheckCircle, XCircle, Trash2, FileText, MoreHorizontal } from "lucide-react";
-
-// Tạo một instance của Audio để phát âm thanh thông báo
-const notificationSound = new Audio(
-  "https://www.soundjay.com/buttons/sounds/button-13.mp3"
-);
+import { motion, AnimatePresence } from "framer-motion";
 
 const Notification = () => {
   const dispatch = useDispatch();
   const { notifications } = useSelector((state) => state.notifications);
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
-  const [prevNotificationCount, setPrevNotificationCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(null); // Trạng thái menu cho mỗi thông báo
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false); // Trạng thái menu ba chấm ở header
   const menuRefs = useRef({}); // Ref cho các menu thông báo
   const headerMenuRef = useRef(null); // Ref cho menu header
+  const dropdownRef = useRef(null); // Ref cho dropdown
 
   // Format timestamp
   const formatTimestamp = (timestamp) => {
@@ -49,7 +45,7 @@ const Notification = () => {
         return <Trash2 className="w-6 h-6 text-red-500" />;
       case "info":
       default:
-        return <FileText className="w-6 h-6 text-blue-500" />;
+        return <FileText className="w-6 h-6 text-orange-500" />;
     }
   };
 
@@ -89,34 +85,62 @@ const Notification = () => {
   const handleHeaderMenuClick = (action) => {
     if (action === "markAllAsRead" && unreadCount > 0) {
       dispatch(markAllAsRead());
+    } else if (action === "clearAll" && notifications.length > 0) {
+      dispatch(clearAllNotifications());
     }
     setHeaderMenuOpen(false); // Đóng menu header
   };
 
-  // Phát âm thanh khi có thông báo mới
-  useEffect(() => {
-    if (unreadCount > prevNotificationCount) {
-      const playSound = async () => {
-        try {
-          await notificationSound.play();
-        } catch (error) {
-          console.log("Lỗi phát âm thanh:", error);
-        }
-      };
-      playSound();
-    }
-    setPrevNotificationCount(unreadCount);
-  }, [unreadCount, prevNotificationCount]);
+  // Đóng dropdown và menu khi nhấp ra ngoài
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     // Kiểm tra nhấp ra ngoài dropdown
+  //     if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+  //       setIsOpen(false);
+  //     }
+  //     // Kiểm tra nhấp ra ngoài menu header
+  //     if (
+  //       headerMenuRef.current &&
+  //       !headerMenuRef.current.contains(event.target)
+  //     ) {
+  //       setHeaderMenuOpen(false);
+  //     }
+  //     // Kiểm tra nhấp ra ngoài các menu thông báo
+  //     if (
+  //       menuOpen &&
+  //       !Object.values(menuRefs.current).some(
+  //         (ref) => ref && ref.contains(event.target)
+  //       )
+  //     ) {
+  //       setMenuOpen(null);
+  //     }
+  //   };
+
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => document.removeEventListener("mousedown", handleClickOutside);
+  // }, [menuOpen]);
+
+  // Animation variants
+  const dropdownVariants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+    exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+  };
 
   return (
     <div className="relative">
       {/* Notification Bell */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+        className="relative p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500"
         title="Thông báo"
       >
-        <Bell className="w-6 h-6 text-gray-600" />
+        <Bell className="w-6 h-6 text-gray-700" />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
             {unreadCount > 99 ? "99+" : unreadCount}
@@ -125,151 +149,178 @@ const Notification = () => {
       </button>
 
       {/* Notification Dropdown */}
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 max-h-[80vh] overflow-y-auto overflow-x-hidden">
-          {/* Header */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xl font-semibold text-gray-900">Thông báo</h3>
-              <div className="flex items-center gap-3">
-                <Link
-                  to="/notifications"
-                  className="text-sm font-medium text-blue-600 hover:underline"
-                >
-                  Xem tất cả
-                </Link>
-                {/* Nút ba chấm ở header */}
-                <div className="relative">
-                  <button
-                    onClick={() => setHeaderMenuOpen(!headerMenuOpen)}
-                    className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
-                  >
-                    <MoreHorizontal className="w-5 h-5 text-gray-500" />
-                  </button>
-                  {headerMenuOpen && (
-                    <div
-                      ref={headerMenuRef}
-                      className="absolute right-0 top-8 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
-                    >
-                      <button
-                        onClick={() => handleHeaderMenuClick("markAllAsRead")}
-                        className={`w-full text-left px-4 py-2 text-sm ${
-                          unreadCount > 0
-                            ? "text-gray-700 hover:bg-gray-100"
-                            : "text-gray-400 cursor-not-allowed"
-                        }`}
-                        disabled={unreadCount === 0}
-                      >
-                        Đánh dấu tất cả là đã đọc
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            {/* Tabs */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setActiveTab("all")}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
-                  activeTab === "all"
-                    ? "bg-blue-100 text-blue-900"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                }`}
-              >
-                Tất cả
-              </button>
-              <button
-                onClick={() => setActiveTab("unread")}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
-                  activeTab === "unread"
-                    ? "bg-blue-100 text-blue-900"
-                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                }`}
-              >
-                Chưa đọc
-              </button>
-            </div>
-          </div>
-
-          {/* Notification List */}
-          {sortedNotifications.length === 0 ? (
-            <div className="p-4 text-center text-gray-500">
-              Không có thông báo nào
-            </div>
-          ) : (
-            <ul className="divide-y divide-gray-100">
-              {sortedNotifications.map((notif) => (
-                <li
-                  key={notif.id}
-                  className={`relative flex items-start gap-3 p-4 transition-colors duration-200 cursor-pointer ${
-                    notif.isRead ? "bg-white" : "bg-blue-50"
-                  } hover:bg-gray-50`}
-                >
-                  {/* Avatar/Icon */}
-                  <div className="flex-shrink-0 mt-1">
-                    {getNotificationIcon(notif.type)}
-                  </div>
-
-                  {/* Content */}
-                  <div
-                    className="flex-1"
-                    onClick={() => handleNotificationClick(notif.id, notif.isRead)}
-                  >
-                    <p
-                      className={`text-sm whitespace-normal break-words ${
-                        notif.isRead ? "text-gray-700" : "text-gray-900 font-medium"
-                      }`}
-                    >
-                      {notif.message}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {formatTimestamp(notif.timestamp)}
-                    </p>
-                  </div>
-
-                  {/* Điểm đánh dấu chưa đọc */}
-                  {!notif.isRead && (
-                    <span className="flex-shrink-0 w-2 h-2 bg-blue-600 rounded-full mt-2" />
-                  )}
-
-                  {/* Menu ba chấm */}
-                  <div
-                    className="flex-shrink-0 relative"
-                    onClick={(e) => e.stopPropagation()} // Ngăn sự kiện lan truyền
-                  >
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            ref={dropdownRef}
+            className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 max-h-[80vh] overflow-y-auto overflow-x-hidden"
+            variants={dropdownVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
+            {/* Header */}
+            <div className="p-4 border-b border-gray-200 bg-gray-50 rounded-t-xl">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Thông báo
+                </h3>
+                <div className="flex items-center gap-3">
+                  {/* Nút ba chấm ở header */}
+                  <div className="relative">
                     <button
-                      onClick={() => setMenuOpen(menuOpen === notif.id ? null : notif.id)}
-                      className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                      onClick={() => setHeaderMenuOpen(!headerMenuOpen)}
+                      className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200 focus:outline-none"
                     >
                       <MoreHorizontal className="w-5 h-5 text-gray-500" />
                     </button>
-                    {menuOpen === notif.id && (
+                    {headerMenuOpen && (
                       <div
-                        ref={(el) => (menuRefs.current[notif.id] = el)}
+                        ref={headerMenuRef}
                         className="absolute right-0 top-8 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
                       >
                         <button
-                          onClick={() => handleMenuClick(notif.id, "markAsRead")}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => handleHeaderMenuClick("markAllAsRead")}
+                          className={`w-full text-left px-4 py-2 text-sm ${
+                            unreadCount > 0
+                              ? "text-gray-700 hover:bg-gray-100"
+                              : "text-gray-400 cursor-not-allowed"
+                          } transition-colors duration-150`}
+                          disabled={unreadCount === 0}
                         >
-                          {notif.isRead ? "Đánh dấu chưa đọc" : "Đánh dấu đã đọc"}
+                          Đánh dấu tất cả là đã đọc
                         </button>
                         <button
-                          onClick={() => handleMenuClick(notif.id, "delete")}
-                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                          onClick={() => handleHeaderMenuClick("clearAll")}
+                          className={`w-full text-left px-4 py-2 text-sm ${
+                            notifications.length > 0
+                              ? "text-red-600 hover:bg-gray-100"
+                              : "text-gray-400 cursor-not-allowed"
+                          } transition-colors duration-150`}
+                          disabled={notifications.length === 0}
                         >
-                          Xóa thông báo
+                          Xóa tất cả thông báo
                         </button>
                       </div>
                     )}
                   </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+                </div>
+              </div>
+              {/* Tabs */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setActiveTab("all")}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
+                    activeTab === "all"
+                      ? "bg-orange-600 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  } focus:outline-none`}
+                >
+                  Tất cả
+                </button>
+                <button
+                  onClick={() => setActiveTab("unread")}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
+                    activeTab === "unread"
+                      ? "bg-orange-600 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  } focus:outline-none`}
+                >
+                  Chưa đọc
+                </button>
+              </div>
+            </div>
+
+            {/* Notification List */}
+            {sortedNotifications.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">
+                Không có thông báo nào
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-100">
+                {sortedNotifications.map((notif) => (
+                  <motion.li
+                    key={notif.id}
+                    variants={itemVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className={`relative flex items-start gap-3 p-4 transition-colors duration-200 cursor-pointer ${
+                      notif.isRead ? "bg-white" : "bg-orange-50"
+                    } hover:bg-gray-50`}
+                  >
+                    {/* Avatar/Icon */}
+                    <div className="flex-shrink-0 mt-1">
+                      {getNotificationIcon(notif.type)}
+                    </div>
+
+                    {/* Content */}
+                    <div
+                      className="flex-1"
+                      onClick={() => handleNotificationClick(notif.id, notif.isRead)}
+                    >
+                      <p
+                        className={`text-sm whitespace-normal break-words ${
+                          notif.isRead
+                            ? "text-gray-600"
+                            : "text-gray-900 font-medium"
+                        }`}
+                      >
+                        {notif.message}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {formatTimestamp(notif.timestamp)}
+                      </p>
+                    </div>
+
+                    {/* Điểm đánh dấu chưa đọc */}
+                    {!notif.isRead && (
+                      <span className="flex-shrink-0 w-2 h-2 bg-orange-600 rounded-full mt-2" />
+                    )}
+
+                    {/* Menu ba chấm */}
+                    <div
+                      className="flex-shrink-0 relative"
+                      onClick={(e) => e.stopPropagation()} // Ngăn sự kiện lan truyền
+                    >
+                      <button
+                        onClick={() =>
+                          setMenuOpen(menuOpen === notif.id ? null : notif.id)
+                        }
+                        className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200 focus:outline-none"
+                      >
+                        <MoreHorizontal className="w-5 h-5 text-gray-500" />
+                      </button>
+                      {menuOpen === notif.id && (
+                        <div
+                          ref={(el) => (menuRefs.current[notif.id] = el)}
+                          className="absolute right-0 top-8 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+                        >
+                          <button
+                            onClick={() =>
+                              handleMenuClick(notif.id, "markAsRead")
+                            }
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150"
+                          >
+                            {notif.isRead
+                              ? "Đánh dấu chưa đọc"
+                              : "Đánh dấu đã đọc"}
+                          </button>
+                          <button
+                            onClick={() => handleMenuClick(notif.id, "delete")}
+                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors duration-150"
+                          >
+                            Xóa thông báo
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </motion.li>
+                ))}
+              </ul>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

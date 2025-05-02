@@ -5,6 +5,7 @@ import { checkinBookingDetail, checkoutBookingDetail, fetchBookingDetailById } f
 import { createReport } from "../../../redux/slices/Report";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { format } from "date-fns";
 
 const BookingDetail = () => {
   const { id } = useParams();
@@ -20,20 +21,6 @@ const BookingDetail = () => {
   useEffect(() => {
     dispatch(fetchBookingDetailById(id));
   }, [dispatch, id]);
-
-  // Định dạng ngày giờ
-  const formatDateTime = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      timeZone: "Asia/Ho_Chi_Minh",
-    });
-  };
 
   // Định dạng ngày hiện tại
   const currentDate = new Date().toLocaleDateString("vi-VN", {
@@ -148,11 +135,11 @@ const BookingDetail = () => {
             </div>
             <div>
               <p className="text-sm">Ngày Đặt</p>
-              <p className="text-lg font-medium">{formatDateTime(booking.bookingCreatedDate)}</p>
+              <p className="text-lg font-medium">{format(new Date(booking.bookingCreatedDate), "dd/MM/yyyy HH:mm:ss")}</p>
             </div>
             <div>
               <p className="text-sm">Tổng Tiền</p>
-              <p className="text-lg font-medium text-green-500 dark:text-green-400">{booking.totalPrice} DXL</p>
+              <p className="text-lg font-medium">{booking.totalPrice} DXL</p>
             </div>
           </div>
         </div>
@@ -186,11 +173,11 @@ const BookingDetail = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm">Thời Gian Check-in</p>
-                  <p className="text-base font-medium">{formatDateTime(detail.checkinTime)}</p>
+                  <p className="text-base font-medium">{format(new Date(detail.checkinTime), "dd/MM/yyyy HH:mm:ss")}</p>
                 </div>
                 <div>
                   <p className="text-sm">Thời Gian Check-out</p>
-                  <p className="text-base font-medium">{formatDateTime(detail.checkoutTime)}</p>
+                  <p className="text-base font-medium">{format(new Date(detail.checkoutTime), "dd/MM/yyyy HH:mm:ss")}</p>
                 </div>
                 <div>
                   <p className="text-sm">Vị Trí</p>
@@ -226,7 +213,7 @@ const BookingDetail = () => {
                 const target = booking.details.find(detail => detail.status === 0);
                 if (target) handleCheckin(target.bookingDetailId);
               }}
-              className="bg-blue-500 hover:bg-blue-600 cursor-pointer text-white px-5 py-2 rounded-lg transition-all"
+              className="bg-orange-500 hover:bg-orange-600 cursor-pointer text-white px-5 py-2 rounded-lg transition-all"
             >
               Check-in
             </button>

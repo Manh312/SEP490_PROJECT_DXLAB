@@ -9,7 +9,7 @@ export const createBooking = createAsyncThunk(
       const response = await axios.post('/booking', bookingData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Không thể tạo đặt chỗ');
+      return rejectWithValue(error);
     }
   }
 );

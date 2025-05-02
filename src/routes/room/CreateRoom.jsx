@@ -246,7 +246,7 @@ const CreateRoom = () => {
             <div className="space-y-4 sm:space-y-6">
               {/* Mô Tả */}
               <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 min-h-[120px]"
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
                 variants={itemVariants}
               >
                 <div className="flex items-start gap-2 sm:gap-3">
@@ -263,7 +263,7 @@ const CreateRoom = () => {
                       value={roomData.roomDescription}
                       onChange={handleChange}
                       placeholder="Nhập mô tả phòng"
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out min-h-[50px] max-h-[80px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out min-h-[40px] sm:min-h-[48px] resize-none"
                       required
                     />
                     {errors.roomDescription && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.roomDescription}</p>}
@@ -284,7 +284,7 @@ const CreateRoom = () => {
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
                       Hình Ảnh <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex flex-col gap-2 sm:gap-3 mt-2 max-h-[80px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    <div className="flex flex-col gap-2 sm:gap-4 mt-2">
                       <div className="flex flex-wrap gap-2 sm:gap-3">
                         {imagePreviews.length > 0 &&
                           imagePreviews.map((preview, index) => (
@@ -302,7 +302,7 @@ const CreateRoom = () => {
                               <button
                                 type="button"
                                 onClick={() => handleRemoveImage(index)}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center shadow-md hover:bg-red-600 transition"
+                               className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center shadow-md hover:bg-red-600 transition"
                               >
                                 <X size={12} className="sm:w-4 sm:h-4" />
                               </button>
@@ -388,7 +388,7 @@ const CreateRoom = () => {
                     onClick={addArea}
                     className="w-full mt-2 bg-gradient-to-r from-orange-500 to-orange-700 text-white px-4 sm:px-6 py-1 sm:py-2 rounded-lg flex items-center justify-center gap-x-2 hover:from-orange-600 hover:to-orange-800 transition-all shadow-md text-sm sm:text-base font-normal"
                   >
-                    + Thêm khu vực
+                    <Plus size={14} className="sm:w-4 sm:h-4" /> Thêm khu vực
                   </button>
                 </div>
                 {errors.areaAddDTO && <p className="text-red-500 text-xs sm:text-sm mt-1">{errors.areaAddDTO}</p>}

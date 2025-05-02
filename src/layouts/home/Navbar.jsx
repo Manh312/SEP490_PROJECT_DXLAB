@@ -3,12 +3,15 @@ import { useState, useRef, useEffect } from "react";
 import logo from "../../assets/logo_images.png";
 import { navItems } from "../../constants";
 import { useTheme } from "../../hooks/use-theme";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ConnectWallet, useAddress, useContract, useDisconnect, useTokenBalance } from "@thirdweb-dev/react";
 import { useDispatch, useSelector } from "react-redux";
-import { clearAuthData, fetchRoleByID } from "../../redux/slices/Authentication";
+import { clearAuthData, fetchRoleByID, setIsAuthenticating, setIsLoggingOut } from "../../redux/slices/Authentication";
 import { FaUserCircle } from "react-icons/fa";
-import Notification from "../../hooks/use-notification"; // Cập nhật import
+import Notification from "../../hooks/use-notification";
+import Modal from "react-modal";
+
+const SEPOLIA_CHAIN_ID = 11155111;
 
 const Navbar = () => {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -20,9 +23,15 @@ const Navbar = () => {
   const disconnect = useDisconnect();
   const profileRef = useRef(null);
   const dropdownRef = useRef(null);
-  const { user } = useSelector((state) => state.auth);
-  const { contract } = useContract("0xc597d627a7E28B896d43a4eC50703f35Ba259378");
-  const { data: balance } = useTokenBalance(contract, address);
+  const { user, isAuthenticating, isLoggingOut } = useSelector((state) => state.auth);
+  const { contract } = useContract(import.meta.env.VITE_DXLABCOINT_CONTRACT);
+    const { data: balance } = useTokenBalance(contract, address);
+  const navigate = useNavigate();
+
+  // Thiết lập app element cho modal
+  useEffect(() => {
+    Modal.setAppElement("#root");
+  }, []);
 
   // Fetch roleName based on roleId
   useEffect(() => {
@@ -39,18 +48,25 @@ const Navbar = () => {
     if (!address) {
       setDropdownOpen(false);
       setRoleName(null);
+      dispatch(setIsAuthenticating(false));
     }
-  }, [address]);
+  }, [address, dispatch]);
 
   // Handle wallet disconnect
   const handleDisconnect = async () => {
     try {
-      await disconnect();
-      dispatch(clearAuthData());
+      dispatch(setIsLoggingOut(true)); // Set isLoggingOut to true
+      navigate("/"); // Navigate to home immediately
+      await disconnect(); // Disconnect wallet
+      dispatch(clearAuthData()); // Clear Redux auth state
       setDropdownOpen(false);
       setRoleName(null);
+      dispatch(setIsLoggingOut(false)); // Reset isLoggingOut
     } catch (error) {
       console.error("Disconnect error:", error);
+      dispatch(clearAuthData());
+      dispatch(setIsLoggingOut(false));
+      navigate("/"); // Ensure navigation on error
     }
   };
 
@@ -78,24 +94,24 @@ const Navbar = () => {
         {/* Menu for desktop */}
         <ul className="hidden lg:flex space-x-12 text-xl">
           {navItems.map((item, index) => (
-            <li key={index}>
+            <li key={index} className="hover:text-orange-500">
               <Link to={item.href}>{item.label}</Link>
             </li>
           ))}
           {isLoggedIn && (
             <>
               {roleName !== "Admin" && roleName !== "Staff" && (
-                <li>
+                <li className="hover:text-orange-500">
                   <Link to="/rooms">Dịch vụ</Link>
                 </li>
               )}
               {roleName === "Admin" && (
-                <li>
+                <li className="hover:text-orange-500">
                   <Link to="/dashboard">Bảng điều khiển</Link>
                 </li>
               )}
               {roleName === "Staff" && (
-                <li>
+                <li className="hover:text-orange-500">
                   <Link to="/manage">Quản lý</Link>
                 </li>
               )}
@@ -107,10 +123,7 @@ const Navbar = () => {
         <div className="hidden lg:flex justify-center space-x-6 items-center relative z-10">
           {isLoggedIn ? (
             <div className="flex items-center space-x-4" ref={profileRef}>
-              {/* Notification for Admin and Staff */}
-              {(roleName === "Admin" || roleName === "Staff") && (
-                <Notification />
-              )}
+              <Notification />
               <FaUserCircle
                 className="h-10 w-10 rounded-full cursor-pointer"
                 onClick={handleProfileClick}
@@ -124,10 +137,19 @@ const Navbar = () => {
                   <div className="mb-4">
                     <ConnectWallet
                       modalSize="wide"
-                      hideTestnetFaucet
                       hideBuyButton
                       hideDisconnect
                       style={{ width: "100%" }}
+                      supportedTokens={{
+                        [SEPOLIA_CHAIN_ID]: [
+                          {
+                            address: import.meta.env.VITE_DXLABCOINT_CONTRACT,
+                            name: "DXLAB Coin",
+                            symbol: "DXL",
+                            icon: "https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png?1687143508",
+                          },
+                        ],
+                      }}
                     />
                   </div>
                   <span className="ml-2 mb-4">Số dư: {balance?.displayValue} DXL</span>
@@ -166,11 +188,26 @@ const Navbar = () => {
             </div>
           ) : (
             <>
-              <ConnectWallet
-                btnTitle="Đăng nhập"
-                auth={{ loginOptional: false }}
-                modalSize="wide"
-              />
+              {isAuthenticating ? null : (
+                <div>
+                  <ConnectWallet
+                    btnTitle="Đăng nhập"
+                    modalSize="wide"
+                    showThirdwebBranding={false}
+                    hideTestnetFaucet={false}
+                    supportedTokens={{
+                      [SEPOLIA_CHAIN_ID]: [
+                        {
+                          address: import.meta.env.VITE_DXLABCOINT_CONTRACT,
+                          name: "DXLAB Coin",
+                          symbol: "DXL",
+                          icon: "https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/0xc597d627a7E28B896d43a4eC50703f35Ba259378/logo.png",
+                        },
+                      ],
+                    }}
+                  />
+                </div>
+              )}
               <button
                 className="p-2 border rounded-md transition-colors ml-5"
                 onClick={() => setTheme(theme === "light" ? "dark" : "light")}
@@ -213,12 +250,20 @@ const Navbar = () => {
               <div>
                 <div>
                   <ConnectWallet
-                    btnTitle="Manage Wallet"
                     modalSize="wide"
-                    hideTestnetFaucet
                     hideBuyButton
                     hideDisconnect
                     style={{ width: "100%" }}
+                    supportedTokens={{
+                      [SEPOLIA_CHAIN_ID]: [
+                        {
+                          address: import.meta.env.VITE_DXLABCOINT_CONTRACT,
+                          name: "DXLAB Coin",
+                          symbol: "DXL",
+                          icon: "https://assets.coingecko.com/coins/images/9956/small/Badge_Dai.png?1687143508",
+                        },
+                      ],
+                    }}
                   />
                 </div>
                 <div className="mt-3 ml-1">
@@ -226,15 +271,29 @@ const Navbar = () => {
                 </div>
               </div>
             ) : (
-              <ConnectWallet
-                btnTitle="Đăng nhập"
-                modalSize="wide"
-              />
+              <div>
+                <ConnectWallet
+                  btnTitle="Đăng nhập"
+                  modalSize="wide"
+                  showThirdwebBranding={false}
+                  hideTestnetFaucet={false}
+                  supportedTokens={{
+                    [SEPOLIA_CHAIN_ID]: [
+                      {
+                        address: import.meta.env.VITE_DXLABCOINT_CONTRACT,
+                        name: "DXLAB Coin",
+                        symbol: "DXL",
+                        icon: "https://raw.githubusercontent.com/TrustWallet/tokens/master/tokens/0xc597d627a7E28B896d43a4eC50703f35Ba259378/logo.png",
+                      },
+                    ],
+                  }}
+                />
+              </div>
             )}
           </div>
           <ul className="flex flex-col py-2 border-t">
             {navItems.map((item, index) => (
-              <li key={index}>
+              <li key={index} className="hover:text-orange-500">
                 <Link
                   to={item.href}
                   onClick={() => setMobileDrawerOpen(false)}
@@ -247,7 +306,7 @@ const Navbar = () => {
             {isLoggedIn && (
               <>
                 {roleName !== "Admin" && roleName !== "Staff" && (
-                  <li>
+                  <li className="hover:text-orange-500">
                     <Link
                       to="/rooms"
                       onClick={() => setMobileDrawerOpen(false)}
@@ -263,7 +322,7 @@ const Navbar = () => {
                   </li>
                 )}
                 {roleName === "Admin" && (
-                  <li>
+                  <li className="hover:text-orange-500">
                     <Link
                       to="/dashboard"
                       onClick={() => setMobileDrawerOpen(false)}
@@ -274,7 +333,7 @@ const Navbar = () => {
                   </li>
                 )}
                 {roleName === "Staff" && (
-                  <li>
+                  <li className="hover:text-orange-500">
                     <Link
                       to="/manage"
                       onClick={() => setMobileDrawerOpen(false)}
@@ -320,9 +379,39 @@ const Navbar = () => {
         </div>
 
         <div className="border-t p-4 text-xs">
-          <p>© 2025 DXLAB Co-Working Space</p>
+          <p>© 2025 DXLAB CoWorking Space</p>
         </div>
       </div>
+
+      {/* Authentication Modal */}
+      <Modal
+        isOpen={isAuthenticating}
+        contentLabel="Authentication Modal"
+        className="fixed inset-0 text-black flex items-center justify-center z-50"
+        overlayClassName="fixed inset-0 bg-opacity-60"
+      >
+        <div className="p-6 rounded-lg h-42 shadow-xl w-full max-w-sm bg-white">
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin mb-4"></div>
+            <p className="text-lg font-semibold">Đang xác thực tài khoản...</p>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Logout Modal */}
+      <Modal
+        isOpen={isLoggingOut}
+        contentLabel="Logout Modal"
+        className="fixed inset-0 text-black flex items-center justify-center z-50"
+        overlayClassName="fixed inset-0 bg-opacity-60"
+      >
+        <div className="p-6 rounded-lg h-42 shadow-xl w-full max-w-sm bg-white">
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 border-4 border-gray-200 border-t-orange-500 rounded-full animate-spin mb-4"></div>
+            <p className="text-lg font-semibold">Đang đăng xuất...</p>
+          </div>
+        </div>
+      </Modal>
     </nav>
   );
 };

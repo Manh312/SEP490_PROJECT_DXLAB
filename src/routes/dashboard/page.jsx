@@ -1,4 +1,4 @@
-import { CreditCard, DollarSign, Package, TrendingUp, Users } from "lucide-react";
+import { CreditCard, DollarSign, Package, TrendingUp } from "lucide-react";
 import { useTheme } from "../../hooks/use-theme";
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -8,10 +8,9 @@ import {
   fetchJobsByYear,
   fetchDepreciationsByYearAndMonth,
   fetchDepreciationsByYear,
-  fetchUtilizationRateByYearAndMonth,
-  fetchUtilizationRateByYear,
   resetStats,
 } from "../../redux/slices/Statistics";
+import { fetchRooms } from "../../redux/slices/Room";
 import { FaSpinner } from "react-icons/fa";
 import RevenueStatistics from "./statistics/RevenueStatistics";
 import CostStatistics from "./statistics/CostStatistics";
@@ -22,9 +21,14 @@ import { toast } from "react-toastify";
 const Page = () => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
-  const { jobs, jobsByYear, depreciations, depreciationsByYear, utilizationRates, utilizationRatesByYear, loading, error } = useSelector(
-    (state) => state.statistics
-  );
+  const {
+    jobs,
+    jobsByYear,
+    depreciations,
+    depreciationsByYear,
+    loading,
+    error,
+  } = useSelector((state) => state.statistics);
 
   const [period, setPeriod] = useState("năm");
   const [year, setYear] = useState("2025");
@@ -34,15 +38,10 @@ const Page = () => {
   const [yearlyStats, setYearlyStats] = useState(null);
   const [detailedStats, setDetailedStats] = useState([]);
   const [yearlyData, setYearlyData] = useState([]);
-  const [performanceData, setPerformanceData] = useState([]);
-  const [performanceMinY, setPerformanceMinY] = useState(0);
-  const [performanceMaxY, setPerformanceMaxY] = useState(100);
-  const [performanceYTicks, setPerformanceYTicks] = useState([0, 20, 40, 60, 80, 100]);
+  const [avgUtilizationRate, setAvgUtilizationRate] = useState(0); // State cho hiệu suất sử dụng
 
   const years = Array.from({ length: 10 }, (_, i) => (2025 - i).toString());
   const months = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
-  console.log(typeof utilizationRatesByYear);
-  
 
   const vietnameseMonths = [
     "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
@@ -53,6 +52,12 @@ const Page = () => {
     return new Date(year, month, 0).getDate();
   };
 
+  // Fetch rooms khi component mount
+  useEffect(() => {
+    dispatch(fetchRooms());
+  }, [dispatch]);
+
+  // Fetch yearly student group stats để hiển thị dữ liệu mặc định
   useEffect(() => {
     dispatch(
       fetchStudentGroupStats({
@@ -70,107 +75,6 @@ const Page = () => {
     });
   }, [dispatch, year]);
 
-  // Process performanceData when utilizationRates or utilizationRatesByYear changes
-  useEffect(() => {
-    // Đảm bảo utilizationRatesByYear và utilizationRates là mảng
-    const safeUtilizationRatesByYear = Array.isArray(utilizationRatesByYear) ? utilizationRatesByYear : [];
-    const safeUtilizationRates = Array.isArray(utilizationRates) ? utilizationRates : [];
-  
-    if (period === "năm" && safeUtilizationRatesByYear.length > 0) {
-      const monthlyPerformanceData = Array.from({ length: 12 }, (_, i) => ({
-        name: vietnameseMonths[i],
-      })).map((monthEntry, i) => {
-        const entries = safeUtilizationRatesByYear.filter((entry) => {
-          // Kiểm tra entry tồn tại và có theDate
-          if (!entry || !entry.theDate) return false;
-          const date = new Date(entry.theDate);
-          // Đảm bảo ngày hợp lệ
-          return !isNaN(date.getTime()) && date.getMonth() === i;
-        });
-  
-        const areaTotals = entries.reduce((acc, entry) => {
-          const areaName = entry.areaName || "Unknown Area";
-          const areaKey = areaName.replace(/\s+/g, "");
-          const rate = entry.rate || 0;
-          if (!acc[areaKey]) {
-            acc[areaKey] = { totalRate: 0, count: 0 };
-          }
-          acc[areaKey].totalRate += rate * 100; // Chuyển thành phần trăm
-          acc[areaKey].count += 1;
-          return acc;
-        }, {});
-  
-        const entry = { name: monthEntry.name };
-        Object.keys(areaTotals).forEach((key) => {
-          entry[key] =
-            areaTotals[key].count > 0
-              ? Math.round((areaTotals[key].totalRate / areaTotals[key].count) * 100) / 100
-              : 0;
-        });
-        return entry;
-      });
-  
-      setPerformanceData(monthlyPerformanceData);
-      const rates = monthlyPerformanceData.flatMap((d) =>
-        Object.values(d).filter((v) => typeof v === "number")
-      );
-      const minRate = rates.length > 0 ? Math.min(...rates) : 0;
-      const maxRate = rates.length > 0 ? Math.max(...rates) : 100;
-      setPerformanceMinY(Math.floor(minRate / 20) * 20);
-      setPerformanceMaxY(Math.ceil(maxRate / 20) * 20);
-      setPerformanceYTicks(generateYTicks(maxRate, minRate));
-    } else if (period === "tháng" && safeUtilizationRates.length > 0 && month && year) {
-      const daysInMonth = getDaysInMonth(parseInt(month), parseInt(year));
-      const dailyPerformance = Array.from({ length: daysInMonth }, (_, i) => ({
-        name: (i + 1).toString().padStart(2, "0"),
-      })).map((dayEntry) => {
-        const entries = safeUtilizationRates.filter((entry) => {
-          // Kiểm tra entry tồn tại và có theDate
-          if (!entry || !entry.theDate) return false;
-          const date = new Date(entry.theDate);
-          // Đảm bảo ngày hợp lệ
-          return (
-            !isNaN(date.getTime()) &&
-            date.getDate().toString().padStart(2, "0") === dayEntry.name
-          );
-        });
-  
-        const areaTotals = entries.reduce((acc, entry) => {
-          const areaName = entry.areaName || "Unknown Area";
-          const areaKey = areaName.replace(/\s+/g, "");
-          const rate = entry.rate || 0;
-          if (!acc[areaKey]) {
-            acc[areaKey] = { totalRate: 0, count: 0 };
-          }
-          acc[areaKey].totalRate += rate * 100; // Chuyển thành phần trăm
-          acc[areaKey].count += 1;
-          return acc;
-        }, {});
-  
-        const entry = { name: dayEntry.name };
-        Object.keys(areaTotals).forEach((key) => {
-          entry[key] =
-            areaTotals[key].count > 0
-              ? Math.round((areaTotals[key].totalRate / areaTotals[key].count) * 100) / 100
-              : 0;
-        });
-        return entry;
-      });
-  
-      setPerformanceData(dailyPerformance);
-      const rates = dailyPerformance.flatMap((d) =>
-        Object.values(d).filter((v) => typeof v === "number")
-      );
-      const minRate = rates.length > 0 ? Math.min(...rates) : 0;
-      const maxRate = rates.length > 0 ? Math.max(...rates) : 100;
-      setPerformanceMinY(Math.floor(minRate / 20) * 20);
-      setPerformanceMaxY(Math.ceil(maxRate / 20) * 20);
-      setPerformanceYTicks(generateYTicks(maxRate, minRate));
-    } else {
-      setPerformanceData([]);
-    }
-  }, [utilizationRates, utilizationRatesByYear, period, month, year]);
-
   const generateYTicks = (maxValue, minValue = 0) => {
     if (maxValue === 0) return [0, 20, 40, 60, 80, 100];
     const roundedMax = Math.ceil(maxValue / 20) * 20;
@@ -179,12 +83,17 @@ const Page = () => {
     return Array.from({ length: 6 }, (_, i) => Math.round(roundedMin + i * step));
   };
 
+  // Hàm xử lý khi chọn phòng từ PerformanceStatistics
+  const handleRoomSelect = (utilizationRate) => {
+    setAvgUtilizationRate(utilizationRate);
+  };
+
   const handleSearch = async () => {
     dispatch(resetStats());
     setYearlyStats(null);
     setDetailedStats([]);
-    setPerformanceData([]);
     setShowCharts(false);
+    setAvgUtilizationRate(0); // Reset hiệu suất khi tìm kiếm mới
 
     try {
       if (period === "năm") {
@@ -192,7 +101,6 @@ const Page = () => {
           dispatch(fetchStudentGroupStats({ period: "năm", year: year, month: null })),
           dispatch(fetchJobsByYear({ year })),
           dispatch(fetchDepreciationsByYear({ year })),
-          dispatch(fetchUtilizationRateByYear({ year })),
         ]);
 
         if (studentStatsResponse.payload && studentStatsResponse.payload.data) {
@@ -205,22 +113,16 @@ const Page = () => {
             const month = i + 1;
             const item =
               details.find((d) => d.periodNumber === month) || {
-                revenue: { totalRevenue: 0, studentRevenue: 0, studentPercentage: 0 },
+                revenue: { totalRevenue: 0, studentRevenue: 0 },
               };
             return {
               name: vietnameseMonths[i],
               totalRevenue: item.revenue.totalRevenue || 0,
               studentRevenue: item.revenue.studentRevenue || 0,
-              studentPercentage: item.revenue.studentPercentage || 0,
             };
           });
-          const totalStudentPercentage =
-            monthlyData.length > 0
-              ? monthlyData.reduce((sum, item) => sum + (item.studentPercentage || 0), 0) / monthlyData.length
-              : 0;
           setYearlyStats({
             totalRevenue,
-            studentPercentage: totalStudentPercentage,
           });
           setDetailedStats(monthlyData);
         } else {
@@ -228,9 +130,8 @@ const Page = () => {
             name: vietnameseMonths[i],
             totalRevenue: 0,
             studentRevenue: 0,
-            studentPercentage: 0,
           }));
-          setYearlyStats({ totalRevenue: 0, studentPercentage: 0 });
+          setYearlyStats({ totalRevenue: 0 });
           setDetailedStats(monthlyData);
         }
 
@@ -245,11 +146,7 @@ const Page = () => {
           dispatch(fetchStudentGroupStats({ period: "tháng", year: year, month: month })),
           dispatch(fetchJobsByYearAndMonth({ year, month })),
           dispatch(fetchDepreciationsByYearAndMonth({ year, month })),
-          dispatch(fetchUtilizationRateByYearAndMonth({ year, month })),
         ]);
-
-        const monthData = yearlyData.find((d) => d.periodNumber === parseInt(month));
-        const monthStudentPercentage = monthData ? monthData.revenue.studentPercentage || 0 : 0;
 
         if (studentStatsResponse.payload && studentStatsResponse.payload.data) {
           const { details } = studentStatsResponse.payload.data;
@@ -262,18 +159,16 @@ const Page = () => {
             const day = i + 1;
             const dayData =
               details.find((item) => item.periodNumber === day) || {
-                revenue: { totalRevenue: 0, studentRevenue: 0, studentPercentage: 0 },
+                revenue: { totalRevenue: 0, studentRevenue: 0 },
               };
             return {
               name: `Ngày ${day}`,
               totalRevenue: dayData.revenue.totalRevenue || 0,
               studentRevenue: dayData.revenue.studentRevenue || 0,
-              studentPercentage: dayData.revenue.studentPercentage || 0,
             };
           });
           setYearlyStats({
             totalRevenue,
-            studentPercentage: monthStudentPercentage,
           });
           setDetailedStats(dailyData);
         } else {
@@ -282,9 +177,8 @@ const Page = () => {
             name: `Ngày ${i + 1}`,
             totalRevenue: 0,
             studentRevenue: 0,
-            studentPercentage: 0,
           }));
-          setYearlyStats({ totalRevenue: 0, studentPercentage: monthStudentPercentage });
+          setYearlyStats({ totalRevenue: 0 });
           setDetailedStats(dailyData);
         }
 
@@ -298,7 +192,6 @@ const Page = () => {
   };
 
   const totalRevenue = yearlyStats ? yearlyStats.totalRevenue || 0 : 0;
-  const avgStudentPercentage = yearlyStats ? yearlyStats.studentPercentage || 0 : 0;
 
   const calculateTotalDepreciation = () => {
     const dataSource = period === "năm" ? depreciationsByYear : depreciations;
@@ -353,37 +246,28 @@ const Page = () => {
   const expenses = expenseData();
   const totalExpenses = expenses.reduce((sum, item) => sum + item.value, 0);
 
-  const participationPieData = [
-    { name: "Sinh viên tham gia", value: avgStudentPercentage },
-    { name: "Không tham gia", value: 100 - avgStudentPercentage },
-  ];
-
   const areaData = () => {
     if (period === "năm") {
       return detailedStats.length > 0
         ? detailedStats.map((stat) => ({
             name: stat.name,
             studentRevenue: stat.studentRevenue || 0,
-            studentPercentage: stat.studentPercentage || 0,
           }))
         : Array.from({ length: 12 }, (_, i) => ({
             name: vietnameseMonths[i],
             studentRevenue: 0,
-            studentPercentage: 0,
           }));
     } else if (period === "tháng") {
       return detailedStats.length > 0
         ? detailedStats.map((stat) => ({
             name: stat.name,
             studentRevenue: stat.studentRevenue || 0,
-            studentPercentage: stat.studentPercentage || 0,
           }))
         : Array.from(
             { length: getDaysInMonth(parseInt(month), parseInt(year)) },
             (_, i) => ({
               name: `Ngày ${i + 1}`,
               studentRevenue: 0,
-              studentPercentage: 0,
             })
           );
     }
@@ -395,14 +279,6 @@ const Page = () => {
   const revenueYTicks = generateYTicks(maxRevenue);
   const revenueMaxY = revenueYTicks[revenueYTicks.length - 1];
   const revenueMinY = 0;
-
-  // Thêm log để kiểm tra dữ liệu
-  console.log("Page.jsx - period:", period);
-  console.log("Page.jsx - year:", year);
-  console.log("Page.jsx - month:", month);
-  console.log("Page.jsx - showCharts:", showCharts);
-  console.log("Page.jsx - revenueAreaData length:", revenueAreaData.length);
-  console.log("Page.jsx - revenueAreaData:", revenueAreaData);
 
   return (
     <div className="flex flex-col gap-y-4 mb-20 pl-5">
@@ -484,11 +360,20 @@ const Page = () => {
         </div>
       )}
 
+      {/* Error State */}
+      {error && !loading && (
+        <div className="flex items-center justify-center py-6 mr-5">
+          <p className="text-red-500 font-medium">
+            Lỗi: {error || "Không thể tải dữ liệu. Vui lòng thử lại!"}
+          </p>
+        </div>
+      )}
+
       {/* Show Charts if Search is Performed */}
       {!loading && !error && showCharts && (
         <div className="mr-5">
           {/* Overview Section */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-6">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 mb-6">
             <div
               className={`card ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} transition-colors`}
             >
@@ -519,40 +404,6 @@ const Page = () => {
                 >
                   <TrendingUp size={18} />
                   25%
-                </span>
-              </div>
-            </div>
-
-            <div
-              className={`card ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} transition-colors`}
-            >
-              <div className="card-header">
-                <div
-                  className={`w-fit rounded-lg p-2 transition-colors ${
-                    theme === "dark" ? "bg-orange-600/20 text-orange-400" : "bg-orange-500/20 text-orange-500"
-                  }`}
-                >
-                  <Users size={26} />
-                </div>
-                <p
-                  className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}
-                >
-                  Tỷ lệ sinh viên tham gia
-                </p>
-              </div>
-              <div className="card-body">
-                <p
-                  className={`text-2xl font-bold transition-colors ${theme === "dark" ? "text-white" : "text-black"}`}
-                >
-                  {avgStudentPercentage.toFixed(1)}%
-                </p>
-                <span
-                  className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
-                    theme === "dark" ? "border-orange-400 text-orange-400" : "border-orange-500 text-orange-500"
-                  }`}
-                >
-                  <TrendingUp size={18} />
-                  12%
                 </span>
               </div>
             </div>
@@ -624,6 +475,40 @@ const Page = () => {
                 </span>
               </div>
             </div>
+
+            <div
+              className={`card ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"} transition-colors`}
+            >
+              <div className="card-header">
+                <div
+                  className={`w-fit rounded-lg p-2 transition-colors ${
+                    theme === "dark" ? "bg-orange-600/20 text-orange-400" : "bg-orange-500/20 text-orange-500"
+                  }`}
+                >
+                  <TrendingUp size={26} />
+                </div>
+                <p
+                  className={`card-title ${theme === "dark" ? "bg-black text-white" : "bg-white text-black"}`}
+                >
+                  Hiệu suất sử dụng trung bình
+                </p>
+              </div>
+              <div className="card-body">
+                <p
+                  className={`text-2xl font-bold transition-colors ${theme === "dark" ? "text-white" : "text-black"}`}
+                >
+                  {avgUtilizationRate.toFixed(1)}%
+                </p>
+                <span
+                  className={`flex w-fit items-center gap-x-2 rounded-full border px-2 py-1 font-medium transition-colors ${
+                    theme === "dark" ? "border-orange-400 text-orange-400" : "border-orange-500 text-orange-500"
+                  }`}
+                >
+                  <TrendingUp size={18} />
+                  12%
+                </span>
+              </div>
+            </div>
           </div>
 
           {/* Tab Navigation */}
@@ -680,7 +565,6 @@ const Page = () => {
                 revenueMinY={revenueMinY}
                 revenueMaxY={revenueMaxY}
                 revenueYTicks={revenueYTicks}
-                participationPieData={participationPieData}
                 period={period}
                 year={year}
                 month={month}
@@ -710,12 +594,10 @@ const Page = () => {
                 period={period}
                 year={year}
                 month={month}
-                utilizationRates={utilizationRates}
-                utilizationRatesByYear={utilizationRatesByYear}
-                performanceData={performanceData}
-                performanceMinY={performanceMinY}
-                performanceMaxY={performanceMaxY}
-                performanceYTicks={performanceYTicks}
+                performanceMinY={0}
+                performanceMaxY={100}
+                performanceYTicks={[0, 20, 40, 60, 80, 100]}
+                onRoomSelect={handleRoomSelect}
               />
             )}
           </div>

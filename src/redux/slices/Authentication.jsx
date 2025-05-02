@@ -7,7 +7,7 @@ export const fetchRoleByID = createAsyncThunk(
     try {
       const response = await axios.get(`/role/${id}`);
       const data = response.data;
-      return data.data.roleName; 
+      return data.data.roleName;
     } catch (error) {
       return rejectWithValue(error.message || "Failed to fetch role");
     }
@@ -18,20 +18,31 @@ const authSlice = createSlice({
   name: 'auth',
   initialState: {
     token: null,
-    user: null, // user sẽ chứa roleId
-    roleName: null, // Thêm roleName vào state
+    user: null,
+    roleName: null,
+    isAuthenticating: false, // Add isAuthenticating to state
+    isLoggingOut: false,
     loading: false,
     error: null,
   },
   reducers: {
     setAuthData: (state, action) => {
       state.token = action.payload.token;
-      state.user = action.payload.user; // roleId nằm trong user
+      state.user = action.payload.user;
     },
     clearAuthData: (state) => {
       state.token = null;
       state.user = null;
-      state.roleName = null; // Reset roleName khi đăng xuất
+      state.roleName = null;
+      state.isLoggingOut = false;
+      // state.isAuthenticating = false; // Reset isAuthenticating on logout
+    },
+    setIsAuthenticating: (state, action) => {
+      console.log("setIsAuthenticating called with:", action.payload);
+      state.isAuthenticating = action.payload; // Action to set isAuthenticating
+    },
+    setIsLoggingOut(state, action) {
+      state.isLoggingOut = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -42,7 +53,7 @@ const authSlice = createSlice({
       })
       .addCase(fetchRoleByID.fulfilled, (state, action) => {
         state.loading = false;
-        state.roleName = action.payload; // Lưu roleName vào state
+        state.roleName = action.payload;
       })
       .addCase(fetchRoleByID.rejected, (state, action) => {
         state.loading = false;
@@ -51,5 +62,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setAuthData, clearAuthData } = authSlice.actions;
+export const { setAuthData, clearAuthData, setIsLoggingOut, setIsAuthenticating } = authSlice.actions;
 export default authSlice.reducer;

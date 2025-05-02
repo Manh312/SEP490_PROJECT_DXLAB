@@ -9,7 +9,7 @@ const ViewRoom = () => {
   const dispatch = useDispatch();
   const { rooms, loading, error } = useSelector((state) => state.rooms);
   const [imageIndices, setImageIndices] = useState({});
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   useEffect(() => {
     dispatch(fetchRooms());
@@ -114,7 +114,7 @@ const ViewRoom = () => {
       <h2 className="text-4xl mb-10 tracking-wide">
         Danh sách phòng tại{" "}
         <span className="bg-gradient-to-r from-orange-500 to-orange-800 text-transparent bg-clip-text">
-          DXLAB Co-Working Space
+          DXLAB CoWorking Space
         </span>
       </h2>
 

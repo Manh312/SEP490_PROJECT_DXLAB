@@ -385,7 +385,7 @@ export const products = [
 ];
 export const staffLinks = [
   {
-    title: "Quản lý Staff",
+    title: "Danh mục quản lý",
     children: [
       {
         label: "Lịch sử đặt chỗ",

@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAdminApprovedBlogs } from '../../redux/slices/Blog';
-import { format, parseISO } from 'date-fns'; // Import date-fns utilities
+import { format, parseISO } from 'date-fns';
 import { FaSpinner } from 'react-icons/fa';
 
 const Blog = () => {
@@ -51,19 +51,17 @@ const Blog = () => {
       transition: { duration: 0.3, ease: 'easeOut' },
     },
     hover: {
-      scale: 1.05,
-      y: -10,
-      boxShadow: '0 10px 15px rgba(0, 0, 0, 0.2)',
+      scale: 1.03,
+      y: -5,
+      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.15)',
       transition: { duration: 0.3, ease: 'easeOut' },
     },
   };
 
-  // Function to format date as DD/MM/YYYY HH:mm:ss using date-fns
   const formatDate = (dateString) => {
     if (!dateString) return 'Không xác định';
-
     try {
-      const date = parseISO(dateString); // Parse ISO date string
+      const date = parseISO(dateString);
       return format(date, 'dd/MM/yyyy HH:mm:ss');
     } catch (error) {
       console.warn(`Error parsing date string: ${dateString}`, error);
@@ -73,99 +71,144 @@ const Blog = () => {
 
   if (adminLoading) {
     return (
-      <div className="flex items-center justify-center py-6 mt-100 mb-150">
-        <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
-        <p className="text-orange-500 font-medium">Đang tải dữ liệu...</p>
+      <div className="flex items-center justify-center py-12 min-h-screen bg-gray-100">
+        <FaSpinner className="animate-spin text-orange-500 w-8 h-8 mr-3" />
+        <p className="text-orange-500 text-lg font-medium">Đang tải dữ liệu...</p>
       </div>
-    )
+    );
   }
 
-
-
   return (
-    <div className={`min-h-screen p-6`}>
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl md:text-3xl text-orange-500 text-center mb-6">DXLAB Blog</h1>
-        <p className="text-center text-4xl font-bold mb-10">
-          Bài viết mới nhất tại DXLAB Co-working Space
-        </p>
+    <div className="py-12 px-4 sm:px-6 lg:px-8 mb-20">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-4xl sm:text-5xl font-bold mb-4">
+            DXLAB Blog
+          </h1>
+          <p className="text-lg sm:text-xl max-w-2xl mx-auto">
+            Khám phá những bài viết mới nhất về học tập, sáng tạo và cộng đồng tại DXLAB Coworking Space.
+          </p>
+        </motion.div>
 
-        <input
-          type="text"
-          placeholder="Tìm kiếm bài viết..."
-          className="block w-full max-w-md mx-auto p-2 mb-6 border rounded-lg"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-
-        {currentPosts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentPosts.map((post) => {
-              console.log(`Blog ID: ${post.blogId}, blogCreatedDate: ${post.blogCreatedDate}`);
-              return (
-                <motion.div
-                  key={post.blogId}
-                  className="border rounded-lg shadow-lg flex flex-col"
-                  variants={cardVariants}
-                  initial="rest"
-                  whileHover="hover"
-                >
-                  <img
-                    src={`https://localhost:9999${post.images?.[0] || '/default-image.jpg'}`}
-                    alt={post.blogTitle}
-                    className="rounded-t-lg mb-4 w-full h-48 object-cover"
-                    onError={(e) => (e.target.src = '/default-image.jpg')}
-                  />
-                  <div className="p-5 flex flex-col flex-grow">
-                    <h1 className="text-sm text-orange-500 mb-2">DXLAB Blog</h1>
-                    <h2 className="text-xl font-semibold mb-2">{post.blogTitle}</h2>
-                    <p className="text-sm text-gray-400">
-                      Ngày đăng: {formatDate(post.blogCreatedDate)}
-                    </p>
-                    <p className="mt-2 mb-4 line-clamp-3">
-                      {post.blogContent || 'Nội dung không có'}...
-                    </p>
-                    <div className="mt-auto">
-                      <Link
-                        to={`/blog/${post.blogId}`}
-                        className="flex items-center text-orange-500 px-4 py-2 rounded-lg group"
-                      >
-                        <span className="relative group-hover:text-orange-600">Xem thêm</span>
-                        <motion.div
-                          className="ml-2"
-                          initial={{ x: 0 }}
-                          whileHover={{ x: 5 }}
-                          transition={{ type: 'tween', duration: 0.2 }}
-                        >
-                          <ArrowRight
-                            size={20}
-                            className="group-hover:translate-x-1 transition-transform duration-200"
-                          />
-                        </motion.div>
-                      </Link>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
+        {/* Search Bar */}
+        <motion.div
+          className="relative max-w-md mx-auto mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="w-5 h-5 text-gray-400" />
           </div>
+          <input
+            type="text"
+            placeholder="Tìm kiếm bài viết..."
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </motion.div>
+
+        {/* Blog Cards */}
+        {currentPosts.length > 0 ? (
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.2 },
+              },
+            }}
+          >
+            {currentPosts.map((post) => (
+              <motion.div
+                key={post.blogId}
+                className="bg-white rounded-xl shadow-md overflow-hidden flex flex-col"
+                variants={cardVariants}
+                initial="rest"
+                whileHover="hover"
+              >
+                <img
+                  src={`https://localhost:9999${post.images?.[0] || '/default-image.jpg'}`}
+                  alt={post.blogTitle}
+                  className="w-full h-56 object-cover"
+                  onError={(e) => (e.target.src = '/default-image.jpg')}
+                />
+                <div className="p-6 flex flex-col flex-grow">
+                  <span className="text-sm text-orange-500 font-medium mb-2">
+                    DXLAB Blog
+                  </span>
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+                    {post.blogTitle}
+                  </h2>
+                  <p className="text-sm text-gray-500 mb-3">
+                    Ngày đăng: {formatDate(post.blogCreatedDate)}
+                  </p>
+                  <p className="text-gray-600 text-base leading-relaxed mb-4 line-clamp-3">
+                    {post.blogContent || 'Nội dung không có'}...
+                  </p>
+                  <div className="mt-auto">
+                    <Link
+                      to={`/blog/${post.blogId}`}
+                      className="inline-flex items-center text-orange-500 font-medium hover:text-orange-600 transition-colors duration-200"
+                    >
+                      Xem thêm
+                      <motion.div
+                        className="ml-2"
+                        initial={{ x: 0 }}
+                        whileHover={{ x: 5 }}
+                        transition={{ type: 'tween', duration: 0.2 }}
+                      >
+                        <ArrowRight size={20} />
+                      </motion.div>
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
         ) : (
-          <p className="text-center text-xl text-orange-500">Hiện chưa có bài viết nào.</p>
+          <motion.p
+            className="text-center text-xl text-orange-500"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            Hiện chưa có bài viết nào.
+          </motion.p>
         )}
 
+        {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center mt-6">
+          <motion.div
+            className="flex justify-center mt-12 space-x-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
             {[...Array(totalPages)].map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentPage(index + 1)}
-                className={`mx-1 px-4 py-2 rounded-lg ${currentPage === index + 1 ? 'bg-orange-500 text-white' : 'bg-gray-200 text-black'
-                  }`}
+                className={`px-4 py-2 rounded-full font-medium transition-all duration-200 ${
+                  currentPage === index + 1
+                    ? 'bg-orange-500 text-white shadow-md'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-orange-50 hover:border-orange-500'
+                }`}
               >
                 {index + 1}
               </button>
             ))}
-          </div>
+          </motion.div>
         )}
       </div>
     </div>

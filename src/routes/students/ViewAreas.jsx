@@ -39,7 +39,7 @@ const ViewAreas = () => {
   const [groupAreas, setGroupAreas] = useState([]);
   const [imageIndices, setImageIndices] = useState({});
   const today = getCurrentDate();
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   // Fetch room data khi id thay đổi
   useEffect(() => {
@@ -174,10 +174,10 @@ const ViewAreas = () => {
     navigate(`/area/${area.value[0].areaTypeId}`);
   };
 
-  const handleSlotChange = (bookingIndex, slotId) => {
+  const handleSlotChange = (bookingIndex, slotNumber) => {
     const date = bookingDates[bookingIndex].date;
     const slotsForDate = fetchedSlots[date] || [];
-    const slot = slotsForDate.find((s) => s.slotId === slotId);
+    const slot = slotsForDate.find((s) => s.slotNumber === slotNumber);
     if (!slot) return;
 
     if (slot.availableSlot === 0) {
@@ -189,14 +189,18 @@ const ViewAreas = () => {
     const currentBooking = updatedDates[bookingIndex];
     const currentSlots = Array.isArray(currentBooking.slots) ? currentBooking.slots : [];
 
-    const newSlots = currentSlots.includes(slotId)
-      ? currentSlots.filter((s) => s !== slotId)
-      : [...currentSlots, slotId];
+    const exists = currentSlots.some((s) => s.slotNumber === slotNumber);
+
+    const newSlots = exists
+      ? currentSlots.filter((s) => s.slotNumber !== slotNumber)
+      : [...currentSlots, { slotNumber: slot.slotNumber, slotId: slot.slotId }];
 
     updatedDates[bookingIndex] = { ...currentBooking, slots: newSlots };
+
     setBookingDates(updatedDates);
     dispatch(setSelectedTime(updatedDates));
   };
+  console.log(bookingDates);
 
   const handleDateChange = (index, value) => {
     const updatedDates = [...bookingDates];
@@ -349,13 +353,13 @@ const ViewAreas = () => {
     <div className="p-6 mb-20">
       <div className='p-8 flex flex-col items-center text-center mt-16 mb-20'>
         <h1 className="text-4xl mb-10 tracking-wide">
-          Danh sách khu vực tại{" "}
+          Danh sách dịch vụ tại{" "}
           <span className="bg-gradient-to-r from-orange-500 to-orange-800 text-transparent bg-clip-text">
-            DXLAB Co-working Space
+            DXLAB Coworking Space
           </span>
         </h1>
         <p className="text-gray-600 mb-10 max-w-2xl">
-          Chọn khu vực phù hợp với nhu cầu làm việc của bạn
+          Chọn dịch vụ phù hợp với nhu cầu làm việc của bạn
         </p>
         {roomLoading ? (
           <div className="flex items-center justify-center py-6">
@@ -373,11 +377,11 @@ const ViewAreas = () => {
             <p className="text-gray-500 text-lg">Không tìm thấy khu vực nào trong phòng này</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-7xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 w-full max-w-7xl justify-items-center">
             {categoryInRoom.data.map((area, index) => (
               <div
                 key={index}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 flex flex-col"
+                className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition duration-300 hover:scale-105 flex flex-col w-full sm:w-96"
               >
                 {renderImages(area.key.images, index)}
                 <div className="p-6 text-left flex flex-col flex-grow">
@@ -419,29 +423,31 @@ const ViewAreas = () => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-opacity-50 flex justify-center items-center">
-          <div className="bg-gray-300 text-black p-6 rounded-lg shadow-lg lg:w-[600px] md:w-[600px] sm:w-[500px] w-xs relative">
-            <button className="absolute top-2 right-2"
+        <div className="fixed inset-0  bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-gray-300 text-gray-800 p-8 rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto relative">
+            <button
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
               onClick={() => {
                 dispatch(closeModal());
                 setFetchedSlots({});
                 setBookingDates([{ date: getCurrentDate(), slots: [] }]);
-              }}>
-              <XIcon className="h-6 w-6 text-black" />
+              }}
+            >
+              <XIcon className="h-6 w-6 text-gray-600" />
             </button>
-            <h2 className="text-2xl font-bold mb-4 text-center">Đặt Lịch Tới DXLAB</h2>
-            <div className="mb-4">
-              <p className="break-words text-base">
-                Bạn đã chọn khu vực: <strong>{selectedArea?.key.title}</strong>
+            <h2 className="text-3xl font-bold mb-6 text-center">Đặt Lịch Tới DXLAB</h2>
+            <div className="mb-6">
+              <p className="text-lg">
+                Bạn đã chọn dịch vụ: <strong>{selectedArea?.key.title}</strong>
               </p>
             </div>
             {selectedArea?.key.categoryId === 2 && groupAreas.length > 0 && (
-              <div>
-                <label className="block font-medium mb-2">Chọn khu vực nhóm bạn mong muốn:</label>
+              <div className="mb-6">
+                <label className="block font-medium mb-2">Chọn kiểu khu vực nhóm bạn mong muốn:</label>
                 <select
                   value={selectedArea.value[0].areaTypeId}
                   onChange={handleAreaChange}
-                  className="w-full p-2 mb-4 border rounded-md"
+                  className="w-full p-2 border rounded-md focus:outline-none"
                 >
                   {groupAreas.map((area) => (
                     <option key={area.value[0].areaTypeId} value={area.value[0].areaTypeId}>
@@ -451,19 +457,19 @@ const ViewAreas = () => {
                 </select>
               </div>
             )}
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-64 overflow-y-auto mb-6">
               {bookingDates.map((booking, index) => (
                 <div key={index} className="mb-4">
                   <div className="flex items-center gap-2">
                     <input
                       type="date"
-                      className="flex-1 p-2 border rounded-md dark:bg-gray-800 dark:text-white"
+                      className="flex-1 p-2 border rounded-md focus:outline-none"
                       value={booking.date}
                       onChange={(e) => handleDateChange(index, e.target.value)}
                     />
                     <button
                       onClick={() => removeBookingDate(index)}
-                      className="p-1 text-red-500 hover:text-red-700"
+                      className="p-1 text-red-500 hover:text-red-700 transition-colors"
                     >
                       <XIcon className="h-5 w-5" />
                     </button>
@@ -474,14 +480,14 @@ const ViewAreas = () => {
                       <div className="grid grid-cols-2 gap-2">
                         {fetchedSlots[booking.date].map((slot) => (
                           <div
-                            key={slot.slotId}
+                            key={slot.slotNumber}
                             className={`group relative flex items-center space-x-2 p-2 rounded-md transition-all duration-200 ${slot.availableSlot === 0 ? 'text-orange-500 cursor-not-allowed' : ''}`}
                           >
                             <input
                               type="checkbox"
-                              value={slot.slotId}
-                              checked={Array.isArray(booking.slots) && booking.slots.includes(slot.slotId)}
-                              onChange={() => handleSlotChange(index, slot.slotId)}
+                              value={slot.slotNumber}
+                              checked={booking.slots.some((s) => s.slotNumber === slot.slotNumber)}
+                              onChange={() => handleSlotChange(index, slot.slotNumber, slot.slotId)}
                               disabled={isSlotDisabled(slot, booking.date)}
                               className={`${slot.availableSlot === 0 ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
                             />
@@ -509,17 +515,20 @@ const ViewAreas = () => {
                 </div>
               ))}
             </div>
-            <button className="flex items-center gap-2 text-orange-500 mt-2 mb-5" onClick={addBookingDate}>
+            <button
+              className="flex items-center gap-2 text-orange-500 mb-6 hover:text-orange-600 transition-colors"
+              onClick={addBookingDate}
+            >
               <PlusCircleIcon className="h-5 w-5" /> Thêm ngày
             </button>
-            <div className="mb-4">
+            <div className="mb-6">
               <p className="text-lg">
                 Tổng chi phí: <span className="text-orange-500">{calculateTotalPrice()} DXL</span>
               </p>
             </div>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-4">
               <button
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
                 onClick={(e) => handleConfirmBooking(e)}
               >
                 Xác nhận

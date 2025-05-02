@@ -27,7 +27,7 @@ const BlogListOfStaffDetail = () => {
   const [localLoading, setLocalLoading] = useState(false);
   const [blogIdToDelete, setBlogIdToDelete] = useState(null);
   const [blogTitle, setBlogTitle] = useState("");
-  const baseUrl = "https://localhost:9999";
+  const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
   useEffect(() => {
     if (id) {
@@ -302,7 +302,7 @@ const BlogListOfStaffDetail = () => {
             {/* Right Section: Details */}
             <motion.div className="space-y-4 sm:space-y-6" variants={itemVariants}>
               <motion.div
-                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-300 ${
                   theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                 }`}
                 variants={itemVariants}
@@ -319,7 +319,7 @@ const BlogListOfStaffDetail = () => {
               </motion.div>
 
               <motion.div
-                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-300 ${
                   theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                 }`}
                 variants={itemVariants}
@@ -336,7 +336,7 @@ const BlogListOfStaffDetail = () => {
               </motion.div>
 
               <motion.div
-                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-300 ${
                   theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                 }`}
                 variants={itemVariants}
@@ -355,7 +355,7 @@ const BlogListOfStaffDetail = () => {
               </motion.div>
 
               <motion.div
-                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-300 ${
                   theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                 }`}
                 variants={itemVariants}
@@ -372,7 +372,7 @@ const BlogListOfStaffDetail = () => {
               </motion.div>
 
               <motion.div
-                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-300 ${
                   theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                 }`}
                 variants={itemVariants}
@@ -393,7 +393,7 @@ const BlogListOfStaffDetail = () => {
               </motion.div>
 
               <motion.div
-                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300 ${
+                className={`relative rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg transition-all duration-300 ${
                   theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                 }`}
                 variants={itemVariants}
@@ -458,42 +458,29 @@ const BlogListOfStaffDetail = () => {
 
         {/* Delete Confirmation Modal */}
         {isDeleteModalOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={handleCloseDeleteModal}
-          >
-            <div
-              className={`rounded-lg shadow-2xl p-4 sm:p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100 ${
-                theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
-              }`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h2 className="text-lg sm:text-xl font-semibold text-red-600 mb-3 sm:mb-4">Xác nhận xóa</h2>
-              <p className="text-sm sm:text-base mb-4 sm:mb-6">
-                Bạn có chắc chắn muốn xóa blog <strong>{blogTitle}</strong> không? Hành động này không thể hoàn tác.
-              </p>
-              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-4">
-                <button
-                  onClick={handleCloseDeleteModal}
-                  className="w-full sm:w-auto bg-gray-500 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:bg-gray-600 transition-all shadow-md text-sm sm:text-base font-normal"
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="w-full sm:w-auto bg-gradient-to-r from-red-500 to-red-700 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg flex items-center justify-center gap-x-2 hover:from-red-600 hover:to-red-800 transition-all shadow-md text-sm sm:text-base font-normal disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={localLoading}
-                >
-                  {localLoading ? (
-                    <FaSpinner className="animate-spin w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  ) : (
-                    <Trash size={14} className="sm:w-4 sm:h-4" />
-                  )}
-                  {localLoading ? "Đang xóa..." : "Xóa"}
-                </button>
-              </div>
+          <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50" onClick={handleCloseDeleteModal}>
+          <div className="bg-gray-300 rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-in-out scale-100" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-semibold text-red-600 mb-4">Xác nhận xóa</h2>
+            <p className="text-gray-600 mb-6">
+              Bạn có chắc chắn muốn xóa blog <strong>{blogTitle}</strong> không? Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={handleCloseDeleteModal}
+                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors cursor-pointer"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-700 transition-colors cursor-pointer"
+                disabled={localLoading}
+              >
+                {localLoading ? "Đang xóa..." : "Xóa"}
+              </button>
             </div>
           </div>
+        </div>
         )}
       </motion.div>
     </div>

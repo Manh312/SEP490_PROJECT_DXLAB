@@ -10,7 +10,7 @@ const ManageReportDetail = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { currentReport, loading, error } = useSelector((state) => state.reports);
+  const { currentReport, loading } = useSelector((state) => state.reports);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -64,16 +64,6 @@ const ManageReportDetail = () => {
         <FaSpinner className="animate-spin text-orange-500 w-6 h-6 mr-2" />
         <p className="text-orange-500 font-medium text-base sm:text-lg">
           Đang tải dữ liệu...
-        </p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center py-6 mt-50 mb-200">
-        <p className="text-red-500 text-base sm:text-lg font-normal text-center">
-          Lỗi: {error}
         </p>
       </div>
     );

@@ -108,7 +108,7 @@ const CreateAreaCategory = () => {
       toast.success("Tạo dịch vụ thành công!");
       navigate("/dashboard/area");
     } catch (err) {
-      toast.error(err.message || "Lỗi khi tạo dịch vụ");
+      toast.error(err || "Lỗi khi tạo dịch vụ");
       console.error("Failed to create area type category:", err);
     }
   };

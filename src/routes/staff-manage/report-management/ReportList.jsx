@@ -20,7 +20,6 @@ const ReportList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [signalRError, setSignalRError] = useState(null);
   const reportsPerPage = 5;
 
   // Debounce search
@@ -66,9 +65,6 @@ const ReportList = () => {
         }
       } catch (err) {
         console.error("Failed to setup SignalR:", err);
-        if (mounted) {
-          setSignalRError(`Không thể kết nối SignalR: ${err.message}`);
-        }
       } finally {
         if (mounted) {
           setIsInitialLoading(false);
@@ -135,7 +131,7 @@ const ReportList = () => {
   };
 
   return (
-    <div className="py-4 px-2 sm:px-4 lg:px-6 xl:px-8 mb-10">
+    <div className="py-4 px-2 sm:px-4 lg:px-6 xl:px-8 mb-20">
       <div className="w-full border border-gray-600 mx-auto rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
         {/* Header */}
         <div className="flex flex-col items-center justify-between mb-6 sm:flex-row">
@@ -146,13 +142,6 @@ const ReportList = () => {
             </h2>
           </div>
         </div>
-
-        {/* SignalR Error */}
-        {signalRError && (
-          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
-            {signalRError}
-          </div>
-        )}
 
         {/* Search */}
         <div className="mb-6 p-4 rounded-lg shadow-sm">
