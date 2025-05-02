@@ -61,6 +61,7 @@ import ManageFacilitiesInArea from "./routes/room/ManageFacilitiesInArea";
 import UpdateSlot from "./routes/slot/UpdateSLot";
 import FacilitiesListDelete from "./routes/report/FacilitiesListDelete";
 import ReportDetail from "./routes/staff-manage/report-management/ReportDetail";
+import RefundConfirmation from "./routes/students/RefundConfirmation";
 
 
 
@@ -102,6 +103,7 @@ const router = createBrowserRouter([
       { path: "booked-seats/:id", element: <ProtectedRoute allowedRoles={["Student"]}><ViewBookedSeats /></ProtectedRoute> },
       { path: "booked-history", element: <ProtectedRoute allowedRoles={["Student"]}><ViewBookingHistory /></ProtectedRoute> },
       { path: "booked-history/:id", element: <ProtectedRoute allowedRoles={["Student"]}><BookHistoriedDetail /></ProtectedRoute> },
+      { path: "refund/:id", element: <ProtectedRoute allowedRoles={["Student"]}><RefundConfirmation /></ProtectedRoute> },
 
       {
         path: "dashboard",
