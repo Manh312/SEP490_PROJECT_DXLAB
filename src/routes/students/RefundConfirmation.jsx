@@ -1,9 +1,12 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchBookingHistoryDetail } from "../../redux/slices/Booking";
+import { fetchBookingHistoryDetail, deleteBooking } from "../../redux/slices/Booking";
 import { ArrowLeft } from "lucide-react";
 import { FaUndo } from "react-icons/fa";
+import { useAddress, useContract, useContractRead, useContractWrite } from '@thirdweb-dev/react';
+import { ethers } from 'ethers';
+import { toast } from 'react-toastify';
 
 const RefundConfirmation = () => {
   const { id } = useParams();
@@ -12,11 +15,15 @@ const RefundConfirmation = () => {
   const { bookingDetail } = useSelector((state) => state.booking);
   console.log(bookingDetail);
 
-
   // Fetch booking details
   useEffect(() => {
     dispatch(fetchBookingHistoryDetail({ id }));
   }, [dispatch, id]);
+
+  const address = useAddress();
+  const { contract } = useContract(import.meta.env.VITE_DXLABCOINT_CONTRACT);
+  const { mutateAsync: transfer } = useContractWrite(contract, 'transfer');
+  const { data: decimals } = useContractRead(contract, 'decimals');
 
   const formatDateTime = (dateString) => {
     if (!dateString) return "Không xác định";
@@ -30,11 +37,63 @@ const RefundConfirmation = () => {
     });
   };
 
-  const handleRefund = () => {
-    // Navigate back to booking history after refund
-    navigate("/booking-history");
+  const calculateRefundAmount = (checkInTime) => {
+    const now = new Date();
+    const checkIn = new Date(checkInTime);
+    const diffMs = checkIn - now;
+    const diffHours = diffMs / (1000 * 60 * 60);
+
+    const totalPrice = bookingDetail?.data?.totalPrice || 0;
+    if (diffHours >= 2) {
+      return totalPrice; // 100% refund
+    } else if (diffHours >= 1) {
+      return totalPrice * 0.5; // 50% refund
+    }
+    return 0; // No refund
   };
 
+  const handleRefund = async () => {
+    if (!bookingDetail?.data?.bookingId || !address || !contract || !decimals) {
+      toast.error("Thông tin không đầy đủ để thực hiện hoàn tiền!");
+      return;
+    }
+
+    const checkInTime = bookingDetail.data.details?.[0]?.checkInTime; // Assuming checkInTime is available
+    if (!checkInTime) {
+      toast.error("Không tìm thấy thời gian check-in!");
+      return;
+    }
+
+    const refundAmount = calculateRefundAmount(checkInTime);
+    if (refundAmount === 0) {
+      toast.error("Không thể hoàn tiền vì đã quá 1 giờ trước check-in!");
+      return;
+    }
+
+    const adminAddress = import.meta.env.VITE_ADMIN_ADDRESS; // Admin/owner address from env
+    if (!adminAddress || !ethers.utils.isAddress(adminAddress)) {
+      toast.error("Địa chỉ admin không hợp lệ!");
+      return;
+    }
+
+    const amount = ethers.utils.parseUnits(refundAmount.toString(), decimals);
+
+    try {
+      // Call deleteBooking API to confirm cancellation with backend
+      await dispatch(deleteBooking(bookingDetail.data.bookingId)).unwrap();
+
+      // Perform refund transaction from admin to user
+      await transfer({
+        args: [address, amount],
+      });
+
+      toast.success(`Hoàn tiền thành công: ${refundAmount} DXL!`);
+      navigate("/booking-history");
+    } catch (error) {
+      console.error("Refund failed:", error);
+      toast.error(error.message || "Có lỗi xảy ra khi hoàn tiền! Vui lòng liên hệ hỗ trợ.");
+    }
+  };
 
   // Loading or no data state
   if (!bookingDetail || !bookingDetail.data) {
@@ -92,6 +151,14 @@ const RefundConfirmation = () => {
                 ? "Thành công"
                 : "Không thành công"}
             </span>
+          </p>
+          <p className="text-sm mb-2">
+            <span className="font-medium">Thời gian check-in:</span>{" "}
+            {formatDateTime(bookingDetail.data.details?.[0]?.checkInTime)}
+          </p>
+          <p className="text-sm mb-2">
+            <span className="font-medium">Số tiền hoàn:</span>{" "}
+            {calculateRefundAmount(bookingDetail.data.details?.[0]?.checkInTime).toLocaleString("vi-VN")} DXL
           </p>
         </div>
 
