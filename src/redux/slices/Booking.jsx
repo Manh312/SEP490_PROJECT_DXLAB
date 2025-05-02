@@ -62,6 +62,19 @@ export const fetchBookingHistoryDetail = createAsyncThunk(
   }
 );
 
+// Async thunk to delete a booking
+export const deleteBooking = createAsyncThunk(
+  'booking/deleteBooking',
+  async (bookingId, { rejectWithValue }) => {
+    try {
+      const response = await axios.delete(`/api/booking?bookingId=${bookingId}`);
+      return { bookingId, ...response.data };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Không thể xóa booking');
+    }
+  }
+);
+
 const initialState = {
   isModalOpen: false,
   selectedArea: null,
@@ -229,6 +242,21 @@ const bookingSlice = createSlice({
       .addCase(fetchBookingHistoryDetail.rejected, (state, action) => {
         state.historyDetailLoading = false;
         state.historyDetailError = action.payload;
+      })
+      // Handle deleteBooking
+      .addCase(deleteBooking.pending, (state) => {
+        state.bookingLoading = true;
+        state.bookingError = null;
+      })
+      .addCase(deleteBooking.fulfilled, (state, action) => {
+        state.bookingLoading = false;
+        state.bookings.data = state.bookings.data.filter(booking => booking.bookingId !== action.payload.bookingId);
+        state.bookingSuccess = true;
+      })
+      .addCase(deleteBooking.rejected, (state, action) => {
+        state.bookingLoading = false;
+        state.bookingError = action.payload;
+        state.bookingSuccess = false;
       });
   },
 });
