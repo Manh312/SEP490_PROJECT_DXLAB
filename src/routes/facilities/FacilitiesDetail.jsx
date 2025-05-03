@@ -89,8 +89,7 @@ const FacilitiesDetail = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Cột trái */}
             <div className="space-y-4 sm:space-y-6">
-              {/* Số lô */}
-              <motion.div
+            <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
                 variants={itemVariants}
               >
@@ -99,12 +98,28 @@ const FacilitiesDetail = () => {
                     <Hash className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Số Lô</p>
-                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.batchNumber}</p>
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Mã Thiết Bị</p>
+                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.facilityId}</p>
                   </div>
                 </div>
               </motion.div>
 
+              {/* Tiêu đề cơ sở vật chất */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Package className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Tiêu Đề</p>
+                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.facilityTitle}</p>
+                  </div>
+                </div>
+              </motion.div>
+  
               {/* Số lượng */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -160,18 +175,18 @@ const FacilitiesDetail = () => {
 
             {/* Cột phải */}
             <div className="space-y-4 sm:space-y-6">
-              {/* Tiêu đề cơ sở vật chất */}
+              {/* Số lô */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
                 variants={itemVariants}
               >
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="bg-orange-100 rounded-full p-2">
-                    <Package className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                    <Hash className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Tiêu Đề</p>
-                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.facilityTitle}</p>
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Số Lô</p>
+                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.batchNumber}</p>
                   </div>
                 </div>
               </motion.div>
@@ -192,24 +207,6 @@ const FacilitiesDetail = () => {
                 </div>
               </motion.div>
 
-              {/* Ngày hết hạn */}
-              <motion.div
-                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
-                variants={itemVariants}
-              >
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="bg-orange-100 rounded-full p-2">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Ngày Hết Hạn</p>
-                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">
-                      {format(new Date(facility.expiredTime), "dd/MM/yyyy")}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-
               {/* Chất lượng */}
               <motion.div
                 className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
@@ -224,6 +221,24 @@ const FacilitiesDetail = () => {
                     <span className={`inline-flex items-center px-2 py-1 rounded-full font-normal text-sm ${statusClass}`}>
                       {status}
                     </span>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Ngày hết hạn */}
+              <motion.div
+                className="relative bg-white rounded-lg p-3 sm:p-4 border border-gray-100 shadow-md hover:shadow-lg hover:bg-orange-50 transition-all duration-300"
+                variants={itemVariants}
+              >
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="bg-orange-100 rounded-full p-2">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Ngày Hết Hạn</p>
+                    <p className="text-sm sm:text-base font-normal text-gray-800 truncate">
+                      {format(new Date(facility.expiredTime), "dd/MM/yyyy")}
+                    </p>
                   </div>
                 </div>
               </motion.div>

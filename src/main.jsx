@@ -77,10 +77,6 @@ const sendUserDataToBackend = async (
     dispatch(setIsAuthenticating(true)); // Set isAuthenticating to true
 
     let userEmail = user?.email || user?.storedToken?.authDetails?.email;
-    // if (!userEmail) {
-    //   console.warn("Không thể lấy email từ Google authentication, sử dụng email mặc định.");
-    //   userEmail = `${walletAddress}@embeddedwallet.default`;
-    // }
 
     const payload = {
       userId: 0,

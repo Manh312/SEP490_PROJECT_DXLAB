@@ -67,10 +67,23 @@ export const deleteBooking = createAsyncThunk(
   'booking/deleteBooking',
   async (bookingId, { rejectWithValue }) => {
     try {
-      const response = await axios.delete(`/api/booking?bookingId=${bookingId}`);
+      const response = await axios.delete(`/booking?bookingId=${bookingId}`);
       return { bookingId, ...response.data };
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Không thể xóa booking');
+    }
+  }
+);
+
+// Async thunk to fetch booking cancel info
+export const fetchBookingCancelInfo = createAsyncThunk(
+  'booking/fetchBookingCancelInfo',
+  async ({ bookingId }, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`/booking/bookingcancelinfo?bookingId=${bookingId}`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error);
     }
   }
 );
@@ -94,7 +107,10 @@ const initialState = {
   historyDetailLoading: false,
   historyDetailError: null,
   selectedSlot: 1,
-  selectedDate: Date
+  selectedDate: Date,
+  cancelInfo: null, // Lưu trữ thông tin hủy booking
+  cancelInfoLoading: false, // Trạng thái loading khi gọi API fetchBookingCancelInfo
+  cancelInfoError: null, // Lưu trữ lỗi khi gọi API fetchBookingCancelInfo
 };
 
 const bookingSlice = createSlice({
@@ -115,6 +131,9 @@ const bookingSlice = createSlice({
       state.slotsError = null;
       state.categoryLoading = false;
       state.categoryError = null;
+      state.cancelInfo = null; // Reset cancelInfo khi đóng modal
+      state.cancelInfoLoading = false;
+      state.cancelInfoError = null;
     },
     setSelectedTime: (state, action) => {
       state.selectedTime = [...action.payload];
@@ -142,6 +161,8 @@ const bookingSlice = createSlice({
       state.categoryError = null;
       state.historyDetailLoading = false;
       state.historyDetailError = null;
+      state.cancelInfoLoading = false; // Reset trạng thái cancelInfoLoading
+      state.cancelInfoError = null; // Reset trạng thái cancelInfoError
       // Do NOT reset bookingDetail, selectedDate, or selectedSlot
     },
     setSelectedSlot: (state, action) => {
@@ -156,6 +177,9 @@ const bookingSlice = createSlice({
       state.historyDetailLoading = false;
       state.historyDetailError = null;
       state.selectedDate = Date;
+      state.cancelInfo = null; // Reset cancelInfo khi clear booking
+      state.cancelInfoLoading = false;
+      state.cancelInfoError = null;
     }
   },
   extraReducers: (builder) => {
@@ -169,7 +193,7 @@ const bookingSlice = createSlice({
       .addCase(createBooking.fulfilled, (state, action) => {
         state.bookingLoading = false;
         const newBooking = action.payload.data || action.payload;
-        if (newBooking && newBooking.bookingId) { // Fix: Use bookingID
+        if (newBooking && newBooking.bookingId) { // Fix: Use bookingId
           state.bookingSuccess = true;
           state.bookings.data = Array.isArray(state.bookings.data)
             ? [...state.bookings.data, newBooking]
@@ -257,6 +281,19 @@ const bookingSlice = createSlice({
         state.bookingLoading = false;
         state.bookingError = action.payload;
         state.bookingSuccess = false;
+      })
+      // Handle fetchBookingCancelInfo
+      .addCase(fetchBookingCancelInfo.pending, (state) => {
+        state.cancelInfoLoading = true;
+        state.cancelInfoError = null;
+      })
+      .addCase(fetchBookingCancelInfo.fulfilled, (state, action) => {
+        state.cancelInfoLoading = false;
+        state.cancelInfo = action.payload;
+      })
+      .addCase(fetchBookingCancelInfo.rejected, (state, action) => {
+        state.cancelInfoLoading = false;
+        state.cancelInfoError = action.payload;
       });
   },
 });

@@ -130,7 +130,6 @@ const Payment = () => {
     // Bước 2: Nếu createBooking thành công, tiến hành kiểm tra và trừ tiền
     const totalPrice = calculateTotalPrice();
     const recipientAddress = import.meta.env.VITE_RECIPIENT_ADDRESS;
-    console.log('Recipient Address:', recipientAddress);
 
     // Validate recipientAddress
     if (!recipientAddress || !ethers.utils.isAddress(recipientAddress)) {

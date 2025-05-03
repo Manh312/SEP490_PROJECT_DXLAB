@@ -6,7 +6,6 @@ import { fetchBookingHistory } from "../../redux/slices/Booking";
 import { Search, Filter, Users } from "lucide-react";
 import { Tooltip } from "react-tooltip";
 import debounce from "lodash/debounce";
-import { FaUndo } from "react-icons/fa";
 
 
 const ITEMS_PER_PAGE = 6;
@@ -198,14 +197,6 @@ const ViewBookingHistory = () => {
                         >
                           <Users className="w-4 h-4" />
                         </Link>
-                        <Link
-                          to={`/refund/${tx.id}`}
-                          data-tooltip-id="action-tooltip"
-                          data-tooltip-content="Yêu cầu hoàn tiền"
-                          className="bg-blue-100 text-blue-700 hover:bg-blue-400 p-1.5 md:p-2 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <FaUndo className="w-4 h-4" />
-                        </Link>
                       </td>
                     </tr>
                   ))}
@@ -254,12 +245,6 @@ const ViewBookingHistory = () => {
                         className="bg-orange-100 text-orange-500 hover:bg-orange-700 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
                       >
                         <Users className="w-4 h-4" /> Xem Chi Tiết
-                      </Link>
-                      <Link
-                        to={`/refund/${tx.id}`}
-                        className="bg-blue-100 text-blue-500 hover:bg-blue-700 p-2 rounded-lg flex items-center justify-center gap-2 text-sm"
-                      >
-                        <Users className="w-4 h-4" /> Hoàn Tiền
                       </Link>
                     </div>
                   </div>

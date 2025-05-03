@@ -254,6 +254,7 @@ const FacilitiesList = () => {
                 <thead className="border-b items-center bg-gray-400">
                   <tr>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">#</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Mã thiết bị</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Số lô</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tiêu đề</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Giá</th>
@@ -273,6 +274,7 @@ const FacilitiesList = () => {
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                           {(currentPage - 1) * postsPerPage + index + 1}
                         </td>
+                        <td className="px-2 py-3 md:px-3 md:py-4 text-center">{facility.facilityId}</td>
                         <td className="px-2 py-3 md:px-3 md:py-4 text-center">
                           {facility.batchNumber}
                         </td>
