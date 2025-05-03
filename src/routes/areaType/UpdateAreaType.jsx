@@ -198,7 +198,7 @@ const UpdateAreaType = () => {
       navigate("/dashboard/areaType");
     } catch (error) {
       const errorMessage = error.message || "Unknown error";
-      toast.error(`Lỗi khi cập nhật: ${errorMessage}`);
+      toast.error(errorMessage);
     }
   };
 

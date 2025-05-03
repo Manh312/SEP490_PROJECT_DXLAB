@@ -56,7 +56,7 @@ export const updateAreaTypeCategory = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Lỗi khi cập nhật danh mục dịch vụ");
+      return rejectWithValue(error || "Lỗi khi cập nhật danh mục dịch vụ");
     }
   }
 );
