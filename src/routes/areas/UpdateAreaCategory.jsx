@@ -216,7 +216,7 @@ const UpdateAreaCategory = () => {
       toast.success("Cập nhật dịch vụ thành công!");
       navigate("/dashboard/area");
     } catch (err) {
-      const errorMessage = err.message || "Lỗi khi cập nhật danh mục dịch vụ";
+      const errorMessage = err;
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);

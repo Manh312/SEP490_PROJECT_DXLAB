@@ -151,7 +151,6 @@ const ModifieBlog = () => {
       dispatch(fetchBlogsByStatus("Pending"));
       navigate("/manage/blog");
     } catch (err) {
-      console.error("Update error:", err);
       toast.error(err?.message || "Lỗi khi cập nhật bài viết!");
     }
   };

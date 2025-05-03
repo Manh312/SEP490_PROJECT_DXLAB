@@ -75,9 +75,9 @@ export const updateBlog = createAsyncThunk(
           "Content-Type": "multipart/form-data",
         },
       });
-      return response.data;
+      return response.data.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || "Không thể cập nhật blog");
+      return rejectWithValue(error || "Không thể cập nhật blog");
     }
   }
 );
