@@ -12,7 +12,6 @@ const Payment = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const address = useAddress();
-  console.log('User Address:', address);
 
   // Kết nối với hợp đồng ERC20
   const { contract } = useContract(import.meta.env.VITE_DXLABCOINT_CONTRACT);
@@ -24,7 +23,6 @@ const Payment = () => {
   const { data: ethBalance } = useBalance();
 
   const { selectedArea, selectedTime = [] } = useSelector((state) => {
-    console.log('Redux state.booking:', state.booking);
     return state.booking || {};
   });
   const { selectedRoom, loading: roomsLoading } = useSelector((state) => state.rooms);
@@ -38,17 +36,14 @@ const Payment = () => {
   const calculateTotalPrice = () => {
     let total = 0;
     if (!Array.isArray(selectedTime) || selectedTime.length === 0) {
-      console.log('No selectedTime available:', selectedTime);
       return total;
     }
 
     const pricePerSlot = selectedArea?.value?.[0]?.price || 10;
     selectedTime.forEach((booking) => {
       if (!booking || !Array.isArray(booking.slots) || booking.slots.length === 0) {
-        console.log('Invalid booking entry:', booking);
         return;
       }
-      console.log(`Processing date: ${booking.date}, slots: ${booking.slots}`);
       total += booking.slots.length * pricePerSlot;
     });
     return total;
