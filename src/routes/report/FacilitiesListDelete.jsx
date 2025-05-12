@@ -1,14 +1,18 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Trash2 } from 'lucide-react';
-import { removeFacilityFromArea } from '../../redux/slices/Area'; // Adjust path to your areaSlice
+import { removeFacilityFromReport } from '../../redux/slices/Area';
 import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const FacilitiesListDelete = () => {
   const { id } = useParams(); // Get the report ID from the URL
+
   const dispatch = useDispatch();
-  const { listfacicheck, currentReport, loading } = useSelector((state) => state.reports); 
-  
+  const { listfacicheck, currentReport, loading } = useSelector((state) => state.reports);
+  const navigate = useNavigate();
+
+  console.log(currentReport);
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
@@ -21,11 +25,9 @@ const FacilitiesListDelete = () => {
     const seconds = String(date.getSeconds()).padStart(2, "0");
     return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   };
-  
-  
 
   // Handle facility removal
-  const handleRemoveFacility = (facility) => {
+  const handleRemoveFacility = async (facility) => {
     const data = {
       areaId: currentReport.areaId,
       facilityId: facility.facilityId,
@@ -36,12 +38,13 @@ const FacilitiesListDelete = () => {
     };
     console.log('Data before dispatch:', data);
     try {
-      dispatch(removeFacilityFromArea(data));
-      toast.success('Xóa thiết bị thành công!');
+        await dispatch(removeFacilityFromReport({ data, id })).unwrap();
+        navigate('/dashboard/report');
+        toast.success('Xóa thiết bị thành công!');
     } catch (error) {
       console.error('Error removing facility:', error);
-      toast.error(error.message); 
-    }  
+      toast.error(error.message || 'Không thể xóa thiết bị. Vui lòng thử lại!');
+    }
   };
 
   return (
@@ -75,7 +78,7 @@ const FacilitiesListDelete = () => {
                           <span className="font-semibold">Tên Thiết Bị:</span> {facility.facilityTitle}
                         </p>
                         <p className="text-sm sm:text-base">
-                          <span className="font-semibold">Tên Thiết Bị:</span> {facility.batchNumber}
+                          <span className="font-semibold">Số Lô:</span> {facility.batchNumber}
                         </p>
                         <p className="text-sm sm:text-base">
                           <span className="font-semibold">Số Lượng Thiết Bị:</span> {facility.quantity}
@@ -101,7 +104,7 @@ const FacilitiesListDelete = () => {
                 </div>
               ) : (
                 <p className="text-gray-500 text-center">
-                  Không có thiết bị nào để hiển thị.
+                  Không có danh sách thiết bị cần được xóa nào.
                 </p>
               )}
 

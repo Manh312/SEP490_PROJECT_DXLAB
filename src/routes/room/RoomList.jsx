@@ -39,7 +39,7 @@ const RoomList = () => {
       const matchesStatus =
         statusFilter === "All" ||
         (statusFilter === "Sẵn sàng" && room.status === 1) || // Updated to match AreaList logic
-        (statusFilter === "Không sẵn sàng" && room.status === 0);
+        (statusFilter === "Chưa sẵn sàng" && room.status === 0);
       return matchesStatus;
     });
 
@@ -88,7 +88,7 @@ const RoomList = () => {
         return "bg-gray-100 text-gray-800";
       case "Sẵn sàng":
         return "bg-green-100 text-green-800";
-      case "Không sẵn sàng":
+      case "Chưa sẵn sàng":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -244,7 +244,7 @@ const RoomList = () => {
               >
                 <option value="All">Tất cả</option>
                 <option value="Sẵn sàng">Sẵn sàng</option>
-                <option value="Không sẵn sàng">Không sẵn sàng</option>
+                <option value="Chưa sẵn sàng">Chưa sẵn sàng</option>
               </select>
             </div>
           </div>

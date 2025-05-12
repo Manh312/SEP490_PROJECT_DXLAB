@@ -20,7 +20,7 @@ const CreateFacilities = () => {
     expiredTime: "",
     quantity: 0,
     size: 0,
-    facilityCategory: 0, // 0: Bàn, 1: Ghế
+    facilityCategory: 1, // 1: Bàn, 0: Ghế
     importDate: "",
   });
 
@@ -55,7 +55,7 @@ const CreateFacilities = () => {
       return;
     }
     if (parseFloat(facility.cost) <= 0) {
-      toast.error("Giá phải là số dương!");
+      toast.error("Giá nhậpnhập phải là số dương!");
       return;
     }
     if (parseInt(facility.quantity, 10) <= 0) {
@@ -194,9 +194,8 @@ const CreateFacilities = () => {
                       min={0}
                       step="0.01"
                       onChange={handleNumberChange}
-                      readOnly={facility.facilityCategory === "1"}
                       className={`w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out ${
-                        facility.facilityCategory === "1" ? "bg-gray-100 cursor-not-allowed" : ""
+                        facility.facilityCategory === "0" ? "bg-gray-100 cursor-not-allowed" : ""
                       }`}
                       placeholder="Nhập kích thước"
                     />
@@ -222,7 +221,7 @@ const CreateFacilities = () => {
                       name="importDate"
                       value={facility.importDate}
                       onChange={handleChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 bg-gray-50 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 bg-gray-400 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
                       required
                     />
                   </div>
@@ -306,8 +305,8 @@ const CreateFacilities = () => {
                       className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
                       required
                     >
-                      <option value="0">Bàn</option>
-                      <option value="1">Ghế</option>
+                      <option value="1">Bàn</option>
+                      <option value="0">Ghế</option>
                     </select>
                   </div>
                 </div>
@@ -331,7 +330,7 @@ const CreateFacilities = () => {
                       name="expiredTime"
                       value={facility.expiredTime}
                       onChange={handleChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 bg-gray-50 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 bg-gray-400 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
                       required
                     />
                   </div>
@@ -349,7 +348,7 @@ const CreateFacilities = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <label className="text-xs sm:text-sm font-bold text-gray-500 truncate">
-                      Giá <span className="text-red-500">*</span>
+                      Giá nhập <span className="text-red-500">*</span>
                     </label>
                     <div className="flex items-center mt-1 sm:mt-2 gap-2">
                       <input

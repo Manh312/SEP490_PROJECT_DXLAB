@@ -16,7 +16,7 @@ import ProductImage from "../assets/product-image.jpg";
 import { FaHome, FaMoneyBillWave, FaShieldAlt, FaWifi } from "react-icons/fa";
 
 import images1 from "../assets/dxlab_images1.jpg";
-// import images2 from "../assets/dxlab_images2.jpg";
+import images2 from "../assets/AreaTypeGroup.jpg";
 import images3 from "../assets/dxlab_images3.jpg";
 import images4 from "../assets/dxlab_images4.jpg";
 import canhan from "../assets/CanhanDxlab.jpg";
@@ -32,8 +32,7 @@ export const navItems = [
 export const banners = [
   // { image: images1 },
   { image: images1 },
-  { image: images4 },
-  { image: images3 },
+  { image: images2 },
 ];
 
 export const services = [

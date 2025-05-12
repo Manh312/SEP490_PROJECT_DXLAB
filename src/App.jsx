@@ -54,7 +54,6 @@ import AreaList from "./routes/areas/AreaList";
 import CreateAreaCategory from "./routes/areas/CreateAreaCategory";
 import UpdateAreaCategory from "./routes/areas/UpdateAreaCategory";
 import AreaDetailAdmin from "./routes/areas/AreaDetailAdmin";
-import CreateReport from "./routes/staff-manage/report-management/CreateReport";
 import ManageReportList from "./routes/report/ManageReportList";
 import ManageReportDetail from "./routes/report/ManageReportDetail";
 import ManageFacilitiesInArea from "./routes/room/ManageFacilitiesInArea";
@@ -247,10 +246,6 @@ const router = createBrowserRouter([
       {
         path: "manage/reports/:id",
         element: <ProtectedRoute allowedRoles={["Staff"]}><ReportDetail /></ProtectedRoute>,
-      },
-      {
-        path: "manage/reports/:id/create",
-        element: <ProtectedRoute allowedRoles={["Staff"]}><CreateReport /></ProtectedRoute>,
       },
       {
         path: "manage/blog",

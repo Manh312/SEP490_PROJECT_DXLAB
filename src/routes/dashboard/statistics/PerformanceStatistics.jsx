@@ -18,6 +18,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchRooms } from "../../../redux/slices/Room";
 import axios from "../../../utils/axios";
 import { toast } from "react-toastify";
+import { format } from "date-fns";
+
+// Utility to format date to dd/MM/yyyy
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? "N/A" : format(date, "dd/MM/yyyy");
+};
 
 const PerformanceStatistics = ({
   period,
@@ -232,7 +240,7 @@ const PerformanceStatistics = ({
           setIsRoomSearchPerformed(false);
           setFilteredRoomData([]);
           setRoomNameFromApi("");
-          toast.error(`Không có dữ liệu hiệu suất cho ngày ${selectedDate}!`);
+          toast.error(`Không có dữ liệu hiệu suất cho ngày ${formatDate(selectedDate)}!`);
           onRoomSelect(0);
         }
       } else if (selectedRoom && showRoomFilter) {
@@ -477,27 +485,29 @@ const PerformanceStatistics = ({
 
       <div className="card-body p-6 flex flex-col gap-8">
         <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="flex-1">
-            <label
-              className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-            >
-              Chọn ngày
-            </label>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => {
-                setSelectedDate(e.target.value);
-                if (!e.target.value) {
-                  setIsDateSearchPerformed(false);
-                }
-              }}
-              disabled={selectedRoom && showRoomFilter}
-              className={`w-full p-2 rounded-lg border bg-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                selectedRoom && showRoomFilter ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            />
-          </div>
+          {!showRoomFilter && (
+            <div className="flex-1">
+              <label
+                className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+              >
+                Chọn ngày
+              </label>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => {
+                  setSelectedDate(e.target.value);
+                  if (!e.target.value) {
+                    setIsDateSearchPerformed(false);
+                  }
+                }}
+                disabled={selectedRoom && showRoomFilter}
+                className={`w-full p-2 rounded-lg border bg-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  selectedRoom && showRoomFilter ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              />
+            </div>
+          )}
           {showRoomFilter && (
             <div className="flex-1">
               <label
@@ -540,162 +550,167 @@ const PerformanceStatistics = ({
           </div>
         </div>
 
-        {/* Chỉ hiển thị PieChart khi không phải tìm kiếm theo ngày */}
-        {!isDateSearchPerformed && utilizationPieData.length > 0 && (
-          <div className="flex flex-col items-center animate-fade-in">
-            <h3
-              className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"}`}
-            >
-              Hiệu suất sử dụng trung bình -{" "}
-              {isRoomSearchPerformed && roomNameFromApi
-                ? `Phòng ${roomNameFromApi} - ${period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}`
-                : period === "năm"
-                ? `Năm ${year}`
-                : `Tháng ${month}/${year}`}
-            </h3>
-            {utilizationPieData.every((item) => item.value === 0) ? (
-              <p className={`text-center text-gray-500 dark:text-gray-400`}>
-                Không có dữ liệu hiệu suất cho{" "}
-                {isRoomSearchPerformed && roomNameFromApi
-                  ? `phòng ${roomNameFromApi}`
-                  : period === "năm"
-                  ? `năm ${year}`
-                  : `tháng ${month}/${year}`}
-              </p>
-            ) : (
-              <ResponsiveContainer width="100%" height={350}>
-                <PieChart>
-                  <Pie
-                    data={utilizationPieData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={110}
-                    labelLine={true}
-                    label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
-                  >
-                    {utilizationPieData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                        className="transition-all duration-300 hover:opacity-80"
+        {!isRoomSearchPerformed && !isDateSearchPerformed && !hasPerformanceData ? (
+          <p className={`text-center text-gray-500 dark:text-gray-400`}>
+            Không có dữ liệu hiệu suất trong {period === "tháng" ? `tháng ${month}/${year}` : `năm ${year}`}
+          </p>
+        ) : isRoomSearchPerformed && filteredRoomData.length === 0 ? (
+          <p className={`text-center text-gray-500 dark:text-gray-400`}>
+            Không có dữ liệu hiệu suất cho phòng {roomNameFromApi || selectedRoomName || "đã chọn"} trong {period === "tháng" ? `tháng ${month}/${year}` : `năm ${year}`}
+          </p>
+        ) : (
+          <>
+            {/* Chỉ hiển thị PieChart khi không phải tìm kiếm theo ngày */}
+            {!isDateSearchPerformed && utilizationPieData.length > 0 && (
+              <div className="flex flex-col items-center animate-fade-in">
+                <h3
+                  className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"}`}
+                >
+                  Hiệu suất sử dụng trung bình -{" "}
+                  {isRoomSearchPerformed && roomNameFromApi
+                    ? `Phòng ${roomNameFromApi} - ${period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}`
+                    : period === "năm"
+                    ? `Năm ${year}`
+                    : `Tháng ${month}/${year}`}
+                </h3>
+                {utilizationPieData.every((item) => item.value === 0) ? (
+                  <p className={`text-center text-gray-500 dark:text-gray-400`}>
+                    Không có dữ liệu hiệu suất cho{" "}
+                    {isRoomSearchPerformed && roomNameFromApi
+                      ? `phòng ${roomNameFromApi}`
+                      : period === "năm"
+                      ? `năm ${year}`
+                      : `tháng ${month}/${year}`}
+                  </p>
+                ) : (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <PieChart>
+                      <Pie
+                        data={utilizationPieData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={110}
+                        labelLine={true}
+                        label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
+                      >
+                        {utilizationPieData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                            className="transition-all duration-300 hover:opacity-80"
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value) => `${value.toFixed(1)}%`}
+                        contentStyle={{
+                          backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
+                          color: theme === "dark" ? "#ffffff" : "#1f2937",
+                          borderRadius: "8px",
+                          border: `1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"}`,
+                          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                          padding: "8px 12px",
+                        }}
                       />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(value) => `${value.toFixed(1)}%`}
-                    contentStyle={{
-                      backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
-                      color: theme === "dark" ? "#ffffff" : "#1f2937",
-                      borderRadius: "8px",
-                      border: `1px solid ${theme === "dark" ? "#4b5563" : "#e5e7eb"}`,
-                      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                      padding: "8px 12px",
-                    }}
-                  />
-                  <Legend
-                    verticalAlign="bottom"
-                    height={36}
-                    formatter={(value) => (
-                      <span className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>{value}</span>
-                    )}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+                      <Legend
+                        verticalAlign="bottom"
+                        height={36}
+                        formatter={(value) => (
+                          <span className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}>{value}</span>
+                        )}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             )}
-          </div>
-        )}
 
-        <div className="flex flex-col animate-fade-in">
-          <h3
-            className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"}`}
-          >
-            Biểu đồ thống kê hiệu suất (theo %) -{" "}
-            {isDateSearchPerformed && selectedDate
-              ? `Ngày ${selectedDate}`
-              : isRoomSearchPerformed && roomNameFromApi
-              ? `Phòng ${roomNameFromApi} - ${period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}`
-              : period === "năm"
-              ? `Năm ${year}`
-              : `Tháng ${month}/${year}`}
-          </h3>
-          {loading ? (
-            <p className={`text-center text-gray-500 dark:text-gray-400`}>Đang tải dữ liệu...</p>
-          ) : (!hasPerformanceData && !hasDateData) ? (
-            <p className={`text-center text-gray-500 dark:text-gray-400`}>
-              Không có dữ liệu hiệu suất cho{" "}
-              {isDateSearchPerformed && selectedDate
-                ? `ngày ${selectedDate}`
-                : isRoomSearchPerformed && roomNameFromApi
-                ? `phòng ${roomNameFromApi}`
-                : period === "năm"
-                ? `năm ${year}`
-                : `tháng ${month}/${year}`}
-            </p>
-          ) : (
-            <ResponsiveContainer width="100%" height={500}>
-              <AreaChart
-                data={isDateSearchPerformed && selectedDate ? processDateData : processedRoomData}
-                margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
+            <div className="flex flex-col animate-fade-in">
+              <h3
+                className={`text-xl font-medium mb-4 ${theme === "dark" ? "text-gray-200" : "text-gray-700"}`}
               >
-                <defs>
-                  <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.9} />
-                    <stop offset="95%" stopColor="#f97316" stopOpacity={0.1} />
-                  </linearGradient>
-                </defs>
-                <Tooltip
-                  cursor={{ stroke: theme === "dark" ? "#4b5563" : "#e5e7eb", strokeWidth: 1 }}
-                  content={<CustomTooltip />}
-                />
-                <XAxis
-                  dataKey="name"
-                  strokeWidth={0}
-                  stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                  angle={
-                    isDateSearchPerformed && selectedDate
-                      ? -45
-                      : period === "năm" || (period === "tháng" && !isDateSearchPerformed)
-                      ? -45
-                      : 0
-                  }
-                  textAnchor={
-                    isDateSearchPerformed && selectedDate
-                      ? "end"
-                      : period === "năm" || (period === "tháng" && !isDateSearchPerformed)
-                      ? "end"
-                      : "middle"
-                  }
-                  height={70}
-                  interval={xAxisInterval}
-                  tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
-                />
-                <YAxis
-                  strokeWidth={0}
-                  stroke={theme === "light" ? "#64748b" : "#94a3b8"}
-                  tickFormatter={(value) => `${value}%`}
-                  tickMargin={20}
-                  domain={[minY, maxY]}
-                  ticks={ticks}
-                  width={100}
-                  tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
-                />
-                <Area
-                  type={isDateSearchPerformed && selectedDate ? "natural" : "monotone"}
-                  dataKey="rate"
-                  name="Tỷ lệ sử dụng"
-                  stroke="#f97316"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorTotal)"
-                  activeDot={false}
-                />
-                {isDateSearchPerformed && selectedDate ? null : referenceLines}
-              </AreaChart>
-            </ResponsiveContainer>
-          )}
-        </div>
+                Biểu đồ thống kê hiệu suất (theo %) -{" "}
+                {isDateSearchPerformed && selectedDate
+                  ? `Ngày ${formatDate(selectedDate)}`
+                  : isRoomSearchPerformed && roomNameFromApi
+                  ? `Phòng ${roomNameFromApi} - ${period === "năm" ? `Năm ${year}` : `Tháng ${month}/${year}`}`
+                  : period === "năm"
+                  ? `Năm ${year}`
+                  : `Tháng ${month}/${year}`}
+              </h3>
+              {loading ? (
+                <p className={`text-center text-gray-500 dark:text-gray-400`}>Đang tải dữ liệu...</p>
+              ) : isDateSearchPerformed && !hasDateData ? (
+                <p className={`text-center text-gray-500 dark:text-gray-400`}>
+                  Không có dữ liệu hiệu suất cho ngày ${formatDate(selectedDate)}
+                </p>
+              ) : (
+                <ResponsiveContainer width="100%" height={500}>
+                  <AreaChart
+                    data={isDateSearchPerformed && selectedDate ? processDateData : processedRoomData}
+                    margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
+                  >
+                    <defs>
+                      <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#f97316" stopOpacity={0.9} />
+                        <stop offset="95%" stopColor="#f97316" stopOpacity={0.1} />
+                      </linearGradient>
+                    </defs>
+                    <Tooltip
+                      cursor={{ stroke: theme === "dark" ? "#4b5563" : "#e5e7eb", strokeWidth: 1 }}
+                      content={<CustomTooltip />}
+                    />
+                    <XAxis
+                      dataKey="name"
+                      strokeWidth={0}
+                      stroke={theme === "light" ? "#64748b" : "#94a3b8"}
+                      angle={
+                        isDateSearchPerformed && selectedDate
+                          ? -45
+                          : period === "năm" || (period === "tháng" && !isDateSearchPerformed)
+                          ? -45
+                          : 0
+                      }
+                      textAnchor={
+                        isDateSearchPerformed && selectedDate
+                          ? "end"
+                          : period === "năm" || (period === "tháng" && !isDateSearchPerformed)
+                          ? "end"
+                          : "middle"
+                      }
+                      height={70}
+                      interval={xAxisInterval}
+                      tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+                    />
+                    <YAxis
+                      strokeWidth={0}
+                      stroke={theme === "light" ? "#64748b" : "#94a3b8"}
+                      tickFormatter={(value) => `${value}%`}
+                      tickMargin={20}
+                      domain={[minY, maxY]}
+                      ticks={ticks}
+                      width={100}
+                      tick={{ fontSize: 14, fill: theme === "dark" ? "#d1d5db" : "#6b7280" }}
+                    />
+                    <Area
+                      type={isDateSearchPerformed && selectedDate ? "natural" : "monotone"}
+                      dataKey="rate"
+                      name="Tỷ lệ sử dụng"
+                      stroke="#f97316"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorTotal)"
+                      activeDot={false}
+                    />
+                    {isDateSearchPerformed && selectedDate ? null : referenceLines}
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

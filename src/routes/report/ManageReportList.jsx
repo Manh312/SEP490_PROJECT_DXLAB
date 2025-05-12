@@ -46,7 +46,7 @@ const ManageReportList = () => {
               dispatch(
                 addNotification({
                   id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-                  message: `Báo cáo mới: "${report.reportId}" từ nhân viên "${report.staffName}"!`,
+                  message: `Mã báo cáo RP-${report.reportId} từ nhân viên ${report.staffName} đã gửi tới!`,
                   type: "info",
                   timestamp: new Date().toISOString(),
                 })

@@ -267,9 +267,9 @@ const UpdateAreaType = () => {
                       name="areaTypeName"
                       value={formData.areaTypeName}
                       onChange={handleInputChange}
-                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out"
+                      className="w-full mt-1 sm:mt-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg border border-gray-300 text-gray-800 text-sm sm:text-base font-normal focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 transition duration-150 ease-in-out cursor-not-allowed"
                       placeholder="Nhập tên dịch vụ"
-                      required
+                      readOnly
                     />
                   </div>
                 </div>

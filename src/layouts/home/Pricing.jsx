@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import images3 from "../../assets/dxlab_images3.jpg";
 import images4 from "../../assets/dxlab_images4.jpg";
+import images3 from "../../assets/about_images.png";
 
 const Pricing = () => {
   // Animation variants
@@ -61,9 +61,9 @@ const Pricing = () => {
             {/* Image */}
             <div className="flex-1">
               <img
-                src={images3}
+                src={images4}
                 alt="Students working at DXLAB"
-                className="w-full h-64 object-cover rounded-xl"
+                className="w-full h-80 object-cover rounded-xl"
               />
             </div>
           </div>
@@ -85,7 +85,7 @@ const Pricing = () => {
             {/* Image */}
             <div className="flex-1 order-1 lg:order-0">
               <img
-                src={images4}
+                src={images3}
                 alt="DXLAB coworking space"
                 className="w-full h-64 object-cover rounded-xl"
               />

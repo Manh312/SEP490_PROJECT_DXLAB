@@ -25,7 +25,7 @@ const Navbar = () => {
   const dropdownRef = useRef(null);
   const { user, isAuthenticating, isLoggingOut } = useSelector((state) => state.auth);
   const { contract } = useContract(import.meta.env.VITE_DXLABCOINT_CONTRACT);
-    const { data: balance } = useTokenBalance(contract, address);
+  const { data: balance } = useTokenBalance(contract, address);
   const navigate = useNavigate();
 
   // Thiết lập app element cho modal
@@ -127,7 +127,9 @@ const Navbar = () => {
         <div className="hidden lg:flex justify-center space-x-6 items-center relative z-10">
           {isLoggedIn ? (
             <div className="flex items-center space-x-4" ref={profileRef}>
-              <Notification />
+              {(roleName === "Admin" || roleName === "Staff") && (
+                <Notification />
+              )}
               <FaUserCircle
                 className="h-10 w-10 rounded-full cursor-pointer"
                 onClick={handleProfileClick}

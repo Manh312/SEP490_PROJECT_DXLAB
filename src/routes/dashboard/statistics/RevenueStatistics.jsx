@@ -1,5 +1,5 @@
 import { useTheme } from "../../../hooks/use-theme";
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine, CartesianGrid } from "recharts";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, ReferenceLine } from "recharts";
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 
@@ -88,12 +88,6 @@ const RevenueStatistics = ({ revenueAreaData, revenueMinY, revenueMaxY, revenueY
                 data={revenueAreaData}
                 margin={{ top: 20, right: 30, left: 40, bottom: 50 }}
               >
-                <CartesianGrid
-                  stroke={theme === "dark" ? "#4b5563" : "#e5e7eb"}
-                  strokeDasharray="3 3"
-                  horizontal={true}
-                  vertical={false}
-                />
                 <defs>
                   <linearGradient id="colorTotalOverview" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#f97316" stopOpacity={0.9} />

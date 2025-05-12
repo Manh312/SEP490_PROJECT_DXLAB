@@ -257,7 +257,7 @@ const FacilitiesList = () => {
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Mã thiết bị</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Số lô</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Tiêu đề</th>
-                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Giá</th>
+                    <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Giá Nhập</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ngày nhập</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Số lượng</th>
                     <th className="px-2 py-2 text-center md:px-3 md:py-3 font-semibold text-lg uppercase tracking-wide">Ngày hết hạn</th>
@@ -338,7 +338,7 @@ const FacilitiesList = () => {
                         <span className="font-medium">Mô tả:</span> {facility.facilityDescription}
                       </p>
                       <p className="text-sm">
-                        <span className="font-medium">Giá:</span> {facility.cost} DXL
+                        <span className="font-medium">Giá Nhập:</span> {facility.cost} DXL
                       </p>
                       <p className="text-sm">
                         <span className="font-medium">Ngày nhập:</span>{" "}

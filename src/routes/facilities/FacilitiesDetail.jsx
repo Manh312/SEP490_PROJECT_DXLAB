@@ -201,7 +201,7 @@ const FacilitiesDetail = () => {
                     <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Giá</p>
+                    <p className="text-xs sm:text-sm font-bold text-gray-500 truncate">Giá Nhập</p>
                     <p className="text-sm sm:text-base font-normal text-gray-800 truncate">{facility.cost} DXL</p>
                   </div>
                 </div>

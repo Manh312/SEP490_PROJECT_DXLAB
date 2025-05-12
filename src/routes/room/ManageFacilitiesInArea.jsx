@@ -154,10 +154,8 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
     }
   };
 
-  const filteredFacilities = allFacilities.filter(
-    (faci) =>
-      faci.facilityName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faci.quantity > 0
+  const filteredFacilities = allFacilities.filter((faci) =>
+    faci.facilityName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -458,7 +456,7 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Tìm kiếm thiết bị..."
+                  placeholder="Tìm kiếm tên thiết bị..."
                   className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 pl-10"
                 />
                 <Search
@@ -509,11 +507,11 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                             key={`${faci.facilityId}-${faci.batchNumber}-${faci.importDate}-${faci.status}`}
                             onClick={() => setSelectedFacility(faci)}
                             className={`cursor-pointer hover:bg-orange-50 transition ${selectedFacility?.facilityId === faci.facilityId &&
-                                selectedFacility?.batchNumber === faci.batchNumber &&
-                                selectedFacility?.importDate === faci.importDate &&
-                                selectedFacility?.status === faci.status
-                                ? "bg-orange-100"
-                                : ""
+                              selectedFacility?.batchNumber === faci.batchNumber &&
+                              selectedFacility?.importDate === faci.importDate &&
+                              selectedFacility?.status === faci.status
+                              ? "bg-orange-100"
+                              : ""
                               }`}
                           >
                             <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -544,11 +542,11 @@ const ManageFacilitiesInArea = ({ entityType = "area" }) => {
                         key={`${faci.facilityId}-${faci.batchNumber}-${faci.importDate}-${faci.status}`}
                         onClick={() => setSelectedFacility(faci)}
                         className={`border rounded-lg p-4 shadow-sm hover:bg-orange-50 transition-colors cursor-pointer ${selectedFacility?.facilityId === faci.facilityId &&
-                            selectedFacility?.batchNumber === faci.batchNumber &&
-                            selectedFacility?.importDate === faci.importDate &&
-                            selectedFacility?.status === faci.status
-                            ? "bg-orange-100"
-                            : ""
+                          selectedFacility?.batchNumber === faci.batchNumber &&
+                          selectedFacility?.importDate === faci.importDate &&
+                          selectedFacility?.status === faci.status
+                          ? "bg-orange-100"
+                          : ""
                           }`}
                       >
                         <div className="flex flex-col gap-2">

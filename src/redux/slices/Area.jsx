@@ -66,9 +66,10 @@ export const addFacilityToArea = createAsyncThunk(
   }
 );
 
+
 export const removeFacilityFromArea = createAsyncThunk(
   'areas/removeFacilityFromArea',
-  async (data, { rejectWithValue }) => {
+  async (data,{ rejectWithValue }) => {
     try {
       const payload = {
         areaId: data.areaId,
@@ -79,7 +80,32 @@ export const removeFacilityFromArea = createAsyncThunk(
         status: data.status,
       };
       console.log('Payload being sent to API:', payload);
-      const response = await axiosInstance.post('/area/faciremoving', payload, {
+      const response = await axiosInstance.post(`/area/faciremoving`, payload, {
+        headers: {
+          'Content-Type': 'application/json-patch+json',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error);
+    }
+  }
+);
+
+export const removeFacilityFromReport = createAsyncThunk(
+  'areas/removeFacilityFromReport',
+  async ({data, id },{ rejectWithValue }) => {
+    try {
+      const payload = {
+        areaId: data.areaId,
+        facilityId: data.facilityId,
+        batchNumber: data.batchNumber,
+        importDate: data.importDate,
+        quantity: data.quantity,
+        status: data.status,
+      };
+      console.log('Payload being sent to API:', payload);
+      const response = await axiosInstance.post(`/area/faciremovingreport?reportId=${id}`, payload, {
         headers: {
           'Content-Type': 'application/json-patch+json',
         },
@@ -301,6 +327,18 @@ const areaSlice = createSlice({
         state.removeFacilityLoading = false;
       })
       .addCase(removeFacilityFromArea.rejected, (state, action) => {
+        state.removeFacilityLoading = false;
+        state.removeFacilityError = action.payload;
+      })
+
+      .addCase(removeFacilityFromReport.pending, (state) => {
+        state.removeFacilityLoading = true;
+        state.removeFacilityError = null;
+      })
+      .addCase(removeFacilityFromReport.fulfilled, (state) => {
+        state.removeFacilityLoading = false;
+      })
+      .addCase(removeFacilityFromReport.rejected, (state, action) => {
         state.removeFacilityLoading = false;
         state.removeFacilityError = action.payload;
       })

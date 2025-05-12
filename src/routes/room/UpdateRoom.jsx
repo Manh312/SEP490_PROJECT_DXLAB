@@ -768,7 +768,7 @@ const UpdateRoom = () => {
                               className={`px-3 py-1 rounded-full text-xs font-medium ${area.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                                 }`}
                             >
-                              {area.status ? "Hoạt động" : "Không hoạt động"}
+                              {area.status ? "Sẵn sàng" : "Chưa sẵn sàng"}
                             </span>
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-center">
@@ -958,7 +958,7 @@ const UpdateRoom = () => {
                             className={`px-2 py-1 rounded-full text-xs font-medium ${area.status ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                               }`}
                           >
-                            {area.status ? "Hoạt động" : "Không hoạt động"}
+                            {area.status ? "Sẵn sàng" : "Chưa sẵn sàng"}
                           </span>
                         </p>
                       </div>

@@ -2,7 +2,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { createBooking, confirmBooking, resetBookingStatus } from '../../redux/slices/Booking';
-import { addNotification } from '../../redux/slices/Notification';
 import { useEffect, useState } from 'react';
 import { useAddress, useContract, useContractWrite, useContractRead, useBalance } from '@thirdweb-dev/react';
 import { ethers } from 'ethers';
@@ -13,18 +12,16 @@ const Payment = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const address = useAddress();
 
-  // Kết nối với hợp đồng ERC20
+  // Connect to ERC20 contract
   const { contract } = useContract(import.meta.env.VITE_DXLABCOINT_CONTRACT);
   const { mutateAsync: transfer, isLoading } = useContractWrite(contract, 'transfer');
   const { data: decimals } = useContractRead(contract, 'decimals');
   const { data: tokenBalance } = useContractRead(contract, 'balanceOf', [address]);
 
-  // Kiểm tra số dư Sepolia ETH
+  // Check Sepolia ETH balance
   const { data: ethBalance } = useBalance();
 
-  const { selectedArea, selectedTime = [] } = useSelector((state) => {
-    return state.booking || {};
-  });
+  const { selectedArea, selectedTime = [] } = useSelector((state) => state.booking || {});
   const { selectedRoom, loading: roomsLoading } = useSelector((state) => state.rooms);
 
   useEffect(() => {
@@ -64,7 +61,6 @@ const Payment = () => {
     return slots
       .map(({ slotNumber }) => {
         const slot = slotsForDate.find((s) => s.slotNumber === slotNumber);
-        console.log(slot);
         return slot ? `Slot ${slot.slotNumber}` : `Slot ${slotNumber}`;
       })
       .join(', ');
@@ -77,8 +73,6 @@ const Payment = () => {
       toast.error('Vui lòng kết nối ví trước khi thanh toán!');
       return;
     }
-
-    console.log('Before booking - selectedRoom:', selectedRoom, 'selectedArea:', selectedArea, 'selectedTime:', selectedTime);
 
     if (!selectedRoom || !selectedRoom.roomId) {
       toast.error('Thông tin phòng không hợp lệ!');
@@ -96,7 +90,40 @@ const Payment = () => {
       return;
     }
 
-    // Bước 1: Gọi API createBooking trước
+    // Validate recipientAddress
+    const recipientAddress = import.meta.env.VITE_RECIPIENT_ADDRESS;
+    if (!recipientAddress || !ethers.utils.isAddress(recipientAddress)) {
+      toast.error('Địa chỉ nhận không hợp lệ! Vui lòng kiểm tra cấu hình.');
+      return;
+    }
+
+    // Ensure decimals are loaded
+    if (!decimals) {
+      toast.error('Không thể tải thông tin hợp đồng (decimals)! Vui lòng thử lại.');
+      return;
+    }
+
+    const totalPrice = calculateTotalPrice();
+    const amount = ethers.utils.parseUnits(totalPrice.toString(), decimals);
+
+    // Check Sepolia ETH balance for gas fees
+    const minEthRequired = ethers.utils.parseEther('0.01');
+    if (!ethBalance || ethBalance.value.lt(minEthRequired)) {
+      toast.error('Không đủ Sepolia ETH để trả phí gas! Vui lòng nạp thêm ETH.');
+      return;
+    }
+
+    // Check DXL token balance
+    if (!tokenBalance) {
+      toast.error('Không thể kiểm tra số dư DXL! Vui lòng thử lại.');
+      return;
+    }
+    if (tokenBalance.lt(amount)) {
+      toast.error('Số dư DXL không đủ để thực hiện thanh toán!');
+      return;
+    }
+
+    // Step 1: Call createBooking API and capture bookingId
     const bookingData = {
       roomID: selectedRoom.roomId,
       areaTypeId: areaTypeId,
@@ -111,94 +138,45 @@ const Payment = () => {
     let bookingId;
     try {
       const result = await dispatch(createBooking(bookingData)).unwrap();
-      console.log('createBooking result:', result);
-      bookingId = result.data?.bookingId;
-      if (!bookingId) {
-        throw new Error('Không tìm thấy bookingId trong kết quả');
-      }
+      bookingId = result?.data.bookingId; // Assuming the API returns { bookingId: number }
     } catch (error) {
       console.error('Booking error:', error);
-      toast.error(error.message || 'Có lỗi xảy ra khi tạo đặt chỗ! Vui lòng thử lại.');
-      return; // Dừng lại nếu API createBooking thất bại
+      const errorMessage = error.message || 'Có lỗi xảy ra khi tạo đặt chỗ!';
+      toast.error(errorMessage);
+      return; // Stop if createBooking fails
     }
 
-    // Bước 2: Nếu createBooking thành công, tiến hành kiểm tra và trừ tiền
-    const totalPrice = calculateTotalPrice();
-    const recipientAddress = import.meta.env.VITE_RECIPIENT_ADDRESS;
-
-    // Validate recipientAddress
-    if (!recipientAddress || !ethers.utils.isAddress(recipientAddress)) {
-      toast.error('Địa chỉ nhận không hợp lệ! Vui lòng kiểm tra cấu hình.');
-      return;
-    }
-
-    // Ensure decimals are loaded
-    if (!decimals) {
-      toast.error('Không thể tải thông tin hợp đồng (decimals)! Vui lòng thử lại.');
-      return;
-    }
-
-    const amount = ethers.utils.parseUnits(totalPrice.toString(), decimals);
-
+    // Step 2: Proceed with payment
     try {
-      // Check Sepolia ETH balance for gas fees
-      const minEthRequired = ethers.utils.parseEther('0.01'); // Rough estimate: 0.01 ETH for gas
-      if (!ethBalance || ethBalance.value.lt(minEthRequired)) {
-        toast.error('Không đủ Sepolia ETH để trả phí gas! Vui lòng nạp thêm ETH.');
-        return;
-      }
-
-      // Check DXL token balance
-      if (!tokenBalance) {
-        toast.error('Không thể kiểm tra số dư DXL! Vui lòng thử lại.');
-        return;
-      }
-      if (tokenBalance.lt(amount)) {
-        toast.error('Số dư DXL không đủ để thực hiện thanh toán!');
-        return;
-      }
-
       // Perform the transaction
       const tx = await transfer({
         args: [recipientAddress, amount],
       });
       console.log('Transaction successful:', tx);
 
-      // Fetch the updated balance after the transaction
+      // Fetch updated balance
       let updatedBalance;
       try {
         updatedBalance = await contract.call('balanceOf', [address]);
         console.log('Updated balance:', updatedBalance.toString());
       } catch (error) {
         console.error('Error fetching updated balance:', error);
-        updatedBalance = tokenBalance; // Fallback to previous balance if fetch fails
+        updatedBalance = tokenBalance;
       }
 
-      // Format updated balance
-      const formattedBalance = updatedBalance && decimals
-        ? ethers.utils.formatUnits(updatedBalance, decimals)
-        : 'N/A';
-
-      // Dispatch notification with updated balance
-      dispatch(addNotification({
-        message: `Thanh toán thành công ${totalPrice} DXL cho đơn đặt chỗ DXL-${bookingId}. Số dư hiện tại của bạn là: ${parseFloat(formattedBalance).toFixed(2)} DXL.`,
-        type: 'success',
-      }));
-
-      // Sau khi trừ tiền thành công, cập nhật trạng thái và chuyển hướng
+      // Update status and redirect
       toast.success('Thanh toán thành công!');
       dispatch(confirmBooking([]));
-      navigate(`/booked-seats/${bookingId}`);
+      navigate(`/booked-seats/${bookingId}`); // Use the captured bookingId
     } catch (error) {
       console.error('Payment error:', error);
-      if (error.code === 401) { // Người dùng từ chối ký
+      if (error.code === 4001) { // User rejected the transaction
         toast.error('Bạn đã hủy giao dịch!');
       } else if (error.message?.includes('insufficient funds')) {
         toast.error('Không đủ Sepolia ETH để trả phí gas! Vui lòng nạp thêm ETH.');
       } else {
         toast.error(error.message || 'Có lỗi xảy ra khi thanh toán! Vui lòng liên hệ hỗ trợ.');
       }
-      // Lưu ý: Booking đã được tạo thành công, nhưng thanh toán thất bại
       toast.warn(`Đặt chỗ đã được tạo (ID: ${bookingId}), nhưng thanh toán chưa hoàn tất. Vui lòng kiểm tra lại.`);
     }
   };
@@ -298,7 +276,7 @@ const Payment = () => {
                 <strong>2. Thông Tin Đặt Chỗ:</strong> Bạn có trách nhiệm đảm bảo tính chính xác của thông tin về phòng, khu vực và thời gian đặt chỗ.
               </p>
               <p>
-                <strong>3. Quy Định Về Thời Gian Đặt Chỗ:</strong> Mỗi khung giờ (slot) chỉ được đặt một lần cho một ngày cụ thể. Ví dụ, nếu bạn đã đặt slot 1 ngày 3/5, bạn không thể đặt lại slot 1 cho cùng ngày đó.
+                <strong>3. Quy Định Về Thời Gian Đặt Chỗ:</strong> Mỗi khung giờ (slot) chỉ được đặt một lần cho một ngày cụ thể. Ví dụ, nếu bạn đã đặt slot 1 một ngày bất kỳ(trừ thứ bảy và chủ nhật), bạn không thể đặt lại slot 1 cho cùng ngày đó.
               </p>
               <p>
                 <strong>4. Yêu Cầu Số Dư:</strong> Ví của bạn phải có đủ số dư DXL tương ứng với tổng chi phí dịch vụ để giao dịch thanh toán được thực hiện thành công.
@@ -325,6 +303,16 @@ const Payment = () => {
                 Hủy
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Processing Popup */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-400 rounded-lg p-6 shadow-xl">
+            <h2 className="text-xl font-semibold text-gray-800">Đang xử lý...</h2>
+            <p className="text-gray-600 mt-2">Vui lòng chờ trong khi giao dịch được xử lý.</p>
           </div>
         </div>
       )}

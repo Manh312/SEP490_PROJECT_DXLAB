@@ -14,6 +14,7 @@ const BookingDetail = () => {
   const { bookingDetail: booking, loading } = useSelector((state) => state.bookingHistory);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBookingDetailId, setSelectedBookingDetailId] = useState(null);
   const [reportDescription, setReportDescription] = useState("");
   const [facilityQuantity, setFacilityQuantity] = useState(0);
   const [reportLoading, setReportLoading] = useState(false);
@@ -65,14 +66,15 @@ const BookingDetail = () => {
     setReportLoading(true);
     try {
       const reportData = {
-        bookingDetailId: id,
+        bookingDetailId: selectedBookingDetailId,
         reportDescription,
-        facilityQuantity: facilityQuantity,
+        facilityQuantity,
       };
 
       await dispatch(createReport(reportData)).unwrap();
       toast.success("Tạo báo cáo thành công!");
       setIsModalOpen(false);
+      setSelectedBookingDetailId(null);
       setReportDescription("");
       setFacilityQuantity(0);
       navigate(`/manage/reports`);
@@ -109,16 +111,6 @@ const BookingDetail = () => {
               Chi Tiết Đặt Chỗ: DXL-{booking.bookingId}
             </h2>
           </div>
-
-          {/* Nút Tạo báo cáo – chỉ hiển thị nếu tất cả slot đã checkout */}
-          {booking.details.every(detail => detail.status === 2) && (
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm sm:text-base transition-all"
-            >
-              Tạo báo cáo
-            </button>
-          )}
         </div>
 
         {/* Booking Overview */}
@@ -192,6 +184,38 @@ const BookingDetail = () => {
                   <p className="text-base font-medium">{detail.roomName}</p>
                 </div>
               </div>
+              <div className="flex justify-end mt-4 space-x-2">
+                {/* Check-in button for unprocessed slots */}
+                {detail.status === 0 && (
+                  <button
+                    onClick={() => handleCheckin(detail.bookingDetailId)}
+                    className="bg-orange-500 hover:bg-orange-600 cursor-pointer text-white px-5 py-2 rounded-lg transition-all"
+                  >
+                    Check-in
+                  </button>
+                )}
+                {/* Check-out button for checked-in slots */}
+                {detail.status === 1 && (
+                  <button
+                    onClick={() => handleCheckout(detail.bookingDetailId)}
+                    className="bg-green-500 hover:bg-green-600 cursor-pointer text-white px-5 py-2 rounded-lg transition-all"
+                  >
+                    Check-out
+                  </button>
+                )}
+                {/* Tạo báo cáo button for checked-out slots */}
+                {detail.status === 2 && (
+                  <button
+                    onClick={() => {
+                      setSelectedBookingDetailId(detail.bookingDetailId);
+                      setIsModalOpen(true);
+                    }}
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm sm:text-base transition-all"
+                  >
+                    Tạo báo cáo
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -205,46 +229,20 @@ const BookingDetail = () => {
           >
             <span>Quay Lại</span>
           </Link>
-
-          {/* Check-in nếu có slot cần check-in */}
-          {booking.details.some(detail => detail.status === 0) && (
-            <button
-              onClick={() => {
-                const target = booking.details.find(detail => detail.status === 0);
-                if (target) handleCheckin(target.bookingDetailId);
-              }}
-              className="bg-orange-500 hover:bg-orange-600 cursor-pointer text-white px-5 py-2 rounded-lg transition-all"
-            >
-              Check-in
-            </button>
-          )}
-
-          {/* Check-out nếu có slot cần check-out */}
-          {booking.details.some(detail => detail.status === 1) && (
-            <button
-              onClick={() => {
-                const target = booking.details.find(detail => detail.status === 1);
-                if (target) handleCheckout(target.bookingDetailId);
-              }}
-              className="bg-green-500 hover:bg-green-600 cursor-pointer text-white px-5 py-2 rounded-lg transition-all"
-            >
-              Check-out
-            </button>
-          )}
         </div>
       </div>
 
       {/* Modal Tạo Báo Cáo */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 backdrop-blur-xs bg-white/20 flex items-center justify-center px-4">
-          <div className="w-full bg-gray-400 max-w-lg  rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
+          <div className="w-full bg-gray-400 max-w-lg rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b">
               <h3 className="text-xl font-semibold text-gray-800">Tạo Báo Cáo</h3>
             </div>
 
             {/* Modal Body */}
-            <div className="px-6 py-5 ">
+            <div className="px-6 py-5">
               {/* Thông tin báo cáo */}
               <div className="mb-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -254,6 +252,14 @@ const BookingDetail = () => {
                     </label>
                     <div className="p-3 bg-gray-100 rounded-lg text-sm text-gray-800">
                       #{id}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Mã Báo Cáo
+                    </label>
+                    <div className="p-3 bg-gray-100 rounded-lg text-sm text-gray-800">
+                      #{selectedBookingDetailId}
                     </div>
                   </div>
                   <div>
@@ -310,6 +316,7 @@ const BookingDetail = () => {
                     type="button"
                     onClick={() => {
                       setIsModalOpen(false);
+                      setSelectedBookingDetailId(null);
                       setReportDescription("");
                     }}
                     className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-sm text-gray-800 transition"
