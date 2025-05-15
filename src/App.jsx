@@ -38,7 +38,7 @@ import RoomDetail from "./routes/room/RoomDetail";
 import UpdateRoom from "./routes/room/UpdateRoom";
 import CreateRoom from "./routes/room/CreateRoom";
 import AreaDetail from "./routes/students/AreaDetail";
-import ReportList from "./routes/staff-manage/Report-management/ReportList";
+import ReportList from "./routes/staff-manage/report-management/ReportList";
 import CreateSlot from "./routes/slot/CreateSlot";
 import CreateBlog from "./routes/staff-manage/blog-management/CreateBlog";
 import StorageListAccount from "./routes/account/StorageListAccount";
