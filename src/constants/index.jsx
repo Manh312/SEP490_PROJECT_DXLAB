@@ -17,9 +17,8 @@ import { FaHome, FaMoneyBillWave, FaShieldAlt, FaWifi } from "react-icons/fa";
 
 import images1 from "../assets/dxlab_images1.jpg";
 import images2 from "../assets/AreaTypeGroup.jpg";
-import images3 from "../assets/dxlab_images3.jpg";
 import images4 from "../assets/dxlab_images4.jpg";
-import canhan from "../assets/CanhanDxlab.jpg";
+import canhan from "../assets/CaNhanDxLab.jpg";
 
 
 
