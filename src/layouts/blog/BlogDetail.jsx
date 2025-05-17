@@ -123,7 +123,7 @@ const BlogDetail = () => {
           {/* Display first image (if available) */}
           {images.length > 0 && (
             <motion.img
-              src={`https://localhost:9999${images[0]}`}
+              src={`http://dxlab.edu.vn${images[0]}`}
               alt={`Featured image for ${post.blogTitle}`}
               className="w-full h-96 object-cover rounded-lg shadow-md mb-8"
               onError={(e) => (e.target.src = '/placeholder-image.jpg')}
@@ -144,7 +144,7 @@ const BlogDetail = () => {
                       <p className="text-lg text-gray-700 leading-relaxed">{chunk}</p>
                       {images[index + 1] && (
                         <motion.img
-                          src={`https://localhost:9999${images[index + 1]}`}
+                          src={`http://dxlab.edu.vn${images[index + 1]}`}
                           alt={`Image ${index + 2} for ${post.blogTitle}`}
                           className="w-full h-64 object-cover rounded-lg shadow-md mt-6"
                           onError={(e) => (e.target.src = '/placeholder-image.jpg')}

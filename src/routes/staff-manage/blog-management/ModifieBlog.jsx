@@ -12,7 +12,7 @@ import {
 } from "../../../redux/slices/Blog";
 import { motion } from "framer-motion";
 
-const BACKEND_URL = "https://localhost:9999";
+const BACKEND_URL = import.meta.env.VITE_SIGNAL_BASE_URL;
 
 const ModifieBlog = () => {
   const { id } = useParams();

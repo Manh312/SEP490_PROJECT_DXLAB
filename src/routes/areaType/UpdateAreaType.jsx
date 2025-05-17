@@ -8,7 +8,7 @@ import { FileText, Image, Check, Tag, X, Plus, ArrowLeft, Map, Users, Power, Dol
 import { motion } from "framer-motion";
 import { FaSpinner } from "react-icons/fa";
 
-const BACKEND_URL = "https://localhost:9999";
+const BACKEND_URL = import.meta.env.VITE_SIGNAL_BASE_URL;
 
 const UpdateAreaType = () => {
   const { id } = useParams();
