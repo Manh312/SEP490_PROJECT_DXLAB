@@ -1,5 +1,5 @@
 // Lấy baseUrl từ biến môi trường hoặc fallback về localhost
-const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL || "http://localhost:5000";
+const baseUrl = import.meta.env.VITE_SIGNAL_BASE_URL;
 
 export const signalRConfig = {
   baseUrl,

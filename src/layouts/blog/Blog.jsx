@@ -138,7 +138,7 @@ const Blog = () => {
                 whileHover="hover"
               >
                 <img
-                  src={`http://dxlab.edu.vn${post.images?.[0] || '/default-image.jpg'}`}
+                  src={`https://dxlab.edu.vn${post.images?.[0] || '/default-image.jpg'}`}
                   alt={post.blogTitle}
                   className="w-full h-56 object-cover"
                   onError={(e) => (e.target.src = '/default-image.jpg')}
